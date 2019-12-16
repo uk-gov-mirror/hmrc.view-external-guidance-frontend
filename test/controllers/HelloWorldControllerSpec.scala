@@ -37,7 +37,7 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
 
   private val controller = new HelloWorldController(appConfig, stubMessagesControllerComponents())
 
-  "GET /" should {
+  "GET /hello-world" should {
     "return 200" in {
       val result = controller.helloWorld(fakeRequest)
       status(result) shouldBe Status.OK
