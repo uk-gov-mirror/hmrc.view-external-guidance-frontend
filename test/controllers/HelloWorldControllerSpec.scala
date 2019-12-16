@@ -61,5 +61,5 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
       }
     }
   }
-  
+
 }

@@ -27,11 +27,7 @@
 
 @serviceInfoContent = {}
 
-@sidebar = {
-    @if(sidebarLinks.isDefined) {
-        @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
-    }
-}
+@sidebar = {}
 
 
 @govuk_wrapper(appConfig = appConfig,
@@ -46,6 +42,5 @@
 )
 
 @{
-//$COVERAGE-OFF$
+  //$COVERAGE-OFF$
 }
-
