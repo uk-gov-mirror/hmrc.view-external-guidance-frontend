@@ -50,4 +50,16 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
     }
 
   }
+
+  "GET /bye-world" should {
+    "throw an exception" in {
+      assertThrows[Exception] {
+
+        val result = controller.byeWorld(fakeRequest)
+
+        status( result ) shouldBe Status.OK
+      }
+    }
+  }
+  
 }

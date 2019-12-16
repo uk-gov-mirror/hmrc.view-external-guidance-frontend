@@ -35,4 +35,8 @@ class HelloWorldController @Inject()(appConfig: AppConfig, mcc: MessagesControll
     Future.successful(Ok(hello_world()))
   }
 
+  val byeWorld: Action[AnyContent] = Action.async {
+    implicit request => throw new Exception( "Something went wrong!" )
+  }
+
 }
