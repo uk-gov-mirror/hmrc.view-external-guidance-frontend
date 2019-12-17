@@ -15,10 +15,21 @@
  *@
 
 @import config.AppConfig
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@import play.api.i18n.Lang
+
+@(lang: Lang)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = "Hello from view-external-guidance-frontend", bodyClasses = None) {
-    <h1>Hello from view-external-guidance-frontend !</h1>
+    <h1>@{messages("hello.world")}</h1>
+
+    @* TODO Placeholder language switch until UI design complete *@
+    <p>
+    @if( lang.code == "en" ) {
+      <a href="/guidance/language/cy">Welsh</a>
+    } else {
+      <a href="/guidance/language/en">English</a>
+    }
+    </p>
 }
 @{
   //$COVERAGE-OFF$

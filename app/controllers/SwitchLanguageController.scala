@@ -19,24 +19,25 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import play.api.mvc._
-import play.api.i18n.I18nSupport
+import play.api.i18n.{Langs,Lang,I18nSupport}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.AppConfig
-import views.html.hello_world
 import scala.concurrent.Future
 
 @Singleton
-class HelloWorldController @Inject()(appConfig: AppConfig,
-                                     mcc: MessagesControllerComponents) extends FrontendController(mcc) with I18nSupport {
+class SwitchLanguageController @Inject()(appConfig: AppConfig,
+                                         mcc: MessagesControllerComponents,
+                                         langs: Langs) extends FrontendController(mcc)
+                                                                     with I18nSupport {
 
   implicit val config: AppConfig = appConfig
+  // TODO requires suitable index like fallback URL
+  lazy val fallbackUrl = routes.HelloWorldController.helloWorld().url
 
-  val helloWorld: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(hello_world(request.messages.lang)))
-  }
+  def switchToLanguage(language: String): Action[AnyContent] = Action.async { implicit request =>
+    val lang = langs.availables.find( _.code == language).getOrElse(Lang("en"))
 
-  val byeWorld: Action[AnyContent] = Action.async {
-    implicit request => throw new Exception( "Something went wrong!" )
+    Future.successful(Redirect(request.headers.get(REFERER).getOrElse(fallbackUrl)).withLang(lang))
   }
 
 }

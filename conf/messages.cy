@@ -1,0 +1,1 @@
+hello.world = Helo o'r cais view-external-guide-frontend!
