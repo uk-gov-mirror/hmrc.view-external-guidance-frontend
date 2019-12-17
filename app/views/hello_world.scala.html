@@ -24,12 +24,14 @@
 
     @* TODO Placeholder language switch until UI design complete *@
     <p>
+    @messages( "hello.world.currentLanguage", lang.code)
     @if( lang.code == "en" ) {
-      <a href="/guidance/language/cy">Welsh</a>
+      <a href="/guidance/language/cy">Newid i'r Gymraeg</a>
     } else {
-      <a href="/guidance/language/en">English</a>
+      <a href="/guidance/language/en">Switch to English</a>
     }
     </p>
+
 }
 @{
   //$COVERAGE-OFF$
