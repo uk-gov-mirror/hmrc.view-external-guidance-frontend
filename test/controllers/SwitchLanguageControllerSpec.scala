@@ -40,7 +40,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   val langUtils = new LanguageUtils( langsProvider.get, configuration)(messagesApi)
 
-  private val controller = new SwitchLanguageController(configuration, langUtils, stubMessagesControllerComponents())
+  private val controller = new SwitchLanguageController(appConfig, langUtils, stubMessagesControllerComponents())
 
   val playCookieName = Play.langCookieName(messagesApi)
 

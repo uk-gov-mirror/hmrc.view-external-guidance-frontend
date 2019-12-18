@@ -22,20 +22,20 @@ import play.api.i18n.Lang
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
   private val contactBaseUrl = servicesConfig.baseUrl("contact-frontend")
 
-  private val assetsUrl         = config.get[String]("assets.url")
+  private val assetsUrl         = configuration.get[String]("assets.url")
   private val serviceIdentifier = "MyService"
 
-  val assetsPrefix: String   = assetsUrl + config.get[String]("assets.version")
-  val analyticsToken: String = config.get[String](s"google-analytics.token")
-  val analyticsHost: String  = config.get[String](s"google-analytics.host")
+  val assetsPrefix: String   = assetsUrl + configuration.get[String]("assets.version")
+  val analyticsToken: String = configuration.get[String](s"google-analytics.token")
+  val analyticsHost: String  = configuration.get[String](s"google-analytics.host")
 
   val reportAProblemPartialUrl: String = s"$contactBaseUrl/contact/problem_reports_ajax?service=$serviceIdentifier"
   val reportAProblemNonJSUrl: String   = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
 
   def languageMap: Map[String, Lang] = Map("english" -> Lang("en"),"cymraeg" -> Lang("cy"))
-
   def routeToSwitchLanguage = (lang: String) => controllers.routes.SwitchLanguageController.switchToLanguage(lang)
+  val config = configuration
 }

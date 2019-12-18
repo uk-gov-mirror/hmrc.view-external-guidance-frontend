@@ -20,17 +20,15 @@ import com.google.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.i18n.Lang
 import play.api.Configuration
+import config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
-class SwitchLanguageController @Inject()(config: Configuration,
+class SwitchLanguageController @Inject()(appConfig: AppConfig,
                                          languageUtils: LanguageUtils,
-                                         cc: MessagesControllerComponents) extends LanguageController(config, languageUtils, cc) {
+                                         cc: MessagesControllerComponents) extends LanguageController(appConfig.config, languageUtils, cc) {
 
-  override def languageMap: Map[String, Lang] = Map(
-    "english" -> Lang("en"),
-    "cymraeg" -> Lang("cy")
-  )
+  override def languageMap: Map[String, Lang] = appConfig.languageMap
 
   // TODO requires suitable index like fallback URL
   override def fallbackURL: String = routes.HelloWorldController.helloWorld().url
