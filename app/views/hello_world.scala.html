@@ -22,16 +22,11 @@
 @main_template(title = "Hello from view-external-guidance-frontend", bodyClasses = None) {
     <h1>@{messages("hello.world")}</h1>
 
-    @* TODO Placeholder language switch until UI design complete *@
-    <p>
-    @messages( "hello.world.currentLanguage", lang.code)
-    @if( lang.code == "en" ) {
-      <a href="/guidance/language/cymraeg">Newid i'r Gymraeg</a>
-    } else {
-      <a href="/guidance/language/english">Switch to English</a>
-    }
-    </p>
+    <p>@messages( "hello.world.currentLanguage", lang.code)</p>
 
+    @views.html.language_selection(appConfig.languageMap,
+                                   appConfig.routeToSwitchLanguage,
+                                   Some("custom-class"))
 }
 @{
   //$COVERAGE-OFF$
