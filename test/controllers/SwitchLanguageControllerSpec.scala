@@ -46,9 +46,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
   def confirmLangCookie(cookies: Cookies, lang: String):Unit =
     cookies.get(playCookieName) match {
-      case Some(cookie) =>
-        println( cookie )
-        cookie.value shouldBe lang
+      case Some(cookie) => cookie.value shouldBe lang
       case None => fail(s"Missing $playCookieName cookie")
     }
 
