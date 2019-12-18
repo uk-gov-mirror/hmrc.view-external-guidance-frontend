@@ -18,9 +18,8 @@ package controllers
 
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc._
-import play.api.i18n.{MessagesApi, Lang}
+import play.api.i18n.Lang
 import play.api.Configuration
-import config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
