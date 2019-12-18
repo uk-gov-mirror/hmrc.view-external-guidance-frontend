@@ -16,28 +16,24 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-
+import com.google.inject.{Inject, Singleton}
 import play.api.mvc._
-import play.api.i18n.{Langs,Lang,I18nSupport}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import play.api.i18n.{MessagesApi, Lang}
+import play.api.Configuration
 import config.AppConfig
-import scala.concurrent.Future
+import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
-class SwitchLanguageController @Inject()(appConfig: AppConfig,
-                                         mcc: MessagesControllerComponents,
-                                         langs: Langs) extends FrontendController(mcc)
-                                                       with I18nSupport {
+class SwitchLanguageController @Inject()(config: Configuration,
+                                         languageUtils: LanguageUtils,
+                                         cc: MessagesControllerComponents) extends LanguageController(config, languageUtils, cc) {
 
-  implicit val config: AppConfig = appConfig
+  override def languageMap: Map[String, Lang] = Map(
+    "english" -> Lang("en"),
+    "cymraeg" -> Lang("cy")
+  )
+
   // TODO requires suitable index like fallback URL
-  lazy val fallbackUrl = routes.HelloWorldController.helloWorld().url
-
-  def switchToLanguage(language: String): Action[AnyContent] = Action.async { implicit request =>
-    val lang = langs.availables.find( _.code == language).getOrElse(request.lang)
-
-    Future.successful(Redirect(request.headers.get(REFERER).getOrElse(fallbackUrl)).withLang(lang))
-  }
-
+  override def fallbackURL: String = routes.HelloWorldController.helloWorld().url
 }
+

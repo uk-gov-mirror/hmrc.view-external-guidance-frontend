@@ -28,6 +28,7 @@ import play.api.i18n.{Messages, MessagesApi,DefaultLangsProvider}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs._
 import config.AppConfig
+import uk.gov.hmrc.play.language.LanguageUtils
 
 class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   private val fakeRequest = FakeRequest("GET", "/")
@@ -36,10 +37,11 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
   private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
   private val appConfig     = new AppConfig(configuration, serviceConfig)
   val langsProvider = app.injector.instanceOf[DefaultLangsProvider]
-
-  private val controller = new SwitchLanguageController(appConfig, stubMessagesControllerComponents(), langsProvider.get)
-
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+  val langUtils = new LanguageUtils( langsProvider.get, configuration)(messagesApi)
+
+  private val controller = new SwitchLanguageController(configuration, langUtils, stubMessagesControllerComponents())
+
   val playCookieName = Play.langCookieName(messagesApi)
 
   def confirmLangCookie(cookies: Cookies, lang: String):Unit =
@@ -52,7 +54,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
   "GET /language/cy" should {
     "return 303 and set lang to cy" in {
-      val result = controller.switchToLanguage("cy")(fakeRequest)
+      val result = controller.switchToLanguage("cymraeg")(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
       confirmLangCookie(cookies(result), "cy")
     }
@@ -60,17 +62,17 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
   "GET /language/en" should {
     "return 303 and set lang to en" in {
-      val result = controller.switchToLanguage("en")(fakeRequest)
+      val result = controller.switchToLanguage("english")(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
       confirmLangCookie(cookies(result), "en")
     }
   }
 
   "GET /language/xxx" should {
-    "return 303 and set lang to current platform language" in {
+    "return 303 and fail to set lang unknown language, revert en" in {
       val result = controller.switchToLanguage("xx")(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
-      confirmLangCookie(cookies(result), "en-GB")
+      confirmLangCookie(cookies(result), "en")
     }
   }
 
