@@ -28,14 +28,14 @@ import scala.concurrent.Future
 class SwitchLanguageController @Inject()(appConfig: AppConfig,
                                          mcc: MessagesControllerComponents,
                                          langs: Langs) extends FrontendController(mcc)
-                                                                     with I18nSupport {
+                                                       with I18nSupport {
 
   implicit val config: AppConfig = appConfig
   // TODO requires suitable index like fallback URL
   lazy val fallbackUrl = routes.HelloWorldController.helloWorld().url
 
   def switchToLanguage(language: String): Action[AnyContent] = Action.async { implicit request =>
-    val lang = langs.availables.find( _.code == language).getOrElse(Lang("en"))
+    val lang = langs.availables.find( _.code == language).getOrElse(request.lang)
 
     Future.successful(Redirect(request.headers.get(REFERER).getOrElse(fallbackUrl)).withLang(lang))
   }
