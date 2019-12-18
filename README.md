@@ -1,7 +1,7 @@
 
 # view-external-guidance-frontend
 
-This is a placeholder README.md for a new repository
+This service provides guidance for external users of the Tax Platform.
 
 ### License
 
