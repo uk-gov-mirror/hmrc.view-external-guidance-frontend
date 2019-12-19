@@ -24,9 +24,7 @@
 
     <p>@messages( "hello.world.currentLanguage", lang.code)</p>
 
-    @views.html.language_selection(appConfig.languageMap,
-                                   appConfig.routeToSwitchLanguage,
-                                   Some("custom-class"))
+    @views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)
 }
 @{
   //$COVERAGE-OFF$
