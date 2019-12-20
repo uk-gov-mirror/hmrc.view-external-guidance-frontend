@@ -15,10 +15,16 @@
  *@
 
 @import config.AppConfig
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@import play.api.i18n.Lang
+
+@(lang: Lang)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @main_template(title = "Hello from view-external-guidance-frontend", bodyClasses = None) {
-    <h1>Hello from view-external-guidance-frontend !</h1>
+    <h1>@{messages("hello.world")}</h1>
+
+    <p>@messages( "hello.world.currentLanguage", lang.code)</p>
+
+    @views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)
 }
 @{
   //$COVERAGE-OFF$
