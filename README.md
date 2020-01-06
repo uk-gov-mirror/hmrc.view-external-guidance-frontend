@@ -1,5 +1,5 @@
 
-# view-external-guidance-frontend
+# View External Guidance Frontend
 
 This service provides guidance for external users of the Tax Platform.
 
