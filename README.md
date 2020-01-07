@@ -1,7 +1,7 @@
 
 # View External Guidance Frontend
 
-This service provides guidance for external users of the Tax Platform.
+This service provides guidance for external users of the Tax Platform. The service is provided in both English and Welsh languages.
 
 ### License
 
