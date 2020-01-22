@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models.ocelot.stanzas
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
