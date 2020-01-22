@@ -46,3 +46,25 @@ object CalloutStanza {
 
 }
 
+/**
+ * Define Instruction Stanza
+ */
+case class InstructionStanza(
+                            text: Int,
+                            next: Seq[String],
+                            stack: Boolean
+                            ) extends Stanza
+
+object InstructionStanza {
+
+  implicit val instructionReads: Reads[InstructionStanza] = {
+
+    (( JsPath \ "text" ).read[Int] and
+      ( JsPath \ "next" ).read[Seq[String]] and
+      ( JsPath \ "stack" ).read[Boolean]
+      ) ( InstructionStanza.apply _)
+
+  }
+
+}
+
