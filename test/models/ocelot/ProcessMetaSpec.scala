@@ -22,7 +22,7 @@ package models.ocelot
 import org.scalatestplus.play.PlaySpec
 
 import scala.util.{Try,Success,Failure}
-import play.api.libs.json.{JsonValidationError, _}
+import play.api.libs.json._
 import base.ProcessJson
 
 
