@@ -16,12 +16,12 @@
 
 package models.ocelot
 
-import org.scalatest._
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
 
-class CalloutStanzaSpec extends FlatSpec {
+class CalloutStanzaSpec extends PlaySpec {
 
   val titleCalloutStanzaInputJson =
       """|{
@@ -58,26 +58,25 @@ class CalloutStanzaSpec extends FlatSpec {
        |    "stack": false
        |}""".stripMargin
 
-  "read valid Callout stanza of type Title" should "Create a Callout stanza with a note type of Title" in {
+  "read valid Callout stanza of type Title should create a Callout stanza with a note type of Title" in {
 
     val titleCalloutStanzaJson: JsValue = Json.parse( titleCalloutStanzaInputJson )
 
     val titleCalloutStanza: CalloutStanza = titleCalloutStanzaJson.as[CalloutStanza]
 
-    assert( titleCalloutStanza == CalloutStanza( "Title", 0, Seq( "1"), false ) )
-
+    titleCalloutStanza mustBe CalloutStanza( "Title", 0, Seq( "1"), stack = false )
   }
 
-  "read valid Callout stanza of type subtitle" should "Create a Callout stanza with a note type of Subtitle" in {
+  "read valid Callout stanza of type subtitle create a Callout stanza with a note type of Subtitle" in {
 
     val subTitleCalloutStanzaJson : JsValue = Json.parse( subTitleCalloutStanzaInputJson )
 
     val subTitleCalloutStanza: CalloutStanza = subTitleCalloutStanzaJson.as[CalloutStanza]
 
-    assert( subTitleCalloutStanza == CalloutStanza( "Subtitle", 1, Seq( "2"), true ) )
+    subTitleCalloutStanza mustBe CalloutStanza( "Subtitle", 1, Seq( "2"), stack = true )
   }
 
-  "read Callout stanza with missing property" should "Cause an exception to be raised" in {
+  "read Callout stanza with missing property should cause an exception to be raised" in {
 
     val missingPropertyCalloutStanzaJson: JsValue = Json.parse( missingPropertyCalloutStanzaInputJson )
 
@@ -92,7 +91,7 @@ class CalloutStanzaSpec extends FlatSpec {
 
   }
 
-  "read Callout stanza with incorrect property type" should "Cause an exception to be raised" in {
+  "read Callout stanza with incorrect property type cause an exception to be raised" in {
 
     val incorrectTypeCalloutStanzaJson: JsValue = Json.parse( incorrectTypeCalloutStanzaInputJson )
 
