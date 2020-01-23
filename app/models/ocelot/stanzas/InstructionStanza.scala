@@ -14,35 +14,27 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models.ocelot.stanzas
 
-import play.api.libs.json._
+import models.ocelot.Stanza
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsPath, Reads}
 
-trait Stanza
+case class InstructionStanza(
+                              text: Int,
+                              next: Seq[String],
+                              stack: Boolean
+                            ) extends Stanza
 
-/**
- * Define Callout Stanza
- */
-case class CalloutStanza(
-                        noteType: String,
-                        text: Int,
-                        next: Seq[String],
-                        stack: Boolean
-                        ) extends Stanza
+object InstructionStanza {
 
-object CalloutStanza {
+  implicit val instructionReads: Reads[InstructionStanza] = {
 
-  implicit val calloutReads: Reads[CalloutStanza] = {
-
-    (( JsPath \ "noteType" ).read[String] and
-      ( JsPath \ "text" ).read[Int] and
+    (( JsPath \ "text" ).read[Int] and
       ( JsPath \ "next" ).read[Seq[String]] and
       ( JsPath \ "stack" ).read[Boolean]
-      )(CalloutStanza.apply _)
+      ) ( InstructionStanza.apply _)
 
   }
 
 }
-
-
