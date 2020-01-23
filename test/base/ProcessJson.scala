@@ -98,7 +98,7 @@ trait ProcessJson {
   // Ocelot Prototype process demonstrating range of Stanzas and range of relevant Stanza attributes
   val prototypeMetaSection: String =
     """
-    |  "meta": {
+    |  {
     |     "id": "ext90002",
     |     "title": "Telling HMRC about extra income",
     |     "ocelot": 1,
@@ -111,7 +111,7 @@ trait ProcessJson {
 
   val prototypeFlowSection: String =
     """
-    |   "flow": {
+    |   {
     |     "1": {
     |       "type": "CalloutStanza",
     |       "text": 1,
@@ -1786,7 +1786,7 @@ trait ProcessJson {
 
     val prototypePhrasesSection: String =
       """
-    |   "phrases": [
+    |   [
     |     ["Telling HMRC about extra income","Welsh: Telling HMRC about extra income"],
     |     ["Check if you need to tell HMRC about extra money you\u00e2\u0080\u0099ve made by selling goods or services, or renting land or property.","Welsh: Check if you need to tell HMRC about extra money you\u00e2\u0080\u0099ve made by selling goods or services, or renting land or property."],
     |     ["Overview","Welsh: Overview"],
@@ -1869,7 +1869,7 @@ trait ProcessJson {
     """.stripMargin
 
   val prototypeJson: JsValue = Json.parse(
-    s"""{ ${prototypeMetaSection}, ${prototypeFlowSection}, ${prototypePhrasesSection}, "contacts": [], "howto": [], "links": []}"""
+    s"""{ "meta" : ${prototypeMetaSection}, "flow": ${prototypeFlowSection}, "phrases": ${prototypePhrasesSection}, "contacts": [], "howto": [], "links": []}"""
   )
 
 }

@@ -25,5 +25,5 @@ case class Phrases(elems: Seq[Phrase])
 
 object Phrases {
   implicit val readsPhrase: Reads[Phrase] = __.read[Seq[String]](minLength[Seq[String]](2)).map(Phrase(_))
-  implicit val readsPhrases: Reads[Phrases] = (__ \ "phrases").read[Seq[Phrase]].map(Phrases(_))
+  implicit val readsPhrases: Reads[Phrases] = __.read[Seq[Phrase]].map(Phrases(_))
 }

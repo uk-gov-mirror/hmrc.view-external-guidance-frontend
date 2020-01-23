@@ -26,23 +26,21 @@ import base.ProcessJson
 class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
 
   val validPhrasesSectionJson: JsValue = Json.parse(
-    """{
-      |  "phrases": [
+    """[
       |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
       |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
       |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"]
       |  ]
-      |}""".stripMargin
+      |""".stripMargin
   )
 
   val invalidPhrasesSectionJson: JsValue = Json.parse(
-    """{
-      |  "phrases": [
+    """[
       |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
       |    ["Do you have a tea bag?"],
       |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"]
       |  ]
-      |}""".stripMargin
+      """.stripMargin
   )
 
   "Phrases section of Ocelet process" must {
@@ -62,7 +60,7 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
 
     "deserialise from phrases section json where lang text is accessible" in {
 
-      val phrases: Phrases = Json.parse(s"{${prototypePhrasesSection}}").as[Phrases]
+      val phrases: Phrases = Json.parse(s"${prototypePhrasesSection}").as[Phrases]
       val welsh = 1
       val sixthElementIndex = 5
       phrases.elems(sixthElementIndex).langs(welsh) mustBe "Welsh: A tax year runs from 6 April one year to 5 April the next."
