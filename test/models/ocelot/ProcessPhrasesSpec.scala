@@ -60,12 +60,16 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
                     )
     }
 
-    // "deserialise from process json" in {
+    "should allow access to phrase by index" in {
 
-    //   val result: Meta = fullJson.as[Meta]
+      val phrases: Phrases = validPhrasesSectionJson.as[Phrases]
 
-    //   result mustBe Meta("ext90002","Telling HMRC about extra income",1,"6031631", 1579177321336L, 1, "ext90002.js")
-    // }
+      phrases.elems(1).welsh mustBe "Welsh, Do you have a tea bag?"
+
+      phrases.phrase(1).map{ phr =>
+        phr.welsh mustBe "Welsh, Do you have a tea bag?"
+      } orElse fail("Missing phrase at index 1")
+    }
 
    "throw exception when json invalid" in {
 
