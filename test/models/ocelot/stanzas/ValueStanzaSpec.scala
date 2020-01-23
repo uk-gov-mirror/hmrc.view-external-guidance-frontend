@@ -28,23 +28,32 @@ import base.ProcessJson
 
 class ValueStanzaSpec extends PlaySpec with ProcessJson {
 
+  val stanzaType = "ValueStanza"
+  val valueType = "scalar"
+  val pageNameLabel = "PageName"
+  val pageName = "Telling HMRC about extra income"
+  val pageUrlLabel = "PageUrl"
+  val pageUrl = "/rent/less-than-1000/do-you-want-to-use-the-rent-a-room-scheme"
+  val next = "40"
+  val stack = "false"
+
   val validValueStanzaJson: JsValue = Json.parse(
-    """{
-      |  "type": "ValueStanza",
+    s"""{
+      |  "type": "${stanzaType}",
       |  "values": [
       |    {
-      |      "type": "scalar",
-      |      "label": "PageName",
-      |      "value": "Telling HMRC about extra income"
+      |      "type": "${valueType}",
+      |      "label": "${pageNameLabel}",
+      |      "value": "${pageName}"
       |    },
       |    {
-      |      "type": "scalar",
-      |      "label": "PageUrl",
-      |      "value": "/rent/less-than-1000/do-you-want-to-use-the-rent-a-room-scheme"
+      |      "type": "${valueType}",
+      |      "label": "${pageUrlLabel}",
+      |      "value": "${pageUrl}"
       |    }
       |  ],
-      |  "next": ["40"],
-      |  "stack": false
+      |  "next": ["${next}"],
+      |  "stack": ${stack}
       |}
     """.stripMargin
   )
@@ -56,10 +65,11 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
       val stanza: ValueStanza = validValueStanzaJson.as[ValueStanza]
 
       stanza.stack mustBe false
-      stanza.next mustBe Seq("40")
+      stanza.next.length mustBe 1
+      stanza.next(0) mustBe next
       stanza.values.length mustBe 2
-      stanza.values(0) mustBe Value(Scalar, "PageName", "Telling HMRC about extra income")
-      stanza.values(1) mustBe Value(Scalar, "PageUrl", "/rent/less-than-1000/do-you-want-to-use-the-rent-a-room-scheme")
+      stanza.values(0) mustBe Value(Scalar, pageNameLabel, pageName)
+      stanza.values(1) mustBe Value(Scalar, pageUrlLabel, pageUrl)
     }
   }
 }
