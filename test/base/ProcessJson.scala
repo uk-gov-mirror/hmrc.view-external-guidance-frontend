@@ -95,14 +95,7 @@ trait ProcessJson {
     """.stripMargin
   )
 
-  val invalidJson: JsValue = Json.parse(
-    """
-      |{
-      | "invalidJson": "invalid Json"
-      |}
-    """.stripMargin
-  )
-
+  // Ocelot Prototype process demonstrating range of Stanzas and range of relevant Stanza attributes
   val prototypeMetaSection: String =
     """
     |  "meta": {
