@@ -29,12 +29,12 @@ case class Meta(id: String,
 
 object Meta {
   implicit val metaReads: Reads[Meta] = (
-    (__ \ "meta" \ "id").read[String] and
-    (__ \ "meta" \ "title").read[String] and
-    (__ \ "meta" \ "ocelot").read[Int] and
-    (__ \ "meta" \ "lastAuthor").read[String] and
-    (__ \ "meta" \ "lastUpdate").read[Long] and
-    (__ \ "meta" \ "version").read[Int] and
-    (__ \ "meta" \ "filename").read[String]
+    (__ \ "id").read[String] and
+    (__ \ "title").read[String] and
+    (__ \ "ocelot").read[Int] and
+    (__ \ "lastAuthor").read[String] and
+    (__ \ "lastUpdate").read[Long] and
+    (__ \ "version").read[Int] and
+    (__ \ "filename").read[String]
   )(Meta.apply _)
 }
