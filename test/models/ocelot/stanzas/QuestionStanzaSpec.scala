@@ -43,66 +43,62 @@ class QuestionStanzaSpec extends WordSpec with MustMatchers {
        | "stack": false
        |}""".stripMargin
 
-  val missingPropertyQuestionStanzaJsonInput =
-    """|{
-       | "type": "QuestionStanza",
-       | "text": 1,
-       | "answers": [ 3, 4, 5 ],
-       | "stack": false
-       |}""".stripMargin
-
   val incorrectTypeQuestionStanzaJsonInput =
     """|{
        | "type": "QuestionStanza",
        | "text": 1,
        | "answers": [ 3, 4, 5 ],
+       | "next": [ "4", "7", "8" ],
        | "stack": 0
        |}""".stripMargin
 
-  "reading a valid QuestionStanza with two answers should create an instance of the class QuestionStanza" in {
+  val validQuestionStanzaJson: JsObject = Json.parse( twoAnswersQuestionStanzaJsonInput ).as[JsObject]
 
-    val twoAnswersQuestionStanzaJson: JsValue = Json.parse( twoAnswersQuestionStanzaJsonInput )
+  "Question stanza" must {
 
-    val twoAnswersQuestionStanza: QuestionStanza = twoAnswersQuestionStanzaJson.as[QuestionStanza]
+    "reading a valid QuestionStanza with two answers should create an instance of the class QuestionStanza" in {
 
-    twoAnswersQuestionStanza mustBe QuestionStanza( 0, Seq( 0, 2 ), Seq( "2", "5" ), stack = false )
-  }
+      val twoAnswersQuestionStanzaJson: JsValue = Json.parse(twoAnswersQuestionStanzaJsonInput)
 
-  "reading a valid QuestionStanza with three answers should create an instance of the class QuestionStanza" in {
+      val twoAnswersQuestionStanza: QuestionStanza = twoAnswersQuestionStanzaJson.as[QuestionStanza]
 
-    val threeAnswersQuestionStanzaJson: JsValue = Json.parse( threeAnswersQuestionStanzaJsonInput )
-
-    val threeAnswersQuestionStanza: QuestionStanza = threeAnswersQuestionStanzaJson.as[QuestionStanza]
-
-    threeAnswersQuestionStanza mustBe QuestionStanza( 1, Seq( 3, four, five ), Seq( "4", "7", "8" ), false )
-  }
-
-  "reading a QuestionStanza with a missing property should cause an exception to be raised" in {
-
-    val missingPropertyQuestionStanzaJson: JsValue = Json.parse( missingPropertyQuestionStanzaJsonInput )
-
-    Try
-    {
-      val questionStanza: QuestionStanza = missingPropertyQuestionStanzaJson.as[QuestionStanza]
+      twoAnswersQuestionStanza mustBe QuestionStanza(0, Seq(0, 2), Seq("2", "5"), stack = false)
     }
-    match {
-      case Success(_) => fail( "An instance of QuestionStanza should not have been created from incomplete Json" )
-      case Failure( failure ) => println( "Failure message for missing property : " + failure.getMessage )
-    }
-  }
 
-  "reading a QuestionStanza with a property of incorrect type should cause an exception to be raised" in {
+    "reading a valid QuestionStanza with three answers should create an instance of the class QuestionStanza" in {
 
-    val incorrectTypeQuestionStanzaJson: JsValue = Json.parse( incorrectTypeQuestionStanzaJsonInput )
+      val threeAnswersQuestionStanzaJson: JsValue = Json.parse(threeAnswersQuestionStanzaJsonInput)
 
-    Try
-    {
-      val questionStanza: QuestionStanza = incorrectTypeQuestionStanzaJson.as[QuestionStanza]
+      val threeAnswersQuestionStanza: QuestionStanza = threeAnswersQuestionStanzaJson.as[QuestionStanza]
+
+      threeAnswersQuestionStanza mustBe QuestionStanza(1, Seq(3, four, five), Seq("4", "7", "8"), false)
     }
-    match {
-      case Success(_) => fail( "An instance of QuestionStanza should not have been created from Json with an incorrect property type" )
-      case Failure( failure ) => println( "Failure message for incorrect property type : " + failure.getMessage )
+
+    /** Test for missing properties in Json object */
+    validQuestionStanzaJson.keys.filterNot( attributeName => attributeName == "type" ).foreach { attributeName =>
+      s"throw an exception when json is missing the $attributeName attribute" in {
+        val invalidJson = validQuestionStanzaJson - attributeName
+        invalidJson.validate[QuestionStanza] match {
+          case JsSuccess(_, _) => fail(s"QuestionStanza object created when $attributeName attribute is missing")
+          case JsError(_) => succeed
+        }
+      }
     }
+
+    "reading a QuestionStanza with a property of incorrect type should cause an exception to be raised" in {
+
+      val incorrectTypeQuestionStanzaJson: JsValue = Json.parse(incorrectTypeQuestionStanzaJsonInput)
+
+      Try {
+        val questionStanza: QuestionStanza = incorrectTypeQuestionStanzaJson.as[QuestionStanza]
+      }
+      match {
+        case Success(_) => fail("An instance of QuestionStanza should not have been created from Json with an incorrect property type")
+        case Failure(failure) => println("Failure message for incorrect property type : " + failure.getMessage)
+      }
+
+    }
+
   }
 
 }
