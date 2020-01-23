@@ -16,12 +16,14 @@
 
 package models.ocelot.stanzas
 
-import org.scalatestplus.play.PlaySpec
+import org.scalatest._
 import play.api.libs.json._
 
 import scala.util.{Failure, Success, Try}
 
-class CalloutStanzaSpec extends PlaySpec {
+class CalloutStanzaSpec extends WordSpec with MustMatchers {
+
+  val ten: Int = 10
 
   val titleCalloutStanzaInputJson =
       """|{
@@ -40,6 +42,34 @@ class CalloutStanzaSpec extends PlaySpec {
        |    "next": ["2"],
        |    "stack": true
        |}""".stripMargin
+
+  val ledeCalloutStanzaInputJson =
+    """|{
+       |    "type": "CalloutStanza",
+       |    "noteType": "Lede",
+       |    "text": 2,
+       |    "next": ["3"],
+       |    "stack": false
+       |}""".stripMargin
+
+  val errorCalloutStanzaInputJson =
+    """|{
+       |    "type": "CalloutStanza",
+       |    "noteType": "Error",
+       |    "text": 10,
+       |    "next": ["end"],
+       |    "stack": false
+       |}""".stripMargin
+
+  val invalidCalloutStanzaInputJson =
+    """|{
+       |    "type": "CalloutStanza",
+       |    "noteType": "Invalid",
+       |    "text": 10,
+       |    "next": ["end"],
+       |    "stack": false
+       |}""".stripMargin
+
 
   val missingPropertyCalloutStanzaInputJson =
     """|{
@@ -64,16 +94,47 @@ class CalloutStanzaSpec extends PlaySpec {
 
     val titleCalloutStanza: CalloutStanza = titleCalloutStanzaJson.as[CalloutStanza]
 
-    titleCalloutStanza mustBe CalloutStanza( "Title", 0, Seq( "1"), stack = false )
+    titleCalloutStanza mustBe CalloutStanza( Title, 0, Seq( "1"), stack = false )
   }
 
-  "read valid Callout stanza of type subtitle create a Callout stanza with a note type of Subtitle" in {
+  "read valid Callout stanza of type Subtitle should create a Callout stanza with a note type of Subtitle" in {
 
     val subTitleCalloutStanzaJson : JsValue = Json.parse( subTitleCalloutStanzaInputJson )
 
     val subTitleCalloutStanza: CalloutStanza = subTitleCalloutStanzaJson.as[CalloutStanza]
 
-    subTitleCalloutStanza mustBe CalloutStanza( "Subtitle", 1, Seq( "2"), stack = true )
+    subTitleCalloutStanza mustBe CalloutStanza( SubTitle, 1, Seq( "2"), stack = true )
+  }
+
+  "read valid Callout stanza of type Lede should create a Callout stanza with a note type of Lede" in {
+
+    val ledeCalloutStanzaJson : JsValue = Json.parse( ledeCalloutStanzaInputJson )
+
+    val ledeCalloutStanza: CalloutStanza = ledeCalloutStanzaJson.as[CalloutStanza]
+
+    ledeCalloutStanza mustBe CalloutStanza( Lede, 2, Seq( "3" ), stack = false )
+  }
+
+  "read valid Callout stanza of type Error should create a Callout stanza with a note type of Error" in {
+
+    val errorCalloutStanzaJson : JsValue = Json.parse( errorCalloutStanzaInputJson )
+
+    val errorCalloutStanza: CalloutStanza = errorCalloutStanzaJson.as[CalloutStanza]
+
+    errorCalloutStanza mustBe CalloutStanza( Error, ten, Seq( "end" ), stack = false )
+  }
+
+  "read Callout stanza with invalid note type should cause an exception to be raised" in {
+
+    val invalidCalloutStanzaJson = Json.parse( invalidCalloutStanzaInputJson )
+
+    Try{
+      val calloutStanza : CalloutStanza = invalidCalloutStanzaJson.as[CalloutStanza]
+    }
+    match {
+      case Success(_) => fail( "An instance of CalloutStanza should not be created when the note type is incorrect" )
+      case Failure( failure ) => println( "Failure message : " + failure.getMessage )
+    }
   }
 
   "read Callout stanza with missing property should cause an exception to be raised" in {

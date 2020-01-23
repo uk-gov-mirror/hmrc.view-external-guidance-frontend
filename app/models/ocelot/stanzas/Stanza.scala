@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models.ocelot.stanzas
 
 trait Stanza
-
-
