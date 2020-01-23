@@ -60,7 +60,7 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
 
     "deserialise from phrases section json where lang text is accessible" in {
 
-      val phrases: Phrases = Json.parse(s"${prototypePhrasesSection}").as[Phrases]
+      val phrases: Phrases = Json.parse(prototypePhrasesSection).as[Phrases]
       val welsh = 1
       val sixthElementIndex = 5
       phrases.elems(sixthElementIndex).langs(welsh) mustBe "Welsh: A tax year runs from 6 April one year to 5 April the next."
