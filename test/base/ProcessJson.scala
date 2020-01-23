@@ -20,72 +20,6 @@ import play.api.libs.json.{JsValue, Json}
 
 trait ProcessJson {
 
-  val validInstructionStanzaJson: JsValue = Json.parse(
-    """
-      |{
-      |  "type": "InstructionStanza",
-      |  "text": 16,
-      |  "next": [
-      |     "2"
-      |  ],
-      |  "stack": true
-      |}
-    """.stripMargin
-  )
-
-  val validValueStanzaJson: JsValue = Json.parse(
-    """
-      |{
-      |  "type": "InstructionStanza",
-      |  "text": 16,
-      |  "next": [
-      |     "2"
-      |  ],
-      |  "stack": true
-      |}
-    """.stripMargin
-  )
-
-  val validImportantCalloutStanzaJson: JsValue = Json.parse(
-    """
-      |{
-      |  "type": "CalloutStanza",
-      |  "noteType": "Important",
-      |  "text": 16,
-      |  "next": [
-      |     "2"
-      |  ],
-      |  "stack": true
-      |}
-    """.stripMargin
-  )
-
-  val validQuestionStanzaJson: JsValue = Json.parse(
-    """
-      |{
-      |    "type": "QuestionStanza",
-      |    "text": 3,
-      |    "answers": [
-      |        4,
-      |        5
-      |      ],
-      |     "next": [
-      |        "5",
-      |        "19"
-      |      ],
-      |     "stack": false
-      |}
-    """.stripMargin
-  )
-
-  val validGenericStanzaJson: JsValue = Json.parse(
-    """
-      |{
-      |    "type": "EndStanza"
-      |}
-    """.stripMargin
-  )
-
   val validOnePageJson: JsValue = Json.parse(
     """
       |{
@@ -169,10 +103,9 @@ trait ProcessJson {
     """.stripMargin
   )
 
-  val fullJson: JsValue = Json.parse(
+  val prototypeMetaSection: String =
     """
-    | {
-    |   "meta": {
+    |  "meta": {
     |     "id": "ext90002",
     |     "title": "Telling HMRC about extra income",
     |     "ocelot": 1,
@@ -180,7 +113,11 @@ trait ProcessJson {
     |     "lastUpdate": 1579177321336,
     |     "version": 1,
     |     "filename": "ext90002.js"
-    |   },
+    |  }
+   """.stripMargin
+
+  val prototypeFlowSection: String =
+    """
     |   "flow": {
     |     "1": {
     |       "type": "CalloutStanza",
@@ -1851,7 +1788,11 @@ trait ProcessJson {
     |     "end": {
     |       "type": "EndStanza"
     |     }
-    |   },
+    |   }
+    """.stripMargin
+
+    val prototypePhrasesSection: String =
+      """
     |   "phrases": [
     |     ["Telling HMRC about extra income","Telling HMRC about extra income"],
     |     ["Check if you need to tell HMRC about extra money you\u00e2\u0080\u0099ve made by selling goods or services, or renting land or property.","Check if you need to tell HMRC about extra money you\u00e2\u0080\u0099ve made by selling goods or services, or renting land or property."],
@@ -1931,11 +1872,11 @@ trait ProcessJson {
     |     ["Because you have received trade or property income from a company, partnership or your employer, you need to complete a Self Assessment tax return.","Because you have received trade or property income from a company, partnership or your employer, you need to complete a Self Assessment tax return."],
     |     ["However, if your rental income is less than \u00c2\u00a37,500 (or \u00c2\u00a33,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC.","However, if your rental income is less than \u00c2\u00a37,500 (or \u00c2\u00a33,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC."],
     |     ["Find out more about the [link:Rent a Room Scheme:https://www.gov.uk/government/publications/rent-a-room-for-traders-hs223-self-assessment-helpsheet/hs223-rent-a-room-scheme-2019] and [link:Self Assessment tax returns:https://www.gov.uk/self-assessment-tax-returns].","Find out more about the [link:Rent a Room Scheme:https://www.gov.uk/government/publications/rent-a-room-for-traders-hs223-self-assessment-helpsheet/hs223-rent-a-room-scheme-2019] and [link:Self Assessment tax returns:https://www.gov.uk/self-assessment-tax-returns]."]
-    |   ],
-    |   "contacts": [],
-    |   "howto": [],
-    |   "links": []
-    |
-    }""".stripMargin
+    |   ]
+    """.stripMargin
+
+  val prototypeJson: JsValue = Json.parse(
+    s"""{ ${prototypeMetaSection}, ${prototypeFlowSection}, ${prototypePhrasesSection}, "contacts": [], "howto": [], "links": []}"""
   )
+
 }
