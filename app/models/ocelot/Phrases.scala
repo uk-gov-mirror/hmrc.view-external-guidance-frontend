@@ -20,13 +20,10 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
-case class Phrase(english: String, welsh: String)
-case class Phrases(elems: Seq[Phrase]) {
-  val phraseFn = elems.lift
-  def phrase(index: Int):Option[Phrase] = phraseFn(index)
-}
+case class Phrase(langs: Seq[String])
+case class Phrases(elems: Seq[Phrase])
 
 object Phrases {
-  implicit val readsPhrase: Reads[Phrase] = __.read[Seq[String]](minLength[Seq[String]](2)).map( seq => Phrase(seq(0), seq(1)) )
+  implicit val readsPhrase: Reads[Phrase] = __.read[Seq[String]](minLength[Seq[String]](2)).map(Phrase(_))
   implicit val readsPhrases: Reads[Phrases] = (__ \ "phrases").read[Seq[Phrase]].map(Phrases(_))
 }

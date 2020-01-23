@@ -53,22 +53,19 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
 
       result mustBe Phrases(
                       Seq(
-                      Phrase("Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"),
-                      Phrase("Do you have a tea bag?", "Welsh, Do you have a tea bag?"),
-                      Phrase("Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag")
+                      Phrase(Seq("Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag")),
+                      Phrase(Seq("Do you have a tea bag?", "Welsh, Do you have a tea bag?")),
+                      Phrase(Seq("Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"))
                       )
                     )
     }
 
-    "should allow access to phrase by index" in {
+    "deserialise from phrases section json where lang text is accessible" in {
 
-      val phrases: Phrases = validPhrasesSectionJson.as[Phrases]
-
-      phrases.elems(1).welsh mustBe "Welsh, Do you have a tea bag?"
-
-      phrases.phrase(1).map{ phr =>
-        phr.welsh mustBe "Welsh, Do you have a tea bag?"
-      } orElse fail("Missing phrase at index 1")
+      val phrases: Phrases = Json.parse(s"{${prototypePhrasesSection}}").as[Phrases]
+      val welsh = 1
+      val sixthElementIndex = 5
+      phrases.elems(sixthElementIndex).langs(welsh) mustBe "Welsh: A tax year runs from 6 April one year to 5 April the next."
     }
 
    "throw exception when json invalid" in {
@@ -79,6 +76,7 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
         case Success(_) => fail("Invalid json should not create a Phrases object")
         case Failure(_) =>
       }
+
     }
   }
 
