@@ -71,7 +71,7 @@ class ProcessPhrasesSpec extends PlaySpec with ProcessJson {
    "throw exception when json invalid" in {
 
       Try {
-        invalidPhrasesSectionJson.as[Meta]
+        invalidPhrasesSectionJson.as[Phrases]
       } match {
         case Success(_) => fail("Invalid json should not create a Phrases object")
         case Failure(_) =>
