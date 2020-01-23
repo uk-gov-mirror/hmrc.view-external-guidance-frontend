@@ -65,7 +65,7 @@ class ProcessMetaSpec extends PlaySpec with ProcessJson {
 
     "deserialise from process json" in {
 
-      val result: Meta = fullJson.as[Meta]
+      val result: Meta = prototypeJson.as[Meta]
 
       result mustBe Meta("ext90002","Telling HMRC about extra income",1,"6031631", 1579177321336L, 1, "ext90002.js")
     }
