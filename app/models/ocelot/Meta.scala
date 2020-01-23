@@ -19,30 +19,22 @@ package models.ocelot
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-trait Stanza
+case class Meta(id: String,
+                title: String,
+                ocelot: Int,
+                lastAuthor: String,
+                lastUpdate: Long,
+                version: Int,
+                fileName: String)
 
-/**
- * Define Callout Stanza
- */
-case class CalloutStanza(
-                        noteType: String,
-                        text: Int,
-                        next: Seq[String],
-                        stack: Boolean
-                        ) extends Stanza
-
-object CalloutStanza {
-
-  implicit val calloutReads: Reads[CalloutStanza] = {
-
-    (( JsPath \ "noteType" ).read[String] and
-      ( JsPath \ "text" ).read[Int] and
-      ( JsPath \ "next" ).read[Seq[String]] and
-      ( JsPath \ "stack" ).read[Boolean]
-      )(CalloutStanza.apply _)
-
-  }
-
+object Meta {
+  implicit val metaReads: Reads[Meta] = (
+    (__ \ "meta" \ "id").read[String] and
+    (__ \ "meta" \ "title").read[String] and
+    (__ \ "meta" \ "ocelot").read[Int] and
+    (__ \ "meta" \ "lastAuthor").read[String] and
+    (__ \ "meta" \ "lastUpdate").read[Long] and
+    (__ \ "meta" \ "version").read[Int] and
+    (__ \ "meta" \ "filename").read[String]
+  )(Meta.apply _)
 }
-
-
