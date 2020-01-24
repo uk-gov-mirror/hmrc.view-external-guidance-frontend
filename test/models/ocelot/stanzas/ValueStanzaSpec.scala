@@ -58,6 +58,27 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
     """.stripMargin
   )
 
+  val invalidValueStanzaJson: JsValue = Json.parse(
+    s"""{
+      |  "type": "${stanzaType}",
+      |  "values": [
+      |    {
+      |      "type": "unknown",
+      |      "label": "${pageNameLabel}",
+      |      "value": "${pageName}"
+      |    },
+      |    {
+      |      "type": "${valueType}",
+      |      "label": "${pageUrlLabel}",
+      |      "value": "${pageUrl}"
+      |    }
+      |  ],
+      |  "next": ["${next}"],
+      |  "stack": ${stack}
+      |}
+    """.stripMargin
+  )
+
   "ValueStanza" must {
 
     "deserialise from json" in {
@@ -70,6 +91,17 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
       stanza.values.length mustBe 2
       stanza.values(0) mustBe Value(Scalar, pageNameLabel, pageName)
       stanza.values(1) mustBe Value(Scalar, pageUrlLabel, pageUrl)
+    }
+
+    "fail to parse if an unkown value type is found" in {
+      invalidValueStanzaJson.as[JsObject].validate[ValueStanza] match {
+        case JsSuccess(_, _) => fail(s"Value objects must be of valid type")
+        case JsError(_) => succeed
+      }
+    }
+
+    "contain at least one Value object" in {
+      validValueStanzaJson.as[ValueStanza].values.length must be > 0
     }
   }
 }
