@@ -35,7 +35,7 @@ class PhrasesSpec extends PlaySpec with ProcessJson {
 
     "deserialise from phrases section json" in {
 
-      phrases mustBe Phrases(Seq(Phrase(Seq(p1,p1w)), Phrase(Seq(p2, p2w)), Phrase(Seq(p3, p3w))))
+      phrases mustBe Phrases(Vector(Phrase(Vector(p1,p1w)), Phrase(Vector(p2, p2w)), Phrase(Vector(p3, p3w))))
     }
 
     "contain at least two languages" in {
