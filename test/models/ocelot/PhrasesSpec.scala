@@ -38,6 +38,16 @@ class PhrasesSpec extends PlaySpec with ProcessJson {
       phrases mustBe Phrases(Seq(Phrase(Seq(p1,p1w)), Phrase(Seq(p2, p2w)), Phrase(Seq(p3, p3w))))
     }
 
+    "contain at least two languages" in {
+
+      val phrasesWithMissingLang: JsArray = Json.parse(s"""[ ["$p1", "$p1w" ], ["$p2"], ["$p3", "$p3w"] ]""").as[JsArray]
+
+      phrasesWithMissingLang.validate[Phrases] match {
+        case JsSuccess(_, _) => fail(s"Phrase objects must contain at least two language strings")
+        case JsError(_) => succeed
+      }
+    }
+
     "deserialise from phrases section json where lang text is accessible" in {
 
       val welsh = 1
