@@ -33,13 +33,6 @@ class InstructionStanzaSpec extends WordSpec with MustMatchers {
        | "stack": false
        |}""".stripMargin
 
-  val missingPropertyInstructionStanzaJsonInput =
-    """|{
-       | "type": "InstructionStanza",
-       | "text": 10,
-       | "next": [ "end" ]
-       |}""".stripMargin
-
   val incorrectTypeInstructionStanzaJsonInput =
     """|{
        | "type": "InstructionStanza",
@@ -47,6 +40,8 @@ class InstructionStanzaSpec extends WordSpec with MustMatchers {
        | "next": [ "6" ],
        | "stack": false
        |}""".stripMargin
+
+  val validInstructionStanzaJsObject: JsObject = Json.parse( validInstructionStanzaJsonInput ).as[JsObject]
 
   "reading a valid Instruction Stanza should create an instance of the class InstructionStanza" in {
 
@@ -57,17 +52,14 @@ class InstructionStanzaSpec extends WordSpec with MustMatchers {
     validInstructionStanza mustBe InstructionStanza( ten, Seq( "end" ), stack = false )
   }
 
-  "reading an Instruction Stanza with a missing property should cause an exception to be raised" in {
-
-    val missingPropertyInstructionStanzaJson: JsValue = Json.parse( missingPropertyInstructionStanzaJsonInput )
-
-    Try
-    {
-        val instructionStanza = missingPropertyInstructionStanzaJson.as[InstructionStanza]
-    }
-    match {
-      case Success(_) => fail( "An instruction stanza should not be created from Json string with missing format" )
-      case Failure( failure ) => println( "Failure message : " + failure.getMessage )
+  /* Test for missing properties in Json object */
+  validInstructionStanzaJsObject.keys.filterNot( attributeName => attributeName == "type" ).foreach { attributeName =>
+    s"throw an exception when Json object is missing the $attributeName attribute" in {
+      val invalidJson = validInstructionStanzaJsObject - attributeName
+      invalidJson.validate[InstructionStanza] match {
+        case JsSuccess(_,_) => fail( s"InstructionStanza created when $attributeName is missing" )
+        case JsError(_) => succeed
+      }
     }
   }
 
