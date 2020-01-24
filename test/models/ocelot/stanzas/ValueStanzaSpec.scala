@@ -37,7 +37,7 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
   val next = "40"
   val stack = "false"
 
-  val validValueStanzaJson: JsValue = Json.parse(
+  val validValueStanzaJson: JsObject = Json.parse(
     s"""{
       |  "type": "${stanzaType}",
       |  "values": [
@@ -56,9 +56,9 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
       |  "stack": ${stack}
       |}
     """.stripMargin
-  )
+  ).as[JsObject]
 
-  val invalidValueStanzaJson: JsValue = Json.parse(
+  val invalidValueStanzaJson: JsObject = Json.parse(
     s"""{
       |  "type": "${stanzaType}",
       |  "values": [
@@ -77,7 +77,7 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
       |  "stack": ${stack}
       |}
     """.stripMargin
-  )
+  ).as[JsObject]
 
   "ValueStanza" must {
 
@@ -103,5 +103,16 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
     "contain at least one Value object" in {
       validValueStanzaJson.as[ValueStanza].values.length must be > 0
     }
+
+    validValueStanzaJson.keys.filterNot(_ == "type").foreach { attributeName =>
+      s"throw an exception when json is missing the $attributeName attribute" in {
+        val invalidJson = validValueStanzaJson - attributeName
+        invalidJson.validate[ValueStanza] match {
+          case JsSuccess(_, _) => fail(s"ValueStanza object created when $attributeName attribute is missing")
+          case JsError(_) => succeed
+        }
+      }
+    }
+
   }
 }
