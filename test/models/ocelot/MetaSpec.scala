@@ -16,10 +16,11 @@
 
 package models.ocelot
 
+import base.SpecBase
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
-class MetaSpec extends PlaySpec {
+class MetaSpec extends SpecBase {
 
   val title = "Process title"
   val id = "abc90001"
@@ -58,16 +59,7 @@ class MetaSpec extends PlaySpec {
       result mustBe validModel
     }
 
-    validJson.keys.foreach { attributeName =>
-      s"throw an exception when json is missing the $attributeName attribute" in {
-        val invalidJson = validJson - attributeName
-        invalidJson.validate[Meta] match {
-          case JsSuccess(_, _) => fail(s"Meta object created when $attributeName attribute is missing")
-          case JsError(_) => succeed
-        }
-      }
-    }
-
+    missingJsObjectAttrTests[Meta](validJson)
   }
 
 }

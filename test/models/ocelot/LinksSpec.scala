@@ -16,10 +16,11 @@
 
 package models.ocelot
 
+import base.SpecBase
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
-class LinksSpec extends PlaySpec {
+class LinksSpec extends SpecBase {
 
   val id1 = 0
   val dest1 = "http://www.bbc.co.uk/news"
@@ -67,23 +68,14 @@ class LinksSpec extends PlaySpec {
   val link2: Link = Link( id2, dest2, title2, window, leftbar, always, popUp)
 
   "Link" must {
-    "deserialise from Link json" in {
+    "deserialise from json" in {
 
       link1Json.as[Link] mustBe link1
 
       link2Json.as[Link] mustBe link2
     }
 
-    link1Json.keys.foreach { attributeName =>
-      s"throw exception when json is missing attribute $attributeName" in {
-        val invalidJson = link1Json - attributeName
-        invalidJson.validate[Link] match {
-          case JsSuccess(_, _) => fail(s"Link object incorrectly created when attribute $attributeName missing")
-          case JsError(_) => succeed
-        }
-      }
-    }
-
+    missingJsObjectAttrTests[Link](link1Json)
   }
 
   "Links section" must {
