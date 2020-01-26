@@ -37,8 +37,3 @@ object Link {
     (__ \ "popup").read[Boolean]
   )(Link.apply _)
 }
-
-case class Links(elems: Vector[Link])
-object Links {
-  implicit val reads: Reads[Links] = __.read[Vector[Link]].map(Links(_))
-}

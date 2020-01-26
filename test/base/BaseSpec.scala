@@ -19,7 +19,7 @@ package base
 import org.scalatest.{WordSpec, MustMatchers}
 import play.api.libs.json._
 
-trait SpecBase extends WordSpec with MustMatchers {
+trait BaseSpec extends WordSpec with MustMatchers {
 
   def missingJsObjectAttrTests[T](jsObject: JsObject, attrsToIgnore: List[String] = Nil)
                                  (implicit objectReads:Reads[T]):Unit =

@@ -16,11 +16,11 @@
 
 package models.ocelot
 
-import base.SpecBase
+import base.BaseSpec
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
-class MetaSpec extends SpecBase {
+class MetaSpec extends BaseSpec {
 
   val title = "Process title"
   val id = "abc90001"

@@ -16,11 +16,11 @@
 
 package models.ocelot
 
-import base.SpecBase
+import base.BaseSpec
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
-class LinksSpec extends SpecBase {
+class LinkSpec extends BaseSpec {
 
   val id1 = 0
   val dest1 = "http://www.bbc.co.uk/news"
@@ -78,11 +78,11 @@ class LinksSpec extends SpecBase {
     missingJsObjectAttrTests[Link](link1Json)
   }
 
-  "Links section" must {
+  "Sequence of multiple links" must {
 
     "deserialise from links section json" in {
 
-      Json.parse(linksStr).as[Links] mustBe Links(Vector(link1, link2))
+      Json.parse(linksStr).as[Vector[Link]] mustBe Vector(link1, link2)
 
     }
 
