@@ -32,7 +32,7 @@ object CalloutType {
   implicit val reads: Reads[CalloutType] = new Reads[CalloutType] {
     override def reads(json: JsValue): JsResult[CalloutType] = json match {
       case JsString("Title") => JsSuccess(Title, __)
-      case JsString("Subtitle") => JsSuccess(SubTitle, __)
+      case JsString("SubTitle") => JsSuccess(SubTitle, __)
       case JsString("Lede") => JsSuccess(Lede, __)
       case JsString("Error") => JsSuccess(Error, __)
       case _ => JsError("Invalid Callout type")

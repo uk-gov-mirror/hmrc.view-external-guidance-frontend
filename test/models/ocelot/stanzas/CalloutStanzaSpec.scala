@@ -37,7 +37,7 @@ class CalloutStanzaSpec extends WordSpec with MustMatchers {
   val subTitleCalloutStanzaInputJson =
     """|{
        |    "type": "CalloutStanza",
-       |    "noteType": "Subtitle",
+       |    "noteType": "SubTitle",
        |    "text": 1,
        |    "next": ["2"],
        |    "stack": true
