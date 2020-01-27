@@ -16,43 +16,54 @@
 
 package models.ocelot.stanzas
 
-import org.scalatest._
 import play.api.libs.json._
-import scala.util.{Failure, Success, Try}
 
-class QuestionStanzaSpec extends WordSpec with MustMatchers {
+import base.BaseSpec
 
+class QuestionStanzaSpec extends BaseSpec {
+
+  val zero: Int = 0
+  val one: Int = 1
+  val two: Int = 2
+  val three: Int = 3
   val four: Int = 4
   val five: Int = 5
+  val seven: Int = 7
+  val eight: Int = 8
 
-  val twoAnswersQuestionStanzaJsonInput =
-    """|{
-       | "type" : "QuestionStanza",
-       | "text": 0,
-       | "answers": [ 0, 2 ],
-       | "next": [ "2", "5" ],
-       | "stack": false
+  val twoStr: String = "2"
+  val fourStr: String = "4"
+  val fiveStr: String = "5"
+  val sevenStr: String = "7"
+  val eightStr: String = "8"
+
+  val stanzaType: String = "QuestionStanza"
+
+  val stack: Boolean = false
+
+  val twoAnswersQuestionStanzaJsonInput: String =
+    s"""|{
+       | "type" : "$stanzaType",
+       | "text": $one,
+       | "answers": [ $zero, $two ],
+       | "next": [ "$twoStr", "$fiveStr" ],
+       | "stack": $stack
        |}""".stripMargin
 
-  val threeAnswersQuestionStanzaJsonInput =
-    """|{
-       | "type": "QuestionStanza",
-       | "text": 1,
-       | "answers": [ 3, 4, 5 ],
-       | "next": [ "4", "7", "8" ],
-       | "stack": false
-       |}""".stripMargin
-
-  val incorrectTypeQuestionStanzaJsonInput =
-    """|{
-       | "type": "QuestionStanza",
-       | "text": 1,
-       | "answers": [ 3, 4, 5 ],
-       | "next": [ "4", "7", "8" ],
-       | "stack": 0
+  val threeAnswersQuestionStanzaJsonInput: String =
+    s"""|{
+       | "type": "$stanzaType",
+       | "text": $one,
+       | "answers": [ $three, $four, $five ],
+       | "next": [ "$fourStr", "$sevenStr", "$eightStr" ],
+       | "stack": $stack
        |}""".stripMargin
 
   val validQuestionStanzaJson: JsObject = Json.parse( twoAnswersQuestionStanzaJsonInput ).as[JsObject]
+
+  val expectedTwoQuestionsQuestionStanza = QuestionStanza( one, Seq( zero,  two ), Seq( twoStr, fiveStr ), stack )
+
+  val expectedThreeAnswersQuestionStanza = QuestionStanza( one, Seq( three, four, five ), Seq( fourStr, sevenStr, eightStr ), stack )
 
   "Question stanza" must {
 
@@ -62,7 +73,7 @@ class QuestionStanzaSpec extends WordSpec with MustMatchers {
 
       val twoAnswersQuestionStanza: QuestionStanza = twoAnswersQuestionStanzaJson.as[QuestionStanza]
 
-      twoAnswersQuestionStanza mustBe QuestionStanza(0, Seq(0, 2), Seq("2", "5"), stack = false)
+      twoAnswersQuestionStanza mustBe expectedTwoQuestionsQuestionStanza
     }
 
     "reading a valid QuestionStanza with three answers should create an instance of the class QuestionStanza" in {
@@ -71,33 +82,15 @@ class QuestionStanzaSpec extends WordSpec with MustMatchers {
 
       val threeAnswersQuestionStanza: QuestionStanza = threeAnswersQuestionStanzaJson.as[QuestionStanza]
 
-      threeAnswersQuestionStanza mustBe QuestionStanza(1, Seq(3, four, five), Seq("4", "7", "8"), false)
+      threeAnswersQuestionStanza mustBe expectedThreeAnswersQuestionStanza
     }
+
 
     /** Test for missing properties in Json object */
-    validQuestionStanzaJson.keys.filterNot( attributeName => attributeName == "type" ).foreach { attributeName =>
-      s"throw an exception when json is missing the $attributeName attribute" in {
-        val invalidJson = validQuestionStanzaJson - attributeName
-        invalidJson.validate[QuestionStanza] match {
-          case JsSuccess(_, _) => fail(s"QuestionStanza object created when $attributeName attribute is missing")
-          case JsError(_) => succeed
-        }
-      }
-    }
+    missingJsObjectAttrTests[QuestionStanza]( validQuestionStanzaJson, List( "type" ) )
 
-    "reading a QuestionStanza with a property of incorrect type should cause an exception to be raised" in {
-
-      val incorrectTypeQuestionStanzaJson: JsValue = Json.parse(incorrectTypeQuestionStanzaJsonInput)
-
-      Try {
-        val questionStanza: QuestionStanza = incorrectTypeQuestionStanzaJson.as[QuestionStanza]
-      }
-      match {
-        case Success(_) => fail("An instance of QuestionStanza should not have been created from Json with an incorrect property type")
-        case Failure(failure) => println("Failure message for incorrect property type : " + failure.getMessage)
-      }
-
-    }
+    /** Test for properties of the wrong type in json object representing question stanza */
+    incorrectPropertyTypeJsObjectAttrTests[QuestionStanza]( validQuestionStanzaJson, List( "type" ) )
 
   }
 
