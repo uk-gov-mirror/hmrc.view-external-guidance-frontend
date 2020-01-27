@@ -17,26 +17,25 @@
 package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.json.{JsPath, Reads}
 
-case class CalloutStanza(
-                          noteType: CalloutType,
-                          text: Int,
-                          next: Seq[String],
-                          stack: Boolean
-                        ) extends Stanza
+case class InstructionStanza(
+                              text: Int,
+                              next: Seq[String],
+                              link: Option[Int],
+                              stack: Boolean
+                            ) extends Stanza
 
-object CalloutStanza {
+object InstructionStanza {
 
-  implicit val calloutReads: Reads[CalloutStanza] = {
+  implicit val instructionReads: Reads[InstructionStanza] = {
 
-    ((JsPath \ "noteType").read[CalloutType] and
-      (JsPath \ "text").read[Int] and
-      (JsPath \ "next").read[Seq[String]] and
-      (JsPath \ "stack").read[Boolean]
-      ) (CalloutStanza.apply _)
+    (( JsPath \ "text" ).read[Int] and
+      ( JsPath \ "next" ).read[Seq[String]] and
+      ( JsPath \ "link" ).readNullable[Int] and
+      ( JsPath \ "stack" ).read[Boolean]
+      ) ( InstructionStanza.apply _)
 
   }
 
 }
-
