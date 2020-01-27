@@ -20,7 +20,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 import base.ProcessJson
 
-class PhrasesSpec extends PlaySpec with ProcessJson {
+class PhraseSpec extends PlaySpec with ProcessJson {
 
   val p1 = "Ask the customer if they have a tea bag"
   val p1w = "Welsh, Ask the customer if they have a tea bag"
@@ -29,30 +29,34 @@ class PhrasesSpec extends PlaySpec with ProcessJson {
   val p3 = "Yes - they do have a tea bag"
   val p3w = "Welsh, Yes - they do have a tea bag"
 
-  val phrases: Phrases = Json.parse(s"""[ ["$p1", "$p1w" ], ["$p2", "$p2w"], ["$p3", "$p3w"] ]""").as[Phrases]
+  val phrase1 = s"""["$p1", "$p1w"]"""
+  val phrase2 = s"""["$p2", "$p2w"]"""
+  val phrase3 = s"""["$p3", "$p3w"]"""
+
+  "Phrase" must {
+    "deserialise " in {
+      Json.parse(phrase1).as[Phrase] mustBe Phrase(Vector(p1,p1w))
+      Json.parse(phrase2).as[Phrase] mustBe Phrase(Vector(p2,p2w))
+      Json.parse(phrase3).as[Phrase] mustBe Phrase(Vector(p3,p3w))
+    }
+  }
 
   "Phrases section" must {
 
     "deserialise from phrases section json" in {
 
-      phrases mustBe Phrases(Seq(Phrase(Seq(p1,p1w)), Phrase(Seq(p2, p2w)), Phrase(Seq(p3, p3w))))
+      Json.parse(s"""[ $phrase1, $phrase2, $phrase3 ]""").as[Vector[Phrase]] mustBe
+        Vector(Phrase(Vector(p1,p1w)), Phrase(Vector(p2, p2w)), Phrase(Vector(p3, p3w)))
+
     }
 
-    "contain at least two languages" in {
+    "allow access to Phrase language strings" in {
 
-      val phrasesWithMissingLang: JsArray = Json.parse(s"""[ ["$p1", "$p1w" ], ["$p2"], ["$p3", "$p3w"] ]""").as[JsArray]
+      val protoTypePhrases = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
+      val thirdPhraseIndex = 2
+      val welshLangIndex = 1
 
-      phrasesWithMissingLang.validate[Phrases] match {
-        case JsSuccess(_, _) => fail(s"Phrase objects must contain at least two language strings")
-        case JsError(_) => succeed
-      }
-    }
-
-    "deserialise from phrases section json where lang text is accessible" in {
-
-      val welsh = 1
-      val thirdElementIndex = 2
-      phrases.elems(thirdElementIndex).langs(welsh) mustBe p3w
+      protoTypePhrases(thirdPhraseIndex).langs(welshLangIndex) mustBe "Welsh: Overview"
     }
 
   }
