@@ -16,17 +16,11 @@
 
 package models.ocelot.stanzas
 
-
-// import play.api.libs.json._
-// import play.api.libs.functional.syntax._
-import org.scalatestplus.play.PlaySpec
-
-import scala.util.{Try,Success,Failure}
+import base.BaseSpec
 import play.api.libs.json._
 import base.ProcessJson
 
-
-class ValueStanzaSpec extends PlaySpec with ProcessJson {
+class ValueStanzaSpec extends BaseSpec {
 
   val stanzaType = "ValueStanza"
   val valueType = "scalar"
@@ -104,15 +98,7 @@ class ValueStanzaSpec extends PlaySpec with ProcessJson {
       validValueStanzaJson.as[ValueStanza].values.length must be > 0
     }
 
-    validValueStanzaJson.keys.filterNot(_ == "type").foreach { attributeName =>
-      s"throw an exception when json is missing the $attributeName attribute" in {
-        val invalidJson = validValueStanzaJson - attributeName
-        invalidJson.validate[ValueStanza] match {
-          case JsSuccess(_, _) => fail(s"ValueStanza object created when $attributeName attribute is missing")
-          case JsError(_) => succeed
-        }
-      }
-    }
+    missingJsObjectAttrTests[ValueStanza](validValueStanzaJson, List("type"))
 
   }
 }
