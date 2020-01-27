@@ -16,65 +16,67 @@
 
 package models.ocelot.stanzas
 
-import scala.util.{Failure, Success, Try}
-
-import org.scalatest._
 import play.api.libs.json._
 
-class InstructionStanzaSpec extends WordSpec with MustMatchers {
+import base.BaseSpec
 
-  val ten: Int = 10
+class InstructionStanzaSpec extends BaseSpec {
 
-  val validInstructionStanzaJsonInput =
-    """|{
-       | "type": "InstructionStanza",
-       | "text": 10,
-       | "next": [ "end" ],
-       | "stack": false
+  val stanzaType: String = "InstructionStanza"
+  val text: Int = 10
+  val next: String = "end"
+  val link: Int = 0
+  val stack: Boolean = false
+
+  val validInstructionStanzaWithLinkJsonInput =
+    s"""|{
+       | "type": "$stanzaType",
+       | "text": $text,
+       | "next": [ "$next" ],
+       | "link": $link,
+       | "stack": $stack
        |}""".stripMargin
 
-  val incorrectTypeInstructionStanzaJsonInput =
-    """|{
-       | "type": "InstructionStanza",
-       | "text": "10",
-       | "next": [ "6" ],
-       | "stack": false
-       |}""".stripMargin
+  val validInstructionStanzaWithoutLinkJsonInput =
+    s"""|{
+        | "type": "$stanzaType",
+        | "text": $text,
+        | "next": [ "$next" ],
+        | "stack": $stack
+        |}""".stripMargin
 
-  val validInstructionStanzaJsObject: JsObject = Json.parse( validInstructionStanzaJsonInput ).as[JsObject]
+  val validInstructionStanzaWithLinkJsObject: JsObject = Json.parse( validInstructionStanzaWithLinkJsonInput ).as[JsObject]
 
-  "reading a valid Instruction Stanza should create an instance of the class InstructionStanza" in {
+  val expectedValidInstructionStanzaWithLink: InstructionStanza = InstructionStanza( text, Seq( next ), Some( link ), stack )
 
-    val validInstructionStanzaJson: JsValue = Json.parse( validInstructionStanzaJsonInput )
+  val expectedValidInstructionStanzaWithoutLink: InstructionStanza = InstructionStanza( text, Seq( next ), None, stack )
 
-    val validInstructionStanza: InstructionStanza = validInstructionStanzaJson.as[InstructionStanza]
 
-    validInstructionStanza mustBe InstructionStanza( ten, Seq( "end" ), stack = false )
-  }
+  "InstructionStanza" must {
 
-  /* Test for missing properties in Json object */
-  validInstructionStanzaJsObject.keys.filterNot( attributeName => attributeName == "type" ).foreach { attributeName =>
-    s"throw an exception when Json object is missing the $attributeName attribute" in {
-      val invalidJson = validInstructionStanzaJsObject - attributeName
-      invalidJson.validate[InstructionStanza] match {
-        case JsSuccess(_,_) => fail( s"InstructionStanza created when $attributeName is missing" )
-        case JsError(_) => succeed
-      }
+    "Deserialising a valid Instruction Stanza with a link should create an instance of the class InstructionStanza" in {
+
+      val validInstructionStanzaJson: JsValue = Json.parse( validInstructionStanzaWithLinkJsonInput )
+
+      val validInstructionStanza: InstructionStanza = validInstructionStanzaJson.as[InstructionStanza]
+
+      validInstructionStanza mustBe expectedValidInstructionStanzaWithLink
     }
-  }
 
-  "reading an InstructionStanza with a property of the wrong type should cause an exception to be raised" in {
+    "Deserialising a valid Instruction Stanza without a link should create an instance of the class InstructionStanza" in {
 
-    val incorrectTypeInstructionStanzaJson: JsValue = Json.parse( incorrectTypeInstructionStanzaJsonInput )
+      val validInstructionStanzaJson: JsValue = Json.parse( validInstructionStanzaWithoutLinkJsonInput )
 
-    Try
-    {
-      val instructionStanza = incorrectTypeInstructionStanzaJson.as[InstructionStanza]
+      val validInstructionStanza: InstructionStanza = validInstructionStanzaJson.as[InstructionStanza]
+
+      validInstructionStanza mustBe expectedValidInstructionStanzaWithoutLink
     }
-    match {
-      case Success(_) => fail( "An instruction stanza should not be created from Json with an incorrect property type" )
-      case Failure( failure ) => println( "Failure message : " + failure.getMessage )
-    }
+
+    /** Test for missing properties in Json object representing instruction stanzas */
+    missingJsObjectAttrTests[InstructionStanza]( validInstructionStanzaWithLinkJsObject, List( "type", "link" ) )
+
+    /** Test for properties of the wrong type in json object representing instruction stanzas */
+    incorrectPropertyTypeJsObjectAttrTests[InstructionStanza]( validInstructionStanzaWithLinkJsObject, List( "type" ) )
   }
 
 }

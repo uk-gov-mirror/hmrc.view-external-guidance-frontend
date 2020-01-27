@@ -16,13 +16,13 @@
 
 package base
 
-import org.scalatest.{WordSpec, MustMatchers}
+import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json._
 
 trait BaseSpec extends WordSpec with MustMatchers {
 
   def missingJsObjectAttrTests[T](jsObject: JsObject, attrsToIgnore: List[String] = Nil)
-                                 (implicit objectReads:Reads[T]):Unit =
+                                 (implicit objectReads: Reads[T]): Unit =
     jsObject.keys.filterNot(attrsToIgnore.contains(_)).foreach { attributeName =>
       s"throw exception when json is missing attribute $attributeName" in {
         val invalidJson = jsObject - attributeName
@@ -32,4 +32,39 @@ trait BaseSpec extends WordSpec with MustMatchers {
         }
       }
     }
+
+  def incorrectPropertyTypeJsObjectAttrTests[T](jsObject: JsObject, attrsToIgnore: List[String] = Nil)
+                                               (implicit objectReads: Reads[T]): Unit = {
+
+    jsObject.keys.filterNot(attrsToIgnore.contains(_)).foreach {
+
+      attributeName =>
+
+        val attributeValue = jsObject.value(attributeName)
+
+        // Create a new JsValue of incorrect type
+        val invalidJsValue = attributeValue match {
+          case _: JsString => JsNumber(BigDecimal(0))
+          case _ => JsString("This attribute should not be a string")
+        }
+
+        // Invalidate JsObject
+        val invalidJsObject: JsObject = (jsObject - attributeName) ++
+          Json.obj(attributeName -> invalidJsValue)
+
+        // Apply test
+        s"reading a value of incorrect type for $attributeName" should {
+
+          "Raise an exception" in {
+
+            invalidJsObject.validate[T] match {
+              case JsSuccess(_, _) => fail(s"Should not be able to parse Json object when attribute $attributeName is of the wrong type")
+              case JsError(_) => succeed
+            }
+          }
+        }
+
+    }
+
+  }
 }

@@ -22,6 +22,7 @@ import play.api.libs.json.{JsPath, Reads}
 case class InstructionStanza(
                               text: Int,
                               next: Seq[String],
+                              link: Option[Int],
                               stack: Boolean
                             ) extends Stanza
 
@@ -31,6 +32,7 @@ object InstructionStanza {
 
     (( JsPath \ "text" ).read[Int] and
       ( JsPath \ "next" ).read[Seq[String]] and
+      ( JsPath \ "link" ).readNullable[Int] and
       ( JsPath \ "stack" ).read[Boolean]
       ) ( InstructionStanza.apply _)
 
