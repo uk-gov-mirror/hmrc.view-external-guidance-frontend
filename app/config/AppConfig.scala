@@ -19,6 +19,7 @@ package config
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
+import play.api.mvc.Call
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
@@ -36,5 +37,5 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val reportAProblemNonJSUrl: String   = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
 
   def languageMap: Map[String, Lang] = Map("english" -> Lang("en"),"cymraeg" -> Lang("cy"))
-  def routeToSwitchLanguage = (lang: String) => controllers.routes.SwitchLanguageController.switchToLanguage(lang)
+  def routeToSwitchLanguage:String => Call = (lang: String) => controllers.routes.SwitchLanguageController.switchToLanguage(lang)
 }

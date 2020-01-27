@@ -16,27 +16,19 @@
 
 package models.ocelot.stanzas
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class CalloutStanza(
-                          noteType: CalloutType,
-                          text: Int,
-                          next: Seq[String],
-                          stack: Boolean
-                        ) extends Stanza
+sealed trait ValueType
 
-object CalloutStanza {
+case object Scalar extends ValueType
 
-  implicit val calloutReads: Reads[CalloutStanza] = {
+object ValueType {
+  implicit val reads: Reads[ValueType] = new Reads[ValueType] {
 
-    ((JsPath \ "noteType").read[CalloutType] and
-      (JsPath \ "text").read[Int] and
-      (JsPath \ "next").read[Seq[String]] and
-      (JsPath \ "stack").read[Boolean]
-      ) (CalloutStanza.apply _)
+    override def reads(json: JsValue): JsResult[ValueType] = json match {
+      case JsString("scalar") => JsSuccess(Scalar, __)
+      case _ => JsError("Invalid ValueType type")
+    }
 
   }
-
 }
-
