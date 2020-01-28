@@ -44,5 +44,26 @@ class PageSpec extends BaseSpec with ProcessJson {
       PageBuilder.pages(process, "unknown") mustBe Nil
     }
 
+    "be extractable from a Process using key 'start''" in {
+
+      val process:Process = prototypeJson.as[Process]
+
+      val pages = PageBuilder.pages(process, "start")
+
+      pages mustNot be (Nil)
+
+      pages.length mustBe 27
+    }
+
+    "consist of one page when only page exists" in {
+      val process:Process = validOnePageJson.as[Process]
+
+      val pages = PageBuilder.pages(process, "1")
+
+      pages mustNot be (Nil)
+
+      pages.length mustBe 1
+
+    }
   }
 }

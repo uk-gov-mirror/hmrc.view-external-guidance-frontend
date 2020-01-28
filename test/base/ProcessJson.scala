@@ -45,37 +45,24 @@ trait ProcessJson {
       |          "value": "/feeling-bad"
       |        }
       |      ],
-      |      "next": ["2"],
-      |      "stack": true
-      |    },
-      |    "2": {
-      |      "type": "InstructionStanza",
-      |      "text": 0,
-      |      "next": [
-      |        "3"
-      |      ],
+      |      "next": ["3"],
       |      "stack": true
       |    },
       |    "3": {
       |      "type": "InstructionStanza",
       |      "text": 1,
       |      "next": [
-      |        "4"
+      |        "2"
       |      ],
       |      "stack": true
       |    },
-      |    "3": {
-      |      "type": "QuestionStanza",
-      |      "text": 3,
-      |      "answers": [
-      |        4,
-      |        5
-      |      ],
+      |    "2": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
       |      "next": [
-      |        "end",
       |        "end"
       |      ],
-      |      "stack": false
+      |      "stack": true
       |    },
       |    "end": {
       |      "type": "EndStanza"
@@ -108,6 +95,7 @@ trait ProcessJson {
     |     "filename": "ext90002.js"
     |  }
    """.stripMargin
+
 
   val prototypeFlowSection: String =
     """

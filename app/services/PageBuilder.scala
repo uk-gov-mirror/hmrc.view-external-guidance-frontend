@@ -49,16 +49,16 @@ object PageBuilder {
   }
 
   def pages(process: Process, start: String = "start"):Seq[Page] = {
-
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Seq[Page] =
       keys match {
         case Nil => acc
-        case key::xs =>
+        case key::xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
             case Some(page) => pagesByKeys(page.next ++ xs, acc :+ page)
             case None => Nil
           }
+        case key::xs => pagesByKeys(xs, acc)
       }
 
     pagesByKeys(List(start), Nil)
