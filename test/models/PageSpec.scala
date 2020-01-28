@@ -14,25 +14,35 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, __}
-import models.ocelot.stanzas._
+import base.{BaseSpec, ProcessJson}
+import play.api.libs.json._
+
+import models.ocelot._
+import services.PageBuilder
+
+class PageSpec extends BaseSpec with ProcessJson {
+
+  "Pages" must {
+
+    "be not buildable from non-existent key" in {
 
 
-case class Process(meta: Meta,
-                   flow: Map[String, Stanza],
-                   phrases: Vector[Phrase],
-                   links: Vector[Link])
+      val process:Process = prototypeJson.as[Process]
 
-object Process {
+      PageBuilder.buildPage("unknown", process) mustBe None
+    }
+  }
 
-  implicit val reads: Reads[Process] = (
-    (__ \ "meta").read[Meta] and
-    (__ \ "flow").read[Map[String, Stanza]] and
-    (__ \ "phrases").read[Vector[Phrase]] and
-    (__ \ "links").read[Vector[Link]]
-  )(Process.apply _)
+  "Sequence of connected pages" must {
 
+    "not be extractable from a Process using an invalid start key" in {
+
+      val process:Process = prototypeJson.as[Process]
+
+      PageBuilder.pages(process, "unknown") mustBe Nil
+    }
+
+  }
 }

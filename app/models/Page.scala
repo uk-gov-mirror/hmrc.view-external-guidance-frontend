@@ -14,25 +14,8 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, __}
-import models.ocelot.stanzas._
+import models.ocelot.stanzas.Stanza
 
-
-case class Process(meta: Meta,
-                   flow: Map[String, Stanza],
-                   phrases: Vector[Phrase],
-                   links: Vector[Link])
-
-object Process {
-
-  implicit val reads: Reads[Process] = (
-    (__ \ "meta").read[Meta] and
-    (__ \ "flow").read[Map[String, Stanza]] and
-    (__ \ "phrases").read[Vector[Phrase]] and
-    (__ \ "links").read[Vector[Link]]
-  )(Process.apply _)
-
-}
+case class Page(id: String, stanzas: Seq[Stanza], next: Seq[String])
