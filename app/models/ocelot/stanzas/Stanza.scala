@@ -16,4 +16,25 @@
 
 package models.ocelot.stanzas
 
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
+
 trait Stanza
+
+case object EndStanza extends Stanza
+
+object Stanza {
+
+  implicit val reads: Reads[Stanza] = new Reads[Stanza] {
+    def reads(js: JsValue): JsResult[Stanza] = {
+      (js \ "type").as[String] match {
+        case "QuestionStanza" => JsSuccess(js.as[QuestionStanza], __)
+        case "InstructionStanza" => JsSuccess(js.as[InstructionStanza], __)
+        case "CalloutStanza" => JsSuccess(js.as[CalloutStanza], __)
+        case "ValueStanza" => JsSuccess(js.as[ValueStanza], __)
+        case "EndStanza" => JsSuccess(EndStanza, __)
+        case _ => JsError("Invalid Stanza type")
+      }
+    }
+  }
+}
