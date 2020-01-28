@@ -28,10 +28,10 @@ object Stanza {
   implicit val reads: Reads[Stanza] = new Reads[Stanza] {
     def reads(js: JsValue): JsResult[Stanza] = {
       (js \ "type").as[String] match {
-        case "QuestionStanza" => __.read[QuestionStanza].reads(js)
-        case "InstructionStanza" => __.read[InstructionStanza].reads(js)
-        case "CalloutStanza" => __.read[CalloutStanza].reads(js)
-        case "ValueStanza" => __.read[ValueStanza].reads(js)
+        case "QuestionStanza" => JsSuccess(js.as[QuestionStanza], __)
+        case "InstructionStanza" => JsSuccess(js.as[InstructionStanza], __)
+        case "CalloutStanza" => JsSuccess(js.as[CalloutStanza], __)
+        case "ValueStanza" => JsSuccess(js.as[ValueStanza], __)
         case "EndStanza" => JsSuccess(EndStanza, __)
         case _ => JsError("Invalid Stanza type")
       }
