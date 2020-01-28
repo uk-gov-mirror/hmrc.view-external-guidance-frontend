@@ -16,7 +16,7 @@
 
 package base
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, JsObject}
 
 trait ProcessJson {
 
@@ -1868,8 +1868,34 @@ trait ProcessJson {
     |   ]
     """.stripMargin
 
-  val prototypeJson: JsValue = Json.parse(
-    s"""{ "meta" : ${prototypeMetaSection}, "flow": ${prototypeFlowSection}, "phrases": ${prototypePhrasesSection}, "contacts": [], "howto": [], "links": []}"""
-  )
+  // Create and add an orphaned link within the links section
+  val id = 0
+  val dest = "http://www.bbc.co.uk/news"
+  val title = "BBC News"
+  val window = false
+  val leftbar = false
+  val always = false
+  val popUp = false
+  val prototypeLinksSection: String =
+      s"""[
+         |{
+         |   "id": ${id},
+         |   "dest": "${dest}",
+         |   "title": "${title}",
+         |   "window": ${window},
+         |   "leftbar": ${leftbar},
+         |   "always": ${always},
+         |   "popup": ${popUp}
+         |}
+        ]""".stripMargin
+
+  val prototypeJson: JsObject = Json.parse(
+    s"""{ "meta" : ${prototypeMetaSection},
+         | "flow": ${prototypeFlowSection},
+         | "phrases": ${prototypePhrasesSection},
+         | "links": ${prototypeLinksSection},
+         | "contacts": [],
+         | "howto": []}""".stripMargin
+  ).as[JsObject]
 
 }
