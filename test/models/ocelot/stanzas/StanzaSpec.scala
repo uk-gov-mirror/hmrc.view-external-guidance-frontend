@@ -81,7 +81,5 @@ class StanzaSpec extends BaseSpec {
                                 false)
     }
 
-    //missingJsObjectAttrTests[ValueStanza](validValueStanzaJson, List("type"))
-
   }
 }
