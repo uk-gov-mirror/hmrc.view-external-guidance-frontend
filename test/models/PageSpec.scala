@@ -21,8 +21,11 @@ import play.api.libs.json._
 
 import models.ocelot._
 import services.PageBuilder
+import utils.StanzaHelper
 
-class PageSpec extends BaseSpec with ProcessJson {
+class PageSpec extends BaseSpec with ProcessJson with StanzaHelper {
+
+  val meta = Json.parse(prototypeMetaSection).as[Meta]
 
   "Pages" must {
 
@@ -65,5 +68,18 @@ class PageSpec extends BaseSpec with ProcessJson {
       pages.length mustBe 1
 
     }
+
+    "confirm one page elements" in {
+
+      val process:Process = Process( meta, onePage, Vector(), Vector())
+
+      val pages = PageBuilder.pages(process, "start")
+
+      pages mustNot be (Nil)
+
+      pages.length mustBe 1
+      println(pages(0))
+    }
+
   }
 }
