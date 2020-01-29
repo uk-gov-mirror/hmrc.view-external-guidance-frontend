@@ -48,17 +48,17 @@ object PageBuilder {
       }
 
     collectStanzas(key, Nil) match {
-      case Left(err) => Left(err)
-
       case Right((keyedStanzas, next)) =>
         keyedStanzas.head.stanza match {
-          case v:ValueStanza if  pageUrl(v.values).isDefined =>
+          case v:ValueStanza if pageUrl(v.values).isDefined =>
               val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
               Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
 
           case _ =>
             Left(MissingPageUrlValueStanza(key))
         }
+
+      case Left(err) => Left(err)
     }
 
   }
