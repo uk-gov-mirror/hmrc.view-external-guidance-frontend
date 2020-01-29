@@ -18,6 +18,8 @@ package base
 
 import play.api.libs.json.{JsValue, Json, JsObject}
 
+import models.ocelot._
+
 trait ProcessJson {
 
   val validOnePageJson: JsValue = Json.parse(
@@ -96,6 +98,7 @@ trait ProcessJson {
     |  }
    """.stripMargin
 
+  val metaSection = Json.parse(prototypeMetaSection).as[Meta]
 
   val prototypeFlowSection: String =
     """

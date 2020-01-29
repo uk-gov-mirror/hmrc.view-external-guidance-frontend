@@ -101,4 +101,5 @@ class ValueStanzaSpec extends BaseSpec {
     missingJsObjectAttrTests[ValueStanza](validValueStanzaJson, List("type"))
 
   }
+
 }

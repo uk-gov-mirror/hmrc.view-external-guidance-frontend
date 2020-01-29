@@ -19,11 +19,60 @@ package services
 import play.api.libs.json._
 import base.{BaseSpec, ProcessJson}
 import models.ocelot._
+import models.ocelot.stanzas._
 import utils.StanzaHelper
 
 class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   val meta: Meta = Json.parse( prototypeMetaSection ).as[Meta]
+
+  case object DummyStanza extends Stanza
+
+  "PageBuilder error handling" must {
+
+    val flow = Map(
+      ("start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false)),
+      ("1" -> InstructionStanza(0,Seq("2"), None, false)),
+      ("2" -> DummyStanza)
+    )
+
+    "detect UnknownStanza error" in {
+
+      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+
+      PageBuilder.buildPage("start", process) match {
+        case Left(UnknownStanza(DummyStanza)) => succeed
+        case _ => fail("Unknown stanza not detected")
+      }
+
+    }
+
+    "detect NoSuchPage error" in {
+      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+
+      PageBuilder.buildPage("4", process) match {
+        case Left(NoSuchPage("4")) => succeed
+        case _ => fail("Unknown stanza not detected")
+      }
+    }
+
+    "detect MissingPageUrlValueStanza error" in {
+      val flow = Map(
+        ("start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false)),
+        ("1" -> InstructionStanza(0,Seq("2"), None, false)),
+        ("2" -> QuestionStanza(1, Seq(2,3), Seq("4","5"), false)),
+        ("4" -> InstructionStanza(0,Seq("end"), None, false)),
+        ("5" -> InstructionStanza(0,Seq("end"), None, false)),
+        ("end" -> EndStanza)
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+
+      PageBuilder.pages(process, "start") match {
+        case Left(MissingPageUrlValueStanza("4")) => succeed
+        case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
+      }
+    }
+  }
 
   "PageBuilder" must {
 
