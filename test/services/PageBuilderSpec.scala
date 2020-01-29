@@ -63,6 +63,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             pages.length mustBe 27
 
+            // This test requires an update to the parsing of a process
+            //testPagesInPrototypeJson( pages )
+
           case Left(err) => fail(s"FlowError $err")
         }
 
@@ -96,6 +99,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         }
       }
     }
+
     "When processing a simple question page" must {
 
       val process: Process = Process( meta, simpleQuestionPage, Vector(), Vector() )
@@ -125,6 +129,14 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     }
 
+  }
+
+  def testPagesInPrototypeJson( pages: Seq[Page] ) : Unit = {
+
+    val indexedPages: IndexedSeq[Page] = pages.toIndexedSeq
+
+    indexedPages(0).id mustBe "start"
+    indexedPages(1).id mustBe "26"
   }
 
   /**
