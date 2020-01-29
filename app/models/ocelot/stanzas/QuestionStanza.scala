@@ -23,7 +23,7 @@ import play.api.libs.json.Reads._
 case class QuestionStanza(
                          text: Int,
                          answers: Seq[Int],
-                         next: Seq[String],
+                         override val next: Seq[String],
                          stack: Boolean
                          ) extends Stanza
 

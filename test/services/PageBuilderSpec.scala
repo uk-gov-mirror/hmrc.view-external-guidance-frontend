@@ -109,7 +109,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
           case Right(pages) =>
             pages mustNot be(Nil)
 
-            pages.length mustBe 27
+            pages.length mustBe 28
 
           case Left(err) => fail(s"FlowError $err")
         }
@@ -175,16 +175,16 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   }
 
-  // "When processing a 2 page flow seperated by a ValueStanza" must {
-  //   val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(), Vector())
-  //   "result in 2 pages" in {
-  //     PageBuilder.pages(process) match {
-  //       case Right(pages) if pages.length == 2 => succeed
-  //       case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
-  //       case Left(_) => fail()
-  //     }
-  //   }
-  // }
+  "When processing a 2 page flow seperated by a ValueStanza" must {
+    val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(), Vector())
+    "result in 2 pages" in {
+      PageBuilder.pages(process) match {
+        case Right(pages) if pages.length == 2 => succeed
+        case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
+        case Left(err) => fail(s"FAIL ${err.toString}")
+      }
+    }
+  }
 
   /**
    * Test question page in simple question page test

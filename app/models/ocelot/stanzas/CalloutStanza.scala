@@ -23,7 +23,7 @@ import play.api.libs.json.Reads._
 case class CalloutStanza(
                           noteType: CalloutType,
                           text: Int,
-                          next: Seq[String],
+                          override val next: Seq[String],
                           stack: Boolean
                         ) extends Stanza
 
