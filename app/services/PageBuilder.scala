@@ -35,17 +35,15 @@ object PageBuilder {
         case x::xs => Some(x.value)
       }
 
-    def isPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean = existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
+    def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean = existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
 
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
       process.flow.get(key) match {
-        case Some(i:InstructionStanza) => collectStanzas( i.next.head, acc :+ KeyedStanza(key, i) )
-        case Some(c:CalloutStanza) => collectStanzas( c.next.head, acc :+ KeyedStanza(key, c) )
-        case Some(v:ValueStanza) if isPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
-        case Some(v:ValueStanza) => collectStanzas( v.next.head, acc :+ KeyedStanza(key, v) )
+        case Some(v:ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
         case Some(q:QuestionStanza) => Right((acc :+ KeyedStanza(key, q), q.next))
         case Some(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
+        case Some(s:Stanza) if s.next.nonEmpty => collectStanzas( s.next.head, acc :+ KeyedStanza(key, s) )
         case Some(unknown) => Left(UnknownStanza(unknown))
         case None => Left(NoSuchPage(key))
       }
