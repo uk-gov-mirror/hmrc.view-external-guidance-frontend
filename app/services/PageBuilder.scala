@@ -43,7 +43,10 @@ object PageBuilder {
 
     collectStanzas(key, Nil) match {
       case (Nil, _) => None
-      case (keyedStanzas, next) => Some(Page( keyedStanzas.head.key, keyedStanzas.map( _.stanza), next))
+      case (keyedStanzas, next) =>
+        Some(Page( keyedStanzas.head.key,
+                   keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap,
+                  next))
     }
 
   }
