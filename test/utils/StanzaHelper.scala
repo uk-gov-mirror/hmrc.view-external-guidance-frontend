@@ -30,4 +30,18 @@ trait StanzaHelper {
       ("end" -> EndStanza)
     )
   }
+
+  def simpleQuestionPage:Map[String,Stanza] = {
+
+    val valuePageOne = Value( Scalar, "pageUrl", "/page/1" )
+
+    // Define Map of Stanzas to be processed
+    Map(
+      "start" -> ValueStanza( List( valuePageOne ), Seq( "1"), false ),
+      "1" -> InstructionStanza( 0, Seq( "2" ), None, false ),
+      "2" -> CalloutStanza( SubTitle, 1, Seq( "end" ), false ),
+      "end" -> EndStanza
+    )
+
+  }
 }

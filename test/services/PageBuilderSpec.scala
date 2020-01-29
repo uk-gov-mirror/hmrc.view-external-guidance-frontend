@@ -18,6 +18,7 @@ package services
 
 import play.api.libs.json._
 import base.{BaseSpec, ProcessJson}
+import models.Page
 import models.ocelot._
 import utils.StanzaHelper
 
@@ -72,6 +73,17 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         val process:Process = Process( meta, onePage, Vector(), Vector())
 
         val pages = PageBuilder.pages(process, "start")
+
+        pages mustNot be (Nil)
+
+        pages.length mustBe 1
+      }
+
+      "Process a simple question page" in {
+
+        val process: Process = Process( meta, simpleQuestionPage, Vector(), Vector() )
+
+        val pages: Seq[Page] = PageBuilder.pages(  process, "start" )
 
         pages mustNot be (Nil)
 
