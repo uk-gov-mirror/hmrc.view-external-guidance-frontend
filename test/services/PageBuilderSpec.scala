@@ -61,8 +61,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             pages.length mustBe 27
 
-          case Left(err) =>
-            fail(s"FlowError $err")
+          case Left(err) => fail(s"FlowError $err")
         }
 
       }
@@ -76,8 +75,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             pages.length mustBe 1
 
-          case Left(err) =>
-            fail(s"FlowError $err")
+          case Left(err) => fail(s"FlowError $err")
         }
 
       }
@@ -92,8 +90,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             pages.length mustBe 1
 
-          case Left(err) =>
-            fail(s"FlowError $err")
+          case Left(err) => fail(s"FlowError $err")
         }
       }
 

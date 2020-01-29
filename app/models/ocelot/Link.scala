@@ -22,18 +22,12 @@ import play.api.libs.functional.syntax._
 case class Link(id: Int,
                 dest: String,
                 title: String,
-                window: Boolean,
-                lefbar: Boolean,
-                always: Boolean,
-                popup: Boolean)
+                window: Boolean)
 object Link {
   implicit val reads: Reads[Link] = (
     (__ \ "id").read[Int] and
     (__ \ "dest").read[String] and
     (__ \ "title").read[String] and
-    (__ \ "window").read[Boolean] and
-    (__ \ "leftbar").read[Boolean] and
-    (__ \ "always").read[Boolean] and
-    (__ \ "popup").read[Boolean]
+    (__ \ "window").read[Boolean]
   )(Link.apply _)
 }

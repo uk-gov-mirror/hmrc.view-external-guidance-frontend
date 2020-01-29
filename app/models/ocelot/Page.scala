@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package models
+package models.ocelot
 
 import models.ocelot.stanzas.Stanza
 
-case class Page(id: String, stanzas: Map[String, Stanza], next: Seq[String])
+case class Page(id: String, url: String, stanzas: Map[String, Stanza], next: Seq[String])

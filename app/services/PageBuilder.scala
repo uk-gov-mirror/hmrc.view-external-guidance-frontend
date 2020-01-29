@@ -18,9 +18,8 @@ package services
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Reads, __}
-import models.Page
 import models.ocelot.stanzas._
-import models.ocelot.Process
+import models.ocelot.{Page,Process}
 import scala.annotation.tailrec
 
 
@@ -28,7 +27,13 @@ case class KeyedStanza(key:String, stanza:Stanza)
 
 object PageBuilder {
 
-  def buildPage( key: String, process: Process): Either[FlowError, Page] = {
+  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+
+    def pageUrl(values: List[Value]): Option[String] =
+      values.filter(_.label.equals(PageUrlValueName.toString)) match {
+        case Nil => None
+        case x::xs => Some(x.value)
+      }
 
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
@@ -43,25 +48,34 @@ object PageBuilder {
       }
 
     collectStanzas(key, Nil) match {
-      case Right((keyedStanzas, next)) =>
-        Right(Page( keyedStanzas.head.key,
-                    keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap,
-                    next))
       case Left(err) => Left(err)
+
+      case Right((keyedStanzas, next)) =>
+        keyedStanzas.head.stanza match {
+          case v:ValueStanza if  pageUrl(v.values).isDefined =>
+              val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+              Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
+
+          case _ =>
+            Left(MissingPageUrlValueStanza(key))
+        }
     }
 
   }
 
   def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {
+
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[FlowError, Seq[Page]] =
       keys match {
         case Nil => Right(acc)
+
         case key::xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
             case Right(page) => pagesByKeys(page.next ++ xs, acc :+ page)
             case Left(err) => Left(err)
           }
+
         case key::xs => pagesByKeys(xs, acc)
       }
 

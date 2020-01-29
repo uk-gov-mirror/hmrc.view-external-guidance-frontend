@@ -18,6 +18,7 @@ package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import play.api.libs.json.Reads._
 
 case class CalloutStanza(
                           noteType: CalloutType,
@@ -32,11 +33,10 @@ object CalloutStanza {
 
     ((JsPath \ "noteType").read[CalloutType] and
       (JsPath \ "text").read[Int] and
-      (JsPath \ "next").read[Seq[String]] and
+      (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
       (JsPath \ "stack").read[Boolean]
       ) (CalloutStanza.apply _)
 
   }
 
 }
-
