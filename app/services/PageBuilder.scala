@@ -16,14 +16,13 @@
 
 package services
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, __}
 import models.ocelot.stanzas._
-import models.ocelot.{Page,Process}
+import models.ocelot.{Page, Process}
+
 import scala.annotation.tailrec
 
 
-case class KeyedStanza(key:String, stanza:Stanza)
+case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
 
@@ -32,7 +31,7 @@ object PageBuilder {
     def pageUrl(values: List[Value]): Option[String] =
       values.filter(_.label.equals(PageUrlValueName.toString)) match {
         case Nil => None
-        case x::xs => Some(x.value)
+        case x :: _ => Some(x.value)
       }
 
     def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean = existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
@@ -40,10 +39,10 @@ object PageBuilder {
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
       process.flow.get(key) match {
-        case Some(v:ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
-        case Some(q:QuestionStanza) => Right((acc :+ KeyedStanza(key, q), q.next))
+        case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
+        case Some(q: QuestionStanza) => Right((acc :+ KeyedStanza(key, q), q.next))
         case Some(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
-        case Some(s:Stanza) if s.next.nonEmpty => collectStanzas( s.next.head, acc :+ KeyedStanza(key, s) )
+        case Some(s: Stanza) if s.next.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s))
         case Some(unknown) => Left(UnknownStanza(unknown))
         case None => Left(NoSuchPage(key))
       }
@@ -51,9 +50,9 @@ object PageBuilder {
     collectStanzas(key, Nil) match {
       case Right((keyedStanzas, next)) =>
         keyedStanzas.head.stanza match {
-          case v:ValueStanza if pageUrl(v.values).isDefined =>
-              val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-              Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
+          case v: ValueStanza if pageUrl(v.values).isDefined =>
+            val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+            Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
 
           case _ =>
             Left(MissingPageUrlValueStanza(key))
@@ -71,13 +70,13 @@ object PageBuilder {
       keys match {
         case Nil => Right(acc)
 
-        case key::xs if !acc.exists(_.id == key) =>
+        case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
             case Right(page) => pagesByKeys(page.next ++ xs, acc :+ page)
             case Left(err) => Left(err)
           }
 
-        case key::xs => pagesByKeys(xs, acc)
+        case _ :: xs => pagesByKeys(xs, acc)
       }
 
     pagesByKeys(List(start), Nil)
