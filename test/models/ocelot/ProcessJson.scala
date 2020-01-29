@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package base
+package models.ocelot
 
 import play.api.libs.json.{JsValue, Json, JsObject}
-
-import models.ocelot._
 
 trait ProcessJson {
 

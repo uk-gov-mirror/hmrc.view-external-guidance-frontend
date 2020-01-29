@@ -18,7 +18,7 @@ package models.ocelot
 
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import base.ProcessJson
+
 
 class PhraseSpec extends PlaySpec with ProcessJson {
 

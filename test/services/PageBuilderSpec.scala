@@ -17,7 +17,7 @@
 package services
 
 import play.api.libs.json._
-import base.{BaseSpec, ProcessJson}
+import base.BaseSpec
 import models.ocelot.Page
 import models.ocelot._
 import models.ocelot.stanzas._
@@ -174,6 +174,17 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
   }
+
+  // "When processing a 2 page flow seperated by a ValueStanza" must {
+  //   val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(), Vector())
+  //   "result in 2 pages" in {
+  //     PageBuilder.pages(process) match {
+  //       case Right(pages) if pages.length == 2 => succeed
+  //       case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
+  //       case Left(_) => fail()
+  //     }
+  //   }
+  // }
 
   /**
    * Test question page in simple question page test
