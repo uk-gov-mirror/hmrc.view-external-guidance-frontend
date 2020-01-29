@@ -16,18 +16,6 @@
 
 package models.ocelot
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import models.ocelot.stanzas.Stanza
 
-case class Link(id: Int,
-                dest: String,
-                title: String,
-                window: Boolean)
-object Link {
-  implicit val reads: Reads[Link] = (
-    (__ \ "id").read[Int] and
-    (__ \ "dest").read[String] and
-    (__ \ "title").read[String] and
-    (__ \ "window").read[Boolean]
-  )(Link.apply _)
-}
+case class Page(id: String, url: String, stanzas: Map[String, Stanza], next: Seq[String])

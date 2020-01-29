@@ -34,8 +34,10 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process:Process = prototypeJson.as[Process]
 
-      PageBuilder.buildPage("unknown", process) mustBe None
-
+      PageBuilder.buildPage("unknown", process) match {
+        case Right(_) => fail( "Invalid key should not return a page")
+        case Left(err) => succeed
+      }
     }
 
     "Sequence of connected pages" must {
@@ -44,28 +46,39 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         val process:Process = prototypeJson.as[Process]
 
-        PageBuilder.pages(process, "unknown") mustBe Nil
+        PageBuilder.pages(process, "unknown") match {
+          case Right(_) => fail("""Should fail with NoSuchPage("unknown")""")
+          case Left(err) if err == NoSuchPage("unknown") => succeed
+          case Left(wrongErr) => fail("""Should fail with NoSuchPage("unknown")""")
+        }
       }
 
       "be extractable from a Process using key 'start''" in {
 
         val process:Process = prototypeJson.as[Process]
 
-        val pages = PageBuilder.pages(process, "start")
+        PageBuilder.pages(process, "start") match {
+          case Right(pages) =>
+            pages mustNot be (Nil)
 
-        pages mustNot be (Nil)
+            pages.length mustBe 27
 
-        pages.length mustBe 27
+          case Left(err) => fail(s"FlowError $err")
+        }
+
       }
 
       "consist of one page when only page exists" in {
         val process:Process = validOnePageJson.as[Process]
 
-        val pages = PageBuilder.pages(process, "1")
+        PageBuilder.pages(process, "1") match {
+          case Right(pages) =>
+            pages mustNot be (Nil)
 
-        pages mustNot be (Nil)
+            pages.length mustBe 1
 
-        pages.length mustBe 1
+          case Left(err) => fail(s"FlowError $err")
+        }
 
       }
 
@@ -73,11 +86,14 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         val process:Process = Process( meta, onePage, Vector(), Vector())
 
-        val pages = PageBuilder.pages(process, "start")
+        PageBuilder.pages(process, "start") match {
+          case Right(pages) =>
+            pages mustNot be (Nil)
 
-        pages mustNot be (Nil)
+            pages.length mustBe 1
 
-        pages.length mustBe 1
+          case Left(err) => fail(s"FlowError $err")
+        }
       }
 
       "When processing a simple question page" must {

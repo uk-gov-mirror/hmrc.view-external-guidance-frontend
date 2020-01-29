@@ -41,7 +41,7 @@ trait ProcessJson {
       |      "values": [
       |        {
       |          "type": "scalar",
-      |          "label": "pageUrl",
+      |          "label": "PageUrl",
       |          "value": "/feeling-bad"
       |        }
       |      ],
@@ -1720,6 +1720,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "157": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother157"
+    |         }
+    |       ],
+    |       "next": [
+    |         "157a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "157a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [
@@ -1728,6 +1742,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "158": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother158"
+    |         }
+    |       ],
+    |       "next": [
+    |         "158a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "158a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [
@@ -1736,6 +1764,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "159": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother"
+    |         }
+    |       ],
+    |       "next": [
+    |         "159a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "159a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [

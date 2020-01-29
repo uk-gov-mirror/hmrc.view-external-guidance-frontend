@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package models
+package services
 
 import models.ocelot.stanzas.Stanza
 
-case class Page(id: String, stanzas: Map[String, Stanza], next: Seq[String])
+trait FlowError
+
+case class UnknownStanza(unknown: Stanza) extends FlowError
+case class NoSuchPage(id: String) extends FlowError
+case class EmptyPage(id: String) extends FlowError
+case class MissingPageUrlValueStanza(id: String) extends FlowError
+case class DuplicatePageUrl(id: String) extends FlowError

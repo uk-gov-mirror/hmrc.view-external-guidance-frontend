@@ -49,7 +49,7 @@ trait StanzaHelper {
 
   def onePage:Map[String,Stanza] = {
 
-    val value1 = Value(Scalar, "pageUrl", "/")
+    val value1 = Value(Scalar, "PageUrl", "/")
     Map(
       ("start" -> ValueStanza( List(value1), Seq("1"), false )),
       ("1" -> InstructionStanza(0,Seq("2"),None, false)),

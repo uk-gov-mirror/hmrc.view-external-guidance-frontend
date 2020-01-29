@@ -18,6 +18,7 @@ package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.Reads._
 
 case class InstructionStanza(
                               text: Int,
@@ -31,7 +32,7 @@ object InstructionStanza {
   implicit val instructionReads: Reads[InstructionStanza] = {
 
     (( JsPath \ "text" ).read[Int] and
-      ( JsPath \ "next" ).read[Seq[String]] and
+      ( JsPath \ "next" ).read[Seq[String]](minLength[Seq[String]](1)) and
       ( JsPath \ "link" ).readNullable[Int] and
       ( JsPath \ "stack" ).read[Boolean]
       ) ( InstructionStanza.apply _)
