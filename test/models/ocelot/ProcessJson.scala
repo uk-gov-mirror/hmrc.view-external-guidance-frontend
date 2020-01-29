@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package base
+package models.ocelot
 
 import play.api.libs.json.{JsValue, Json, JsObject}
 
@@ -96,6 +96,7 @@ trait ProcessJson {
     |  }
    """.stripMargin
 
+  val metaSection = Json.parse(prototypeMetaSection).as[Meta]
 
   val prototypeFlowSection: String =
     """

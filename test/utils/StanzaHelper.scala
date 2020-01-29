@@ -58,6 +58,20 @@ trait StanzaHelper {
     )
   }
 
+  def twoPagesSeperatedByValueStanza:Map[String,Stanza] = {
+
+    val value1 = Value(Scalar, "PageUrl", "/")
+    val value2 = Value(Scalar, "PageUrl", "/a")
+    Map(
+      ("start" -> ValueStanza( List(value1), Seq("1"), false )),
+      ("1" -> InstructionStanza(0,Seq("2"),None, false)),
+      ("2" -> InstructionStanza(1,Seq("3"),None, false)),
+      ("3" -> ValueStanza( List(value2), Seq("4"), false )),
+      ("4" -> InstructionStanza(0,Seq("end"),None, false)),
+      ("end" -> EndStanza)
+    )
+  }
+
   def simpleQuestionPage:Map[String,Stanza] = {
 
     // Define Map of Stanzas to be processed
