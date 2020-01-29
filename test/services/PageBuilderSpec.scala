@@ -20,6 +20,7 @@ import play.api.libs.json._
 import base.{BaseSpec, ProcessJson}
 import models.Page
 import models.ocelot._
+import models.ocelot.stanzas.EndStanza
 import utils.StanzaHelper
 
 class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
@@ -79,15 +80,65 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         pages.length mustBe 1
       }
 
-      "Process a simple question page" in {
+      "When processing a simple question page" must {
 
         val process: Process = Process( meta, simpleQuestionPage, Vector(), Vector() )
 
         val pages: Seq[Page] = PageBuilder.pages(  process, "start" )
 
-        pages mustNot be (Nil)
+        "Determine the correct number of pages to be displayed" in {
 
-        pages.length mustBe 1
+          pages mustNot be(Nil)
+
+          pages.length mustBe 3
+        }
+
+        val indexedSeqOfPages = pages.toIndexedSeq
+
+        "Define the question page correctly" in {
+
+          val firstPage: Page = indexedSeqOfPages(0)
+
+          firstPage.id mustBe "start"
+          firstPage.stanzas.size mustBe 4
+
+          firstPage.stanzas.get( "start" ) mustBe Some( sqpQpValueStanza )
+          firstPage.stanzas.get( "1" ) mustBe Some( sqpQpInstructionStanza )
+          firstPage.stanzas.get( "2" ) mustBe Some( sqpQpCalloutStanza )
+          firstPage.stanzas.get( "3" ) mustBe Some( sqpQpQuestionStanza )
+
+          firstPage.next mustBe Seq( "4", "6" )
+        }
+
+        "Define the first answer page correctly" in {
+
+          val secondPage: Page = indexedSeqOfPages(1)
+
+          secondPage.id mustBe "4"
+          secondPage.stanzas.size mustBe 3
+
+          secondPage.stanzas.get( "4" ) mustBe Some( sqpFapValueStanza )
+          secondPage.stanzas.get( "5" ) mustBe Some( sqpFapInstructionStanza )
+          secondPage.stanzas.get( "end" ) mustBe Some( EndStanza )
+
+          secondPage.next mustBe (Nil)
+        }
+
+        "Define the second answer page correctly" in {
+
+          val thirdPage: Page = indexedSeqOfPages(2)
+
+          thirdPage.id mustBe "6"
+          thirdPage.stanzas.size mustBe 4
+
+          thirdPage.stanzas.get( "6" ) mustBe Some( sqpSapValueStanza )
+          thirdPage.stanzas.get( "7" ) mustBe Some( sqpSapInstructionStanza )
+          thirdPage.stanzas.get( "8" ) mustBe Some( sqpSapCalloutStanza )
+          thirdPage.stanzas.get( "end" ) mustBe Some( EndStanza )
+
+          thirdPage.next mustBe (Nil)
+        }
+
       }
 
     }
