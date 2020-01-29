@@ -28,9 +28,9 @@ trait StanzaHelper {
   val six: Int = 6
 
   // Define stanzas used in simple question page test
-  val sqpQpValue = Value( Scalar, "pageUrl", "/page/1" )
-  val sqpFapValue = Value( Scalar, "pageUrl", "/page/2" )
-  val sqpSapValue = Value( Scalar, "pageUrl", "/page/3" )
+  val sqpQpValue = Value( Scalar, "PageUrl", "/page/1" )
+  val sqpFapValue = Value( Scalar, "PageUrl", "/page/2" )
+  val sqpSapValue = Value( Scalar, "PageUrl", "/page/3" )
 
   // Question page
   val sqpQpValueStanza = ValueStanza( List( sqpQpValue ), Seq( "1" ), false )

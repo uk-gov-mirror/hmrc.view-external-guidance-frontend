@@ -18,7 +18,7 @@ package services
 
 import play.api.libs.json._
 import base.{BaseSpec, ProcessJson}
-import models.Page
+import models.ocelot.Page
 import models.ocelot._
 import models.ocelot.stanzas.EndStanza
 import utils.StanzaHelper
@@ -44,7 +44,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       "not be extractable from a Process using an invalid start key" in {
 
-        val process:Process = prototypeJson.as[Process]
+        val process: Process = prototypeJson.as[Process]
 
         PageBuilder.pages(process, "unknown") match {
           case Right(_) => fail("""Should fail with NoSuchPage("unknown")""")
@@ -55,11 +55,11 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       "be extractable from a Process using key 'start''" in {
 
-        val process:Process = prototypeJson.as[Process]
+        val process: Process = prototypeJson.as[Process]
 
         PageBuilder.pages(process, "start") match {
           case Right(pages) =>
-            pages mustNot be (Nil)
+            pages mustNot be(Nil)
 
             pages.length mustBe 27
 
@@ -69,11 +69,11 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
 
       "consist of one page when only page exists" in {
-        val process:Process = validOnePageJson.as[Process]
+        val process: Process = validOnePageJson.as[Process]
 
         PageBuilder.pages(process, "1") match {
           case Right(pages) =>
-            pages mustNot be (Nil)
+            pages mustNot be(Nil)
 
             pages.length mustBe 1
 
@@ -84,79 +84,110 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       "confirm one page elements" in {
 
-        val process:Process = Process( meta, onePage, Vector(), Vector())
+        val process: Process = Process(meta, onePage, Vector(), Vector())
 
         PageBuilder.pages(process, "start") match {
           case Right(pages) =>
-            pages mustNot be (Nil)
+            pages mustNot be(Nil)
 
             pages.length mustBe 1
 
           case Left(err) => fail(s"FlowError $err")
         }
       }
+    }
+    "When processing a simple question page" must {
 
-      "When processing a simple question page" must {
+      val process: Process = Process( meta, simpleQuestionPage, Vector(), Vector() )
 
-        val process: Process = Process( meta, simpleQuestionPage, Vector(), Vector() )
+      PageBuilder.pages( process ) match {
 
-        val pages: Seq[Page] = PageBuilder.pages(  process, "start" )
+        case Right(pages) => {
 
-        "Determine the correct number of pages to be displayed" in {
+          "Determine the correct number of pages to be displayed" in {
 
-          pages mustNot be(Nil)
+            pages mustNot be(Nil)
 
-          pages.length mustBe 3
+            pages.length mustBe 3
+          }
+
+          val indexedSeqOfPages = pages.toIndexedSeq
+
+          // Test contents of individual pages
+          testSqpQp( indexedSeqOfPages(0) )
+
+          testSqpFap( indexedSeqOfPages(1) )
+
+          testSqpSap( indexedSeqOfPages(2) )
         }
-
-        val indexedSeqOfPages = pages.toIndexedSeq
-
-        "Define the question page correctly" in {
-
-          val firstPage: Page = indexedSeqOfPages(0)
-
-          firstPage.id mustBe "start"
-          firstPage.stanzas.size mustBe 4
-
-          firstPage.stanzas.get( "start" ) mustBe Some( sqpQpValueStanza )
-          firstPage.stanzas.get( "1" ) mustBe Some( sqpQpInstructionStanza )
-          firstPage.stanzas.get( "2" ) mustBe Some( sqpQpCalloutStanza )
-          firstPage.stanzas.get( "3" ) mustBe Some( sqpQpQuestionStanza )
-
-          firstPage.next mustBe Seq( "4", "6" )
-        }
-
-        "Define the first answer page correctly" in {
-
-          val secondPage: Page = indexedSeqOfPages(1)
-
-          secondPage.id mustBe "4"
-          secondPage.stanzas.size mustBe 3
-
-          secondPage.stanzas.get( "4" ) mustBe Some( sqpFapValueStanza )
-          secondPage.stanzas.get( "5" ) mustBe Some( sqpFapInstructionStanza )
-          secondPage.stanzas.get( "end" ) mustBe Some( EndStanza )
-
-          secondPage.next mustBe (Nil)
-        }
-
-        "Define the second answer page correctly" in {
-
-          val thirdPage: Page = indexedSeqOfPages(2)
-
-          thirdPage.id mustBe "6"
-          thirdPage.stanzas.size mustBe 4
-
-          thirdPage.stanzas.get( "6" ) mustBe Some( sqpSapValueStanza )
-          thirdPage.stanzas.get( "7" ) mustBe Some( sqpSapInstructionStanza )
-          thirdPage.stanzas.get( "8" ) mustBe Some( sqpSapCalloutStanza )
-          thirdPage.stanzas.get( "end" ) mustBe Some( EndStanza )
-
-          thirdPage.next mustBe (Nil)
-        }
-
+        case Left(err) => fail(s"Flow error $err")
       }
 
+    }
+
+  }
+
+  /**
+   * Test question page in simple question page test
+   *
+   * @param firstPage
+   */
+  def testSqpQp( firstPage: Page ) : Unit = {
+
+    "Define the question page correctly" in {
+
+      firstPage.id mustBe "start"
+      firstPage.stanzas.size mustBe 4
+
+      firstPage.stanzas.get( "start" ) mustBe Some( sqpQpValueStanza )
+      firstPage.stanzas.get( "1" ) mustBe Some( sqpQpInstructionStanza )
+      firstPage.stanzas.get( "2" ) mustBe Some( sqpQpCalloutStanza )
+      firstPage.stanzas.get( "3" ) mustBe Some( sqpQpQuestionStanza )
+
+      firstPage.next mustBe Seq( "4", "6" )
+    }
+
+  }
+
+  /**
+   * Test first answer page in simple question page test
+   *
+   * @param secondPage
+   */
+  def testSqpFap( secondPage: Page ) : Unit = {
+
+    "Define the first answer page correctly" in {
+
+      secondPage.id mustBe "4"
+      secondPage.stanzas.size mustBe 3
+
+      secondPage.stanzas.get( "4" ) mustBe Some( sqpFapValueStanza )
+      secondPage.stanzas.get( "5" ) mustBe Some( sqpFapInstructionStanza )
+      secondPage.stanzas.get( "end" ) mustBe Some( EndStanza )
+
+      secondPage.next mustBe (Nil)
+    }
+
+  }
+
+  /**
+   * Test second answer page in simple question page
+   *
+   * @param thirdPage
+   */
+  def testSqpSap( thirdPage: Page ) : Unit = {
+
+    "Define the second answer page correctly" in {
+
+      thirdPage.id mustBe "6"
+      thirdPage.stanzas.size mustBe 4
+
+      thirdPage.stanzas.get( "6" ) mustBe Some( sqpSapValueStanza )
+      thirdPage.stanzas.get( "7" ) mustBe Some( sqpSapInstructionStanza )
+      thirdPage.stanzas.get( "8" ) mustBe Some( sqpSapCalloutStanza )
+      thirdPage.stanzas.get( "end" ) mustBe Some( EndStanza )
+
+      thirdPage.next mustBe (Nil)
     }
 
   }
