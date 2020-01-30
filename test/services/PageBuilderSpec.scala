@@ -26,7 +26,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
 
-  case object DummyStanza extends Stanza
+  case object DummyStanza extends Stanza {
+    override val next: Seq[String] = Seq("1")
+  }
 
   "PageBuilder error handling" must {
 
