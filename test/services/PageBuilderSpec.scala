@@ -72,6 +72,25 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
       }
     }
+
+    "detect MissingPageUrlWithinValueStanza error" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, "SomeValue", "Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+
+      PageBuilder.pages(process) match {
+        case Left(MissingPageUrlValueStanza("start")) => succeed
+        case Left(err) => fail(s"Missing PageUrl value within initial ValueStanza not found with error $err")
+        case Right(_) => fail(s"Missing PageUrl value within initial ValueStanza missed")
+      }
+    }
+
   }
 
   "PageBuilder" must {
