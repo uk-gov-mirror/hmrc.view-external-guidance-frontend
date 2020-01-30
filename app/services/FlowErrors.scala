@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package services
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Reads, __}
-import models.ocelot.stanzas._
+import models.ocelot.stanzas.Stanza
 
+trait FlowError
 
-case class Process(meta: Meta,
-                   flow: Map[String, Stanza],
-                   phrases: Vector[Phrase],
-                   links: Vector[Link])
-
-object Process {
-
-  implicit val reads: Reads[Process] = (
-    (__ \ "meta").read[Meta] and
-    (__ \ "flow").read[Map[String, Stanza]] and
-    (__ \ "phrases").read[Vector[Phrase]] and
-    (__ \ "links").read[Vector[Link]]
-  )(Process.apply _)
-
-}
+case class UnknownStanza(unknown: Stanza) extends FlowError
+case class NoSuchPage(id: String) extends FlowError
+case class EmptyPage(id: String) extends FlowError
+case class MissingPageUrlValueStanza(id: String) extends FlowError
+case class DuplicatePageUrl(id: String) extends FlowError

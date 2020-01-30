@@ -19,7 +19,9 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-trait Stanza
+trait Stanza {
+  val next:Seq[String] = Nil
+}
 
 case object EndStanza extends Stanza
 

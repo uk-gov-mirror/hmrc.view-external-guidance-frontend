@@ -19,6 +19,7 @@ package models.ocelot
 import base.BaseSpec
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
+import models.ocelot._
 
 class LinkSpec extends BaseSpec {
 
@@ -64,8 +65,8 @@ class LinkSpec extends BaseSpec {
 
   val linksStr: String = s"""[${linkStr1}, ${linkStr2}]"""
 
-  val link1: Link = Link( id1, dest1, title1, window, leftbar, always, popUp)
-  val link2: Link = Link( id2, dest2, title2, window, leftbar, always, popUp)
+  val link1: Link = Link( id1, dest1, title1, window)
+  val link2: Link = Link( id2, dest2, title2, window)
 
   "Link" must {
     "deserialise from json" in {
@@ -75,7 +76,7 @@ class LinkSpec extends BaseSpec {
       link2Json.as[Link] mustBe link2
     }
 
-    missingJsObjectAttrTests[Link](link1Json)
+    missingJsObjectAttrTests[Link](link1Json, List("popup", "always", "leftbar"))
   }
 
   "Sequence of multiple links" must {

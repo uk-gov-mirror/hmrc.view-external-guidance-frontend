@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package base
+package models.ocelot
 
 import play.api.libs.json.{JsValue, Json, JsObject}
 
@@ -41,41 +41,28 @@ trait ProcessJson {
       |      "values": [
       |        {
       |          "type": "scalar",
-      |          "label": "pageUrl",
+      |          "label": "PageUrl",
       |          "value": "/feeling-bad"
       |        }
       |      ],
-      |      "next": ["2"],
-      |      "stack": true
-      |    },
-      |    "2": {
-      |      "type": "InstructionStanza",
-      |      "text": 0,
-      |      "next": [
-      |        "3"
-      |      ],
+      |      "next": ["3"],
       |      "stack": true
       |    },
       |    "3": {
       |      "type": "InstructionStanza",
       |      "text": 1,
       |      "next": [
-      |        "4"
+      |        "2"
       |      ],
       |      "stack": true
       |    },
-      |    "3": {
-      |      "type": "QuestionStanza",
-      |      "text": 3,
-      |      "answers": [
-      |        4,
-      |        5
-      |      ],
+      |    "2": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
       |      "next": [
-      |        "end",
       |        "end"
       |      ],
-      |      "stack": false
+      |      "stack": true
       |    },
       |    "end": {
       |      "type": "EndStanza"
@@ -108,6 +95,8 @@ trait ProcessJson {
     |     "filename": "ext90002.js"
     |  }
    """.stripMargin
+
+  val metaSection = Json.parse(prototypeMetaSection).as[Meta]
 
   val prototypeFlowSection: String =
     """
@@ -1732,6 +1721,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "157": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother157"
+    |         }
+    |       ],
+    |       "next": [
+    |         "157a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "157a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [
@@ -1740,6 +1743,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "158": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother158"
+    |         }
+    |       ],
+    |       "next": [
+    |         "158a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "158a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [
@@ -1748,6 +1765,20 @@ trait ProcessJson {
     |       "stack": true
     |     },
     |     "159": {
+    |       "type": "ValueStanza",
+    |       "values": [
+    |         {
+    |           "type": "scalar",
+    |           "label": "PageUrl",
+    |           "value": "/somepageorother"
+    |         }
+    |       ],
+    |       "next": [
+    |         "159a"
+    |       ],
+    |       "stack": false
+    |     },
+    |     "159a": {
     |       "type": "InstructionStanza",
     |       "text": 40,
     |       "next": [

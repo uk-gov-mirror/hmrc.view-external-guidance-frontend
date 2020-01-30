@@ -18,6 +18,7 @@ package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import play.api.libs.json.Reads._
 
 case class Value(valueType:ValueType, label: String, value: String)
 
@@ -29,12 +30,12 @@ object Value {
 
 }
 
-case class ValueStanza(values: List[Value], next: Seq[String], stack: Boolean) extends Stanza
+case class ValueStanza(values: List[Value], override val next: Seq[String], stack: Boolean) extends Stanza
 
 object ValueStanza {
   implicit val reads: Reads[ValueStanza] =
-    ((__ \ "values").read[List[Value]] and
-     (__ \ "next").read[Seq[String]] and
+    ((__ \ "values").read[List[Value]](minLength[List[Value]](1)) and
+     (__ \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
      (__ \ "stack").read[Boolean] ) (ValueStanza.apply _)
 
 }
