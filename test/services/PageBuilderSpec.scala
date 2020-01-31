@@ -147,6 +147,23 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       }
 
+      "correctly identify the pages in a Process accounting fro every stanza" in {
+
+        val process: Process = prototypeJson.as[Process]
+
+        PageBuilder.pages( process ) match {
+          case Right(pages) => {
+
+            testPagesInPrototypeJson( pages )
+
+            checkAllStanzasAllocatedToPages( process.flow, pages )
+          }
+          case Left(err) => fail( s"Flow error $err" )
+        }
+
+
+      }
+
       "consist of one page when only page exists" in {
         val process: Process = validOnePageJson.as[Process]
 
@@ -218,6 +235,30 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         case Left(err) => fail(s"FAIL ${err.toString}")
       }
     }
+  }
+
+  def testPagesInPrototypeJson( pages: Seq[Page] ) : Unit = {
+
+    val expectedPageIds: List[String] = List( "start", "26", "36", "37", "39", "46", "53", "60",
+                                              "70", "77", "120", "80", "83", "90", "97", "102",
+                                              "109", "113", "121", "124", "127", "131", "159",
+                                              "138", "143", "151", "157", "158" )
+
+    val indexedPages: IndexedSeq[Page] = pages.toIndexedSeq
+
+    expectedPageIds.zipWithIndex.foreach{
+      case( id, index ) => indexedPages( index ).id mustBe id
+    }
+  }
+
+  def checkAllStanzasAllocatedToPages(flowStanzas: Map[String, Stanza], pages:Seq[Page]): Unit = {
+
+    for( ( key, stanza ) <- flowStanzas ) {
+
+      pages.exists( _.stanzas.contains( key ) ) mustBe true
+
+    }
+
   }
 
   /**
