@@ -50,12 +50,11 @@ object PageBuilder {
 
     def populateStanza(stanza: Stanza): Either[FlowError, Stanza] =
       stanza match {
-        // case q: QuestionStanza =>
-        //     val phrases: Seq[(Int, Option[String])] = (q.text :+ q.answers).map((i.text, process.phrase(i.text)))
-        //     phrases.
-        //       process.phrase(q.text).flatMap{ t =>
-        //   Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
-        // }
+        case q: QuestionStanza =>
+          (q.text +: q.answers).map(phrase(_)) match {
+            case Right(text) :: xs if !xs.exists(_.isLeft) => Right(Question(q, text, xs.map( _.right.get)))
+            case results => Left(results.dropWhile(_.isRight).head.left.get)
+          }
         case i: InstructionStanza => process.phrase(i.text).map(t => Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
         case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
         case s: Stanza => Right(s)
@@ -71,7 +70,7 @@ object PageBuilder {
               case v: ValueStanza => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v))
               case i: Instruction => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i))
               case c: Callout => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c))
-              case q: QuestionStanza => Right((acc :+ KeyedStanza(key, q), q.next))
+              case q: Question => Right((acc :+ KeyedStanza(key, q), q.next))
               case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
               case unknown => Left(UnknownStanza(unknown))
             }

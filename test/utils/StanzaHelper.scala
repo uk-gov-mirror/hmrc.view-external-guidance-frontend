@@ -36,7 +36,7 @@ trait StanzaHelper {
   val sqpQpValueStanza = ValueStanza( List( sqpQpValue ), Seq( "1" ), false )
   val sqpQpInstruction = Instruction( "SomeInstructionText", Seq( "2" ), None, false )
   val sqpQpCallout = Callout( SubTitle, "SomeCalloutText", Seq( "3" ), false )
-  val sqpQpQuestionStanza = QuestionStanza( 2, Seq( three, four ), Seq( "4", "6" ), false )
+  val sqpQpQuestion = Question( "SomeQuestion2", Seq( "three", "four" ), Seq( "4", "6" ), false )
 
   // First answer page
   val sqpFapValueStanza = ValueStanza( List( sqpFapValue ), Seq( "5" ), false )
@@ -79,7 +79,7 @@ trait StanzaHelper {
       "start" -> sqpQpValueStanza,
       "1" -> sqpQpInstruction,
       "2" -> sqpQpCallout,
-      "3" -> sqpQpQuestionStanza,
+      "3" -> sqpQpQuestion,
       "4" -> sqpFapValueStanza,
       "5" -> sqpFapInstruction,
       "6" -> sqpSapValueStanza,
@@ -97,7 +97,7 @@ trait StanzaHelper {
       "start" -> sqpQpValueStanza,
       "1" -> sqpQpInstruction,
       "2" -> sqpQpCallout,
-      "3" -> sqpQpQuestionStanza,
+      "3" -> sqpQpQuestion,
       "4" -> sqpFapValueStanza,
       "5" -> sqpFapInstruction,
       "6" -> sqpSapValueStanza,

@@ -43,7 +43,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect UnknownStanza error" in {
 
-      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
 
       PageBuilder.buildPage("start", process) match {
         case Left(UnknownStanza(DummyStanza)) => succeed
@@ -211,14 +211,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
   }
 
-  //def testPagesInPrototypeJson( pages: Seq[Page] ) : Unit = {
-
-  //val indexedPages: IndexedSeq[Page] = pages.toIndexedSeq
-
-  //indexedPages(0).id mustBe "start"
-  //indexedPages(1).id mustBe "26"
-  //}
-
   /**
    * Test question page in simple question page test
    *
@@ -234,7 +226,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       firstPage.stanzas.get("start") mustBe Some(sqpQpValueStanza)
       firstPage.stanzas.get("1") mustBe Some(sqpQpInstruction)
       firstPage.stanzas.get("2") mustBe Some(sqpQpCallout)
-      firstPage.stanzas.get("3") mustBe Some(sqpQpQuestionStanza)
+      firstPage.stanzas.get("3") mustBe Some(sqpQpQuestion)
 
       firstPage.next mustBe Seq("4", "6")
     }
