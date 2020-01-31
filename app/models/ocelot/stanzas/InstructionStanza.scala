@@ -20,12 +20,12 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
 import play.api.libs.json.Reads._
 
-case class InstructionStanza(
-                              text: Int,
-                              override val next: Seq[String],
-                              link: Option[Int],
-                              stack: Boolean
-                            ) extends Stanza
+import models.ocelot.Link
+
+case class InstructionStanza(text: Int,
+                             override val next: Seq[String],
+                             link: Option[Int],
+                             stack: Boolean) extends Stanza
 
 object InstructionStanza {
 
@@ -39,4 +39,14 @@ object InstructionStanza {
 
   }
 
+}
+
+case class Instruction(text: String,
+                       override val next: Seq[String],
+                       link: Option[Link],
+                       stack: Boolean) extends PopulatedStanza
+
+object Instruction {
+  def apply(stanza: InstructionStanza, text: String, link: Option[Link]): Instruction =
+    Instruction(text, stanza.next, link, stanza.stack)
 }
