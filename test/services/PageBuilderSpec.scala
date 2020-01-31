@@ -39,7 +39,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   private val appConfig = new AppConfig(configuration, serviceConfig)
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
-  val supportedLanguagesInOrder: List[Lang] = appConfig.inOrderLanguageMap.values.toList
+  val supportedLanguagesInOrder: List[Lang] = appConfig.ocelotOrderLanguageMap.values.toList
 
   case object DummyStanza extends Stanza {
     override val next: Seq[String] = Seq("1")
@@ -113,6 +113,78 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         case Left(MissingPageUrlValueStanza("start")) => succeed
         case Left(err) => fail(s"Missing PageUrl value within initial ValueStanza not found with error $err")
         case Right(_) => fail(s"Missing PageUrl value within initial ValueStanza missed")
+      }
+    }
+
+    "detect PhraseNotFound in QuestionStanza text" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(4, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                              Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                                              Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                                              Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+      PageBuilder(supportedLanguagesInOrder).pages(process) match {
+        case Left(PhraseNotFound(4)) => succeed
+        case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
+        case Right(_) => fail(s"Missing PhraseNotFound(4)")
+      }
+    }
+
+    "detect PhraseNotFound in QuestionStanza answers" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(4, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                              Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                                              Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                                              Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+      PageBuilder(supportedLanguagesInOrder).pages(process) match {
+        case Left(PhraseNotFound(4)) => succeed
+        case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
+        case Right(_) => fail(s"Missing PhraseNotFound(4)")
+      }
+    }
+
+    "detect PhraseNotFound in InstructionStanza" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(2, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
+
+      PageBuilder(supportedLanguagesInOrder).pages(process) match {
+        case Left(PhraseNotFound(2)) => succeed
+        case Left(err) => fail(s"Missing PhraseNotFound(2) with error $err")
+        case Right(_) => fail(s"Missing PhraseNotFound(2)")
+      }
+    }
+
+    "detect PhraseNotFound in CalloutStanza" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(2, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
+
+      PageBuilder(supportedLanguagesInOrder).pages(process) match {
+        case Left(PhraseNotFound(2)) => succeed
+        case Left(err) => fail(s"Missing PhraseNotFound(2) with error $err")
+        case Right(_) => fail(s"Missing PhraseNotFound(2)")
       }
     }
 

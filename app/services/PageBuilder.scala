@@ -25,12 +25,12 @@ import scala.annotation.tailrec
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
-  def apply(supportedLanguagesInOrder: List[Lang]): PageBuilder = new PageBuilder(supportedLanguagesInOrder)
+  def apply(ocelotOrderLanguages: List[Lang]): PageBuilder = new PageBuilder(ocelotOrderLanguages)
 }
 
-class PageBuilder(supportedLanguagesInOrder: List[Lang]) {
+class PageBuilder(ocelotOrderLanguages: List[Lang]) {
 
-  val languageIndexMap: Map[String, Int] = supportedLanguagesInOrder.map(_.code).zipWithIndex.toMap
+  val languageIndexMap: Map[String, Int] = ocelotOrderLanguages.map(_.code).zipWithIndex.toMap
   def languageIndex(lang: Lang): Int = languageIndexMap.get(lang.code).getOrElse(0) // Unknown language => English
 
   def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
@@ -87,7 +87,6 @@ class PageBuilder(supportedLanguagesInOrder: List[Lang]) {
       }
 
     collectStanzas(key, Nil) match {
-      case Right((Nil,_)) => Left(NoPagesFound)
       case Right((ks, next)) => ks.head.stanza match {
                                   case v: ValueStanza if pageUrl(v.values).isDefined =>
                                     Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next))

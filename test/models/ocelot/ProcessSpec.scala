@@ -23,16 +23,16 @@ import models.ocelot.stanzas.Stanza
 
 class ProcesSpec extends BaseSpec with ProcessJson {
 
+  val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
+  val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
+  val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
+  val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
+
+  val process:Process = prototypeJson.as[Process]
+
   "Process" must {
 
     "Deserialise from prototype json" in {
-
-      val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
-      val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
-      val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
-      val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
-
-      val process:Process = prototypeJson.as[Process]
 
       process.meta mustBe meta
       process.flow mustBe flow
@@ -44,5 +44,32 @@ class ProcesSpec extends BaseSpec with ProcessJson {
     missingJsObjectAttrTests[Process](prototypeJson, List("howto", "contacts"))
 
     incorrectPropertyTypeJsObjectAttrTests[Process](prototypeJson, List("howto", "contacts"))
+  }
+
+  "Process phrase fn" must {
+    "Return english text for a valid index in the context of the lang index for English" in {
+      implicit val langIndex: Int = 0
+
+      process.phrase(0) mustBe Some("Telling HMRC about extra income")
+    }
+
+    "Return welsh text for a valid index in the context of the lang index for Welsh" in {
+      implicit val langIndex: Int = 1
+
+      process.phrase(0) mustBe Some("Welsh: Telling HMRC about extra income")
+    }
+
+    "Return None for a invalid index in the context of the lang index for English" in {
+      implicit val langIndex: Int = 0
+
+      process.phrase(100) mustBe None
+    }
+
+    "Return None for a invalid index in the context of the lang index for Welsh" in {
+      implicit val langIndex: Int = 1
+
+      process.phrase(100) mustBe None
+    }
+
   }
 }
