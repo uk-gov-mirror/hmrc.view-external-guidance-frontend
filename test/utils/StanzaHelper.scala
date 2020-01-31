@@ -34,18 +34,18 @@ trait StanzaHelper {
 
   // Question page
   val sqpQpValueStanza = ValueStanza( List( sqpQpValue ), Seq( "1" ), false )
-  val sqpQpInstructionStanza = InstructionStanza( 0, Seq( "2" ), None, false )
-  val sqpQpCalloutStanza = CalloutStanza( SubTitle, 1, Seq( "3" ), false )
+  val sqpQpInstruction = Instruction( "SomeInstructionText", Seq( "2" ), None, false )
+  val sqpQpCallout = Callout( SubTitle, "SomeCalloutText", Seq( "3" ), false )
   val sqpQpQuestionStanza = QuestionStanza( 2, Seq( three, four ), Seq( "4", "6" ), false )
 
   // First answer page
   val sqpFapValueStanza = ValueStanza( List( sqpFapValue ), Seq( "5" ), false )
-  val sqpFapInstructionStanza = InstructionStanza( 2, Seq( "end" ), None, false )
+  val sqpFapInstruction = Instruction( "SomeInstructionText2", Seq( "end" ), None, false )
 
   // Second answer page
   val sqpSapValueStanza = ValueStanza( List( sqpSapValue ), Seq( "7" ), false )
-  val sqpSapInstructionStanza = InstructionStanza( five, Seq( "8" ), Some( 0 ), false  )
-  val sqpSapCalloutStanza = CalloutStanza( Lede, six, Seq( "end" ), false )
+  val sqpSapInstruction = Instruction( "FIVE", Seq( "8" ), Some( 0 ), false  )
+  val sqpSapCallout = Callout( Lede, "SIX", Seq( "end" ), false )
 
   def onePage:Map[String,Stanza] = {
 
@@ -77,16 +77,35 @@ trait StanzaHelper {
     // Define Map of Stanzas to be processed
     Map(
       "start" -> sqpQpValueStanza,
-      "1" -> sqpQpInstructionStanza,
-      "2" -> sqpQpCalloutStanza,
+      "1" -> sqpQpInstruction,
+      "2" -> sqpQpCallout,
       "3" -> sqpQpQuestionStanza,
       "4" -> sqpFapValueStanza,
-      "5" -> sqpFapInstructionStanza,
+      "5" -> sqpFapInstruction,
       "6" -> sqpSapValueStanza,
-      "7" -> sqpSapInstructionStanza,
-      "8" -> sqpSapCalloutStanza,
+      "7" -> sqpSapInstruction,
+      "8" -> sqpSapCallout,
       "end" -> EndStanza
     )
 
   }
+
+  def simpleQuestionPageAlt:Map[String,Stanza] = {
+
+    // Define Map of Stanzas to be processed
+    Map(
+      "start" -> sqpQpValueStanza,
+      "1" -> sqpQpInstruction,
+      "2" -> sqpQpCallout,
+      "3" -> sqpQpQuestionStanza,
+      "4" -> sqpFapValueStanza,
+      "5" -> sqpFapInstruction,
+      "6" -> sqpSapValueStanza,
+      "7" -> sqpSapInstruction,
+      "8" -> sqpSapCallout,
+      "end" -> EndStanza
+    )
+
+  }
+
 }

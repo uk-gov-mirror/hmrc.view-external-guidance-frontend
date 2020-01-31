@@ -18,15 +18,26 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process}
+import play.api.i18n.Lang
 
 import scala.annotation.tailrec
-
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
 
-  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+  val languageIndexMap: Map[String, Int] = Map("en" -> 0, "cy" -> 1)
+  def languageIndex(lang: Lang): Int = languageIndexMap.get(lang.code).getOrElse(0) // Unknown language => English
+
+
+  def buildPage(key: String, process: Process)(implicit lang:Lang): Either[FlowError, Page] = {
+
+    implicit val langIndex: Int = languageIndex(lang)
+
+    def phrase(index: Int): Either[FlowError, String] = process.phrase(index) match {
+      case Some(text) => Right(text)
+      case None => Left(PhraseNotFound(index))
+    }
 
     def pageUrl(values: List[Value]): Option[String] =
       values.filter(_.label.equals(PageUrlValueName.toString)) match {
@@ -34,18 +45,38 @@ object PageBuilder {
         case x :: _ => Some(x.value)
       }
 
-    def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean = existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
+    def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
+      existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
+
+    def populateStanza(stanza: Stanza): Either[FlowError, Stanza] =
+      stanza match {
+        // case q: QuestionStanza =>
+        //     val phrases: Seq[(Int, Option[String])] = (q.text :+ q.answers).map((i.text, process.phrase(i.text)))
+        //     phrases.
+        //       process.phrase(q.text).flatMap{ t =>
+        //   Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
+        // }
+        case i: InstructionStanza => process.phrase(i.text).map(t => Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
+        case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
+        case s: Stanza => Right(s)
+      }
 
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
       process.flow.get(key) match {
-        case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
-        case Some(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v))
-        case Some(i: InstructionStanza) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i))
-        case Some(c: CalloutStanza) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c))
-        case Some(q: QuestionStanza) => Right((acc :+ KeyedStanza(key, q), q.next))
-        case Some(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
-        case Some(unknown) => Left(UnknownStanza(unknown))
+        case Some(s: Stanza) =>
+          populateStanza(s) match {
+            case Right(p) => p match {
+              case v: ValueStanza if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
+              case v: ValueStanza => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v))
+              case i: Instruction => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i))
+              case c: Callout => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c))
+              case q: QuestionStanza => Right((acc :+ KeyedStanza(key, q), q.next))
+              case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
+              case unknown => Left(UnknownStanza(unknown))
+            }
+            case Left(err) => Left(err)
+          }
         case None => Left(NoSuchPage(key))
       }
 
@@ -65,7 +96,7 @@ object PageBuilder {
 
   }
 
-  def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {
+  def pages(process: Process, start: String = "start")(implicit lang:Lang): Either[FlowError, Seq[Page]] = {
 
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[FlowError, Seq[Page]] =

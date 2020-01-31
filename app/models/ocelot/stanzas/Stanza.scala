@@ -23,6 +23,8 @@ trait Stanza {
   val next:Seq[String] = Nil
 }
 
+trait PopulatedStanza extends Stanza
+
 case object EndStanza extends Stanza
 
 object Stanza {

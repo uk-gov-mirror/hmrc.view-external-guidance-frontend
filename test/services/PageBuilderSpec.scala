@@ -21,8 +21,11 @@ import models.ocelot.stanzas._
 import models.ocelot.{Page, _}
 import play.api.libs.json._
 import utils.StanzaHelper
+import play.api.i18n.Lang
 
 class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
+
+  implicit val lang: Lang = Lang("en")
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
 
@@ -44,7 +47,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       PageBuilder.buildPage("start", process) match {
         case Left(UnknownStanza(DummyStanza)) => succeed
-        case _ => fail("Unknown stanza not detected")
+        case Left(stanza) => fail(s"Unknown stanza not detected, found $stanza")
+        case err => fail(s"Unknown stanza not detected $err")
       }
 
     }
@@ -131,9 +135,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             pages.length mustBe 28
 
-          // This test requires an update to the parsing of a process
-          //testPagesInPrototypeJson( pages )
-
           case Left(err) => fail(s"FlowError $err")
         }
 
@@ -170,7 +171,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "When processing a simple question page" must {
 
-      val process: Process = Process(meta, simpleQuestionPage, Vector(), Vector())
+      val process: Process = Process(meta, simpleQuestionPageAlt, Vector(), Vector())
 
       PageBuilder.pages(process) match {
 
@@ -185,12 +186,13 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
           val indexedSeqOfPages = pages.toIndexedSeq
 
-          // Test contents of individual pages
+          //Test contents of individual pages
           testSqpQp(indexedSeqOfPages(0))
 
           testSqpFap(indexedSeqOfPages(1))
 
           testSqpSap(indexedSeqOfPages(2))
+
         case Left(err) => fail(s"Flow error $err")
       }
 
@@ -230,8 +232,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       firstPage.stanzas.size mustBe 4
 
       firstPage.stanzas.get("start") mustBe Some(sqpQpValueStanza)
-      firstPage.stanzas.get("1") mustBe Some(sqpQpInstructionStanza)
-      firstPage.stanzas.get("2") mustBe Some(sqpQpCalloutStanza)
+      firstPage.stanzas.get("1") mustBe Some(sqpQpInstruction)
+      firstPage.stanzas.get("2") mustBe Some(sqpQpCallout)
       firstPage.stanzas.get("3") mustBe Some(sqpQpQuestionStanza)
 
       firstPage.next mustBe Seq("4", "6")
@@ -252,7 +254,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       secondPage.stanzas.size mustBe 3
 
       secondPage.stanzas.get("4") mustBe Some(sqpFapValueStanza)
-      secondPage.stanzas.get("5") mustBe Some(sqpFapInstructionStanza)
+      secondPage.stanzas.get("5") mustBe Some(sqpFapInstruction)
       secondPage.stanzas.get("end") mustBe Some(EndStanza)
 
       secondPage.next mustBe Nil
@@ -273,8 +275,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       thirdPage.stanzas.size mustBe 4
 
       thirdPage.stanzas.get("6") mustBe Some(sqpSapValueStanza)
-      thirdPage.stanzas.get("7") mustBe Some(sqpSapInstructionStanza)
-      thirdPage.stanzas.get("8") mustBe Some(sqpSapCalloutStanza)
+      thirdPage.stanzas.get("7") mustBe Some(sqpSapInstruction)
+      thirdPage.stanzas.get("8") mustBe Some(sqpSapCallout)
       thirdPage.stanzas.get("end") mustBe Some(EndStanza)
 
       thirdPage.next mustBe Nil
