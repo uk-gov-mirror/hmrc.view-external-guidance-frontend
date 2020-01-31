@@ -29,32 +29,35 @@ object PageBuilder {
   val languageIndexMap: Map[String, Int] = Map("en" -> 0, "cy" -> 1)
   def languageIndex(lang: Lang): Int = languageIndexMap.get(lang.code).getOrElse(0) // Unknown language => English
 
+  def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
+    existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
+
+  def pageUrl(values: List[Value]): Option[String] =
+    values.filter(_.label.equals(PageUrlValueName.toString)) match {
+      case Nil => None
+      case x :: _ => Some(x.value)
+    }
 
   def buildPage(key: String, process: Process)(implicit lang:Lang): Either[FlowError, Page] = {
 
     implicit val langIndex: Int = languageIndex(lang)
 
-    def phrase(index: Int): Either[FlowError, String] = process.phrase(index) match {
-      case Some(text) => Right(text)
-      case None => Left(PhraseNotFound(index))
-    }
-
-    def pageUrl(values: List[Value]): Option[String] =
-      values.filter(_.label.equals(PageUrlValueName.toString)) match {
-        case Nil => None
-        case x :: _ => Some(x.value)
+    @tailrec
+    def phrases(indexes: Seq[Int], acc: Seq[String]): Either[FlowError, Seq[String]] =
+      indexes match {
+        case Nil => Right(acc.reverse)
+        case index :: xs => process.phrase(index) match {
+          case Some(text) => phrases(xs, text +: acc)
+          case None => Left(PhraseNotFound(index))
+        }
       }
-
-    def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
-      existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
 
     def populateStanza(stanza: Stanza): Either[FlowError, Stanza] =
       stanza match {
-        case q: QuestionStanza =>
-          (q.text +: q.answers).map(phrase(_)) match {
-            case Right(text) :: xs if !xs.exists(_.isLeft) => Right(Question(q, text, xs.map( _.right.get)))
-            case results => Left(results.dropWhile(_.isRight).head.left.get)
-          }
+        case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
+                                    case Right(texts) => Right(Question(q, texts.head, texts.tail))
+                                    case Left(err) => Left(err)
+                                  }
         case i: InstructionStanza => process.phrase(i.text).map(t => Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
         case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
         case s: Stanza => Right(s)
@@ -85,14 +88,11 @@ object PageBuilder {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
             val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
             Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
-
           case _ =>
             Left(MissingPageUrlValueStanza(key))
         }
-
       case Left(err) => Left(err)
     }
-
   }
 
   def pages(process: Process, start: String = "start")(implicit lang:Lang): Either[FlowError, Seq[Page]] = {
