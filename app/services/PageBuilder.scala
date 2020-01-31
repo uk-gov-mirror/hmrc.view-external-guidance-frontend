@@ -25,8 +25,12 @@ import scala.annotation.tailrec
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
+  def apply(supportedLanguagesInOrder: List[Lang]): PageBuilder = new PageBuilder(supportedLanguagesInOrder)
+}
 
-  val languageIndexMap: Map[String, Int] = Map("en" -> 0, "cy" -> 1)
+class PageBuilder(supportedLanguagesInOrder: List[Lang]) {
+
+  val languageIndexMap: Map[String, Int] = supportedLanguagesInOrder.map(_.code).zipWithIndex.toMap
   def languageIndex(lang: Lang): Int = languageIndexMap.get(lang.code).getOrElse(0) // Unknown language => English
 
   def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
@@ -83,14 +87,12 @@ object PageBuilder {
       }
 
     collectStanzas(key, Nil) match {
-      case Right((keyedStanzas, next)) =>
-        keyedStanzas.head.stanza match {
-          case v: ValueStanza if pageUrl(v.values).isDefined =>
-            val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-            Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
-          case _ =>
-            Left(MissingPageUrlValueStanza(key))
-        }
+      case Right((Nil,_)) => Left(NoPagesFound)
+      case Right((ks, next)) => ks.head.stanza match {
+                                  case v: ValueStanza if pageUrl(v.values).isDefined =>
+                                    Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next))
+                                  case _ => Left(MissingPageUrlValueStanza(key))
+                                }
       case Left(err) => Left(err)
     }
   }
@@ -101,13 +103,11 @@ object PageBuilder {
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[FlowError, Seq[Page]] =
       keys match {
         case Nil => Right(acc)
-
         case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
             case Right(page) => pagesByKeys(page.next ++ xs, acc :+ page)
             case Left(err) => Left(err)
           }
-
         case _ :: xs => pagesByKeys(xs, acc)
       }
 
