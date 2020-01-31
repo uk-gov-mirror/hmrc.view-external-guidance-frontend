@@ -176,7 +176,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "detect PhraseNotFound in CalloutStanza" in {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
-        "1" -> InstructionStanza(2, Seq("end"), None, false),
+        "1" -> CalloutStanza(Title, 2, Seq("end"), false),
         "end" -> EndStanza
       )
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
