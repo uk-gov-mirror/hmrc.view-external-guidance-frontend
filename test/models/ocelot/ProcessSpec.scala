@@ -46,30 +46,30 @@ class ProcesSpec extends BaseSpec with ProcessJson {
     incorrectPropertyTypeJsObjectAttrTests[Process](prototypeJson, List("howto", "contacts"))
   }
 
-  "Process phrase fn" must {
-    "Return english text for a valid index in the context of the lang index for English" in {
-      implicit val langIndex: Int = 0
+  // "Process phrase fn" must {
+  //   "Return english text for a valid index in the context of the lang index for English" in {
+  //     implicit val langIndex: Int = 0
 
-      process.phrase(0) mustBe Some("Telling HMRC about extra income")
-    }
+  //     process.phrase(0) mustBe Some("Telling HMRC about extra income")
+  //   }
 
-    "Return welsh text for a valid index in the context of the lang index for Welsh" in {
-      implicit val langIndex: Int = 1
+  //   "Return welsh text for a valid index in the context of the lang index for Welsh" in {
+  //     implicit val langIndex: Int = 1
 
-      process.phrase(0) mustBe Some("Welsh: Telling HMRC about extra income")
-    }
+  //     process.phrase(0) mustBe Some("Welsh: Telling HMRC about extra income")
+  //   }
 
-    "Return None for a invalid index in the context of the lang index for English" in {
-      implicit val langIndex: Int = 0
+  //   "Return None for a invalid index in the context of the lang index for English" in {
+  //     implicit val langIndex: Int = 0
 
-      process.phrase(100) mustBe None
-    }
+  //     process.phrase(100) mustBe None
+  //   }
 
-    "Return None for a invalid index in the context of the lang index for Welsh" in {
-      implicit val langIndex: Int = 1
+  //   "Return None for a invalid index in the context of the lang index for Welsh" in {
+  //     implicit val langIndex: Int = 1
 
-      process.phrase(100) mustBe None
-    }
+  //     process.phrase(100) mustBe None
+  //   }
 
-  }
+  // }
 }

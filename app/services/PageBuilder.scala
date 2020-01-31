@@ -46,13 +46,17 @@ class PageBuilder(ocelotOrderLanguages: List[Lang]) {
 
     implicit val langIndex: Int = languageIndex(lang)
 
+    val phraseFn = process.phrases.lift
+    def phrase(phraseIndex: Int)(implicit langIndex: Int): Either[FlowError, String] =
+      phraseFn(phraseIndex).map(phrase => Right(phrase.langs(langIndex))).getOrElse(Left(PhraseNotFound(phraseIndex)))
+
     @tailrec
     def phrases(indexes: Seq[Int], acc: Seq[String]): Either[FlowError, Seq[String]] =
       indexes match {
         case Nil => Right(acc.reverse)
-        case index :: xs => process.phrase(index) match {
-          case Some(text) => phrases(xs, text +: acc)
-          case None => Left(PhraseNotFound(index))
+        case index :: xs => phrase(index) match {
+          case Right(text) => phrases(xs, text +: acc)
+          case Left(_) => Left(PhraseNotFound(index))
         }
       }
 
@@ -62,8 +66,8 @@ class PageBuilder(ocelotOrderLanguages: List[Lang]) {
                                     case Right(texts) => Right(Question(q, texts.head, texts.tail))
                                     case Left(err) => Left(err)
                                   }
-        case i: InstructionStanza => process.phrase(i.text).map(t => Right(Instruction(i,t))).getOrElse(Left(PhraseNotFound(i.text)))
-        case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
+        case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
+        case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
         case s: Stanza => Right(s)
       }
 
