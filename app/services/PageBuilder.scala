@@ -18,12 +18,9 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process, Phrase}
-import play.api.i18n.Lang
-
 import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
-
 
 object PageBuilder {
 
@@ -79,15 +76,18 @@ object PageBuilder {
             }
             case Left(err) => Left(err)
           }
+
         case None => Left(NoSuchPage(key))
       }
 
     collectStanzas(key, Nil) match {
-      case Right((ks, next)) => ks.head.stanza match {
-                                  case v: ValueStanza if pageUrl(v.values).isDefined =>
-                                    Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next))
-                                  case _ => Left(MissingPageUrlValueStanza(key))
-                                }
+      case Right((ks, next)) =>
+        ks.head.stanza match {
+          case v: ValueStanza if pageUrl(v.values).isDefined =>
+            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next))
+          case _ => Left(MissingPageUrlValueStanza(key))
+        }
+
       case Left(err) => Left(err)
     }
   }
