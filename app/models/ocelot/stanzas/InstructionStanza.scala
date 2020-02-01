@@ -39,12 +39,12 @@ object InstructionStanza {
 
 }
 
-case class Instruction(text: String,
+case class Instruction(text: Vector[String],
                        override val next: Seq[String],
                        link: Option[Int],
                        stack: Boolean) extends PopulatedStanza
 
 object Instruction {
-  def apply(stanza: InstructionStanza, text: String): Instruction =
+  def apply(stanza: InstructionStanza, text: Vector[String]): Instruction =
     Instruction(text, stanza.next, stanza.link, stanza.stack)
 }

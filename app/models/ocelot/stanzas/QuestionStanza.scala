@@ -36,12 +36,12 @@ object QuestionStanza {
   }
 }
 
-case class Question(text: String,
-                    answers: Seq[String],
+case class Question(text: Vector[String],
+                    answers: Seq[Vector[String]],
                     override val next: Seq[String],
                     stack: Boolean) extends PopulatedStanza
 
 object Question {
-  def apply(stanza: QuestionStanza, text: String, answers: Seq[String]): Question =
+  def apply(stanza: QuestionStanza, text: Vector[String], answers: Seq[Vector[String]]): Question =
     Question(text, answers, stanza.next, stanza.stack)
 }
