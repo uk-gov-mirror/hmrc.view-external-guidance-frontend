@@ -108,22 +108,4 @@ trait StanzaHelper {
 
   }
 
-  // def simpleQuestionPageAlt:Map[String,Stanza] = {
-
-  //   // Define Map of Stanzas to be processed
-  //   Map(
-  //     "start" -> sqpQpValueStanza,
-  //     "1" -> sqpQpInstruction,
-  //     "2" -> sqpQpCallout,
-  //     "3" -> sqpQpQuestion,
-  //     "4" -> sqpFapValueStanza,
-  //     "5" -> sqpFapInstruction,
-  //     "6" -> sqpSapValueStanza,
-  //     "7" -> sqpSapInstruction,
-  //     "8" -> sqpSapCallout,
-  //     "end" -> EndStanza
-  //   )
-
-  // }
-
 }
