@@ -19,6 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
+import models.ocelot.Phrase
 
 case class QuestionStanza(text: Int,
                           answers: Seq[Int],
@@ -36,12 +37,12 @@ object QuestionStanza {
   }
 }
 
-case class Question(text: Vector[String],
-                    answers: Seq[Vector[String]],
+case class Question(text: Phrase,
+                    answers: Seq[Phrase],
                     override val next: Seq[String],
                     stack: Boolean) extends PopulatedStanza
 
 object Question {
-  def apply(stanza: QuestionStanza, text: Vector[String], answers: Seq[Vector[String]]): Question =
+  def apply(stanza: QuestionStanza, text: Phrase, answers: Seq[Phrase]): Question =
     Question(text, answers, stanza.next, stanza.stack)
 }

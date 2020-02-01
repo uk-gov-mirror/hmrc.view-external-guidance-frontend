@@ -47,23 +47,23 @@ trait StanzaHelper {
   val sqpQpCalloutStanza = CalloutStanza(SubTitle, 1, Seq( "3" ), false)
   val sqpQpQuestionStanza = QuestionStanza(2, Seq(3,4), Seq( "4", "6" ), false)
   // Question page - After
-  val sqpQpInstruction = Instruction(phrases(0).langs, Seq( "2" ), None, false)
-  val sqpQpCallout = Callout(SubTitle, phrases(1).langs, Seq( "3" ), false)
-  val sqpQpQuestion = Question(phrases(2).langs, Seq(phrases(3).langs, phrases(4).langs), Seq( "4", "6" ), false)
+  val sqpQpInstruction = Instruction(phrases(0), Seq( "2" ), None, false)
+  val sqpQpCallout = Callout(SubTitle, phrases(1), Seq( "3" ), false)
+  val sqpQpQuestion = Question(phrases(2), Seq(phrases(3), phrases(4)), Seq( "4", "6" ), false)
 
   // First answer page BEFORE
   val sqpFapValueStanza = ValueStanza( List( sqpFapValue ), Seq( "5" ), false )
   val sqpFapInstructionStanza = InstructionStanza( 0, Seq( "end" ), None, false )
   // First answer page AFTER
-  val sqpFapInstruction = Instruction( phrases(0).langs, Seq( "end" ), None, false )
+  val sqpFapInstruction = Instruction( phrases(0), Seq( "end" ), None, false )
 
   // Second answer page BEFORE
   val sqpSapValueStanza = ValueStanza( List( sqpSapValue ), Seq( "7" ), false )
   val sqpSapInstructionStanza = InstructionStanza( 5, Seq( "8" ), Some( 0 ), false  )
   val sqpSapCalloutStanza = CalloutStanza( Lede, 6, Seq( "end" ), false )
   // Second answer page AFTER
-  val sqpSapInstruction = Instruction( phrases(5).langs, Seq( "8" ), Some( 0 ), false  )
-  val sqpSapCallout = Callout( Lede, phrases(6).langs, Seq( "end" ), false )
+  val sqpSapInstruction = Instruction( phrases(5), Seq( "8" ), Some( 0 ), false  )
+  val sqpSapCallout = Callout( Lede, phrases(6), Seq( "end" ), false )
 
   def onePage:Map[String,Stanza] = {
 

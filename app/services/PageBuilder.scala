@@ -37,15 +37,15 @@ object PageBuilder {
     }
 
   private def populateStanza(stanza: Stanza, process: Process): Either[FlowError, Stanza] = {
-    def phrase(phraseIndex: Int): Either[FlowError, Vector[String]] =
-      process.phraseOption(phraseIndex).map(phrase => Right(phrase.langs)).getOrElse(Left(PhraseNotFound(phraseIndex)))
+    def phrase(phraseIndex: Int): Either[FlowError, Phrase] =
+      process.phraseOption(phraseIndex).map(Right(_)).getOrElse(Left(PhraseNotFound(phraseIndex)))
 
     @tailrec
-    def phrases(indexes: Seq[Int], acc: Seq[Vector[String]]): Either[FlowError, Seq[Vector[String]]] =
+    def phrases(indexes: Seq[Int], acc: Seq[Phrase]): Either[FlowError, Seq[Phrase]] =
       indexes match {
-        case Nil => Right(acc.reverse)
+        case Nil => Right(acc)
         case index :: xs => phrase(index) match {
-          case Right(text) => phrases(xs, text +: acc)
+          case Right(phrase) => phrases(xs, acc :+ phrase)
           case Left(_) => Left(PhraseNotFound(index))
         }
       }
