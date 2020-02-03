@@ -59,7 +59,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect MissingPageUrlValueStanza error" in {
+    "detect MissingPageUrlValueStanza error when stanza routes to page not starting with PageUrl ValueStanza" in {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
@@ -80,7 +80,28 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect MissingPageUrlWithinValueStanza error" in {
+    "detect MissingPageUrlValueStanza error when PageValue is present but url is blank" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                              Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                                              Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                                              Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+      PageBuilder.pages(process) match {
+        case Left(MissingPageUrlValueStanza("start")) => succeed
+        case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
+        case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
+      }
+    }
+
+    "detect MissingPageUrlWithinValueStanza error when no PageUrl named value" in {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, "SomeValue", "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
@@ -176,21 +197,42 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "detect LinkNotFound(1) in InstructionStanza" in {
 
       val flow: Map[String, Stanza] = Map(
-        "start" -> ValueStanza( List( Value( Scalar, PageUrlValueName.toString, "Blah Blah") ), Seq("1"), false ),
-        "1" -> InstructionStanza( 0, Seq( "2" ), None, false ),
-        "2" -> InstructionStanza( 1, Seq( "end" ), Some( 1 ), false ),
+        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah Blah")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> InstructionStanza(1, Seq("end"), Some(1), false),
         "end" -> EndStanza
       )
 
       // Create process with single link
-      val process: Process = Process( metaSection, flow,
-        Vector[Phrase]( Phrase( Vector( "First English phrase", "First Welsh Phrase")), Phrase( Vector( "Second English Phrase", "Second Welsh Phrase") ) ),
-        Vector[Link]( Link( 0, "http://my.com/search", "MyCOM Search Engine", false ) ) )
+      val process: Process = Process(metaSection, flow,
+        Vector[Phrase](Phrase(Vector("First English phrase", "First Welsh Phrase")), Phrase(Vector("Second English Phrase", "Second Welsh Phrase"))),
+        Vector[Link](Link(0, "http://my.com/search", "MyCOM Search Engine", false)))
 
-      PageBuilder.pages( process ) match {
+      PageBuilder.pages(process) match {
         case Left(LinkNotFound(1)) => succeed
-        case Left(err) => fail( s"Missing LinkNotFound error. Actual error raised is $err" )
-        case Right(_) => fail( "Page building terminated successfully when LinkNotFound error expected" )
+        case Left(err) => fail(s"Missing LinkNotFound error. Actual error raised is $err")
+        case Right(_) => fail("Page building terminated successfully when LinkNotFound error expected")
+      }
+    }
+
+    "detect DuplicatePageUrl" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("5"), false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                              Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                                              Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                                              Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+      PageBuilder.pages(process) match {
+        case Left(DuplicatePageUrl("4", "/this")) => succeed
+        case Left(err) => fail(s"DuplicatePageUrl error not detected, failed with $err")
+        case _ => fail(s"DuplicatePageUrl not detected")
       }
     }
 
