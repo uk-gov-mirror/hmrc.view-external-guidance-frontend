@@ -251,7 +251,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
           case Right(pages) =>
             pages mustNot be(Nil)
 
-            pages.length mustBe 27
+            pages.length mustBe 28
 
           case Left(err) => fail(s"FlowError $err")
         }
@@ -336,21 +336,21 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   }
 
-  // "When processing a 2 page flow seperated by a ValueStanza" must {
-  //   val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(Phrase(Vector("Some Text","Welsh, Some Text")),
-  //                                                                               Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())
-  //   "result in 2 pages" in {
-  //     PageBuilder.pages(process) match {
-  //       case Right(pages) if pages.length == 2 => succeed
-  //       case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
-  //       case Left(err) => fail(s"FAIL ${err.toString}")
-  //     }
-  //   }
-  // }
+  "When processing a 2 page flow seperated by a ValueStanza" must {
+    val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                                                Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())
+    "result in 2 pages" in {
+      PageBuilder.pages(process) match {
+        case Right(pages) if pages.length == 2 => succeed
+        case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
+        case Left(err) => fail(s"FAIL ${err.toString}")
+      }
+    }
+  }
 
   def testPagesInPrototypeJson( pages: Seq[Page] ) : Unit = {
 
-    val expectedPageIds: List[String] = List( "start", "36", "37", "39", "46", "53", "60",
+    val expectedPageIds: List[String] = List( "start", "26", "36", "37", "39", "46", "53", "60",
                                               "70", "77", "120", "80", "83", "90", "97", "102",
                                               "109", "113", "121", "124", "127", "131", "159",
                                               "138", "143", "151", "157", "158" )

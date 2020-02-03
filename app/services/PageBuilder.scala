@@ -62,29 +62,33 @@ object PageBuilder {
     }
   }
 
-
-  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
-
-    @tailrec
-    def collectStanzas(key: String,
-                       acc: Seq[KeyedStanza],
-                       linkedStanzas: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
+  // Return FlowError or
+  //        (Seq[KeyedStanza], Seq[String], Seq[String]) ==  KeyedStanzas, page next list, any within-page linked page ids
+  @tailrec
+  private def collectStanzas(key: String,
+                             process: Process,
+                             acc: Seq[KeyedStanza],
+                             linkedStanzas: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
     process.flow.get(key) match {
+      case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedStanzas))
       case Some(s: Stanza) => populateStanza(s, process) match {
-        case Right(p) => p match {
-          case ValueStanza(_,_,_) | Instruction(_,_,_,_) | Callout(_,_,_,_) =>
-            collectStanzas(p.next.head, acc :+ KeyedStanza(key, p), linkedStanzas)
-          case q: Question => Right((acc :+ KeyedStanza(key, q), q.next, linkedStanzas))
-          case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
-          case unknown => Left(UnknownStanza(unknown))
+          case Right(p) => p match {
+            case v: ValueStanza => collectStanzas(v.next.head, process, acc :+ KeyedStanza(key, v), linkedStanzas)
+            case i: Instruction => collectStanzas(i.next.head, process, acc :+ KeyedStanza(key, i), linkedStanzas)
+            case c: Callout => collectStanzas(c.next.head, process, acc :+ KeyedStanza(key, c), linkedStanzas)
+            case q: Question => Right((acc :+ KeyedStanza(key, q), q.next, linkedStanzas))
+            case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
+            case unknown => Left(UnknownStanza(unknown))
+          }
+          case Left(err) => Left(err)
         }
-        case Left(err) => Left(err)
-      }
 
       case None => Left(NoSuchPage(key))
     }
 
-    collectStanzas(key, Nil, Nil) match {
+  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+
+    collectStanzas(key, process, Nil, Nil) match {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
