@@ -66,10 +66,9 @@ object PageBuilder {
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
       process.flow.get(key) match {
-        case Some(s: Stanza) =>
-          populateStanza(s, process) match {
+        case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
+        case Some(s: Stanza) => populateStanza(s, process) match {
             case Right(p) => p match {
-              case v: ValueStanza if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
               case v: ValueStanza => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v))
               case i: Instruction => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i))
               case c: Callout => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c))
