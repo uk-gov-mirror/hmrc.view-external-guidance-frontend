@@ -34,6 +34,8 @@ object PageBuilder {
       case _ => None
     }
 
+  private def pageUrlUnique(url: String, existingPages:Seq[Page]): Boolean = !existingPages.exists(_.url == url)
+
   private def populateStanza(stanza: Stanza, process: Process): Either[FlowError, Stanza] = {
     def phrase(phraseIndex: Int): Either[FlowError, Phrase] =
       process.phraseOption(phraseIndex).map(Right(_)).getOrElse(Left(PhraseNotFound(phraseIndex)))
@@ -101,7 +103,8 @@ object PageBuilder {
         case Nil => Right(acc)
         case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
-            case Right(page) => pagesByKeys(page.next ++ xs, acc :+ page)
+            case Right(page) if pageUrlUnique(page.url, acc) => pagesByKeys(page.next ++ xs, acc :+ page)
+            case Right(page) => Left(DuplicatePageUrl(page.id, page.url))
             case Left(err) => Left(err)
           }
         case _ :: xs => pagesByKeys(xs, acc)

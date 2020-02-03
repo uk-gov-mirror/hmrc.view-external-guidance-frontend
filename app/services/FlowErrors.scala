@@ -23,7 +23,6 @@ trait FlowError
 case class UnknownStanza(unknown: Stanza) extends FlowError
 case class NoSuchPage(id: String) extends FlowError
 case class EmptyPage(id: String) extends FlowError
-case object NoPagesFound extends FlowError
 case class MissingPageUrlValueStanza(id: String) extends FlowError
 case class PhraseNotFound(index:Int) extends FlowError
-case class DuplicatePageUrl(id: String) extends FlowError
+case class DuplicatePageUrl(id: String, url: String) extends FlowError
