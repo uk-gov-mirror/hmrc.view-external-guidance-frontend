@@ -19,7 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import models.ocelot.Process
+import models.ocelot.{Phrase, Process}
 
 case class CalloutStanza(noteType: CalloutType,
                          text: Int,
@@ -39,12 +39,12 @@ object CalloutStanza {
 }
 
 case class Callout(noteType: CalloutType,
-                   text: String,
+                   text: Phrase,
                    override val next: Seq[String],
                    stack: Boolean) extends PopulatedStanza
 
 object Callout {
-  def apply( stanza: CalloutStanza, text: String): Callout =
+  def apply( stanza: CalloutStanza, text: Phrase): Callout =
     Callout( stanza.noteType, text, stanza.next, stanza.stack)
 }
 

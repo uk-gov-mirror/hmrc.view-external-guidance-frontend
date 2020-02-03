@@ -18,14 +18,12 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.{Link, Page, Process, Phrase}
+
 import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
-
-  //val languageIndexMap: Map[String, Int] = ocelotOrderLanguages.map(_.code).zipWithIndex.toMap
-  //def languageIndex(lang: Lang): Int = languageIndexMap.get(lang.code).getOrElse(0) // Unknown language => English
 
   private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
     existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
@@ -61,8 +59,7 @@ object PageBuilder {
     }
   }
 
-
-  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+  //def buildPage(key: String, process: Process): Either[FlowError, Page] = {
 
     //implicit val langIndex: Int = languageIndex(lang)
 
@@ -86,13 +83,13 @@ object PageBuilder {
         //                            case Right(texts) => Right(Question(q, texts.head, texts.tail))
         //                            case Left(err) => Left(err)
         //                          }
-<<//<<<<<
+//<<//<<<<<
     //    case i: InstructionStanza => populateInstructionStanza( i )
       //  case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
-==//=====
+//==//=====
     //    case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
         //case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
->>//>>>>> origin/EG-220
+//>>//>>>>> origin/EG-220
     //    case s: Stanza => Right(s)
       //}
 
@@ -113,6 +110,8 @@ object PageBuilder {
       //}
     //}
 
+  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
       process.flow.get(key) match {
@@ -129,6 +128,7 @@ object PageBuilder {
             }
             case Left(err) => Left(err)
           }
+
         case None => Left(NoSuchPage(key))
       }
 
@@ -138,9 +138,10 @@ object PageBuilder {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
             Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next))
           case _ => Left(MissingPageUrlValueStanza(key))
-                                }
+        }
       case Left(err) => Left(err)
     }
+
   }
 
   def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {

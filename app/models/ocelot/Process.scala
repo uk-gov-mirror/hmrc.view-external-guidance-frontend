@@ -32,14 +32,12 @@ case class Process(meta: Meta,
 }
 
 
-
 object Process {
 
   implicit val reads: Reads[Process] = (
     (__ \ "meta").read[Meta] and
-    (__ \ "flow").read[Map[String, Stanza]] and
-    (__ \ "phrases").read[Vector[Phrase]] and
-    (__ \ "links").read[Vector[Link]]
-  )(Process.apply _)
-
+      (__ \ "flow").read[Map[String, Stanza]] and
+      (__ \ "phrases").read[Vector[Phrase]] and
+      (__ \ "links").read[Vector[Link]]
+    )(Process.apply _)
 }

@@ -19,6 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads}
 import play.api.libs.json.Reads._
+import models.ocelot.Phrase
 
 import models.ocelot.Link
 
@@ -41,12 +42,13 @@ object InstructionStanza {
 
 }
 
-case class Instruction(text: String,
+case class Instruction(text: Phrase,
                        override val next: Seq[String],
-                       link: Option[Link],
+                       //link: Option[Link],
+                       link: Option[Int],
                        stack: Boolean) extends PopulatedStanza
 
 object Instruction {
-  def apply(stanza: InstructionStanza, text: String, link: Option[Link]): Instruction =
-    Instruction(text, stanza.next, link, stanza.stack)
+  def apply(stanza: InstructionStanza, text: Phrase): Instruction =
+    Instruction(text, stanza.next, stanza.link, stanza.stack)
 }
