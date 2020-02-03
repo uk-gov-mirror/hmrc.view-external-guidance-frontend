@@ -24,12 +24,14 @@ case class Process(meta: Meta,
                    flow: Map[String, Stanza],
                    phrases: Vector[Phrase],
                    links: Vector[Link]) {
-  val phraseFn = phrases.lift
-  def phrase(phraseIndex: Int)(implicit langIndex: Int): Option[String] = phraseFn(phraseIndex).map(phrase => phrase.langs(langIndex))
+
+  lazy val phraseOption:Int => Option[Phrase] = phrases.lift
 
   val linkFn = links.lift
   def link(linkIndex: Int): Option[Link] = linkFn(linkIndex)
 }
+
+
 
 object Process {
 
