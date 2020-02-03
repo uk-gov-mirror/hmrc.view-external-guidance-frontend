@@ -17,7 +17,8 @@
 package services
 
 import models.ocelot.stanzas._
-import models.ocelot.{Page, Process, Phrase}
+import models.ocelot.{Link, Page, Process, Phrase}
+
 import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
@@ -51,12 +52,25 @@ object PageBuilder {
         }
       }
 
+    def link( linkIndex: Int ) : Either[LinkNotFound, Link ] =
+      process.linkOption( linkIndex ).map( Right(_)).getOrElse(Left( LinkNotFound( linkIndex ) ) )
+
+    def populateInstruction( i: InstructionStanza ) : Either[FlowError, Instruction] = {
+      phrase( i.text ).fold( Left(_),
+        text => {
+          i.link match {
+            case Some( linkIndex ) => link( linkIndex ).fold(Left(_), link => Right( Instruction( i, text, Some(link) ) ) )
+            case None => Right( Instruction( i, text, None ) )
+          }
+        })
+    }
+
     stanza match {
       case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
-                                  case Right(texts) => Right(Question(q, texts.head, texts.tail))
-                                  case Left(err) => Left(err)
-                                }
-      case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
+        case Right(texts) => Right(Question(q, texts.head, texts.tail))
+        case Left(err) => Left(err)
+      }
+      case i: InstructionStanza => populateInstruction( i )
       case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
       case s: Stanza => Right(s)
     }
@@ -95,9 +109,9 @@ object PageBuilder {
             Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
-
       case Left(err) => Left(err)
     }
+
   }
 
   def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {

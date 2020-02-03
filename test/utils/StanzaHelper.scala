@@ -17,7 +17,7 @@
 package utils
 
 import models.ocelot.stanzas._
-import models.ocelot.Phrase
+import models.ocelot.{Link, Phrase}
 
 trait StanzaHelper {
 
@@ -35,6 +35,8 @@ trait StanzaHelper {
                                 Phrase(Vector("Text 4","Welsh, Text 4")),
                                 Phrase(Vector("Text 5","Welsh, Text 5")),
                                 Phrase(Vector("Text 6","Welsh, Text 6")))
+
+  val links: Vector[Link] = Vector( Link( 0, "http://my.com/news", "MyCOM Daily News", true ) )
 
   // Define stanzas used in simple question page test
   val sqpQpValue = Value( Scalar, "PageUrl", "/page/1" )
@@ -62,7 +64,7 @@ trait StanzaHelper {
   val sqpSapInstructionStanza = InstructionStanza( 5, Seq( "8" ), Some( 0 ), false  )
   val sqpSapCalloutStanza = CalloutStanza( Lede, 6, Seq( "end" ), false )
   // Second answer page AFTER
-  val sqpSapInstruction = Instruction( phrases(5), Seq( "8" ), Some( 0 ), false  )
+  val sqpSapInstruction = Instruction( phrases(5), Seq( "8" ), Some( links(0) ), false  )
   val sqpSapCallout = Callout( Lede, phrases(6), Seq( "end" ), false )
 
   def onePage:Map[String,Stanza] = {
