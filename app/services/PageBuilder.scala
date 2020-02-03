@@ -30,7 +30,8 @@ object PageBuilder {
   private def pageUrl(values: List[Value]): Option[String] =
     values.filter(_.label.equals(PageUrlValueName.toString)) match {
       case Nil => None
-      case x :: _ => Some(x.value)
+      case x :: _ if x.value.nonEmpty => Some(x.value)
+      case _ => None
     }
 
   private def populateStanza(stanza: Stanza, process: Process): Either[FlowError, Stanza] = {

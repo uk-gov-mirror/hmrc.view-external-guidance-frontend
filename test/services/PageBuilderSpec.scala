@@ -59,7 +59,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect MissingPageUrlValueStanza error" in {
+    "detect MissingPageUrlValueStanza error when QuestionStanza routes to page not starting with PageUrl ValueStanza" in {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
@@ -80,7 +80,28 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect MissingPageUrlWithinValueStanza error" in {
+    "detect MissingPageUrlValueStanza error when PageValue is present but url is blank" in {
+      val flow = Map(
+        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "")), Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                                              Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                                              Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                                              Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+      PageBuilder.pages(process) match {
+        case Left(MissingPageUrlValueStanza("start")) => succeed
+        case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
+        case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
+      }
+    }
+
+    "detect MissingPageUrlWithinValueStanza error when no PageUrl named value" in {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, "SomeValue", "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
