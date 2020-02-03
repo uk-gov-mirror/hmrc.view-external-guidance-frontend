@@ -62,29 +62,33 @@ object PageBuilder {
     }
   }
 
+  // Return FlowError or
+  //        (Seq[KeyedStanza], Seq[String], Seq[String]) ==  KeyedStanzas, page next list, any within-page linked page ids
+  @tailrec
+  private def collectStanzas(key: String,
+                             process: Process,
+                             acc: Seq[KeyedStanza],
+                             linkedStanzas: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
+    process.flow.get(key) match {
+      case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedStanzas))
+      case Some(s: Stanza) => populateStanza(s, process) match {
+          case Right(p) => p match {
+            case v: ValueStanza => collectStanzas(v.next.head, process, acc :+ KeyedStanza(key, v), linkedStanzas)
+            case i: Instruction => collectStanzas(i.next.head, process, acc :+ KeyedStanza(key, i), linkedStanzas)
+            case c: Callout => collectStanzas(c.next.head, process, acc :+ KeyedStanza(key, c), linkedStanzas)
+            case q: Question => Right((acc :+ KeyedStanza(key, q), q.next, linkedStanzas))
+            case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
+            case unknown => Left(UnknownStanza(unknown))
+          }
+          case Left(err) => Left(err)
+        }
+
+      case None => Left(NoSuchPage(key))
+    }
+
   def buildPage(key: String, process: Process): Either[FlowError, Page] = {
 
-    @tailrec
-    // Return FlowError or (Seq[KeyedStanza], Seq[String], Seq[String]) ==  KeyedStanzas, page next list, any within-page linked page ids
-    def collectStanzas(key: String, acc: Seq[KeyedStanza], linkedStanzas: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
-      process.flow.get(key) match {
-        case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedStanzas))
-        case Some(s: Stanza) => populateStanza(s, process) match {
-            case Right(p) => p match {
-              case v: ValueStanza => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedStanzas)
-              case i: Instruction => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedStanzas)
-              case c: Callout => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedStanzas)
-              case q: Question => Right((acc :+ KeyedStanza(key, q), q.next, linkedStanzas))
-              case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
-              case unknown => Left(UnknownStanza(unknown))
-            }
-            case Left(err) => Left(err)
-          }
-
-        case None => Left(NoSuchPage(key))
-      }
-
-    collectStanzas(key, Nil, Nil) match {
+    collectStanzas(key, process, Nil, Nil) match {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
@@ -104,7 +108,8 @@ object PageBuilder {
         case Nil => Right(acc)
         case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
-            case Right(page) if pageUrlUnique(page.url, acc) => pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
+            case Right(page) if pageUrlUnique(page.url, acc) =>
+              pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
             case Right(page) => Left(DuplicatePageUrl(page.id, page.url))
             case Left(err) => Left(err)
           }
