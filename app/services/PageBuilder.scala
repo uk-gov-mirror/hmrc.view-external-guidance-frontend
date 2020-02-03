@@ -86,8 +86,7 @@ object PageBuilder {
       case None => Left(NoSuchPage(key))
     }
 
-  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
-
+  def buildPage(key: String, process: Process): Either[FlowError, Page] =
     collectStanzas(key, process, Nil, Nil) match {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
@@ -98,7 +97,6 @@ object PageBuilder {
 
       case Left(err) => Left(err)
     }
-  }
 
   def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {
 
