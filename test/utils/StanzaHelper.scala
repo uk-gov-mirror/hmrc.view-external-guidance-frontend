@@ -17,6 +17,7 @@
 package utils
 
 import models.ocelot.stanzas._
+import models.ocelot.Phrase
 
 trait StanzaHelper {
 
@@ -27,25 +28,42 @@ trait StanzaHelper {
   val five: Int = 5
   val six: Int = 6
 
+  val phrases: Vector[Phrase] = Vector(Phrase(Vector("Text 0","Welsh, Text 0")),
+                                Phrase(Vector("Text 1","Welsh, Text 1")),
+                                Phrase(Vector("Text 2","Welsh, Text 2")),
+                                Phrase(Vector("Text 3","Welsh, Text 3")),
+                                Phrase(Vector("Text 4","Welsh, Text 4")),
+                                Phrase(Vector("Text 5","Welsh, Text 5")),
+                                Phrase(Vector("Text 6","Welsh, Text 6")))
+
   // Define stanzas used in simple question page test
   val sqpQpValue = Value( Scalar, "PageUrl", "/page/1" )
   val sqpFapValue = Value( Scalar, "PageUrl", "/page/2" )
   val sqpSapValue = Value( Scalar, "PageUrl", "/page/3" )
 
-  // Question page
-  val sqpQpValueStanza = ValueStanza( List( sqpQpValue ), Seq( "1" ), false )
-  val sqpQpInstructionStanza = InstructionStanza( 0, Seq( "2" ), None, false )
-  val sqpQpCalloutStanza = CalloutStanza( SubTitle, 1, Seq( "3" ), false )
-  val sqpQpQuestionStanza = QuestionStanza( 2, Seq( three, four ), Seq( "4", "6" ), false )
+  // Question page - BEFORE
+  val sqpQpValueStanza = ValueStanza(List( sqpQpValue ), Seq( "1" ), false)
+  val sqpQpInstructionStanza = InstructionStanza(0, Seq( "2" ), None, false)
+  val sqpQpCalloutStanza = CalloutStanza(SubTitle, 1, Seq( "3" ), false)
+  val sqpQpQuestionStanza = QuestionStanza(2, Seq(3,4), Seq( "4", "6" ), false)
+  // Question page - After
+  val sqpQpInstruction = Instruction(phrases(0), Seq( "2" ), None, false)
+  val sqpQpCallout = Callout(SubTitle, phrases(1), Seq( "3" ), false)
+  val sqpQpQuestion = Question(phrases(2), Seq(phrases(3), phrases(4)), Seq( "4", "6" ), false)
 
-  // First answer page
+  // First answer page BEFORE
   val sqpFapValueStanza = ValueStanza( List( sqpFapValue ), Seq( "5" ), false )
-  val sqpFapInstructionStanza = InstructionStanza( 2, Seq( "end" ), None, false )
+  val sqpFapInstructionStanza = InstructionStanza( 0, Seq( "end" ), None, false )
+  // First answer page AFTER
+  val sqpFapInstruction = Instruction( phrases(0), Seq( "end" ), None, false )
 
-  // Second answer page
+  // Second answer page BEFORE
   val sqpSapValueStanza = ValueStanza( List( sqpSapValue ), Seq( "7" ), false )
-  val sqpSapInstructionStanza = InstructionStanza( five, Seq( "8" ), Some( 0 ), false  )
-  val sqpSapCalloutStanza = CalloutStanza( Lede, six, Seq( "end" ), false )
+  val sqpSapInstructionStanza = InstructionStanza( 5, Seq( "8" ), Some( 0 ), false  )
+  val sqpSapCalloutStanza = CalloutStanza( Lede, 6, Seq( "end" ), false )
+  // Second answer page AFTER
+  val sqpSapInstruction = Instruction( phrases(5), Seq( "8" ), Some( 0 ), false  )
+  val sqpSapCallout = Callout( Lede, phrases(6), Seq( "end" ), false )
 
   def onePage:Map[String,Stanza] = {
 
@@ -89,4 +107,5 @@ trait StanzaHelper {
     )
 
   }
+
 }

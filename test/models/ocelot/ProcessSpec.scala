@@ -23,16 +23,16 @@ import models.ocelot.stanzas.Stanza
 
 class ProcesSpec extends BaseSpec with ProcessJson {
 
+  val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
+  val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
+  val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
+  val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
+
+  val process:Process = prototypeJson.as[Process]
+
   "Process" must {
 
     "Deserialise from prototype json" in {
-
-      val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
-      val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
-      val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
-      val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
-
-      val process:Process = prototypeJson.as[Process]
 
       process.meta mustBe meta
       process.flow mustBe flow
@@ -44,5 +44,18 @@ class ProcesSpec extends BaseSpec with ProcessJson {
     missingJsObjectAttrTests[Process](prototypeJson, List("howto", "contacts"))
 
     incorrectPropertyTypeJsObjectAttrTests[Process](prototypeJson, List("howto", "contacts"))
+  }
+
+  "Process phrase fn" must {
+    "Return phrase valid index" in {
+
+      val phrase = Phrase(Vector("Telling HMRC about extra income","Welsh: Telling HMRC about extra income"))
+      process.phraseOption(0) mustBe Some(phrase)
+    }
+
+    "Return None for a invalid index" in {
+
+      process.phraseOption(100) mustBe None
+    }
   }
 }

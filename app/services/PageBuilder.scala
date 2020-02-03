@@ -17,52 +17,87 @@
 package services
 
 import models.ocelot.stanzas._
-import models.ocelot.{Page, Process}
-
+import models.ocelot.{Page, Process, Phrase}
 import scala.annotation.tailrec
-
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder {
 
-  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+  private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
+    existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
 
-    def pageUrl(values: List[Value]): Option[String] =
-      values.filter(_.label.equals(PageUrlValueName.toString)) match {
-        case Nil => None
-        case x :: _ => Some(x.value)
-      }
+  private def pageUrl(values: List[Value]): Option[String] =
+    values.filter(_.label.equals(PageUrlValueName.toString)) match {
+      case Nil => None
+      case x :: _ if x.value.nonEmpty => Some(x.value)
+      case _ => None
+    }
 
-    def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean = existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
+  private def pageUrlUnique(url: String, existingPages:Seq[Page]): Boolean = !existingPages.exists(_.url == url)
+
+  private def populateStanza(stanza: Stanza, process: Process): Either[FlowError, Stanza] = {
+
+    def phrase(phraseIndex: Int): Either[FlowError, Phrase] =
+      process.phraseOption(phraseIndex).map(Right(_)).getOrElse(Left(PhraseNotFound(phraseIndex)))
 
     @tailrec
-    def collectStanzas(key: String, acc: Seq[KeyedStanza]): Either[FlowError, (Seq[KeyedStanza], Seq[String])] =
-      process.flow.get(key) match {
-        case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next))
-        case Some(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v))
-        case Some(i: InstructionStanza) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i))
-        case Some(c: CalloutStanza) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c))
-        case Some(q: QuestionStanza) => Right((acc :+ KeyedStanza(key, q), q.next))
-        case Some(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil))
-        case Some(unknown) => Left(UnknownStanza(unknown))
-        case None => Left(NoSuchPage(key))
+    def phrases(indexes: Seq[Int], acc: Seq[Phrase]): Either[FlowError, Seq[Phrase]] =
+      indexes match {
+        case Nil => Right(acc)
+        case index :: xs => phrase(index) match {
+          case Right(phrase) => phrases(xs, acc :+ phrase)
+          case Left(_) => Left(PhraseNotFound(index))
+        }
       }
 
-    collectStanzas(key, Nil) match {
-      case Right((keyedStanzas, next)) =>
-        keyedStanzas.head.stanza match {
-          case v: ValueStanza if pageUrl(v.values).isDefined =>
-            val stanzaMap = keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-            Right(Page(keyedStanzas.head.key, pageUrl(v.values).get, stanzaMap, next))
+    stanza match {
+      case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
+                                  case Right(texts) => Right(Question(q, texts.head, texts.tail))
+                                  case Left(err) => Left(err)
+                                }
+      case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
+      case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
+      case s: Stanza => Right(s)
+    }
+  }
 
-          case _ =>
-            Left(MissingPageUrlValueStanza(key))
+  // Return FlowError or
+  //        (Seq[KeyedStanza], Seq[String], Seq[String]) ==  KeyedStanzas, page next list, any within-page linked page ids
+  @tailrec
+  private def collectStanzas(key: String,
+                             process: Process,
+                             acc: Seq[KeyedStanza],
+                             linkedStanzas: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
+    process.flow.get(key) match {
+      case Some(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedStanzas))
+      case Some(s: Stanza) => populateStanza(s, process) match {
+          case Right(p) => p match {
+            case v: ValueStanza => collectStanzas(v.next.head, process, acc :+ KeyedStanza(key, v), linkedStanzas)
+            case i: Instruction => collectStanzas(i.next.head, process, acc :+ KeyedStanza(key, i), linkedStanzas)
+            case c: Callout => collectStanzas(c.next.head, process, acc :+ KeyedStanza(key, c), linkedStanzas)
+            case q: Question => Right((acc :+ KeyedStanza(key, q), q.next, linkedStanzas))
+            case EndStanza => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
+            case unknown => Left(UnknownStanza(unknown))
+          }
+          case Left(err) => Left(err)
+        }
+
+      case None => Left(NoSuchPage(key))
+    }
+
+  def buildPage(key: String, process: Process): Either[FlowError, Page] = {
+
+    collectStanzas(key, process, Nil, Nil) match {
+      case Right((ks, next, linked)) =>
+        ks.head.stanza match {
+          case v: ValueStanza if pageUrl(v.values).isDefined =>
+            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next, linked))
+          case _ => Left(MissingPageUrlValueStanza(key))
         }
 
       case Left(err) => Left(err)
     }
-
   }
 
   def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {
@@ -71,13 +106,13 @@ object PageBuilder {
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[FlowError, Seq[Page]] =
       keys match {
         case Nil => Right(acc)
-
         case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
-            case Right(page) => pagesByKeys(page.next ++ xs, acc :+ page)
+            case Right(page) if pageUrlUnique(page.url, acc) =>
+              pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
+            case Right(page) => Left(DuplicatePageUrl(page.id, page.url))
             case Left(err) => Left(err)
           }
-
         case _ :: xs => pagesByKeys(xs, acc)
       }
 

@@ -1239,7 +1239,7 @@ trait ProcessJson {
     |         {
     |           "type": "scalar",
     |           "label": "PageUrl",
-    |           "value": "/rent/1000-or-more/you-need-to-tell-hmrc-rent-a-room"
+    |           "value": "/rent/1000-or-more/you-need-to-tell-hmrc-rent-a-room/113"
     |         }
     |       ],
     |       "next": [

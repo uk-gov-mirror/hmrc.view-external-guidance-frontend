@@ -20,11 +20,12 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{Reads, __}
 import models.ocelot.stanzas._
 
-
 case class Process(meta: Meta,
                    flow: Map[String, Stanza],
                    phrases: Vector[Phrase],
-                   links: Vector[Link])
+                   links: Vector[Link]) {
+  lazy val phraseOption:Int => Option[Phrase] = phrases.lift
+}
 
 object Process {
 
