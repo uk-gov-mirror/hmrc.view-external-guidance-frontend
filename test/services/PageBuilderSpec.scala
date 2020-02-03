@@ -173,6 +173,27 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
+    "detect LinkNotFound(1) in InstructionStanza" in {
+
+      val flow: Map[String, Stanza] = Map(
+        "start" -> ValueStanza( List( Value( Scalar, PageUrlValueName.toString, "Blah Blah") ), Seq("1"), false ),
+        "1" -> InstructionStanza( 0, Seq( "2" ), None, false ),
+        "2" -> InstructionStanza( 1, Seq( "end" ), Some( 1 ), false ),
+        "end" -> EndStanza
+      )
+
+      // Create process with single link
+      val process: Process = Process( metaSection, flow,
+        Vector[Phrase]( Phrase( Vector( "First English phrase", "First Welsh Phrase")), Phrase( Vector( "Second English Phrase", "Second Welsh Phrase") ) ),
+        Vector[Link]( Link( 0, "http://my.com/search", "MyCOM Search Engine", false ) ) )
+
+      PageBuilder.pages( process ) match {
+        case Left(LinkNotFound(1)) => succeed
+        case Left(err) => fail( s"Missing LinkNotFound error. Actual error raised is $err" )
+        case Right(_) => fail( "Page building terminated successfully when LinkNotFound error expected" )
+      }
+    }
+
   }
 
   "PageBuilder" must {
@@ -265,7 +286,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "When processing a simple question page" must {
 
-      val process: Process = Process(meta, simpleQuestionPage, phrases, Vector())
+      val process: Process = Process(meta, simpleQuestionPage, phrases, links )
 
         PageBuilder.pages(process) match {
 

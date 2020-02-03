@@ -44,11 +44,10 @@ object InstructionStanza {
 
 case class Instruction(text: Phrase,
                        override val next: Seq[String],
-                       //link: Option[Link],
-                       link: Option[Int],
+                       link: Option[Link],
                        stack: Boolean) extends PopulatedStanza
 
 object Instruction {
-  def apply(stanza: InstructionStanza, text: Phrase): Instruction =
-    Instruction(text, stanza.next, stanza.link, stanza.stack)
+  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link] ): Instruction =
+    Instruction(text, stanza.next, link, stanza.stack)
 }

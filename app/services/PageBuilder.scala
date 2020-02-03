@@ -48,67 +48,29 @@ object PageBuilder {
         }
       }
 
+    def link( linkIndex: Int ) : Either[LinkNotFound, Link ] =
+      process.linkOption( linkIndex ).map( Right(_)).getOrElse(Left( LinkNotFound( linkIndex ) ) )
+
+    def populateInstruction( i: InstructionStanza ) : Either[FlowError, Instruction] = {
+      phrase( i.text ).fold( Left(_),
+        text => {
+          i.link match {
+            case Some( linkIndex ) => link( linkIndex ).fold(Left(_), link => Right( Instruction( i, text, Some(link) ) ) )
+            case None => Right( Instruction( i, text, None ) )
+          }
+        })
+    }
+
     stanza match {
       case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
         case Right(texts) => Right(Question(q, texts.head, texts.tail))
         case Left(err) => Left(err)
       }
-      case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
+      case i: InstructionStanza => populateInstruction( i )
       case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
       case s: Stanza => Right(s)
     }
   }
-
-  //def buildPage(key: String, process: Process): Either[FlowError, Page] = {
-
-    //implicit val langIndex: Int = languageIndex(lang)
-
-    //val phraseFn = process.phrases.lift
-    //def phrase(phraseIndex: Int)(implicit langIndex: Int): Either[FlowError, String] =
-      //phraseFn(phraseIndex).map(phrase => Right(phrase.langs(langIndex))).getOrElse(Left(PhraseNotFound(phraseIndex)))
-
-    //@tailrec
-    //def phrases(indexes: Seq[Int], acc: Seq[String]): Either[FlowError, Seq[String]] =
-      //indexes match {
-        //case Nil => Right(acc.reverse)
-        //case index :: xs => phrase(index) match {
-          //case Right(text) => phrases(xs, text +: acc)
-          //case Left(_) => Left(PhraseNotFound(index))
-        //}
-      //}
-
-    //def populateStanza(stanza: Stanza): Either[FlowError, Stanza] =
-      //stanza match {
-        //case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
-        //                            case Right(texts) => Right(Question(q, texts.head, texts.tail))
-        //                            case Left(err) => Left(err)
-        //                          }
-//<<//<<<<<
-    //    case i: InstructionStanza => populateInstructionStanza( i )
-      //  case c: CalloutStanza => process.phrase(c.text).map(t => Right(Callout(c,t))).getOrElse(Left(PhraseNotFound(c.text)))
-//==//=====
-    //    case i: InstructionStanza => phrase(i.text).fold(Left(_), text => Right(Instruction(i, text)))
-        //case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
-//>>//>>>>> origin/EG-220
-    //    case s: Stanza => Right(s)
-      //}
-
-    //def populateInstructionStanza(i: InstructionStanza): Either[FlowError, Instruction] = {
-      //process.phrase( i.text ) match {
-        //case Some(text) => {
-          //i.link match {
-            //case Some(linkIndex) => {
-              //process.link( linkIndex ) match {
-                //case Some(link) => Right( Instruction( i, text, Some(link) ) )
-                //case None => Left(LinkNotFound(linkIndex))
-              //}
-            //}
-            //case None => Right( Instruction(  i, text, None ) )
-          //}
-        //}
-        //case None => Left(PhraseNotFound( i.text ) )
-      //}
-    //}
 
   def buildPage(key: String, process: Process): Either[FlowError, Page] = {
 

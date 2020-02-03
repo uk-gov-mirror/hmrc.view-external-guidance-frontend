@@ -26,9 +26,7 @@ case class Process(meta: Meta,
                    links: Vector[Link]) {
 
   lazy val phraseOption:Int => Option[Phrase] = phrases.lift
-
-  val linkFn = links.lift
-  def link(linkIndex: Int): Option[Link] = linkFn(linkIndex)
+  lazy val linkOption:Int => Option[Link] = links.lift
 }
 
 
