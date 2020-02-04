@@ -26,7 +26,7 @@ class ProcessPopulation {
   def stanza(id: String, process: Process): Either[FlowError, Stanza] =
     process.flow.get(id) match {
       case Some(stanza) => populateStanza(stanza, process)
-      case None => Left(NoSuchPage(id))
+      case None => Left(StanzaNotFound(id))
     }
 
   private def populateStanza(stanza: Stanza, process: Process): Either[FlowError, Stanza] = {

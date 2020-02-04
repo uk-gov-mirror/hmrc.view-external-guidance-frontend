@@ -63,7 +63,7 @@ class StanzaSpec extends BaseSpec {
 
     "generate an error when an unknown stanza type is encountered" in {
 
-      val jsObject: JsObject = Json.parse("""{ "type": "UnknownStanza" }""").as[JsObject]
+      val jsObject: JsObject = Json.parse("""{ "type": "UnknownStanzaType" }""").as[JsObject]
 
       jsObject.validate[Stanza] match {
         case JsSuccess(_, _) => fail(s"Stanza incorrectly created when unknown stanza type encountered")

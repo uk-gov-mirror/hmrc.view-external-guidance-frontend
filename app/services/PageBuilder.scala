@@ -49,7 +49,7 @@ object PageBuilder extends ProcessPopulation {
         case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedPageAcc)
         case Right(q: Question) => Right((acc :+ KeyedStanza(key, q), q.next, linkedPageAcc))
         case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
-        case Right(unknown) => Left(UnknownStanza(unknown))
+        case Right(unknown) => Left(UnknownStanzaType(unknown))
 
         case Left(err) => Left(err)
       }
