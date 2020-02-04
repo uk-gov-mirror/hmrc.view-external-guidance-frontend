@@ -23,6 +23,9 @@ import models.ocelot.stanzas.Stanza
 
 class ProcesSpec extends BaseSpec with ProcessJson {
 
+  val ten: Int = 10
+  val oneHundred: Int = 100
+
   val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
   val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
   val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
@@ -55,7 +58,22 @@ class ProcesSpec extends BaseSpec with ProcessJson {
 
     "Return None for a invalid index" in {
 
-      process.phraseOption(100) mustBe None
+      process.phraseOption( oneHundred ) mustBe None
+    }
+  }
+
+  "Process link fn" must {
+
+    "Return link for valid index" in {
+
+      val link: Link = Link( 0, "http://www.bbc.co.uk/news", "BBC News", window = false )
+
+      process.linkOption(0) mustBe Some(link)
+    }
+
+    "Return None for an invalid index" in {
+
+      process.linkOption( ten ) mustBe None
     }
   }
 }

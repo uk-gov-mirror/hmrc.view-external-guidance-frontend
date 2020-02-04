@@ -24,16 +24,18 @@ case class Process(meta: Meta,
                    flow: Map[String, Stanza],
                    phrases: Vector[Phrase],
                    links: Vector[Link]) {
+
   lazy val phraseOption:Int => Option[Phrase] = phrases.lift
+  lazy val linkOption:Int => Option[Link] = links.lift
 }
+
 
 object Process {
 
   implicit val reads: Reads[Process] = (
     (__ \ "meta").read[Meta] and
-    (__ \ "flow").read[Map[String, Stanza]] and
-    (__ \ "phrases").read[Vector[Phrase]] and
-    (__ \ "links").read[Vector[Link]]
-  )(Process.apply _)
-
+      (__ \ "flow").read[Map[String, Stanza]] and
+      (__ \ "phrases").read[Vector[Phrase]] and
+      (__ \ "links").read[Vector[Link]]
+    )(Process.apply _)
 }
