@@ -21,7 +21,7 @@ import models.ocelot.{Link, Process, Phrase}
 
 import scala.annotation.tailrec
 
-class ProcessPopulation {
+trait ProcessPopulation {
 
   def stanza(id: String, process: Process): Either[FlowError, Stanza] =
     process.flow.get(id) match {
