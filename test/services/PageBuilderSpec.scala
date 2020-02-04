@@ -38,23 +38,23 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "2" -> DummyStanza
     )
 
-    "detect UnknownStanza error" in {
+    "detect UnknownStanzaType error" in {
 
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
 
       PageBuilder.buildPage("start", process) match {
-        case Left(UnknownStanza(DummyStanza)) => succeed
+        case Left(UnknownStanzaType(DummyStanza)) => succeed
         case Left(stanza) => fail(s"Unknown stanza not detected, found $stanza")
         case err => fail(s"Unknown stanza not detected $err")
       }
 
     }
 
-    "detect NoSuchPage error" in {
+    "detect StanzaNotFound error" in {
       val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
 
       PageBuilder.buildPage("4", process) match {
-        case Left(NoSuchPage("4")) => succeed
+        case Left(StanzaNotFound("4")) => succeed
         case _ => fail("Unknown stanza not detected")
       }
     }
@@ -258,9 +258,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         val process: Process = prototypeJson.as[Process]
 
         PageBuilder.pages(process, "unknown") match {
-          case Right(_) => fail("""Should fail with NoSuchPage("unknown")""")
-          case Left(err) if err == NoSuchPage("unknown") => succeed
-          case Left(wrongErr) => fail("""Should fail with NoSuchPage("unknown")""")
+          case Right(_) => fail("""Should fail with StanzaNotFound("unknown")""")
+          case Left(err) if err == StanzaNotFound("unknown") => succeed
+          case Left(wrongErr) => fail("""Should fail with StanzaNotFound("unknown")""")
         }
       }
 
@@ -379,7 +379,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val indexedPages: IndexedSeq[Page] = pages.toIndexedSeq
 
     expectedPageIds.zipWithIndex.foreach{
-      case( id, index ) => indexedPages( index ).id mustBe id
+      case( id, index ) =>
+        indexedPages( index ).id mustBe id
     }
   }
 
