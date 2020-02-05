@@ -31,16 +31,23 @@ class UIComponentsSpec extends BaseSpec {
       val paraItems = Seq(txt1,link1,txt2)
       val paraWithLink = Paragraph(paraItems)
 
-      val answer1 = Answer("Not bad", Some("you think this is not bad"), "/firstpage/notbad")
-      val answer2 = Answer("ok", Some("you think this is not bad"), "/firstpage/notbad")
+      val answer1 = Answer(Vector("Not bad", "Welsh, Not bad"), Some(Vector("you think this is not bad", "Welsh, you think this is not bad")), "/firstpage/notbad")
+      val answer2 = Answer(Vector("ok","Welsk, ok"), Some(Vector("you think this is not bad", "Wels,you think this is not bad")), "/firstpage/notbad")
       val answers = AnswerGroup(Seq(answer1, answer2), false)
-      val question = Question("What do you think of this example", None, answers)
+      val question = Question(Vector("What do you think of this example","Welsh, What do you think of this example"), None, answers)
 
       val components = Seq(para, paraWithLink, question)
       val page = Page("/firstpage", components)
-
-      components.foreach(println)
-
+      val langIndex = 0
+      page.components.foreach{ cmp =>
+        cmp match {
+          case p:Paragraph =>
+            println(p.items.mkString(","))
+          case q: Question =>
+            println(s"QUESTION: ${q.txt(langIndex)}")
+            q.answerGroup.answers.foreach(println)
+        }
+      }
     }
   }
 }

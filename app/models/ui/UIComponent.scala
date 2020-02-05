@@ -16,4 +16,7 @@
 
 package models.ui
 
-trait UIComponent
+trait UIComponent {
+  type UIText = Vector[String]
+}
+

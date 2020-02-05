@@ -18,16 +18,18 @@ package models.ui
 
 trait ParagraphItem
 
+case class Text(txt: Vector[String]) extends ParagraphItem
+
+// TODO move to models.ui.Link.scala
 trait Link {
   val dest: String
   val txt: Vector[String]
   val window: Boolean
-  val hidden: Option[String]
+  val hidden: Option[Vector[String]]
 }
 
-case class Text(txt: Vector[String]) extends ParagraphItem
 case class EmbeddedLink(val dest: String,
                         val txt: Vector[String],
                         val window: Boolean = false,
-                        val hidden: Option[String] = None) extends Link with ParagraphItem
+                        val hidden: Option[Vector[String]] = None) extends Link with ParagraphItem
 case class Paragraph(items: Seq[ParagraphItem]) extends UIComponent

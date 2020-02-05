@@ -16,6 +16,6 @@
 
 package models.ui
 
-case class Answer(txt: String, hidden: Option[String], destUrl: String)
+case class Answer(txt: Vector[String], hidden: Option[Vector[String]], destUrl: String)
 case class AnswerGroup(answers: Seq[Answer], vertical: Boolean = true)
-case class Question(txt: String, hidden: Option[String], answers: AnswerGroup) extends UIComponent
+case class Question(txt: Vector[String], hidden: Option[Vector[String]], answerGroup: AnswerGroup) extends UIComponent
