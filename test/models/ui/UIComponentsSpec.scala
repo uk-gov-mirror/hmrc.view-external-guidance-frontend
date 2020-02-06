@@ -61,31 +61,66 @@ class UIComponentsSpec extends BaseSpec {
 
     }
 
-    "build into a page of sequenced components with an associated url path" in {
+    "build into a page of text only paragraph and question" in {
 
-      val txt1 = ParagraphText("Hello my name is ....","Welsh, Hello my name is ....")
-      val txt2 = ParagraphText(" and today is Wednesday","Welsh,  and today is Wednesday")
-      val link1 = ParagraphLink("/secondpage",Text("Unsure?", "Welsh, Unsure?"))
+      val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
+      val langs4 = Vector("Not bad", "Welsh, Not bad")
+      val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
+      val langs6 = Vector("ok","Welsh, ok")
+      val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
+      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
+
+      val txt1 = ParagraphText(langs1(0), langs1(1))
       val para = Paragraph(Seq(txt1))
-      val paraItems = Seq(txt1,link1,txt2)
-      val paraWithLink = Paragraph(paraItems)
 
-      val answer1 = Answer(Text("Not bad", "Welsh, Not bad"), Some(Text("you think this is not bad", "Welsh, you think this is not bad")), "/firstpage/notbad")
-      val answer2 = Answer(Text("ok","Welsk, ok"), Some(Text("you think this is not bad", "Wels,you think this is not bad")), "/firstpage/notbad")
+      val answer1 = Answer(Text(langs4(0), langs4(1)), Some(Text(langs5(0), langs5(1))), "/firstpage/notbad")
+      val answer2 = Answer(Text(langs6(0), langs6(1)), Some(Text(langs7(0), langs7(1))), "/firstpage/notbad")
       val answers = AnswerGroup(Seq(answer1, answer2), false)
-      val question = Question(Text("What do you think of this example","Welsh, What do you think of this example"), None, answers)
+      val question = Question(Text(langs8(0), langs8(1)), None, answers)
 
-      val components = Seq(para, paraWithLink, question)
+      val components = Seq(para, question)
       val page = Page("/firstpage", components)
-      val langIndex = 0
+
+      page.components.length mustBe 2
+
       page.components.foreach{ cmp =>
         cmp match {
           case p:Paragraph =>
-            println(p.items.mkString(","))
+            p.items.length mustBe 1
           case q: Question =>
-            q.answerGroup.answers.foreach(println)
+            q.answerGroup.answers.length mustBe 2
         }
       }
     }
+
+    "build into a page of text and link paragraph" in {
+
+      val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
+      val langs2 = Vector(" and today is Wednesday","Welsh,  and today is Wednesday")
+      val langs3 = Vector("Unsure?", "Welsh, Unsure?")
+      val langs4 = Vector("Not bad", "Welsh, Not bad")
+      val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
+      val langs6 = Vector("ok","Welsh, ok")
+      val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
+      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
+
+      val txt1 = ParagraphText(langs1(0), langs1(1))
+      val txt2 = ParagraphText(langs2(0), langs2(1))
+      val link1 = ParagraphLink("/secondpage",Text(langs3(0), langs3(1)))
+      val paraItems = Seq(txt1,link1,txt2)
+      val paraWithLink = Paragraph(paraItems)
+
+      val components = Seq(paraWithLink)
+      val page = Page("/firstpage", components)
+
+      page.components.length mustBe 1
+      page.components.foreach{ cmp =>
+        cmp match {
+          case p:Paragraph =>
+            p.items.length mustBe 3
+        }
+      }
+    }
+
   }
 }

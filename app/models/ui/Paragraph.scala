@@ -19,6 +19,7 @@ package models.ui
 sealed trait ParagraphItem
 
 case class ParagraphText(english: String, welsh: String) extends BilingualText with ParagraphItem
+case class BoldParagraphText(english: String, welsh: String) extends BilingualText with ParagraphItem
 case class ParagraphLink(val dest: String,
                          val txt: Text,
                          val window: Boolean = false,

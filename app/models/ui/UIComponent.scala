@@ -37,4 +37,3 @@ trait BilingualText {
 }
 
 case class Text(english: String, welsh: String) extends BilingualText
-
