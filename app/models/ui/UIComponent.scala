@@ -16,7 +16,25 @@
 
 package models.ui
 
-trait UIComponent {
-  type UIText = Vector[String]
+import play.api.i18n.Lang
+
+trait UIComponent
+
+// TODO move to models.ui.Link.scala
+trait Link {
+  val dest: String
+  val txt: Text
+  val window: Boolean
+  val hidden: Option[Text]
 }
+
+trait BilingualText {
+  val english: String
+  val welsh: String
+
+  def value(implicit lang: Lang): String = if (lang.code.equals("cy")) welsh else english
+  override def toString: String = english
+}
+
+case class Text(english: String, welsh: String) extends BilingualText
 
