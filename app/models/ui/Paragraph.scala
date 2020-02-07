@@ -16,12 +16,4 @@
 
 package models.ui
 
-sealed trait ParagraphItem
-
-case class ParagraphText(english: String, welsh: String) extends BilingualText with ParagraphItem
-case class BoldParagraphText(english: String, welsh: String) extends BilingualText with ParagraphItem
-case class ParagraphLink(val dest: String,
-                         val txt: Text,
-                         val window: Boolean = false,
-                         val hidden: Option[Text] = None) extends Link with ParagraphItem
-case class Paragraph(items: Seq[ParagraphItem]) extends UIComponent
+case class Paragraph(txt: RichText, lede: Boolean = false) extends UIComponent

@@ -20,15 +20,7 @@ import play.api.i18n.Lang
 
 trait UIComponent
 
-// TODO move to models.ui.Link.scala
-trait Link {
-  val dest: String
-  val txt: Text
-  val window: Boolean
-  val hidden: Option[Text]
-}
-
-trait BilingualText {
+sealed trait BilingualText {
   val english: String
   val welsh: String
 
@@ -36,4 +28,11 @@ trait BilingualText {
   override def toString: String = english
 }
 
-case class Text(english: String, welsh: String) extends BilingualText
+sealed trait TextItem
+
+case class Text(english: String, welsh: String, bold: Boolean = false) extends BilingualText with TextItem
+case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
+  override def toString: String = s"[link:${txt}:${dest}:{$window}]"
+}
+
+case class RichText(items: Seq[TextItem])
