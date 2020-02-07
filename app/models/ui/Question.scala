@@ -16,23 +16,6 @@
 
 package models.ui
 
-import play.api.i18n.Lang
-
-trait UIComponent
-
-sealed trait BilingualText {
-  val english: String
-  val welsh: String
-
-  def value(implicit lang: Lang): String = if (lang.code.equals("cy")) welsh else english
-  override def toString: String = english
-}
-
-sealed trait TextItem
-
-case class Text(english: String, welsh: String, bold: Boolean = false) extends BilingualText with TextItem
-case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
-  override def toString: String = s"[link:${txt}:${dest}:{$window}]"
-}
-
-case class RichText(items: Seq[TextItem])
+case class Answer(txt: Text, hidden: Option[Text], destUrl: String)
+case class AnswerGroup(answers: Seq[Answer], vertical: Boolean = true)
+case class Question(txt: Text, hidden: Option[Text], answerGroup: AnswerGroup) extends UIComponent

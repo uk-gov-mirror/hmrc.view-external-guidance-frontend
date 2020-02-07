@@ -37,7 +37,6 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val reportAProblemPartialUrl: String = s"$contactBaseUrl/contact/problem_reports_ajax?service=$serviceIdentifier"
   val reportAProblemNonJSUrl: String   = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
 
-  val ocelotOrderLanguageMap: ListMap[String, Lang] = ListMap("english" -> Lang("en"),"cymraeg" -> Lang("cy"))
-  val languageMap: Map[String, Lang] = ocelotOrderLanguageMap
+  val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"),"cymraeg" -> Lang("cy"))
   def routeToSwitchLanguage:String => Call = (lang: String) => controllers.routes.SwitchLanguageController.switchToLanguage(lang)
 }
