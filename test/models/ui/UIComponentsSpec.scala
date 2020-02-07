@@ -415,5 +415,5 @@ class UIComponentsSpec extends BaseSpec {
     }
 
   }
-  
+
 }
