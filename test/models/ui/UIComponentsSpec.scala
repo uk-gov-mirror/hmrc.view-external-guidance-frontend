@@ -72,15 +72,10 @@ class UIComponentsSpec extends BaseSpec {
 
       page.components.length mustBe 2
 
-      page.components.foreach{ cmp =>
-        cmp match {
-          case p:Paragraph =>
-            p.txt.items.length mustBe 1
-            println(p)
-          case q: Question =>
-            q.answerGroup.answers.length mustBe 2
-          case _ => fail("unknown ParagraphItem")
-        }
+      page.components.foreach{
+        case p:Paragraph => p.txt.items.length mustBe 1
+        case q: Question => q.answerGroup.answers.length mustBe 2
+        case _ => fail("unknown ParagraphItem")
       }
     }
 
@@ -107,13 +102,9 @@ class UIComponentsSpec extends BaseSpec {
       val page = Page("/firstpage", components)
 
       page.components.length mustBe 1
-      page.components.foreach{ cmp =>
-        cmp match {
-          case p:Paragraph =>
-            p.txt.items.length mustBe 3
-            println(p)
-          case _ => fail("unknown ParagraphItem")
-        }
+      page.components.foreach{
+        case p:Paragraph => p.txt.items.length mustBe 3
+        case _ => fail("unknown ParagraphItem")
       }
     }
 
