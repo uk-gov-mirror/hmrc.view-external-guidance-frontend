@@ -32,7 +32,7 @@ sealed trait TextItem
 
 case class Text(english: String, welsh: String, bold: Boolean = false) extends BilingualText with TextItem
 case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
-  override def toString: String = s"[link:${txt}:${dest}:{$window}]"
+  override def toString: String = s"[link:$txt:$dest:$window]"
 }
 
 case class RichText(items: Seq[TextItem])
