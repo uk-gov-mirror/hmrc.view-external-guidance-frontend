@@ -126,7 +126,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> QuestionStanza(4, Seq(2, 3), Seq("4", "5"), false),
+        "2" -> QuestionStanza(four, Seq(two, three), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
         "5" -> InstructionStanza(0, Seq("end"), None, false),
         "end" -> EndStanza
@@ -137,7 +137,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
       PageBuilder.pages(process) match {
-        case Left(PhraseNotFound(4)) => succeed
+        case Left(PhraseNotFound(four)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(4)")
       }
@@ -147,7 +147,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val flow = Map(
         "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> QuestionStanza(1, Seq(4, 3), Seq("4", "5"), false),
+        "2" -> QuestionStanza(1, Seq(four, three), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
         "5" -> InstructionStanza(0, Seq("end"), None, false),
         "end" -> EndStanza
@@ -158,7 +158,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
       PageBuilder.pages(process) match {
-        case Left(PhraseNotFound(4)) => succeed
+        case Left(PhraseNotFound(four)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(4)")
       }
