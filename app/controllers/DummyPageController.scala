@@ -35,7 +35,11 @@ class DummyPageController @Inject()(appConfig: AppConfig,
 
   def dummy(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
-    Future.successful(Ok(dummy_page()))
-  }
+    implicit val lang = request.messages.lang
+    val thisServiceProcessPath = "/dummy-service/dummy-process"
+    val pageMap = Map(DummyPage.page.urlPath -> DummyPage.page)
 
+    Future.successful(Ok(dummy_page(DummyPage.page)))
+  }
 }
+
