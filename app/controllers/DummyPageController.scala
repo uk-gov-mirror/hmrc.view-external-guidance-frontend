@@ -32,7 +32,7 @@ class DummyPageController @Inject()(appConfig: AppConfig,
   implicit val config: AppConfig = appConfig
 
   val dummy: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(dummy_page(2)))
+    Future.successful(Ok(dummy_page()))
   }
 
 }
