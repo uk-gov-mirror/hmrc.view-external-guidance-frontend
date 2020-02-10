@@ -34,9 +34,9 @@ class UIComponentsSpec extends BaseSpec {
   val h3English: String = "Heading level 3 text"
   val h3Welsh: String = "Welsh heading level 3 text"
 
-  val h1 = H1( h1English, h1Welsh )
-  val h2 = H2( h2English, h2Welsh )
-  val h3 = H3( h3English, h3Welsh )
+  val h1 = H1( Text( h1English, h1Welsh ) )
+  val h2 = H2( Text( h2English, h2Welsh ) )
+  val h3 = H3( Text( h3English, h3Welsh ) )
 
   val engLeadingText: String = "Leading text"
   val welLeadingText: String = "Welsh leading text"
@@ -86,20 +86,20 @@ class UIComponentsSpec extends BaseSpec {
 
     "Support English and Welsh text in HTML h1 elements" in {
 
-      h1.text.value(englishLang) mustBe h1English
-      h1.text.value(welshLang) mustBe h1Welsh
+      h1.txt.value(englishLang) mustBe h1English
+      h1.txt.value(welshLang) mustBe h1Welsh
     }
 
     "Support English and Welsh text in HTML h2 elements" in {
 
-      h2.text.value(englishLang) mustBe h2English
-      h2.text.value(welshLang) mustBe h2Welsh
+      h2.txt.value(englishLang) mustBe h2English
+      h2.txt.value(welshLang) mustBe h2Welsh
     }
 
     "Support English and Welsh text in HTML h3 elements" in {
 
-      h3.text.value(englishLang) mustBe h3English
-      h3.text.value(welshLang) mustBe h3Welsh
+      h3.txt.value(englishLang) mustBe h3English
+      h3.txt.value(welshLang) mustBe h3Welsh
     }
 
     "Support the identification of heading components in a list of UIComponents" in {
@@ -299,14 +299,14 @@ class UIComponentsSpec extends BaseSpec {
     "build a complete page" in {
 
       // Define page title
-      val h1: H1 = H1( "Title text", "Welsh title text" )
+      val h1Page : H1 = H1( Text( "Title text", "Welsh title text" ) )
 
       // Define opening paragraph
       val openingParagraphText: Text = Text( "Welcome", "Welsh welcome" )
       val openingParagraph: Paragraph = Paragraph( RichText( Seq( openingParagraphText ) ) )
 
       // Define sub-title
-      val h2: H2 = H2( "Subtitle", "Welsh subtitle" )
+      val h2Page: H2 = H2( Text( "Subtitle", "Welsh subtitle" ) )
 
       // Define second paragraph with embedded hyperlink
       val secondParagraphLeadingText: Text = Text(
@@ -331,7 +331,7 @@ class UIComponentsSpec extends BaseSpec {
       )))
 
       // Define text of some note
-      val h3: H3 = H3( "Note", "Welsh note" )
+      val h3Page: H3 = H3( Text( "Note", "Welsh note" ) )
 
       // Define bullet point list
       val leadingText: Text = Text( "Leading text for bullet point list", "Welsh leading text for bullet point list" )
@@ -366,11 +366,11 @@ class UIComponentsSpec extends BaseSpec {
       val question = Question(Text("How much tax do you pay?", "Welsh How much tax do you pay?"), None, answers)
 
       val components: Seq[UIComponent] = Seq(
-        h1,
+        h1Page,
         openingParagraph,
-        h2,
+        h2Page,
         secondParagraph,
-        h3,
+        h3Page,
         bulletPointList,
         question )
 
@@ -379,7 +379,7 @@ class UIComponentsSpec extends BaseSpec {
       page.components.length mustBe 7
 
       page.components.head match {
-        case matchedH1: H1 => matchedH1 mustBe h1
+        case matchedH1: H1 => matchedH1 mustBe h1Page
         case _ => fail( "First component in page is not a H1 component" )
       }
 
@@ -389,7 +389,7 @@ class UIComponentsSpec extends BaseSpec {
       }
 
       page.components(2) match {
-        case matchedH2: H2 => matchedH2 mustBe h2
+        case matchedH2: H2 => matchedH2 mustBe h2Page
         case _ => fail( "Third component in page is not a H2 component" )
       }
 
@@ -399,7 +399,7 @@ class UIComponentsSpec extends BaseSpec {
       }
 
       page.components( four ) match {
-        case matchedH3: H3 => matchedH3 mustBe h3
+        case matchedH3: H3 => matchedH3 mustBe h3Page
         case _ => fail( "Fifth component in page is not a H3 component" )
       }
 

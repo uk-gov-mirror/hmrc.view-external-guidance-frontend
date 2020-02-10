@@ -16,14 +16,6 @@
 
 package models.ui
 
-abstract class Heading( english: String, welsh: String ) extends UIComponent {
-
-  val text: Text = Text( english, welsh )
-
-}
-
-case class H1( english: String, welsh: String ) extends Heading( english, welsh )
-
-case class H2( english: String, welsh: String  ) extends Heading( english, welsh )
-
-case class H3( english: String, welsh: String ) extends Heading( english, welsh )
+case class H1( txt: Text ) extends UIComponent
+case class H2( txt: Text ) extends UIComponent
+case class H3( txt: Text ) extends UIComponent
