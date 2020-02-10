@@ -16,23 +16,14 @@
 
 package models.ui
 
-sealed trait Heading extends UIComponent
-{
-  val text: Text
-}
+abstract class Heading( english: String, welsh: String ) extends UIComponent {
 
-case class H1( english: String, welsh: String ) extends Heading {
-
-  override val text = Text( english, welsh )
+  val text: Text = Text( english, welsh )
 
 }
 
-case class H2( english: String, welsh: String  ) extends Heading
-{
-  override val text = Text( english, welsh )
-}
+case class H1( english: String, welsh: String ) extends Heading( english, welsh )
 
-case class H3( english: String, welsh: String ) extends Heading
-{
-  override val text = Text( english, welsh )
-}
+case class H2( english: String, welsh: String  ) extends Heading( english, welsh )
+
+case class H3( english: String, welsh: String ) extends Heading( english, welsh )
