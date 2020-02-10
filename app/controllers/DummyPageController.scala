@@ -24,6 +24,8 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.AppConfig
 import views.html.dummy_page
 import scala.concurrent.Future
+import play.api.Logger
+import models.ui._
 
 @Singleton
 class DummyPageController @Inject()(appConfig: AppConfig,
@@ -31,7 +33,8 @@ class DummyPageController @Inject()(appConfig: AppConfig,
 
   implicit val config: AppConfig = appConfig
 
-  val dummy: Action[AnyContent] = Action.async { implicit request =>
+  def dummy(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
     Future.successful(Ok(dummy_page()))
   }
 
