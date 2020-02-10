@@ -1,2 +1,3 @@
 hello.world = Hello from view-external-guidance-frontend application!
 hello.world.currentLanguage = The current language setting is "{0}",
+dummy.title = External Guidance: Demonstration Page

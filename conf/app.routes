@@ -1,7 +1,8 @@
 # microservice specific routes
 
-GET        /hello-world             controllers.HelloWorldController.helloWorld
-GET        /bye-world               controllers.HelloWorldController.byeWorld
+GET        /hello-world                             controllers.HelloWorldController.helloWorld
+GET        /bye-world                               controllers.HelloWorldController.byeWorld
+GET        /dummy-service/dummy-process/dummy-path  controllers.DummyPageController.dummy
 
-GET        /language/:lang          controllers.SwitchLanguageController.switchToLanguage(lang: String)
+GET        /language/:lang                          controllers.SwitchLanguageController.switchToLanguage(lang: String)
 
