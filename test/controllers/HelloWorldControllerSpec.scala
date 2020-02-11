@@ -27,23 +27,27 @@ import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import config.AppConfig
 
 class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
-  private val fakeRequest = FakeRequest("GET", "/")
 
-  private val env           = Environment.simple()
-  private val configuration = Configuration.load(env)
+  private trait Test {
+    val fakeRequest = FakeRequest("GET", "/")
 
-  private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
-  private val appConfig     = new AppConfig(configuration, serviceConfig)
+    private val env = Environment.simple()
+    private val configuration = Configuration.load(env)
 
-  private val controller = new HelloWorldController(appConfig, stubMessagesControllerComponents())
+    private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
+    private val appConfig = new AppConfig(configuration, serviceConfig)
+
+    private val view = app.injector.instanceOf[views.html.hello_world]
+    val controller = new HelloWorldController(appConfig, stubMessagesControllerComponents(), view)
+  }
 
   "GET /hello-world" should {
-    "return 200" in {
+    "return 200" in new Test {
       val result = controller.helloWorld(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
-    "return HTML" in {
+    "return HTML" in new Test {
       val result = controller.helloWorld(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result)     shouldBe Some("utf-8")
@@ -52,7 +56,7 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
   }
 
   "GET /bye-world" should {
-    "throw an exception" in {
+    "throw an exception" in new Test {
       assertThrows[Exception] {
 
         val result = controller.byeWorld(fakeRequest)

@@ -15,17 +15,16 @@
  *@
 
 @import config.AppConfig
-@import play.api.i18n.Lang
+@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(lang: Lang)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@this(layout: main_layout)
 
-@main_template(title = "Hello from view-external-guidance-frontend", bodyClasses = None) {
-    <h1>@{messages("hello.world")}</h1>
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-    <p>@messages( "hello.world.currentLanguage", lang.code)</p>
-
-    @views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)
+@layout("Hello World!") {
+ <h1 class="govuk-heading-xl">@messages("hello.world")</h1>
+ <p class="govuk-body">@messages("hello.world.currentLanguage", messages.lang.language)</p>
 }
 @{
-  //$COVERAGE-OFF$
+    //$COVERAGE-OFF$
 }
