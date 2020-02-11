@@ -22,13 +22,13 @@ import play.api.mvc._
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.{AppConfig, ErrorHandler}
-import views.html.render_page
 import scala.concurrent.Future
 import play.api.Logger
 import models.ui._
+import views.html.render_page
 
 @Singleton
-class PageRenderingController @Inject()(appConfig: AppConfig,
+class RenderPageController @Inject()(appConfig: AppConfig,
                                     errorHandler: ErrorHandler,
                                     mcc: MessagesControllerComponents) extends FrontendController(mcc) with I18nSupport {
 
