@@ -43,9 +43,7 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
   private val controller = new RenderPageController(appConfig,
                                                     new ErrorHandler(messagesApi, appConfig),
                                                     stubMessagesControllerComponents())
-
-
-
+  
   "GET /dummy-service/dummy-process/dummy-path" should {
     "return 200" in {
       val result = controller.renderPage("dummy-service","dummy-process","dummy-path")(fakeRequest)
