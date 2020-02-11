@@ -37,10 +37,12 @@ object DummyPage {
   val heading2 = Text("I’ve made extra income from selling goods or services", "Rwyf wedi gwneud incwm ychwanegol o werthu nwyddau neu wasanaethau")
 
   val para2 = Text("This can include selling items or offering freelance services. If you make extra money in this way, you’re likely to be trading.", "")
-  val para3 = Text("Find out more about [link:how HMRC decides if you are trading or not.:https://www.youtube.com/watch?v=MYgCctGY_Ug]",
-                   "Darganfyddwch fwy am [link:sut mae HMRC yn penderfynu a ydych chi'n masnachu ai peidio.:https://www.youtube.com/watch?v=MYgCctGY_Ug]")
-  val para4 = Text("If you’ve only sold personal possessions then you’re probably not trading. You will not have to pay income tax on the money you make, but you might have to pay [link:Capital Gains Tax.:https://www.gov.uk/capital-gainstax]",
-                   "Os mai dim ond eiddo personol rydych chi wedi'i werthu yna mae'n debyg nad ydych chi'n masnachu. Ni fydd yn rhaid i chi dalu treth incwm ar yr arian a wnewch, ond efallai y bydd yn rhaid i chi dalu [link:Treth Enillion Cyfalaf.:https://www.gov.uk/capital-gainstax]")
+  val para3 = Text("Find out more about ", "Darganfyddwch fwy am ")
+  val eLink3 = Text("how HMRC decides if you are trading or not.", "sut mae HMRC yn penderfynu a ydych chi'n masnachu ai peidio.")
+
+  val para4 = Text("If you’ve only sold personal possessions then you’re probably not trading. You will not have to pay income tax on the money you make, but you might have to pay ",
+                   "Os mai dim ond eiddo personol rydych chi wedi'i werthu yna mae'n debyg nad ydych chi'n masnachu. Ni fydd yn rhaid i chi dalu treth incwm ar yr arian a wnewch, ond efallai y bydd yn rhaid i chi dalu ")
+  val eLink4 = Text("Capital Gains Tax.","Treth Enillion Cyfalaf.")
 
   val tradingAllowance = Text("The trading allowance", "Y lwfans masnachu")
 
@@ -79,8 +81,8 @@ object DummyPage {
                     HyperLink( "/how-did-you-earn-extra-income", link1),
                     H2(heading2),
                     Paragraph(RichText(Seq(para2))),
-                    Paragraph(RichText(Seq(para3))),
-                    Paragraph(RichText(Seq(para4))),
+                    Paragraph(RichText(Seq(para3, HyperLink("https://www.youtube.com/watch?v=MYgCctGY_Ug", eLink3)))),
+                    Paragraph(RichText(Seq(para4, HyperLink("https://www.gov.uk/capital-gainstax", eLink4)))),
                     H3(tradingAllowance),
                     BulletPointList(RichText(Seq(bulletLeading2)),
                                     Seq(RichText(Seq(bulletOpt2a)), RichText(Seq(bulletOpt2b)), RichText(Seq(bulletOpt2c)))),
@@ -91,7 +93,8 @@ object DummyPage {
                     H3(propertyAllowance),
                     BulletPointList(RichText(Seq(bulletLeading3)),
                                     Seq(RichText(Seq(bulletOpt3a)), RichText(Seq(bulletOpt3b)), RichText(Seq(bulletOpt3c)), RichText(Seq(bulletOpt3d)))),
+                    Paragraph(RichText(Seq(para1))),
                     HyperLink( "/rent/have-you-made-less-than-1000", link3)
                   )
-    val page = Page("/dummy-path", pageItems)
+    val page = Page("dummy-path", pageItems)
 }

@@ -2,7 +2,7 @@
 
 GET        /hello-world                             controllers.HelloWorldController.helloWorld
 GET        /bye-world                               controllers.HelloWorldController.byeWorld
-GET        /:service/:process/*pageUrl              controllers.DummyPageController.dummy(service, process, pageUrl)
+GET        /:service/:process/*pageUrl              controllers.PageRenderingController.renderPage(service, process, pageUrl)
 
 GET        /language/:lang                          controllers.SwitchLanguageController.switchToLanguage(lang: String)
 

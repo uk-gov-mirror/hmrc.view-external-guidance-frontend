@@ -21,24 +21,20 @@
 @(page: Page)(implicit request: Request[_], messages: Messages, appConfig: AppConfig, lang: Lang)
 
 @main_template(title = messages("dummy.title"), bodyClasses = None) {
-    <h1>@{messages("dummy.title")}</h1>
-
-    @views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)
-    @for(cmp <- page.components){
-      @{
-        cmp match {
-          case H1(t) => <h1>@{t.value}</h1>
-          case Paragraph(r, lede) =>
-            r.items.head match {
-              case t:Text => <p>@{t.value}</p>
-              case l: HyperLink =>
-            }
-
-          case _ => cmp
-        }
-
+  @*
+   * TODO - build renderer
+   *@
+  @for(cmp <- page.components) {
+    @{cmp match {
+        case H1(t) => <h1>{t.value}</h1>
+        case H2(t) => <h2>{t.value}</h2>
+        case H3(t) => <h3>{t.value}</h3>
+        case _ => <p>{cmp}</p>
       }
     }
+  }
+
+  @views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)
 }
 @{
   //$COVERAGE-OFF$

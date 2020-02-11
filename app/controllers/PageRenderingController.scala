@@ -21,25 +21,32 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import config.AppConfig
-import views.html.dummy_page
+import config.{AppConfig, ErrorHandler}
+import views.html.render_page
 import scala.concurrent.Future
 import play.api.Logger
 import models.ui._
 
 @Singleton
-class DummyPageController @Inject()(appConfig: AppConfig,
+class PageRenderingController @Inject()(appConfig: AppConfig,
+                                    errorHandler: ErrorHandler,
                                     mcc: MessagesControllerComponents) extends FrontendController(mcc) with I18nSupport {
 
   implicit val config: AppConfig = appConfig
 
-  def dummy(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+  // TODO turn this into real Process/page access
+  val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
+  val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
+
+  def renderPage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
     implicit val lang = request.messages.lang
-    val thisServiceProcessPath = "/dummy-service/dummy-process"
-    val pageMap = Map(DummyPage.page.urlPath -> DummyPage.page)
 
-    Future.successful(Ok(dummy_page(DummyPage.page)))
+    Future.successful(
+      pageMap.get(s"${service}!${process}!${pageUrl}")
+             .map(page => Ok(render_page(page)))
+             .getOrElse(NotFound(errorHandler.notFoundTemplate))
+    )
   }
 }
 
