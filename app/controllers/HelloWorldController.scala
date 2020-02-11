@@ -27,12 +27,13 @@ import scala.concurrent.Future
 
 @Singleton
 class HelloWorldController @Inject()(appConfig: AppConfig,
-                                     mcc: MessagesControllerComponents) extends FrontendController(mcc) with I18nSupport {
+                                     mcc: MessagesControllerComponents,
+                                     view: views.html.hello_world) extends FrontendController(mcc) with I18nSupport {
 
   implicit val config: AppConfig = appConfig
 
   val helloWorld: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(hello_world(request.messages.lang)))
+    Future.successful(Ok(view()))
   }
 
   val byeWorld: Action[AnyContent] = Action.async {

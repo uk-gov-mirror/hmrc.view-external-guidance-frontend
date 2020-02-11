@@ -1,0 +1,25 @@
+$govuk-assets-path: "/guidance/assets/lib/govuk-frontend/govuk/assets/";
+$hmrc-assets-path: "/guidance/assets/lib/hmrc-frontend/hmrc/";
+
+$govuk-global-styles: true;
+
+@import "lib/govuk-frontend/govuk/all";
+
+//TODO: Review hmrc-frontend (v1.5.0) to see if the individual hmrc components imports can be replaced by the 'all' import below
+//@import "lib/hmrc-frontend/hmrc/all";
+
+//@import "lib/hmrc-frontend/hmrc/components/account-menu/account-menu";
+@import "lib/hmrc-frontend/hmrc/components/banner/banner";
+@import "lib/hmrc-frontend/hmrc/components/notification-badge/notification-badge";
+@import "lib/hmrc-frontend/hmrc/components/page-heading/page-heading";
+@import "lib/hmrc-frontend/hmrc/components/language-select/language-select";
+@import "lib/hmrc-frontend/hmrc/components/header/header";
+@import "lib/hmrc-frontend/hmrc/components/internal-header/internal-header";
+//@import "lib/hmrc-frontend/hmrc/components/add-to-a-list/add-to-a-list";
+//@import "lib/hmrc-frontend/hmrc/components/timeout-dialog/timeout-dialog";
+@import "lib/hmrc-frontend/hmrc/components/status-tags-in-task-list-pages/status-tags-in-task-list-pages";
+
+.app-reference-number {
+  display: block;
+  font-weight: bold;
+}

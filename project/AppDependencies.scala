@@ -7,10 +7,12 @@ object AppDependencies {
 
   val compile = Seq(
 
-    "uk.gov.hmrc"             %% "govuk-template"           % "5.48.0-play-26",
-    "uk.gov.hmrc"             %% "play-ui"                  % "8.5.0-play-26",
-    "uk.gov.hmrc"             %% "play-language"            % "4.2.0-play-26",
-    "uk.gov.hmrc"             %% "bootstrap-play-26"        % "1.3.0"
+    "uk.gov.hmrc"             %% "play-language"         % "4.2.0-play-26",
+    "uk.gov.hmrc"             %% "bootstrap-play-26"     % "1.3.0",
+    "uk.gov.hmrc"             %% "play-frontend-govuk"   % "0.37.0-play-26",
+    "uk.gov.hmrc"             %% "play-frontend-hmrc"    % "0.10.0-play-26",
+    "org.webjars.npm"         %  "govuk-frontend"        % "3.5.0",
+    "org.webjars.npm"         %  "hmrc-frontend"         % "1.5.0"
   )
 
   val test = Seq(
