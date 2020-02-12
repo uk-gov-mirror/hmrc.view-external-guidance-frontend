@@ -34,5 +34,3 @@ case class Text(english: String, welsh: String, bold: Boolean = false) extends B
 case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem with UIComponent {
   override def toString: String = s"[link:$txt:$dest:$window]"
 }
-
-case class RichText(items: Seq[TextItem])

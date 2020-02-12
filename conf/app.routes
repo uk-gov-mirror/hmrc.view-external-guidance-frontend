@@ -1,4 +1,5 @@
 # microservice specific routes
+GET        /assets/*file            controllers.Assets.versioned(path="/public", file: Asset)
 
 GET        /hello-world                             controllers.HelloWorldController.helloWorld
 GET        /bye-world                               controllers.HelloWorldController.byeWorld
@@ -6,3 +7,5 @@ GET        /:service/:process/*pageUrl              controllers.RenderPageContro
 
 GET        /language/:lang                          controllers.SwitchLanguageController.switchToLanguage(lang: String)
 
+->         /govuk-frontend          govuk.Routes
+->         /hmrc-frontend           hmrcfrontend.Routes
