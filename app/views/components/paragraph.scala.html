@@ -14,10 +14,8 @@
  * limitations under the License.
  *@
 
-@import config.AppConfig
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import models.ui._
 
-@(para: Paragraph)(implicit request: Request[_], messages: Messages)
+@(para: Paragraph)(implicit messages: Messages)
 
-@para
+<p class="govuk-body">@components.text_items(para.txt)</p>

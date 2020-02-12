@@ -14,15 +14,19 @@
  * limitations under the License.
  *@
 
-@import config.AppConfig
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import models.ui._
 
-@(page: Page)(implicit request: Request[_], messages: Messages)
+@(pge: Page)(implicit messages: Messages)
 
-@for( cmp <- page.components) {
-  cmp match {
-    case p:Paragraph => components.paragraph(p)
-    case x => x
+@for( cmp <- pge.components) {
+  @{
+    cmp match {
+      case p:Paragraph => components.paragraph(p)
+      case l:HyperLink => components.link(l)
+      case H1(t) => <h1>{t.value(messages.lang)}</h1>
+      case H2(t) => <h2>{t.value(messages.lang)}</h2>
+      case H3(t) => <h3>{t.value(messages.lang)}</h3>
+      case x => {x}
+    }
   }
 }
