@@ -30,27 +30,32 @@ import play.api.inject.Injector
 
 class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
-  def injector: Injector = app.injector
-  def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
+  private trait Test {
+    private def injector: Injector = app.injector
+    private def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
+    private implicit val errorHandler = injector.instanceOf[ErrorHandler]
+    private val view = app.injector.instanceOf[views.html.render_page]
 
-  private val fakeRequest = FakeRequest("GET", "/")
+    val fakeRequest = FakeRequest("GET", "/")
 
-  private val env           = Environment.simple()
-  private val configuration = Configuration.load(env)
+    private val env           = Environment.simple()
+    private val configuration = Configuration.load(env)
 
-  private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
-  private val appConfig     = new AppConfig(configuration, serviceConfig)
-  private val controller = new RenderPageController(appConfig,
-                                                    new ErrorHandler(messagesApi, appConfig),
-                                                    stubMessagesControllerComponents())
-  
+    private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
+    private val appConfig     = new AppConfig(configuration, serviceConfig)
+    val controller = new RenderPageController(appConfig,
+                                              errorHandler,
+                                              stubMessagesControllerComponents(),
+                                              view)
+  }
+
   "GET /dummy-service/dummy-process/dummy-path" should {
-    "return 200" in {
+    "return 200" in new Test {
       val result = controller.renderPage("dummy-service","dummy-process","dummy-path")(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
-    "return HTML" in {
+    "return HTML" in new Test {
       val result = controller.renderPage("dummy-service","dummy-process","dummy-path")(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result)     shouldBe Some("utf-8")
@@ -59,7 +64,7 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
   }
 
   "GET /dummy-service/dummy-process/unknown" should {
-    "return NOT_FOUND" in {
+    "return NOT_FOUND" in new Test {
       val result = controller.renderPage("dummy-service","dummy-process","unknown")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
