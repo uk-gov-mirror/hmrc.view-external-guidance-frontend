@@ -25,12 +25,12 @@ import config.{AppConfig, ErrorHandler}
 import scala.concurrent.Future
 import play.api.Logger
 import models.ui._
-import views.html.render_page
 
 @Singleton
 class RenderPageController @Inject()(appConfig: AppConfig,
                                     errorHandler: ErrorHandler,
-                                    mcc: MessagesControllerComponents) extends FrontendController(mcc) with I18nSupport {
+                                    mcc: MessagesControllerComponents,
+                                    view: views.html.render_page) extends FrontendController(mcc) with I18nSupport {
 
   implicit val config: AppConfig = appConfig
 
@@ -44,9 +44,8 @@ class RenderPageController @Inject()(appConfig: AppConfig,
 
     Future.successful(
       pageMap.get(s"${service}!${process}!${pageUrl}")
-             .map(page => Ok(render_page(page)))
+             .map(page => Ok(view(page)))
              .getOrElse(NotFound(errorHandler.notFoundTemplate))
     )
   }
 }
-
