@@ -40,7 +40,6 @@ class RenderPageController @Inject()(appConfig: AppConfig,
 
   def renderPage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
-    implicit val lang = request.messages.lang
 
     Future.successful(
       pageMap.get(s"${service}!${process}!${pageUrl}")
