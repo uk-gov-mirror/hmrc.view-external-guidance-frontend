@@ -29,7 +29,7 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
   def getBodyFragmentElementByTag( markUp: Html, htmlTag: String ) : Element = {
 
-    val document: Document = Jsoup.parseBodyFragment( s"<div>${markUp.toString()}</div>" )
+    val document: Document = Jsoup.parse( markUp.toString() )
 
     val headers: Elements = document.getElementsByTag( htmlTag )
 

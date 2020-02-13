@@ -68,8 +68,8 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "display text in English" in new Test {
 
-      val markUp: Html = h1_heading( h1 )
 
+      val markUp: Html = h1_heading( h1 )
       val h1Element: Element =  getBodyFragmentElementByTag( markUp, "h1" )
 
       h1Element.text() mustBe h1English
