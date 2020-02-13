@@ -89,35 +89,21 @@ class ParagraphSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       txtNodes.length shouldBe 3
       txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
       txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
-      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 
+      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link1Attrs.contains("href") shouldBe true
+      link1Attrs("href") shouldBe dest1
       link1Attrs.contains("class") shouldBe true
+      link1Attrs("class") shouldBe "govuk-link"
       link1Attrs.contains("target") shouldBe true
+      link1Attrs("target") shouldBe "_blank"
 
       val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-
       link2Attrs.contains("href") shouldBe true
+      link2Attrs("href") shouldBe dest2
       link2Attrs.contains("class") shouldBe true
+      link1Attrs("class") shouldBe "govuk-link"
       link2Attrs.contains("target") shouldBe false
-      // for( attr <- links(0).attributes.asScala) {
-      //   attr.getKey().toString match {
-      //     case "href" => attr.getValue shouldBe dest1
-      //     case "target" =>
-      //     case "class" => attr.getValue shouldBe "govuk-link"
-      //     case x => fail(s"Unexpected link attribute $x")
-      //   }
-      // }
-
-      // for( attr <- links(1).attributes.asScala) {
-      //   attr.getKey.toString match {
-      //     case "href" => attr.getValue shouldBe dest2
-      //     case "target" =>
-      //     case "class" => attr.getValue shouldBe "govuk-link"
-      //     case x => fail(s"Unexpected link attribute $x")
-      //   }
-      // }
-
     }
 
     "generate Welsh html containing a lede text paragraph" in new WelshTest {
@@ -137,6 +123,37 @@ class ParagraphSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       paras.first.text shouldBe paraText1.welsh
       paras.first.classNames.toString shouldBe "[govuk-body]"
     }
+
+    "generate Welsh html containing Text and links" in new WelshTest {
+
+      val doc = asDocument(paragraph(paraWithMultipleLinks))
+      val paras = doc.getElementsByTag("p")
+      paras.size shouldBe 1
+
+      val links = paras.first.getElementsByTag("a").asScala
+      links.length shouldBe 2
+
+      val txtNodes = paras.first.textNodes().asScala
+      txtNodes.length shouldBe 3
+      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
+      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
+
+      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      link1Attrs.contains("href") shouldBe true
+      link1Attrs("href") shouldBe dest1
+      link1Attrs.contains("class") shouldBe true
+      link1Attrs("class") shouldBe "govuk-link"
+      link1Attrs.contains("target") shouldBe true
+      link1Attrs("target") shouldBe "_blank"
+
+      val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      link2Attrs.contains("href") shouldBe true
+      link2Attrs("href") shouldBe dest2
+      link2Attrs.contains("class") shouldBe true
+      link1Attrs("class") shouldBe "govuk-link"
+      link2Attrs.contains("target") shouldBe false
+    }
+
 
   }
 
