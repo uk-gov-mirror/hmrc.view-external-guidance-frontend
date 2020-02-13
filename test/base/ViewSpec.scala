@@ -27,7 +27,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 
 trait ViewSpec extends WordSpec with MustMatchers {
 
-  def getBodyFragmentElementByTag( markUp: Html, htmlTag: String ) : Element = {
+  def getSingleElementByTag( markUp: Html, htmlTag: String ) : Element = {
 
     val document: Document = Jsoup.parse( markUp.toString() )
 

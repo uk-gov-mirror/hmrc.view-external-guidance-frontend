@@ -14,6 +14,12 @@
  * limitations under the License.
  *@
 
-@( text: String )
+@import ui.H3
 
-<h3 class="govuk-heading-m">text</h3>
+@( h3: H3 )( implicit messages: Messages )
+
+<h3 class="govuk-heading-m">@{h3.txt.value(messages.lang)}</h3>
+
+@{
+//$COVERAGE-OFF$
+}
