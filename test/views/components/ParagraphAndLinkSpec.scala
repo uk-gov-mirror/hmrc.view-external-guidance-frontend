@@ -29,7 +29,7 @@ import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
 
-class ParagraphSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
+class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
