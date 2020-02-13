@@ -1,0 +1,46 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import models.ui.{RadioGroup, Radio, Text, UIComponent}
+
+@(heading:Text, hint:Option[Text], content: Seq[UIComponent], radioGroup: RadioGroup)(implicit messages: Messages)
+
+<div class="govuk-form-group">
+ <fieldset class="govuk-fieldset" aria-describedby="changed-name-hint">
+  <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+   <h1 class="govuk-fieldset__heading">
+    @heading.value(messages.lang)
+   </h1>
+  </legend>
+  <span id="changed-name-hint" class="govuk-hint">
+      This includes changing your last name or spelling your name differently.
+    </span>
+  <div class="govuk-radios govuk-radios--inline">
+   <div class="govuk-radios__item">
+    <input class="govuk-radios__input" id="changed-name" name="changed-name" type="radio" value="yes">
+    <label class="govuk-label govuk-radios__label" for="changed-name">
+     Yes
+    </label>
+   </div>
+   <div class="govuk-radios__item">
+    <input class="govuk-radios__input" id="changed-name-2" name="changed-name" type="radio" value="no">
+    <label class="govuk-label govuk-radios__label" for="changed-name-2">
+     No
+    </label>
+   </div>
+  </div>
+ </fieldset>
+</div>

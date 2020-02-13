@@ -16,6 +16,5 @@
 
 package models.ui
 
-case class Answer(txt: Text, hidden: Option[Text], destUrl: String)
-case class AnswerGroup(answers: Seq[Answer], vertical: Boolean = true)
-case class Question(txt: Text, hidden: Option[Text], answerGroup: AnswerGroup) extends UIComponent
+case class Radio(txt: Text, hint: Option[Text], destUrl: String)
+case class RadioGroup(radios: Seq[Radio], vertical: Boolean = true) extends UIComponent
