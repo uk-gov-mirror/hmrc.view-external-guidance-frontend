@@ -29,9 +29,10 @@
    *@
   @for(cmp <- page.components) {
     @{cmp match {
-      case H1(t) => <h1>{t.value(messages.lang)}</h1>
-      case H2(t) => <h2>{t.value(messages.lang)}</h2>
-      case H3(t) => <h3>{t.value(messages.lang)}</h3>
+      case h: H1 => components.h1_heading(h)
+      case h: H2 => components.h2_heading(h)
+      case h: H3 => components.h3_heading(h)
+      case bpl: BulletPointList => components.bullet_point_list( bpl )
       case _ => <p>{cmp}</p>
     }}
   }

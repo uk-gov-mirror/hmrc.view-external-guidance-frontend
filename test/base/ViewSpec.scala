@@ -38,4 +38,15 @@ trait ViewSpec extends WordSpec with MustMatchers {
     headers.first()
   }
 
+  def getMultipleElementsByTag( markUp: Html, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
+
+    val document: Document = Jsoup.parse( markUp.toString() )
+
+    val elements: Elements = document.getElementsByTag( htmlTag )
+
+    elements.size() mustBe expectedNumberOfElements
+
+    elements
+  }
+
 }
