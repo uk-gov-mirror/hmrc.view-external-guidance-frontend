@@ -90,12 +90,12 @@ object DummyPage {
   val pageItems: Seq[UIComponent] = Seq(
                     H1(title),
                     Paragraph(Seq(openingPara), lede = true),
-                    H2(overView),
+                    H3(overView),
                     BulletPointList(Seq(bulletLeading1),
                                     Seq(Seq(bulletOpt1a), Seq(bulletOpt1b))),
                     Paragraph(Seq(para1)),
-                    HyperLink( "/how-did-you-earn-extra-income", link1),
-                    H2(heading2),
+                    Paragraph(Seq(HyperLink( "/how-did-you-earn-extra-income", link1, true))),
+                    H3(heading2),
                     Paragraph(Seq(para2)),
                     Paragraph(Seq(para3, HyperLink("https://www.youtube.com/watch?v=MYgCctGY_Ug", eLink3))),
                     Paragraph(Seq(para4, HyperLink("https://www.gov.uk/capital-gainstax", eLink4))),
@@ -103,14 +103,14 @@ object DummyPage {
                     BulletPointList(Seq(bulletLeading2),
                                     Seq(Seq(bulletOpt2a), Seq(bulletOpt2b), Seq(bulletOpt2c))),
                     Paragraph(Seq(para1)),
-                    HyperLink( "/sales/did-you-only-sell-personal-posessions", link2),
-                    H2(heading3),
+                    Paragraph(Seq(HyperLink( "/sales/did-you-only-sell-personal-posessions", link2))),
+                    H3(heading3),
                     Paragraph(Seq(para5)),
                     H3(propertyAllowance),
                     BulletPointList(Seq(bulletLeading3),
                                     Seq(Seq(bulletOpt3a), Seq(bulletOpt3b), Seq(bulletOpt3c), Seq(bulletOpt3d))),
                     Paragraph(Seq(para1)),
-                    HyperLink( "/rent/have-you-made-less-than-1000", link3)
+                    Paragraph(Seq(HyperLink( "/rent/have-you-made-less-than-1000", link3)))
                   )
     val page = Page("dummy-path", pageItems)
 }

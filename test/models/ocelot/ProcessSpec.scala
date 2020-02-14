@@ -18,7 +18,6 @@ package models.ocelot
 
 import base.BaseSpec
 import play.api.libs.json._
-import models.ocelot._
 import models.ocelot.stanzas.Stanza
 
 class ProcesSpec extends BaseSpec with ProcessJson {

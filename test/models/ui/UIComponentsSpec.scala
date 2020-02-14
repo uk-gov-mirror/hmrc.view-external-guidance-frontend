@@ -236,49 +236,38 @@ class UIComponentsSpec extends BaseSpec {
       hyperLink.toString mustBe s"[link:$englishLinkText:$destination:false]"
     }
 
-    "build into a page of text only paragraph and question" in {
-
-      implicit val lang: Lang = Lang("en")
+    "build into a page of text only paragraph and RadioGroup" in {
 
       val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
       val langs4 = Vector("Not bad", "Welsh, Not bad")
       val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
       val langs6 = Vector("ok","Welsh, ok")
       val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
-      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
 
       val txt1 = Text(langs1(0), langs1(1))
       val para = Paragraph(Seq(txt1))
 
-      val answer1 = Answer(Text(langs4(0), langs4(1)), Some(Text(langs5(0), langs5(1))), "/firstpage/notbad")
-      val answer2 = Answer(Text(langs6(0), langs6(1)), Some(Text(langs7(0), langs7(1))), "/firstpage/notbad")
-      val answers = AnswerGroup(Seq(answer1, answer2), false)
-      val question = Question(Text(langs8(0), langs8(1)), None, answers)
+      val radio1 = Radio(Text(langs4(0), langs4(1)), Some(Text(langs5(0), langs5(1))), "/firstpage/notbad")
+      val radio2 = Radio(Text(langs6(0), langs6(1)), Some(Text(langs7(0), langs7(1))), "/firstpage/notbad")
+      val radios = RadioGroup(Seq(radio1, radio2), false)
 
-      val components = Seq(para, question)
+      val components = Seq(para, radios)
       val page = Page("/firstpage", components)
 
       page.components.length mustBe 2
 
       page.components.foreach{
-        case p:Paragraph => p.txt.length mustBe 1
-        case q: Question => q.answerGroup.answers.length mustBe 2
+        case p: Paragraph => p.txt.length mustBe 1
+        case q: RadioGroup => q.radios.length mustBe 2
         case _ => fail("unknown ParagraphItem")
       }
     }
 
     "build into a page of text and link paragraph" in {
 
-      implicit val lang: Lang = Lang("en")
-
       val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
       val langs2 = Vector(" and today is Wednesday","Welsh,  and today is Wednesday")
       val langs3 = Vector("Unsure?", "Welsh, Unsure?")
-      val langs4 = Vector("Not bad", "Welsh, Not bad")
-      val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
-      val langs6 = Vector("ok","Welsh, ok")
-      val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
-      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
 
       val txt1 = Text(langs1(0), langs1(1))
       val txt2 = Text(langs2(0), langs2(1))
@@ -350,17 +339,16 @@ class UIComponentsSpec extends BaseSpec {
             Seq( bulletPointThree, bulletPointThreeHyperLink ) ) )
 
       // Define question
-      val answer1 = Answer(
+      val answer1 = Radio(
         Text( "I pay tax at the higher rate", "Welsh I pay tax at the higher rate"),
         Some(Text( "You are relatively wealthy", "Welsh You are relatively weathly" ) ),
           "/higherTaxRateUrl")
-      val answer2 = Answer(
+      val answer2 = Radio(
         Text( "I do not pay tax at the higher rate", "Welsh I do not pay tax at the higher rate" ),
         Some(Text( "You are not relatively wealthy", "Welsh you are not relatively wealthy") ),
         "/lowerRateTaxUrl")
 
-      val answers = AnswerGroup(Seq(answer1, answer2), false)
-      val question = Question(Text("How much tax do you pay?", "Welsh How much tax do you pay?"), None, answers)
+      val answers = RadioGroup(Seq(answer1, answer2), false)
 
       val components: Seq[UIComponent] = Seq(
         h1Page,
@@ -369,7 +357,7 @@ class UIComponentsSpec extends BaseSpec {
         secondParagraph,
         h3Page,
         bulletPointList,
-        question )
+        answers )
 
       val page: Page = Page( "/pageUrl", components )
 
@@ -406,7 +394,7 @@ class UIComponentsSpec extends BaseSpec {
       }
 
       page.components( six ) match {
-        case matchedQuestion: Question => matchedQuestion mustBe question
+        case ans: RadioGroup => ans mustBe answers
         case _ => fail( "Seventh component in page is not a question" )
       }
     }

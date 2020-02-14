@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ui
+@import models.ui.Paragraph
 
-case class Answer(txt: Text, hidden: Option[Text], destUrl: String)
-case class AnswerGroup(answers: Seq[Answer], vertical: Boolean = true)
-case class Question(txt: Text, hidden: Option[Text], answerGroup: AnswerGroup) extends UIComponent
+@(para: Paragraph)(implicit messages: Messages)
+
+<p class="@{if(para.lede) "govuk-body-l" else "govuk-body"}">@components.text_items(para.txt)</p>
+
+@{
+     //$COVERAGE-OFF$
+}
