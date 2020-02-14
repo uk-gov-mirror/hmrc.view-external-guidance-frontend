@@ -25,7 +25,6 @@ import play.api.{Configuration, Environment, _}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import config.{AppConfig, ErrorHandler}
-import play.api.i18n.MessagesApi
 import play.api.inject.Injector
 
 class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
