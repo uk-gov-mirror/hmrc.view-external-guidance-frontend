@@ -18,7 +18,6 @@ package models.ocelot.stanzas
 
 import base.BaseSpec
 import play.api.libs.json._
-import models.ocelot._
 
 class StanzaSpec extends BaseSpec {
 

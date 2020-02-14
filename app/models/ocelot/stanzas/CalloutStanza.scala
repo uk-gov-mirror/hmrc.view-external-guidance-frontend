@@ -19,7 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import models.ocelot.{Phrase, Process}
+import models.ocelot.Phrase
 
 case class CalloutStanza(noteType: CalloutType,
                          text: Int,

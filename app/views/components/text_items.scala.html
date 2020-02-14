@@ -14,17 +14,17 @@
  * limitations under the License.
  *@
 
-@import config.AppConfig
-@import models.ui._
+@import models.ui.{TextItem, HyperLink}
 
-@this(layout: main_layout)
+@(items: Seq[TextItem])(implicit messages: Messages)
 
-@(page: Page)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-
-@layout(page.heading.value(messages.lang)) {
-
-@components.page(page)
-
+@for(item <- items) {
+  @{
+    item match {
+      case t: models.ui.Text => t.value(messages.lang)
+      case l: HyperLink => components.link(l)
+    }
+  }
 }
 @{
      //$COVERAGE-OFF$

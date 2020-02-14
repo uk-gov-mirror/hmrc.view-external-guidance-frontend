@@ -17,9 +17,7 @@
 package models.ocelot
 
 import base.BaseSpec
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
-import models.ocelot._
 
 class LinkSpec extends BaseSpec {
 
