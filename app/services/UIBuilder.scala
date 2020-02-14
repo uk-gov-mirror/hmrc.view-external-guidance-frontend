@@ -24,8 +24,23 @@ import scala.annotation.tailrec
 object UIBuilder {
 
   def fromStanzaPage(pge: models.ocelot.Page): Either[UIError, Page] = {
-    // val uiCompoents =
-    Right(Page(pge.url, Nil))
+
+    @tailrec
+    def componentsFromStanzas(stanzas: Seq[Stanza], acc: Seq[UIComponent]): Either[UIError, Seq[UIComponent]] =
+      stanzas match {
+        case Nil => Right(acc)
+        // case c: Callout :: xs =>
+        // case q: Question :: xs =>
+        // case i: Instruction :: xs =>
+        // case v: ValueStanza :: xs =>
+        case EndStanza :: xs => componentsFromStanzas( xs, acc )
+        case u :: xs => Left(UnhandledStanza(u))
+      }
+
+    componentsFromStanzas(pge.stanzas.values.toList, Nil).fold(
+      err => Left(err),
+      components => Right(Page(pge.url, components))
+    )
   }
 
   def pages(stanzaPages: Seq[models.ocelot.Page]): Either[UIError, Map[String, Page]] = {
