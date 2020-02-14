@@ -25,7 +25,7 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.page
 import models.ui.{Page,H1,Paragraph,Text}
-import org.jsoup.nodes.{Document, Element}
+import org.jsoup.nodes.Document
 
 
 class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
