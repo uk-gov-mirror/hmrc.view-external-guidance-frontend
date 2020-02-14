@@ -23,7 +23,10 @@ import scala.annotation.tailrec
 
 object UIBuilder {
 
-  def fromStanzaPage(pge: models.ocelot.Page): Either[UIError, Page] = Right(Page("", Nil))
+  def fromStanzaPage(pge: models.ocelot.Page): Either[UIError, Page] = {
+    // val uiCompoents =
+    Right(Page(pge.url, Nil))
+  }
 
   def pages(stanzaPages: Seq[models.ocelot.Page]): Either[UIError, Map[String, Page]] = {
 

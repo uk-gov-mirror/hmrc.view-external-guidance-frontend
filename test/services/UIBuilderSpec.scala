@@ -18,8 +18,7 @@ package services
 
 import base.BaseSpec
 import models.ocelot.stanzas._
-import models.ocelot.{Page, _}
-import play.api.libs.json._
+import models.ocelot._
 import utils.StanzaHelper
 
 class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
@@ -38,31 +37,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                             Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                             Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-    val onePage = PageBuilder.pages(process).right
-
-  }
-  val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
-
-  case object DummyStanza extends Stanza {
-    override val next: Seq[String] = Seq("1")
+    val singleOcelotPage = PageBuilder.buildPage("start", process).right.get
   }
 
-  "PageBuilder error handling" must {
+  "UIBuilder" must {
 
-    val flow = Map(
-      "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
-      "1" -> InstructionStanza(0, Seq("2"), None, false),
-      "2" -> DummyStanza
-    )
+    "convert and Ocelot page into a UI page with the same url" in new Test{
 
-    "detect UnknownStanzaType error" in {
-
-      val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
-
-      PageBuilder.buildPage("start", process) match {
-        case Left(UnknownStanzaType(DummyStanza)) => succeed
-        case Left(stanza) => fail(s"Unknown stanza not detected, found $stanza")
-        case err => fail(s"Unknown stanza not detected $err")
+      UIBuilder.fromStanzaPage(singleOcelotPage) match {
+        case Right(p) if p.urlPath == singleOcelotPage.url => succeed
+        case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
+        case Left(err) => fail(s"Failed with $err")
       }
 
     }
