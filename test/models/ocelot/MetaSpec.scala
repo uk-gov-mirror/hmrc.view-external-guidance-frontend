@@ -17,7 +17,6 @@
 package models.ocelot
 
 import base.BaseSpec
-import org.scalatestplus.play.PlaySpec
 import play.api.libs.json._
 
 class MetaSpec extends BaseSpec {

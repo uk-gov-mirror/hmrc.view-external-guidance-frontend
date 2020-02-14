@@ -22,7 +22,6 @@ import play.api.mvc._
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import config.AppConfig
-import views.html.hello_world
 import scala.concurrent.Future
 
 @Singleton
@@ -36,8 +35,6 @@ class HelloWorldController @Inject()(appConfig: AppConfig,
     Future.successful(Ok(view()))
   }
 
-  val byeWorld: Action[AnyContent] = Action.async {
-    implicit request => throw new Exception( "Something went wrong!" )
-  }
+  val byeWorld: Action[AnyContent] = Action.async { _ => throw new Exception( "Something went wrong!" ) }
 
 }

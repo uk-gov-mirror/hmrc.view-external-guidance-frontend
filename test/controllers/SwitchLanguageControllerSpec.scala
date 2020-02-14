@@ -23,8 +23,8 @@ import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import play.api._
-import play.api.mvc.{Cookies, Result}
-import play.api.i18n.{Messages, MessagesApi,DefaultLangsProvider}
+import play.api.mvc.Cookies
+import play.api.i18n.{MessagesApi,DefaultLangsProvider}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs._
 import config.AppConfig
