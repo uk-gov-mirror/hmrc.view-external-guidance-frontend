@@ -1,4 +1,3 @@
 service.name = External guidance
 hello.world = Hello world!
 hello.world.currentLanguage = The current language setting is "{0}",
-dummy.title = External Guidance: Demonstration Page

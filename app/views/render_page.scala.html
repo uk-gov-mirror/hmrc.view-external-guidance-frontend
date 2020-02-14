@@ -21,7 +21,7 @@
 
 @(page: Page)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@layout(messages("dummy.title")) {
+@layout(page.heading.value(messages.lang)) {
 
 @components.page(page)
 
