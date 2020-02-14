@@ -32,7 +32,6 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
 
   private trait Test {
     private def injector: Injector = app.injector
-    private def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     private implicit val errorHandler = injector.instanceOf[ErrorHandler]
     private val view = app.injector.instanceOf[views.html.render_page]
 

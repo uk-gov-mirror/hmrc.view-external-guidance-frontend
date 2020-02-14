@@ -236,16 +236,13 @@ class UIComponentsSpec extends BaseSpec {
       hyperLink.toString mustBe s"[link:$englishLinkText:$destination:false]"
     }
 
-    "build into a page of text only paragraph and question" in {
-
-      implicit val lang: Lang = Lang("en")
+    "build into a page of text only paragraph and RadioGroup" in {
 
       val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
       val langs4 = Vector("Not bad", "Welsh, Not bad")
       val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
       val langs6 = Vector("ok","Welsh, ok")
       val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
-      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
 
       val txt1 = Text(langs1(0), langs1(1))
       val para = Paragraph(Seq(txt1))
@@ -268,16 +265,9 @@ class UIComponentsSpec extends BaseSpec {
 
     "build into a page of text and link paragraph" in {
 
-      implicit val lang: Lang = Lang("en")
-
       val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
       val langs2 = Vector(" and today is Wednesday","Welsh,  and today is Wednesday")
       val langs3 = Vector("Unsure?", "Welsh, Unsure?")
-      val langs4 = Vector("Not bad", "Welsh, Not bad")
-      val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
-      val langs6 = Vector("ok","Welsh, ok")
-      val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
-      val langs8 = Vector("What do you think of this example","Welsh, What do you think of this example")
 
       val txt1 = Text(langs1(0), langs1(1))
       val txt2 = Text(langs2(0), langs2(1))

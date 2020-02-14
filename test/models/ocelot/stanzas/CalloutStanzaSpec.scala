@@ -146,7 +146,7 @@ class CalloutStanzaSpec extends BaseSpec {
       val invalidCalloutStanzaJson = Json.parse(invalidCalloutStanzaInputJson)
 
       Try {
-        val calloutStanza: CalloutStanza = invalidCalloutStanzaJson.as[CalloutStanza]
+        invalidCalloutStanzaJson.as[CalloutStanza]
       }
       match {
         case Success(_) => fail("An instance of CalloutStanza should not be created when the note type is incorrect")
