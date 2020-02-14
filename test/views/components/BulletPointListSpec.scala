@@ -19,6 +19,7 @@ package views.components
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
@@ -156,11 +157,163 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
       val bulletPointList: BulletPointList = BulletPointList( bulletPointLeadingText, bulletPointListItems )
 
-      "Render bullet point list with embedded link in English" in {
+      "Render bullet point list with embedded link in English" in new Test {
 
+        val markUp: Html = bullet_point_list( bulletPointList )
 
+        val document: Document = Jsoup.parse( markUp.toString() )
+
+        // Test leading text
+        val paragraph: Element = getSingleElementByTag( document, "p" )
+
+        paragraph.hasClass( "govuk-body") mustBe true
+
+        val textNodes = paragraph.textNodes().asScala
+
+        textNodes.length mustBe 2
+
+        textNodes(0).text().trim mustBe englishLeadingTextPartOne
+        textNodes(1).text().trim mustBe englishLeadingTextPartTwo
+
+        val link: Element = getSingleElementByTag( document, "a" )
+
+        checkHyperLink( link, linkUrl, linkEnglishText, false )
+
+        // Test list items
+        val ul: Element = getSingleElementByTag( document, "ul" )
+
+        checkClassesForElement( ul, List( "govuk-list", "govuk-list--bullet" ) )
+
+        val expectedListItems = List( englishBulletPointOneText, englishBulletPointTwoText )
+
+        val actualListItems = getMultipleElementsByTag( document, "li", 2 ).asScala.toList
+
+        assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
       }
 
+      "Render bullet point list with embedded link in Welsh" in new WelshTest {
+
+        val markUp: Html = bullet_point_list( bulletPointList )
+
+        val document: Document = Jsoup.parse( markUp.toString() )
+
+        // Test leading text
+        val paragraph: Element = getSingleElementByTag( document, "p" )
+
+        paragraph.hasClass( "govuk-body") mustBe true
+
+        val textNodes = paragraph.textNodes().asScala
+
+        textNodes.length mustBe 2
+
+        textNodes(0).text().trim mustBe welshLeadingTextPartOne
+        textNodes(1).text().trim mustBe welshLeadingTextPartTwo
+
+        val link: Element = getSingleElementByTag( document, "a" )
+
+        checkHyperLink( link, linkUrl, linkWelshText, false )
+
+        // Test list items
+        val ul: Element = getSingleElementByTag( document, "ul" )
+
+        checkClassesForElement( ul, List( "govuk-list", "govuk-list--bullet" ) )
+
+        val expectedListItems = List( welshBulletPointOneText, welshBulletPointTwoText )
+
+        val actualListItems = getMultipleElementsByTag( document, "li", 2 ).asScala.toList
+
+        assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
+      }
+
+    }
+
+    "Render a bullet point list with links embedded in the list items" must {
+
+      val englishLeadingText: String = "Leading text for list"
+      val welshLeadingText: String = "Welsh leading text for list"
+
+      val englishBulletPointOneText: String = "Bullet point one text"
+      val welshBulletPointOneText: String = "Welsh bullet point one text"
+
+      val bulletPointOneLinkUrl: String = "http://bulletPointOneUrl"
+
+      val englishBulletPointOneLinkText: String = "Bullet point one link text"
+      val welshBulletPointOneLinkText: String = "Welsh bullet point one link text"
+
+      val englishBulletPointTwoText: String = "Bullet point two text"
+      val welshBulletPointTwoText: String = "Welsh bullet point two text"
+
+      val bulletPointTwoLinkUrl: String = "http://bulletPointTwoUrl"
+
+      val englishBulletPointTwoLinkText: String = "Bullet point two link text"
+      val welshBulletPointTwoLinkText: String = "Welsh bullet point two link text"
+
+      val bulletPointLeadingText: Seq[TextItem] = Seq(
+        Text( englishLeadingText, welshLeadingText )
+      )
+
+      val bulletPointListItems: Seq[Seq[TextItem]] = Seq(
+        Seq( Text( englishBulletPointOneText, welshBulletPointOneText),
+          HyperLink( bulletPointOneLinkUrl, Text( englishBulletPointOneLinkText, welshBulletPointOneLinkText ) ) ),
+        Seq( Text( englishBulletPointTwoText, welshBulletPointTwoText ),
+          HyperLink( bulletPointTwoLinkUrl, Text( englishBulletPointTwoLinkText, welshBulletPointTwoLinkText ), true ) )
+      )
+
+      val bulletPointList: BulletPointList = BulletPointList( bulletPointLeadingText, bulletPointListItems )
+
+      "Render the bullet point list with embedded links in English" in new Test {
+
+        val markUp: Html = bullet_point_list( bulletPointList )
+
+        println( markUp.toString() )
+
+        val document: Document = Jsoup.parse( markUp.toString() )
+
+        // Test leading paragraph
+        val paragraph: Element = getSingleElementByTag( document, "p" )
+
+        paragraph.hasClass( "govuk-body" ) mustBe true
+
+        val textNode = paragraph.textNodes().asScala
+
+        textNode.length mustBe 1
+
+        textNode(0).text().trim mustBe englishLeadingText
+
+        // Test list items
+        val listItems: Elements = getMultipleElementsByTag( document, "li", 2 )
+
+        val firstListItem: Element = listItems.first()
+
+        // First list item
+        val firstListItemsTextNodes = firstListItem.textNodes().asScala
+
+        firstListItemsTextNodes.length mustBe 2
+
+        firstListItemsTextNodes(0).text().trim mustBe englishBulletPointOneText
+
+        val firstListItemLinks: Elements = firstListItem.getElementsByTag( "a")
+
+        firstListItemLinks.size() mustBe 1
+
+        checkHyperLink( firstListItemLinks.first, bulletPointOneLinkUrl, englishBulletPointOneLinkText, false )
+
+        // Second link item
+        val secondListItem = listItems.last
+
+        val secondListItemTextNodes = secondListItem.textNodes().asScala
+
+        secondListItemTextNodes.length mustBe 2
+
+        secondListItemTextNodes(0).text().trim mustBe englishBulletPointTwoText
+
+        val secondListItemLinks: Elements = secondListItem.getElementsByTag( "a" )
+
+        secondListItemLinks.size() mustBe 1
+
+        checkHyperLink( secondListItemLinks.first, bulletPointTwoLinkUrl, englishBulletPointTwoLinkText, true )
+
+      }
 
     }
 

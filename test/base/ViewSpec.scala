@@ -23,6 +23,8 @@ import org.jsoup.select.Elements
 
 import play.twirl.api.Html
 
+import scala.collection.JavaConverters._
+
 import org.scalatest.{MustMatchers, WordSpec}
 
 trait ViewSpec extends WordSpec with MustMatchers {
@@ -43,11 +45,11 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
   def getSingleElementByTag( document: Document, htmlTag: String ) : Element = {
 
-    val headers: Elements = document.getElementsByTag( htmlTag )
+    val elements: Elements = document.getElementsByTag( htmlTag )
 
-    headers.size() mustBe 1
+    elements.size() mustBe 1
 
-    headers.first()
+    elements.first()
   }
 
   def getMultipleElementsByTag( document: Document, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
@@ -64,6 +66,37 @@ trait ViewSpec extends WordSpec with MustMatchers {
     for( expectedClass <- expectedClasses ) {
       assert( element.hasClass( expectedClass ), "\n Class " + expectedClass + " not found on element" )
     }
+
+  }
+
+  def checkHyperLink( link: Element, destination: String, text: String, targetBlank: Boolean ) : Unit = {
+
+    val linkAttrs: Map[String, String] = link.attributes.asScala.toList.map(
+      attr => ( attr.getKey, attr.getValue )
+    ).toMap
+
+    linkAttrs.contains( "href" ) mustBe true
+    linkAttrs( "href" ) mustBe destination
+
+    linkAttrs.contains( "class" ) mustBe true
+    linkAttrs( "class" ) mustBe "govuk-link"
+
+    if( targetBlank ) {
+
+      linkAttrs.contains( "target" ) mustBe true
+      linkAttrs( "target" ) mustBe """"_blank""""
+
+    }
+    else
+    {
+       linkAttrs.contains( "target" ) mustBe false
+    }
+
+    val textNodes = link.textNodes().asScala
+
+    textNodes.size mustBe 1
+
+    textNodes(0).text().trim mustBe text
 
   }
 
