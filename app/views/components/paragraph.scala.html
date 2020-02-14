@@ -19,3 +19,7 @@
 @(para: Paragraph)(implicit messages: Messages)
 
 <p class="@{if(para.lede) "govuk-body-l" else "govuk-body"}">@components.text_items(para.txt)</p>
+
+@{
+     //$COVERAGE-OFF$
+}

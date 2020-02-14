@@ -19,3 +19,6 @@
 @(link: HyperLink)(implicit messages: Messages)
 
 <a class="govuk-link" href="@link.dest" @{if (link.window) "target=_blank"}>@link.txt.value(messages.lang)</a>
+@{
+     //$COVERAGE-OFF$
+}
