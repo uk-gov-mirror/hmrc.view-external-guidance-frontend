@@ -31,6 +31,18 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
     val document: Document = Jsoup.parse( markUp.toString() )
 
+    getSingleElementByTag( document, htmlTag )
+  }
+
+  def getMultipleElementsByTag( markUp: Html, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
+
+    val document: Document = Jsoup.parse( markUp.toString() )
+
+    getMultipleElementsByTag( document, htmlTag, expectedNumberOfElements )
+  }
+
+  def getSingleElementByTag( document: Document, htmlTag: String ) : Element = {
+
     val headers: Elements = document.getElementsByTag( htmlTag )
 
     headers.size() mustBe 1
@@ -38,15 +50,21 @@ trait ViewSpec extends WordSpec with MustMatchers {
     headers.first()
   }
 
-  def getMultipleElementsByTag( markUp: Html, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
-
-    val document: Document = Jsoup.parse( markUp.toString() )
+  def getMultipleElementsByTag( document: Document, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
 
     val elements: Elements = document.getElementsByTag( htmlTag )
 
     elements.size() mustBe expectedNumberOfElements
 
     elements
+  }
+
+  def checkClassesForElement( element: Element, expectedClasses: List[String] ) : Unit = {
+
+    for( expectedClass <- expectedClasses ) {
+      assert( element.hasClass( expectedClass ), "\n Class " + expectedClass + " not found on element" )
+    }
+
   }
 
 }

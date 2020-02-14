@@ -16,8 +16,9 @@
 
 package views.components
 
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
+import org.jsoup.nodes.Document
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
@@ -76,19 +77,23 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         val markUp: Html = bullet_point_list( simpleBulletPointList )
 
-        // Test leading text
-        val paragraph: Element = getSingleElementByTag( markUp, "p" )
+        val document: Document = Jsoup.parse( markUp.toString() )
 
-        paragraph.hasClass( "govuk-body") mustBe true
+        // Test leading text
+        val paragraph: Element = getSingleElementByTag( document, "p" )
+
+        paragraph.hasClass( "govuk-body" ) mustBe true
 
         paragraph.text() mustBe englishLeadingText
 
         // Test list items
-        checkListClasses( markUp )
+        val ul: Element = getSingleElementByTag( document, "ul" )
+
+        checkClassesForElement( ul, List( "govuk-list", "govuk-list--bullet" ) )
 
         val expectedListItems = List( englishBulletPointOne, englishBulletPointTwo, englishBulletPointThree )
 
-        val actualListItems = getMultipleElementsByTag( markUp, "li", 3 ).asScala.toList
+        val actualListItems = getMultipleElementsByTag( document, "li", 3 ).asScala.toList
 
         assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
       }
@@ -97,15 +102,19 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         val markUp: Html = bullet_point_list( simpleBulletPointList )
 
+        val document: Document = Jsoup.parse( markUp.toString() )
+
         // Test leading text
-        val paragraph: Element = getSingleElementByTag( markUp, "p" )
+        val paragraph: Element = getSingleElementByTag( document, "p" )
 
         paragraph.hasClass( "govuk-body") mustBe true
 
         paragraph.text() mustBe welshLeadingText
 
         // Test list items
-        checkListClasses( markUp )
+        val ul: Element = getSingleElementByTag( document, "ul" )
+
+        checkClassesForElement( ul, List( "govuk-list", "govuk-list--bullet" ) )
 
         val expectedListItems = List( welshBulletPointOne, welshBulletPointTwo, welshBulletPointThree )
 
@@ -116,14 +125,44 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     }
 
-  }
+    "Render a bullet point list with a link embedded in the leading text" must {
 
-  def checkListClasses( markUp: Html ) : Unit = {
+      val englishLeadingTextPartOne: String = "To view your options"
+      val welshLeadingTextPartOne: String = "Welsh to view your options"
 
-    val ulList: Element = getSingleElementByTag( markUp, "ul" )
+      val linkUrl: String = "http://optionsUrl"
+      val linkEnglishText: String = "Click here"
+      val linkWelshText: String = "Welsh click here"
 
-    ulList.hasClass( "govuk-list" ) mustBe true
-    ulList.hasClass( "govuk-list--bullet" ) mustBe true
+      val englishLeadingTextPartTwo: String= "Or just give up"
+      val welshLeadingTextPartTwo: String = "Welsh or just give up"
+
+      val englishBulletPointOneText: String = "Continue to section A"
+      val welshBulletPointOneText: String = "Welsh continue to section A"
+
+      val englishBulletPointTwoText: String = "Continue to section B"
+      val welshBulletPointTwoText: String = "Welsh continue to section B"
+
+      val bulletPointLeadingText: Seq[TextItem] = Seq(
+        Text( englishLeadingTextPartOne, welshLeadingTextPartOne ),
+        HyperLink( linkUrl, Text( linkEnglishText, linkWelshText ) ),
+        Text( englishLeadingTextPartTwo, welshLeadingTextPartTwo )
+      )
+
+      val bulletPointListItems: Seq[Seq[TextItem]] = Seq(
+        Seq( Text( englishBulletPointOneText, welshBulletPointOneText ) ),
+        Seq( Text( englishBulletPointTwoText, welshBulletPointTwoText ) )
+      )
+
+      val bulletPointList: BulletPointList = BulletPointList( bulletPointLeadingText, bulletPointListItems )
+
+      "Render bullet point list with embedded link in English" in {
+
+
+      }
+
+
+    }
 
   }
 
