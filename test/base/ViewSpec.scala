@@ -96,8 +96,7 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
     textNodes.size mustBe 1
 
-    textNodes(0).text().trim mustBe text
-
+    textNodes.head.text().trim mustBe text
   }
 
 }

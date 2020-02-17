@@ -265,8 +265,6 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         val markUp: Html = bullet_point_list( bulletPointList )
 
-        println( markUp.toString() )
-
         val document: Document = Jsoup.parse( markUp.toString() )
 
         // Test leading paragraph
@@ -312,7 +310,57 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         secondListItemLinks.size() mustBe 1
 
         checkHyperLink( secondListItemLinks.first, bulletPointTwoLinkUrl, englishBulletPointTwoLinkText, true )
+      }
 
+      "Render the bullet point list with embedded links in Welsh" in new WelshTest {
+
+        val markUp: Html = bullet_point_list( bulletPointList )
+
+        val document: Document = Jsoup.parse( markUp.toString() )
+
+        // Test leading paragraph
+        val paragraph: Element = getSingleElementByTag( document, "p" )
+
+        paragraph.hasClass( "govuk-body" ) mustBe true
+
+        val textNode = paragraph.textNodes().asScala
+
+        textNode.length mustBe 1
+
+        textNode(0).text().trim mustBe welshLeadingText
+
+        // Test list items
+        val listItems: Elements = getMultipleElementsByTag( document, "li", 2 )
+
+        val firstListItem: Element = listItems.first()
+
+        // First list item
+        val firstListItemsTextNodes = firstListItem.textNodes().asScala
+
+        firstListItemsTextNodes.length mustBe 2
+
+        firstListItemsTextNodes(0).text().trim mustBe welshBulletPointOneText
+
+        val firstListItemLinks: Elements = firstListItem.getElementsByTag( "a")
+
+        firstListItemLinks.size() mustBe 1
+
+        checkHyperLink( firstListItemLinks.first, bulletPointOneLinkUrl, welshBulletPointOneLinkText, false )
+
+        // Second link item
+        val secondListItem = listItems.last
+
+        val secondListItemTextNodes = secondListItem.textNodes().asScala
+
+        secondListItemTextNodes.length mustBe 2
+
+        secondListItemTextNodes(0).text().trim mustBe welshBulletPointTwoText
+
+        val secondListItemLinks: Elements = secondListItem.getElementsByTag( "a" )
+
+        secondListItemLinks.size() mustBe 1
+
+        checkHyperLink( secondListItemLinks.first, bulletPointTwoLinkUrl, welshBulletPointTwoLinkText, true )
       }
 
     }
