@@ -27,7 +27,9 @@ import Regex._
 object UIBuilder {
 
   // TODO handle [] within label text????
-  val urlLinkRegex =   """\[link:([^\]]+):([^:]+:[^:]+)\]""".r
+  val urlHttpLinkRegex =   """\[link:([^:]+):([htps]+:[a-zA-Z0-9\/\.\-]+)\]""".r
+  val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
+  val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
   val stanzaLinkPattern = """\[link:(.+):(\d+)\]""".r
   val boldPattern = """\[bold:(.*)\]""".r
 
@@ -89,8 +91,8 @@ object UIBuilder {
         case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, t +: (l +: acc))
       }
 
-    val (enTexts, enMatches) = fromPattern(urlLinkRegex, txt.english)
-    val (cyTexts, cyMatches) = fromPattern(urlLinkRegex, txt.english)
+    val (enTexts, enMatches) = fromPattern(urlHttpLinkRegex, txt.english)
+    val (cyTexts, cyMatches) = fromPattern(urlHttpLinkRegex, txt.english)
 
     joinTextsAndLinks(textToTexts(enTexts, cyTexts),
                       matchesToLInks(enMatches, cyMatches),
