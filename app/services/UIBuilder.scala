@@ -20,11 +20,14 @@ package services
 import models.ocelot.stanzas._
 import models.ocelot.Link
 import models.ui._
+import scala.util.matching.Regex
+import Regex._
 //import scala.annotation.tailrec
 
 object UIBuilder {
 
-  val urlLinkRegex =   """\[link:(.*):([^:]*:[^:]*)\]""".r
+  // TODO handle [] within label text????
+  val urlLinkRegex =   """\[link:([^\]]+):([^:]+:[^:]+)\]""".r
   val stanzaLinkPattern = """\[link:(.+):(\d+)\]""".r
   val boldPattern = """\[bold:(.*)\]""".r
 
@@ -33,7 +36,7 @@ object UIBuilder {
       case Title => H1(Text(c.text.langs))
       case SubTitle => H3(Text(c.text.langs))
       case Lede => Paragraph(Seq(Text(c.text.langs)), true)
-      case Error => H3(Text(c.text.langs)) //TODO
+      case Error => H3(Text(c.text.langs)) // TODO
     }
 
   def fromStanzaPage(pge: models.ocelot.Page): Page =
@@ -46,6 +49,8 @@ object UIBuilder {
           Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
         case Instruction(txt,_,lnk,_) =>
           Seq(Paragraph(Seq(Text(txt.langs)), false))
+
+        case Question(_,_,_,_) => List[UIComponent]() // TODO
         case ValueStanza(_,_,_) => List[UIComponent]()
         case EndStanza => List[UIComponent]()
       }
@@ -55,8 +60,40 @@ object UIBuilder {
     stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
 
 
-  // def textToTextItems(txt: Text): Seq[TextItem] = {
+  def textToTextItems(txt: Text): Seq[TextItem] = {
 
-  //   def txtTo
-  // }
+    def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) = {
+      val texts = pattern.split(text).toList
+      val matches = pattern.findAllMatchIn(text)
+      (texts.toList, matches.toList)
+    }
+
+    def matchesToLInks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
+      enM.zip(cyM).map{ t =>
+        val( en, cy) = t
+        HyperLink( en.group(2), Text(en.group(1), cy.group(1)), false)
+      }
+
+    def textToTexts(enT: List[String], cyT: List[String]): List[Text] =
+      enT.zip(cyT).map{ t =>
+        val (en, cy) = t
+        Text(en, cy)
+      }
+
+    // TODO
+    def joinTextsAndLinks(txts: List[Text], links: List[HyperLink], acc: Seq[TextItem]): Seq[TextItem] =
+      (txts, links) match {
+        case (Nil, Nil) =>  acc
+        case (t :: xs, Nil) => t +: acc
+        case (Nil, _) => acc
+        case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, t +: (l +: acc))
+      }
+
+    val (enTexts, enMatches) = fromPattern(urlLinkRegex, txt.english)
+    val (cyTexts, cyMatches) = fromPattern(urlLinkRegex, txt.english)
+
+    joinTextsAndLinks(textToTexts(enTexts, cyTexts),
+                      matchesToLInks(enMatches, cyMatches),
+                      Nil)
+  }
 }
