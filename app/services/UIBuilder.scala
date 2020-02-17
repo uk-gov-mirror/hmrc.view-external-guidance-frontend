@@ -28,20 +28,35 @@ object UIBuilder {
   val stanzaLinkPattern = """\[link:(.+):(\d+)\]""".r
   val boldPattern = """\[bold:(.*)\]""".r
 
+  def fromCallout(c: Callout): UIComponent =
+    c.noteType match {
+      case Title => H1(Text(c.text.langs))
+      case SubTitle => H3(Text(c.text.langs))
+      case Lede => Paragraph(Seq(Text(c.text.langs)), true)
+      case Error => H3(Text(c.text.langs)) //TODO
+    }
+
   def fromStanzaPage(pge: models.ocelot.Page): Page =
     Page(
       pge.url,
       pge.stanzas.flatMap{
-        case Callout(typ,txt,_,_) if typ == Title  => Seq(H1(Text(txt.langs)))
-        case Callout(typ,txt,_,_) if typ == SubTitle => Seq(H3(Text(txt.langs)))
-        case Callout(typ,txt,_,_) if typ == Lede => Seq(Paragraph(Seq(Text(txt.langs)), true))
-        case Instruction(txt,_,Some(Link(id,dest,_,window)),_) => Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
-        case Instruction(txt,_,lnk,_) => Seq(Paragraph(Seq(Text(txt.langs)), false))
+        case c: Callout => Seq(fromCallout(c))
+
+        case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
+          Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
+        case Instruction(txt,_,lnk,_) =>
+          Seq(Paragraph(Seq(Text(txt.langs)), false))
         case ValueStanza(_,_,_) => List[UIComponent]()
         case EndStanza => List[UIComponent]()
-      }.toSeq
+      }
     )
 
   def pages(stanzaPages: Seq[models.ocelot.Page]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
+
+
+  // def textToTextItems(txt: Text): Seq[TextItem] = {
+
+  //   def txtTo
+  // }
 }
