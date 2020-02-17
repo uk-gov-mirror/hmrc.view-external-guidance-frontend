@@ -24,34 +24,60 @@ import utils.StanzaHelper
 class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   trait Test extends ProcessJson {
-    val flow = Map(
+
+    val stanzas = Map(
       "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
-      "1" -> InstructionStanza(0, Seq("2"), None, false),
-      "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
-      "4" -> InstructionStanza(0, Seq("end"), None, false),
-      "5" -> InstructionStanza(0, Seq("end"), None, false),
+      "1" -> Instruction(Phrase(Vector("Some Text2","Welsh, Some Text2")), Seq("2"), None, false),
+      "2" -> Callout(Title, Phrase(Vector("Some Text","Welsh, Some Text")), Seq("3"), false),
+      "3" -> Callout(SubTitle, Phrase(Vector("Some Text1","Welsh, Some Text1")), Seq("4"), false),
+      "4" -> Callout(Lede, Phrase(Vector("Some Text2","Welsh, Some Text2")), Seq("5"), false),
+      "5" -> Instruction(Phrase(Vector("Some Text3","Welsh, Some Text3")), Seq("end"), None, false),
+      "6" -> Instruction(Phrase(Vector("Some Text3","Welsh, Some Text3")), Seq("end"), None, false),
       "end" -> EndStanza
     )
-    val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
-                                                            Phrase(Vector("Some Text1","Welsh, Some Text1")),
-                                                            Phrase(Vector("Some Text2","Welsh, Some Text2")),
-                                                            Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-    val singleOcelotPage = PageBuilder.buildPage("start", process).right.get
+    val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
   }
 
   "UIBuilder" must {
 
     "convert and Ocelot page into a UI page with the same url" in new Test{
 
-      UIBuilder.fromStanzaPage(singleOcelotPage) match {
-        case Right(p) if p.urlPath == singleOcelotPage.url => succeed
+      UIBuilder.fromStanzaPage(page) match {
+        case Right(p) if p.urlPath == page.url => succeed
         case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
         case Left(err) => fail(s"Failed with $err")
       }
 
     }
 
+    // "convert Callout type Title to H1" in new Test{
+
+    //   UIBuilder.fromStanzaPage(page) match {
+    //     case Right(Page(_,_,s,_,_)) if s.get(1).isDefined =>
+
+    //     case Left(err) => fail(s"Failed with $err")
+    //   }
+
+    // }
+    // "convert Callout type SubTitle to H3" in new Test{
+
+    //   UIBuilder.fromStanzaPage(page) match {
+    //     case Right(p) if p.urlPath == singleOcelotPage.url => succeed
+    //     case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
+    //     case Left(err) => fail(s"Failed with $err")
+    //   }
+
+    // }
+    // "convert Callout type Lede to lede Paragraph" in new Test{
+
+    //   UIBuilder.fromStanzaPage(page) match {
+    //     case Right(p) if p.urlPath == singleOcelotPage.url => succeed
+    //     case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
+    //     case Left(err) => fail(s"Failed with $err")
+    //   }
+
+    // }
   }
 
 }

@@ -36,7 +36,8 @@ object UIBuilder {
         case Callout(typ,txt,_,_) :: xs if typ == Title  => componentsFromStanzas( xs, H1(Text(txt.langs)) +: acc )
         case Callout(typ,txt,_,_) :: xs if typ == SubTitle => componentsFromStanzas( xs, H3(Text(txt.langs)) +: acc )
         case Callout(typ,txt,_,_) :: xs if typ == Lede => componentsFromStanzas( xs, Paragraph(Seq(Text(txt.langs)), true) +: acc )
-        // case i: Instruction :: xs =>Stanza
+        case Instruction(txt,_,lnk,_) :: xs if lnk.isEmpty => componentsFromStanzas( xs, Paragraph(Seq(Text(txt.langs)), true) +: acc )
+        case Instruction(txt,_,lnk,_) :: xs => componentsFromStanzas( xs, Paragraph(Seq(Text(txt.langs)), true) +: acc )
         case ValueStanza(_,_,_) :: xs => componentsFromStanzas( xs, acc )
         case EndStanza :: xs => componentsFromStanzas( xs, acc )
         case u :: xs => componentsFromStanzas( xs, acc )
