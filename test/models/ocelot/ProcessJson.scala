@@ -1900,13 +1900,13 @@ trait ProcessJson {
     """.stripMargin
 
   // Create and add an orphaned link within the links section
-  val id = 0
-  val dest = "http://www.bbc.co.uk/news"
-  val title = "BBC News"
-  val window = false
-  val leftbar = false
-  val always = false
-  val popUp = false
+  private val id = 0
+  private val dest = "http://www.bbc.co.uk/news"
+  private val title = "BBC News"
+  private val window = false
+  private val leftbar = false
+  private val always = false
+  private val popUp = false
   val prototypeLinksSection: String =
       s"""[
          |{

@@ -18,4 +18,4 @@ package models.ocelot
 
 import models.ocelot.stanzas.Stanza
 
-case class Page(id: String, url: String, stanzas: Map[String, Stanza], next: Seq[String], linked: Seq[String] = Nil)
+case class Page(id: String, url: String, stanzas: Seq[Stanza], next: Seq[String], linked: Seq[String] = Nil)

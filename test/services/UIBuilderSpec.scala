@@ -20,20 +20,27 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import utils.StanzaHelper
+import models.ui.Text
 
 class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   trait Test extends ProcessJson {
 
-    val stanzas = Map(
-      "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
-      "1" -> Instruction(Phrase(Vector("Some Text2","Welsh, Some Text2")), Seq("2"), None, false),
-      "2" -> Callout(Title, Phrase(Vector("Some Text","Welsh, Some Text")), Seq("3"), false),
-      "3" -> Callout(SubTitle, Phrase(Vector("Some Text1","Welsh, Some Text1")), Seq("4"), false),
-      "4" -> Callout(Lede, Phrase(Vector("Some Text2","Welsh, Some Text2")), Seq("5"), false),
-      "5" -> Instruction(Phrase(Vector("Some Text3","Welsh, Some Text3")), Seq("end"), None, false),
-      "6" -> Instruction(Phrase(Vector("Some Text3","Welsh, Some Text3")), Seq("end"), None, false),
-      "end" -> EndStanza
+    val lang0 = Vector("Some Text","Welsh, Some Text")
+    val lang1 = Vector("Some Text1","Welsh, Some Text1")
+    val lang2 = Vector("Some Text2","Welsh, Some Text2")
+    val lang3 = Vector("Some Text3","Welsh, Some Text3")
+    val lang4 = Vector("Some Text4","Welsh, Some Text4")
+
+    val stanzas = Seq(
+      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      Instruction(Phrase(lang2), Seq("2"), None, false),
+      Callout(Title, Phrase(lang0), Seq("3"), false),
+      Callout(SubTitle, Phrase(lang1), Seq("4"), false),
+      Callout(Lede, Phrase(lang2), Seq("5"), false),
+      Instruction(Phrase(lang3), Seq("end"), None, false),
+      Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"/somewhere","",false)), false),
+      EndStanza
     )
 
     val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
@@ -44,40 +51,41 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "convert and Ocelot page into a UI page with the same url" in new Test{
 
       UIBuilder.fromStanzaPage(page) match {
-        case Right(p) if p.urlPath == page.url => succeed
-        case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
-        case Left(err) => fail(s"Failed with $err")
+        case p if p.urlPath == page.url => succeed
+        case p => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
       }
 
     }
 
-    // "convert Callout type Title to H1" in new Test{
+    "convert 1st Callout type Title to H1" in new Test{
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(1) mustBe models.ui.H1(Text(lang0))
+    }
 
-    //   UIBuilder.fromStanzaPage(page) match {
-    //     case Right(Page(_,_,s,_,_)) if s.get(1).isDefined =>
+    "convert 2nd Callout type SubTitle to H3" in new Test{
 
-    //     case Left(err) => fail(s"Failed with $err")
-    //   }
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(2) mustBe models.ui.H3(Text(lang1))
+    }
 
-    // }
-    // "convert Callout type SubTitle to H3" in new Test{
+    "convert Callout type Lede to lede Paragraph" in new Test{
 
-    //   UIBuilder.fromStanzaPage(page) match {
-    //     case Right(p) if p.urlPath == singleOcelotPage.url => succeed
-    //     case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
-    //     case Left(err) => fail(s"Failed with $err")
-    //   }
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(3) mustBe models.ui.Paragraph(Seq(Text(lang2)), true)
+    }
 
-    // }
-    // "convert Callout type Lede to lede Paragraph" in new Test{
+    "convert Simple instruction to Paragraph" in new Test{
 
-    //   UIBuilder.fromStanzaPage(page) match {
-    //     case Right(p) if p.urlPath == singleOcelotPage.url => succeed
-    //     case Right(p) => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
-    //     case Left(err) => fail(s"Failed with $err")
-    //   }
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(4) mustBe models.ui.Paragraph(Seq(Text(lang3)), false)
+    }
 
-    // }
+    "convert Link instruction to Paragraph" in new Test{
+
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(5) mustBe models.ui.Paragraph(Seq(models.ui.HyperLink("/somewhere", Text(lang4), false)), false)
+    }
+
   }
 
 }

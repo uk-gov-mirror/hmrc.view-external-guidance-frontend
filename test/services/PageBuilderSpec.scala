@@ -288,7 +288,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
             testPagesInPrototypeJson( pages )
 
-            checkAllStanzasAllocatedToPages( process.flow, pages )
           }
           case Left(err) => fail( s"Flow error $err" )
         }
@@ -384,16 +383,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
   }
 
-  def checkAllStanzasAllocatedToPages(flowStanzas: Map[String, Stanza], pages:Seq[Page]): Unit = {
-
-    for( ( key, stanza ) <- flowStanzas ) {
-
-      pages.exists( _.stanzas.contains( key ) ) mustBe true
-
-    }
-
-  }
-
   /**
    * Test question page in simple question page test
    *
@@ -406,10 +395,10 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       firstPage.id mustBe "start"
       firstPage.stanzas.size mustBe 4
 
-      firstPage.stanzas.get("start") mustBe Some(sqpQpValueStanza)
-      firstPage.stanzas.get("1") mustBe Some(sqpQpInstruction)
-      firstPage.stanzas.get("2") mustBe Some(sqpQpCallout)
-      firstPage.stanzas.get("3") mustBe Some(sqpQpQuestion)
+      firstPage.stanzas mustBe Seq(sqpQpValueStanza,
+                                   sqpQpInstruction,
+                                   sqpQpCallout,
+                                   sqpQpQuestion)
 
       firstPage.next mustBe Seq("4", "6")
     }
@@ -428,9 +417,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       secondPage.id mustBe "4"
       secondPage.stanzas.size mustBe 3
 
-      secondPage.stanzas.get("4") mustBe Some(sqpFapValueStanza)
-      secondPage.stanzas.get("5") mustBe Some(sqpFapInstruction)
-      secondPage.stanzas.get("end") mustBe Some(EndStanza)
+      secondPage.stanzas(0) mustBe sqpFapValueStanza
+      secondPage.stanzas(1) mustBe sqpFapInstruction
+      secondPage.stanzas.last mustBe EndStanza
 
       secondPage.next mustBe Nil
     }
@@ -449,10 +438,10 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       thirdPage.id mustBe "6"
       thirdPage.stanzas.size mustBe 4
 
-      thirdPage.stanzas.get("6") mustBe Some(sqpSapValueStanza)
-      thirdPage.stanzas.get("7") mustBe Some(sqpSapInstruction)
-      thirdPage.stanzas.get("8") mustBe Some(sqpSapCallout)
-      thirdPage.stanzas.get("end") mustBe Some(EndStanza)
+      thirdPage.stanzas(0) mustBe sqpSapValueStanza
+      thirdPage.stanzas(1) mustBe sqpSapInstruction
+      thirdPage.stanzas(2) mustBe sqpSapCallout
+      thirdPage.stanzas.last mustBe EndStanza
 
       thirdPage.next mustBe Nil
     }
