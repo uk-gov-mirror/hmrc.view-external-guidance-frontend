@@ -18,7 +18,7 @@ package services
 
 
 import models.ocelot.stanzas._
-import models.ocelot.Link
+import models.ocelot.{Link, Phrase}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -26,17 +26,10 @@ import Regex._
 
 object UIBuilder {
 
-  // TODO handle [] within label text????
-  val urlHttpLinkRegex =   """\[link:([^:]+):([htps]+:[a-zA-Z0-9\/\.\-]+)\]""".r
-  val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
-  val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
-  val stanzaLinkPattern = """\[link:(.+):(\d+)\]""".r
-  val boldPattern = """\[bold:(.*)\]""".r
-
   def fromCallout(c: Callout): UIComponent =
     c.noteType match {
       case Title => H1(Text(c.text.langs))
-      case SubTitle => H3(Text(c.text.langs))
+      case SubTitle => H2(Text(c.text.langs))
       case Lede => Paragraph(Seq(Text(c.text.langs)), true)
       case Error => H3(Text(c.text.langs)) // TODO
     }
@@ -49,8 +42,8 @@ object UIBuilder {
 
         case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
           Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
-        case Instruction(txt,_,lnk,_) =>
-          Seq(Paragraph(Seq(Text(txt.langs)), false))
+        case Instruction(txt,_,_,_) =>
+          Seq(Paragraph(fromText(txt), false))
 
         case Question(_,_,_,_) => List[UIComponent]() // TODO
         case ValueStanza(_,_,_) => List[UIComponent]()
@@ -62,7 +55,7 @@ object UIBuilder {
     stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
 
 
-  def textToTextItems(txt: Text): Seq[TextItem] = {
+  def fromText(txt: Phrase): Seq[TextItem] = {
 
     def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) = {
       val texts = pattern.split(text).toList
@@ -70,7 +63,7 @@ object UIBuilder {
       (texts.toList, matches.toList)
     }
 
-    def matchesToLInks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
+    def matchesToLinks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
       enM.zip(cyM).map{ t =>
         val( en, cy) = t
         HyperLink( en.group(2), Text(en.group(1), cy.group(1)), false)
@@ -86,16 +79,22 @@ object UIBuilder {
     def joinTextsAndLinks(txts: List[Text], links: List[HyperLink], acc: Seq[TextItem]): Seq[TextItem] =
       (txts, links) match {
         case (Nil, Nil) =>  acc
-        case (t :: xs, Nil) => t +: acc
+        case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, (acc :+t) :+ l)
+        case (t :: xs, Nil) => acc :+ t
         case (Nil, _) => acc
-        case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, t +: (l +: acc))
       }
 
-    val (enTexts, enMatches) = fromPattern(urlHttpLinkRegex, txt.english)
-    val (cyTexts, cyMatches) = fromPattern(urlHttpLinkRegex, txt.english)
+    val (enTexts, enMatches) = fromPattern(urlHttpLinkRegex, txt.langs(0))
+    val (cyTexts, cyMatches) = fromPattern(urlHttpLinkRegex, txt.langs(1))
 
     joinTextsAndLinks(textToTexts(enTexts, cyTexts),
-                      matchesToLInks(enMatches, cyMatches),
+                      matchesToLinks(enMatches, cyMatches),
                       Nil)
   }
+
+  // TODO handle [] within label text????
+  val urlHttpLinkRegex =   """\[link:([^:]+):([htps]+:[a-zA-Z0-9\/\.\-]+)\]""".r
+  val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
+  val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
+  val boldPattern = """\[bold:(.*)\]""".r
 }

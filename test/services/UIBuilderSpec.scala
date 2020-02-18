@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import utils.StanzaHelper
-import models.ui.Text
+import models.ui.{Text, HyperLink}
 
 class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
@@ -32,18 +32,49 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val lang3 = Vector("Some Text3","Welsh, Some Text3")
     val lang4 = Vector("Some Text4","Welsh, Some Text4")
 
-    val stanzas = Seq(
+    val ltxt1 = Text("This is a ","Welsh, This is a ")
+    val ltxt2 = Text(" followed by "," followed by ")
+    val ltxt3 = Text(" and nothing"," and nothing")
+    val link1Txt = Text("A link","A link")
+    val link2Txt = Text("Another Link","Another Link")
+
+    val link1 = HyperLink("https://www.bbc.co.uk", link1Txt, false)
+    val link2 = HyperLink("https://www.gov.uk", link2Txt, false)
+    val txtWithLinks = Phrase(
+      Vector("This is a [link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
+      "Welsh, This is a [link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing")
+    )
+
+    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"/somewhere","",false)), false)
+    val embeddedLinkInstructionStanza = Instruction(txtWithLinks, Seq("end"), None, false)
+    val initialStanza = Seq(
       ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Callout(Title, Phrase(lang0), Seq("3"), false),
       Callout(SubTitle, Phrase(lang1), Seq("4"), false),
       Callout(Lede, Phrase(lang2), Seq("5"), false),
-      Instruction(Phrase(lang3), Seq("end"), None, false),
-      Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"/somewhere","",false)), false),
-      EndStanza
+      Instruction(Phrase(lang3), Seq("end"), None, false)
     )
-
+    val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
+    val stanzasWithEnbeddedLinks = initialStanza ++ Seq(embeddedLinkInstructionStanza, EndStanza)
     val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
+
+    val textItems = Seq(ltxt1, link1, ltxt2, link2, ltxt3)
+
+    val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEnbeddedLinks)
+  }
+
+  "UIBuilder placeholder parsing" must {
+    "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
+
+      val txtItems = UIBuilder.fromText(txtWithLinks)
+
+      txtItems(0) mustBe ltxt1
+      txtItems(1) mustBe link1
+      txtItems(2) mustBe ltxt2
+      txtItems(3) mustBe link2
+      txtItems(4) mustBe ltxt3
+    }
   }
 
   "UIBuilder" must {
@@ -62,10 +93,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       uiPage.components(1) mustBe models.ui.H1(Text(lang0))
     }
 
-    "convert 2nd Callout type SubTitle to H3" in new Test{
+    "convert 2nd Callout type SubTitle to H2" in new Test{
 
       val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(2) mustBe models.ui.H3(Text(lang1))
+      uiPage.components(2) mustBe models.ui.H2(Text(lang1))
     }
 
     "convert Callout type Lede to lede Paragraph" in new Test{
@@ -86,6 +117,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       uiPage.components(5) mustBe models.ui.Paragraph(Seq(models.ui.HyperLink("/somewhere", Text(lang4), false)), false)
     }
 
+    "convert instruction within embedded links to Paragraph with a sequence of Text and HyperLink text items" in new Test{
+
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks)
+      uiPage.components(5) mustBe models.ui.Paragraph(textItems, false)
+    }
+
   }
+
 
 }
