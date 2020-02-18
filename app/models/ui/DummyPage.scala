@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$Scratch data
+
 package models.ui
 
 object DummyPage {
@@ -1981,3 +1983,5 @@ object DummyProcess {
 
   val process = prototypeJson.as[Process]
 }
+
+// $COVERAGE-ON$
