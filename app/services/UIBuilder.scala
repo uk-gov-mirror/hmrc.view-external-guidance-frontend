@@ -22,7 +22,7 @@ import models.ocelot.{Link, Phrase}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
-//import scala.annotation.tailrec
+import scala.annotation.tailrec
 
 object UIBuilder {
 
@@ -75,12 +75,12 @@ object UIBuilder {
         Text(en, cy)
       }
 
-    // TODO
+    @tailrec
     def joinTextsAndLinks(txts: List[Text], links: List[HyperLink], acc: Seq[TextItem]): Seq[TextItem] =
       (txts, links) match {
         case (Nil, Nil) =>  acc
         case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, (acc :+t) :+ l)
-        case (t :: xs, Nil) => acc :+ t
+        case (t, Nil) => acc ++ t
         case (Nil, _) => acc
       }
 
@@ -93,6 +93,7 @@ object UIBuilder {
   }
 
   // TODO handle [] within label text????
+  // TODO use urlLinkRegex to capture stand and http links in one match
   val urlHttpLinkRegex =   """\[link:([^:]+):([htps]+:[a-zA-Z0-9\/\.\-]+)\]""".r
   val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
   val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
