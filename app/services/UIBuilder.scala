@@ -57,11 +57,8 @@ object UIBuilder {
 
   def fromText(txt: Phrase): Seq[TextItem] = {
 
-    def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) = {
-      val texts = pattern.split(text).toList
-      val matches = pattern.findAllMatchIn(text)
-      (texts.toList, matches.toList)
-    }
+    def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
+      (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
 
     def matchesToLinks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
       enM.zip(cyM).map{ t =>
@@ -94,7 +91,7 @@ object UIBuilder {
 
   // TODO handle [] within label text????
   // TODO use urlLinkRegex to capture stand and http links in one match
-  val urlHttpLinkRegex =   """\[link:([^:]+):([htps]+:[a-zA-Z0-9\/\.\-\?_\.=]+)\]""".r
+  val urlHttpLinkRegex =   """\[link:([^:]+):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=]+)\]""".r
   val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
   val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
   val boldPattern = """\[bold:(.*)\]""".r
