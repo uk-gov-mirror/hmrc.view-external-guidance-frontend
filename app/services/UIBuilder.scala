@@ -91,7 +91,7 @@ object UIBuilder {
 
   // TODO handle [] within label text????
   // TODO use urlLinkRegex to capture stand and http links in one match
-  val urlHttpLinkRegex =   """\[link:([^:]+):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=]+)\]""".r
+  val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=]+)\]""".r
   val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
   val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
   val boldPattern = """\[bold:(.*)\]""".r
