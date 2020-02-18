@@ -58,7 +58,7 @@ object PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
-            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(ks => (ks.key, ks.stanza)).toMap, next, linked))
+            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(_.stanza), next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
       case Left(err) => Left(err)
