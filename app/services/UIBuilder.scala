@@ -37,17 +37,19 @@ object UIBuilder {
   def fromStanzaPage(pge: models.ocelot.Page): Page =
     Page(
       pge.url,
-      pge.stanzas.flatMap{
-        case c: Callout => Seq(fromCallout(c))
+      pge.stanzas.foldLeft(Seq[UIComponent]()){(acc, el) =>
+        el match {
+          case c: Callout => acc ++ Seq(fromCallout(c))
 
-        case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
-          Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
-        case Instruction(txt,_,_,_) =>
-          Seq(Paragraph(fromText(txt), false))
+          case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
+            acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
+          case Instruction(txt,_,_,_) =>
+            acc ++ Seq(Paragraph(fromText(txt), false))
 
-        case Question(_,_,_,_) => List[UIComponent]() // TODO
-        case ValueStanza(_,_,_) => List[UIComponent]()
-        case EndStanza => List[UIComponent]()
+          case Question(_,_,_,_) => acc // TODO
+          case ValueStanza(_,_,_) => acc
+          case EndStanza => acc
+        }
       }
     )
 
@@ -91,7 +93,7 @@ object UIBuilder {
 
   // TODO handle [] within label text????
   // TODO use urlLinkRegex to capture stand and http links in one match
-  val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=]+)\]""".r
+  val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
   val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
   val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
   val boldPattern = """\[bold:(.*)\]""".r

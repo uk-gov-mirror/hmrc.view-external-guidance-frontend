@@ -34,6 +34,6 @@ case class Text(english: String, welsh: String, bold: Boolean = false) extends B
 object Text {
   def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
 }
-case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem with UIComponent {
+case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
   override def toString: String = s"[link:$txt:$dest:$window]"
 }
