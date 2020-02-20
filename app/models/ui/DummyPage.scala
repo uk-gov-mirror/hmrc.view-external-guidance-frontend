@@ -60,7 +60,7 @@ object DummyPage {
   )
   val eLink4 = Text("Capital Gains Tax.", "Treth Enillion Cyfalaf.")
 
-  val tradingAllowance = Text("The trading allowance", "Y lwfans masnachu")
+  val tradingAllowance = Text("The trading allowance", "Y lwfans masnachu", true)
 
   val bulletLeading2 = Text(
     "The trading allowance lets you earn up to £1,000 from any trading, " +
@@ -80,7 +80,7 @@ object DummyPage {
     "Property income can include any money you earn by renting land or buildings.",
     "Gall incwm eiddo gynnwys unrhyw arian rydych chi'n ei ennill trwy rentu tir neu adeiladau."
   )
-  val propertyAllowance = Text("The property allowance", "Y lwfans eiddo")
+  val propertyAllowance = Text("The property allowance", "Y lwfans eiddo", true)
 
   val bulletLeading3 = Text("The property allowance lets you earn up to £1,000 in rental income, tax free, in each tax year. For example:", "")
   val bulletOpt3a = Text("renting a flat or house", "rhentu fflat neu dŷ")
@@ -114,13 +114,13 @@ object DummyPage {
     Paragraph(Seq(para2)),
     Paragraph(Seq(para3, HyperLink("https://www.youtube.com/watch?v=MYgCctGY_Ug", eLink3))),
     Paragraph(Seq(para4, HyperLink("https://www.gov.uk/capital-gainstax", eLink4))),
-    H3(tradingAllowance),
+    Paragraph(Seq(tradingAllowance)),
     BulletPointList(Seq(bulletLeading2), Seq(Seq(bulletOpt2a), Seq(bulletOpt2b), Seq(bulletOpt2c))),
     Paragraph(Seq(para1)),
     Paragraph(Seq(HyperLink("/sales/did-you-only-sell-personal-posessions", link2))),
     H2(heading3),
     Paragraph(Seq(para5)),
-    H3(propertyAllowance),
+    Paragraph(Seq(propertyAllowance)),
     BulletPointList(Seq(bulletLeading3), Seq(Seq(bulletOpt3a), Seq(bulletOpt3b), Seq(bulletOpt3c), Seq(bulletOpt3d))),
     Paragraph(Seq(para1)),
     Paragraph(Seq(HyperLink("/rent/have-you-made-less-than-1000", link3)))

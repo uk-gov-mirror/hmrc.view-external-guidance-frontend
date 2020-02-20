@@ -57,44 +57,71 @@ object UIBuilder {
     stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
 
 
-  def fromText(txt: Phrase): Seq[TextItem] = {
+  private def placeholdersToItems(enM: List[Match], cyM: List[Match]): List[TextItem] = {
+    def isInteger(str: String): Boolean = str.forall(_.isDigit)
 
-    def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
-      (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
-
-    def matchesToLinks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
-      enM.zip(cyM).map{ t =>
-        val( en, cy) = t
-        HyperLink( en.group(2), Text(en.group(1), cy.group(1)), false)
+    def createLink(en: String, cy: String): TextItem = {
+      val (enTxt, enLink) = linkRegex.findFirstMatchIn(en)
+                                   .map(m => (m.group(1), m.group(2)))
+                                   .getOrElse(("",""))
+      val (cyTxt, cyLink) = linkRegex.findFirstMatchIn(cy)
+                                   .map(m => (m.group(1), m.group(2)))
+                                   .getOrElse(("",""))
+      // TODO Assume en and cy similar order for now
+      // TODO also assume en and cy links are identical
+      if (isInteger(enLink)) {
+        PageLink(enLink, Text(enTxt, cyTxt))
       }
-
-    def textToTexts(enT: List[String], cyT: List[String]): List[Text] =
-      enT.zip(cyT).map{ t =>
-        val (en, cy) = t
-        Text(en, cy)
+      else {
+        HyperLink(enLink, Text(enTxt, cyTxt))
       }
+    }
 
-    @tailrec
-    def joinTextsAndLinks(txts: List[Text], links: List[HyperLink], acc: Seq[TextItem]): Seq[TextItem] =
-      (txts, links) match {
-        case (Nil, Nil) =>  acc
-        case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, (acc :+t) :+ l)
-        case (t, Nil) => acc ++ t
-        case (Nil, _) => acc
+    def createBoldText(en: String, cy: String): TextItem = Text(en, cy, true)
+
+    enM.zip(cyM).map{ t =>
+      val( en, cy) = t
+      (en.group(1), cy.group(1)) match {
+        case ("link", "link") => createLink(en.group(2), cy.group(2))
+        case ("bold", "bold") => createBoldText(en.group(2), cy.group(2))
+        case (_,_) => createBoldText(en.group(2), cy.group(2))
       }
-
-    val (enTexts, enMatches) = fromPattern(urlHttpLinkRegex, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(urlHttpLinkRegex, txt.langs(1))
-
-    joinTextsAndLinks(textToTexts(enTexts, cyTexts),
-                      matchesToLinks(enMatches, cyMatches),
-                      Nil)
+    }
   }
 
-  // TODO handle [] within label text????
-  // TODO use urlLinkRegex to capture stand and http links in one match
-  val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
-  val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
-  val boldPattern = """\[bold:(.*)\]""".r
+  private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) ={
+    val texts = pattern.split(text).toList
+    val matches = pattern.findAllMatchIn(text).toList
+    (texts, matches)
+  }
+
+  private def textToTexts(enT: List[String], cyT: List[String]): List[Text] = enT.zip(cyT).map(t => Text(t._1, t._2))
+
+  @tailrec
+  private def mergeTextItems(txts: List[TextItem], links: List[TextItem], acc: Seq[TextItem]): Seq[TextItem] =
+    (txts, links) match {
+      case (Nil, Nil) =>  acc
+      case (t :: txs, l :: lxs ) if t.isEmpty => mergeTextItems(txs, lxs, acc :+ l)
+      case (t :: txs, l :: lxs ) => mergeTextItems(txs, lxs, (acc :+t) :+ l)
+      case (t, Nil) => acc ++ t
+      case (Nil, _) => acc
+    }
+
+  def fromText(txt: Phrase): Seq[TextItem] = {
+
+    val (enTexts, enMatches) = fromPattern(placeholderRegex, txt.langs(0))
+    val (cyTexts, cyMatches) = fromPattern(placeholderRegex, txt.langs(1))
+
+    val txtItems = textToTexts(enTexts, cyTexts)
+    val placeholderItems = placeholdersToItems(enMatches, cyMatches)
+
+    mergeTextItems(txtItems, placeholderItems, Nil)
+  }
+
+  //val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
+  //val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
+  //val urlLinkRegex = """\[link:(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
+  val placeholderRegex = """\[(link|bold):(.+?)\]""".r
+  val linkRegex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
+  //val boldPattern = """\[bold:(.*)\]""".r
 }

@@ -30,6 +30,42 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     override val next: Seq[String] = Seq("1")
   }
 
+  trait Test {
+    private val flow = Map(
+      "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/start")), Seq("1"), false),
+      "1" -> InstructionStanza(0, Seq("2"), None, false),
+      "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "9"), false),
+
+      "4" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this4")), Seq("5"), false),
+      "5" -> InstructionStanza(1, Seq("end"), Some(0), false),
+
+      "6" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this6")), Seq("7"), false),
+      "7" -> InstructionStanza(2, Seq("8"), None, false),
+      "8" -> QuestionStanza(1, Seq(2, 3), Seq("9", "14"), false),
+
+      "9" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this9")), Seq("16"), false),
+      "16" -> InstructionStanza(3, Seq("10"), None, false),
+      "10" -> InstructionStanza(2, Seq("end"), None, false),
+
+      "11" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this11")), Seq("12"), false),
+      "12" -> InstructionStanza(0, Seq("13"), None, false),
+      "13" -> QuestionStanza(1, Seq(2, 3), Seq("14", "4"), false),
+
+      "14" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this14")), Seq("5"), false),
+      "15" -> InstructionStanza(0, Seq("end"), None, false),
+      "end" -> EndStanza
+    )
+
+    private val phrases = Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
+                                 Phrase(Vector("Some Text1","Welsh, Some Text1")),
+                                 Phrase(Vector("Some Text2","Welsh, Some Text2")),
+                                 Phrase(Vector("Some [link:Link to stanza 11:11] Text3","Welsh, Some [link:Link to stanza 11:11] Text3")))
+
+    private val links = Vector(Link(0,"6", "", false),Link(1,"14", "", false))
+    val processWithLinks = Process(metaSection, flow, phrases, links)
+
+  }
+
   "PageBuilder error handling" must {
 
     val flow = Map(
@@ -323,6 +359,18 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
           case Left(err) => fail(s"FlowError $err")
         }
       }
+
+      "follows links to pages idenitified by stanza id " in new Test {
+
+        PageBuilder.pages(processWithLinks) match {
+          case Right(pages) =>
+            println(s"Page count is ${pages.length}")
+            println(pages)
+
+          case Left(err) => fail(s"FlowError $err")
+        }
+      }
+
     }
 
     "When processing a simple question page" must {
