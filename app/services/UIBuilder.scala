@@ -42,9 +42,9 @@ object UIBuilder {
           case c: Callout => acc ++ Seq(fromCallout(c))
 
           case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
-            acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
+            acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window))))
           case Instruction(txt,_,_,_) =>
-            acc ++ Seq(Paragraph(fromText(txt), false))
+            acc ++ Seq(Paragraph(fromText(txt)))
 
           case Question(_,_,_,_) => acc // TODO
           case ValueStanza(_,_,_) => acc

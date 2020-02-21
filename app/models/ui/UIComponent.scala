@@ -47,6 +47,6 @@ case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends T
 }
 
 case class PageLink(dest: String, txt: Text) extends TextItem {
-  override def toString: String = s"[pagelink:$txt:$dest]"
+  override def toString: String = s"[link:$txt:$dest]"
   def isEmpty:Boolean = txt.isEmpty
 }

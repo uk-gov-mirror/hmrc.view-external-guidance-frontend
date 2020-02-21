@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import utils.StanzaHelper
-import models.ui.{Text, HyperLink, PageLink}
+import models.ui.{Text, HyperLink, PageLink, TextItem}
 
 class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
@@ -100,6 +100,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)
     val pageWithEmbeddPageLinks = page.copy(stanzas = stanzasWithEmbeddedPageLinks)
     val pageWithEmbeddAllLinks = page.copy(stanzas = stanzasWithEmbeddedAllLinks)
+
+    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
+                                         "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
+    val linkPhrase = Phrase(Vector("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
+                                         "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]"))
+    // for multi page testing
+    val stanzaPages = PageBuilder.pages(prototypeJson.as[Process]).right.get
   }
 
   "UIBuilder placeholder parsing" must {
@@ -172,7 +179,36 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
-  }
+    "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
+      val pageMap = UIBuilder.pages(stanzaPages)
 
+      pageMap.keys.toList.length mustBe stanzaPages.length
+
+      stanzaPages.foreach{ p =>
+        pageMap.contains(p.url) mustBe true
+      }
+    }
+
+    "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
+      val items: Seq[TextItem] = UIBuilder.fromText(brokenLinkPhrase)
+
+      items.length mustBe 2
+
+      items(0) mustBe Text("Hello ","Welsh, Hello ")
+      items(1) mustBe Text("[link:Blah Blah:htts://www.bbc.co.uk]","[link:Blah Blah:htts://www.bbc.co.uk]")
+    }
+
+    "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
+      val items: Seq[TextItem] = UIBuilder.fromText(linkPhrase)
+
+      items.length mustBe 4
+
+      items(0) mustBe Text("Hello ","Welsh, Hello ")
+      items(1) mustBe HyperLink("https://www.bbc.co.uk",Text("Blah Blah","Blah Blah"))
+      items(2) mustBe Text(" "," ")
+      items(3) mustBe PageLink("5",Text("Blah Blah","Blah Blah"))
+    }
+
+  }
 
 }
