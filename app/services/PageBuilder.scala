@@ -45,7 +45,7 @@ object PageBuilder extends ProcessPopulation {
       stanza(key, process) match {
         case Right(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedPageAcc))
         case Right(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedPageAcc)
-        case Right(i: Instruction) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedPageAcc)
+        case Right(i: Instruction) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedPageAcc ++ i.linkedStanzaIds)
         case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedPageAcc)
         case Right(q: Question) => Right((acc :+ KeyedStanza(key, q), q.next, linkedPageAcc))
         case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
