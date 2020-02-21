@@ -37,8 +37,8 @@ object UIBuilder {
   def fromStanzaPage(pge: models.ocelot.Page): Page =
     Page(
       pge.url,
-      pge.stanzas.foldLeft(Seq[UIComponent]()){(acc, el) =>
-        el match {
+      pge.stanzas.foldLeft(Seq[UIComponent]()){(acc, stanza) =>
+        stanza match {
           case c: Callout => acc ++ Seq(fromCallout(c))
 
           case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
@@ -60,42 +60,52 @@ object UIBuilder {
   private def placeholdersToItems(enM: List[Match], cyM: List[Match]): List[TextItem] = {
     def isInteger(str: String): Boolean = str.forall(_.isDigit)
 
-    def createLink(en: String, cy: String): TextItem = {
-      val (enTxt, enLink) = linkRegex.findFirstMatchIn(en)
-                                   .map(m => (m.group(1), m.group(2)))
-                                   .getOrElse(("",""))
-      val (cyTxt, cyLink) = linkRegex.findFirstMatchIn(cy)
-                                   .map(m => (m.group(1), m.group(2)))
-                                   .getOrElse(("",""))
+    def createBoldText(en: String, cy: String): TextItem = Text(en, cy, true)
+
+    def createLink(en: String, cy: String): Option[TextItem] = {
       // TODO Assume en and cy similar order for now
-      // TODO also assume en and cy links are identical
-      if (isInteger(enLink)) {
-        PageLink(enLink, Text(enTxt, cyTxt))
-      }
-      else {
-        HyperLink(enLink, Text(enTxt, cyTxt))
+      for{
+        enMatch <- linkRegex.findFirstMatchIn(en)
+        cyMatch <- linkRegex.findFirstMatchIn(cy)
+      } yield {
+        val enTxt = enMatch.group(1)
+        val enLink = enMatch.group(2)
+        val cyTxt = cyMatch.group(1)
+        //val cyLink = cyMatch.group(2)
+        // TODO also assume en and cy links are identical
+        if (isInteger(enLink)) {
+          PageLink(enLink, Text(enTxt, cyTxt))
+        }
+        else {
+          HyperLink(enLink, Text(enTxt, cyTxt))
+        }
       }
     }
-
-    def createBoldText(en: String, cy: String): TextItem = Text(en, cy, true)
 
     enM.zip(cyM).map{ t =>
       val( en, cy) = t
+      // TODO Assume en and cy similar order of placeholders for now
       (en.group(1), cy.group(1)) match {
-        case ("link", "link") => createLink(en.group(2), cy.group(2))
-        case ("bold", "bold") => createBoldText(en.group(2), cy.group(2))
-        case (_,_) => createBoldText(en.group(2), cy.group(2))
+        case ("link", "link") =>
+          createLink(en.group(2), cy.group(2)).getOrElse{
+            // if no matching link reconstitute original as Text
+            println(s"@@@@@@@@Rebuilding link")
+            Text(s"[link:${en.group(2)}]", s"[link:${cy.group(2)}]")
+          }
+        case ("bold", "bold") =>
+          createBoldText(en.group(2), cy.group(2))
+        case (x,y) =>
+            // if en and cy dont match reconstitute original as Text
+            Text(s"${x}:${en.group(2)}]", s"[${y}:${cy.group(2)}]")
       }
     }
   }
 
-  private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) ={
-    val texts = pattern.split(text).toList
-    val matches = pattern.findAllMatchIn(text).toList
-    (texts, matches)
-  }
+  private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
+    (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
 
-  private def textToTexts(enT: List[String], cyT: List[String]): List[Text] = enT.zip(cyT).map(t => Text(t._1, t._2))
+  private def textToTexts(enT: List[String], cyT: List[String]): List[Text] =
+    enT.zip(cyT).map(t => Text(t._1, t._2))
 
   @tailrec
   private def mergeTextItems(txts: List[TextItem], links: List[TextItem], acc: Seq[TextItem]): Seq[TextItem] =
@@ -104,7 +114,7 @@ object UIBuilder {
       case (t :: txs, l :: lxs ) if t.isEmpty => mergeTextItems(txs, lxs, acc :+ l)
       case (t :: txs, l :: lxs ) => mergeTextItems(txs, lxs, (acc :+t) :+ l)
       case (t, Nil) => acc ++ t
-      case (Nil, _) => acc
+      case (Nil, l) => acc ++ l
     }
 
   def fromText(txt: Phrase): Seq[TextItem] = {
@@ -112,10 +122,9 @@ object UIBuilder {
     val (enTexts, enMatches) = fromPattern(placeholderRegex, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(placeholderRegex, txt.langs(1))
 
-    val txtItems = textToTexts(enTexts, cyTexts)
-    val placeholderItems = placeholdersToItems(enMatches, cyMatches)
-
-    mergeTextItems(txtItems, placeholderItems, Nil)
+    mergeTextItems(textToTexts(enTexts, cyTexts),
+                   placeholdersToItems(enMatches, cyMatches),
+                   Nil)
   }
 
   //val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
