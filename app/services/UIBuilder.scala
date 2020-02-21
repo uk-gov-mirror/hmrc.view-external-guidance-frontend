@@ -89,7 +89,6 @@ object UIBuilder {
         case ("link", "link") =>
           createLink(en.group(2), cy.group(2)).getOrElse{
             // if no matching link reconstitute original as Text
-            println(s"@@@@@@@@Rebuilding link")
             Text(s"[link:${en.group(2)}]", s"[link:${cy.group(2)}]")
           }
         case ("bold", "bold") =>
