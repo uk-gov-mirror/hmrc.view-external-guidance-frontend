@@ -354,6 +354,29 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     }
 
+    "Identify instruction stanzas forming bullet point list" in {
+
+        val flow = Map(
+          "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+          "1" -> InstructionStanza(0, Seq("2"), None, false),
+          "2" -> InstructionStanza(1, Seq("end"), None, false),
+          "end" -> EndStanza
+        )
+        val process = Process(metaSection, flow, Vector[Phrase](
+          Phrase(Vector("Some Text","Welsh, Some Text")),
+          Phrase(Vector("Some Text1","Welsh, Some Text1")),
+          Phrase(Vector("Some Text2","Welsh, Some Text2")),
+          Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
+
+         PageBuilder.pages( process ) match {
+           case Right(pages) => {
+             val newPage: Page = PageBuilder.identifyBulletPointListInstructions( pages.head )
+
+             assert( newPage.stanzas.size == 3 )
+           }
+           case Left(err) => fail( s"Flow error $err" )
+         }
+    }
   }
 
   "When processing a 2 page flow seperated by a ValueStanza" must {
