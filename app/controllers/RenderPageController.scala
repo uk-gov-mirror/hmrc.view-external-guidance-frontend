@@ -25,7 +25,7 @@ import config.{AppConfig, ErrorHandler}
 import scala.concurrent.Future
 import play.api.Logger
 import models.ui._
-import services._
+//import services._
 
 @Singleton
 class RenderPageController @Inject()(appConfig: AppConfig,
