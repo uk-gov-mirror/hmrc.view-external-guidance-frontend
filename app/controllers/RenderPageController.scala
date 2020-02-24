@@ -43,17 +43,17 @@ class RenderPageController @Inject()(appConfig: AppConfig,
     Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
 
     Future.successful(
-      pageMap.get(s"${service}!${process}!${pageUrl}")
-             .map(page => Ok(view(page)))
-             .getOrElse(
-                PageBuilder.pages(DummyProcess.process) match {
-                  case Right(pages) => Ok(view(UIBuilder.fromStanzaPage(pages(pageUrl.toInt))))
-                  case Left(err) => NotFound(errorHandler.notFoundTemplate)
-                }
-              )
       // pageMap.get(s"${service}!${process}!${pageUrl}")
       //        .map(page => Ok(view(page)))
-      //        .getOrElse(NotFound(errorHandler.notFoundTemplate))
+      //        .getOrElse(
+      //           PageBuilder.pages(DummyProcess.process) match {
+      //             case Right(pages) => Ok(view(UIBuilder.fromStanzaPage(pages(pageUrl.toInt))))
+      //             case Left(err) => NotFound(errorHandler.notFoundTemplate)
+      //           }
+      //         )
+      pageMap.get(s"${service}!${process}!${pageUrl}")
+             .map(page => Ok(view(page)))
+             .getOrElse(NotFound(errorHandler.notFoundTemplate))
     )
   }
 }

@@ -23,6 +23,7 @@ import scala.annotation.tailrec
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder extends ProcessPopulation {
+  private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
 
   private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
     existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
@@ -36,19 +37,22 @@ object PageBuilder extends ProcessPopulation {
 
   private def pageUrlUnique(url: String, existingPages:Seq[Page]): Boolean = !existingPages.exists(_.url == url)
 
+  private def pageLinkIds(str: String): Seq[String] = pageLinkRegex.findAllMatchIn(str).map(_.group(1)).toList
+
   def buildPage(key: String, process: Process): Either[FlowError, Page] = {
 
     @tailrec
     def collectStanzas(key: String,
                        acc: Seq[KeyedStanza],
-                       linkedPageAcc: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
+                       linkedAcc: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
       stanza(key, process) match {
-        case Right(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedPageAcc))
-        case Right(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedPageAcc)
-        case Right(i: Instruction) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedPageAcc ++ i.linkedStanzaIds)
-        case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedPageAcc)
-        case Right(q: Question) => Right((acc :+ KeyedStanza(key, q), q.next, linkedPageAcc))
-        case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil, Nil))
+        case Right(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedAcc))
+        case Right(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedAcc)
+        case Right(i: Instruction) =>
+          collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedAcc ++ pageLinkIds(i.text.langs.head) ++ i.linkIds)
+        case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedAcc)
+        case Right(q: Question) => Right((acc :+ KeyedStanza(key, q), q.next, linkedAcc))
+        case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil, linkedAcc))
         case Right(unknown) => Left(UnknownStanzaType(unknown))
 
         case Left(err) => Left(err)
@@ -80,6 +84,7 @@ object PageBuilder extends ProcessPopulation {
           }
         case _ :: xs => pagesByKeys(xs, acc)
       }
+
 
     pagesByKeys(List(start), Nil)
   }

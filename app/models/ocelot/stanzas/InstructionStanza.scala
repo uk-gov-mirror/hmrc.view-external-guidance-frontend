@@ -45,18 +45,13 @@ object InstructionStanza {
 case class Instruction(text: Phrase,
                        override val next: Seq[String],
                        link: Option[Link],
-                       stack: Boolean,
-                       linkedStanzaIds: List[String] = Nil) extends PopulatedStanza
+                       stack: Boolean) extends PopulatedStanza {
+  val linkIds: Seq[String] = link.map(lnk => Seq(lnk.dest.trim))
+                                 .filter(l => l.head.forall(c => c.isDigit))
+                                 .getOrElse(Nil)
+}
 
 object Instruction {
-  private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
-
-  def isInteger(s: String): Boolean = s.forall(_.isDigit)
-
-  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link]): Instruction = {
-    val linkedStanzaId: List[String] = link.map(lnk => List(lnk.dest)).filter(l => isInteger(l(0))).getOrElse(Nil)
-    val placeholderLinkedStanzaIds: List[String] = pageLinkRegex.findAllMatchIn(text.langs(0)).map(_.group(1)).toList
-    val stanzaIds: List[String] = (placeholderLinkedStanzaIds ++ linkedStanzaId).distinct
-    Instruction(text, stanza.next, link, stanza.stack, stanzaIds)
-  }
+  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link]): Instruction =
+    Instruction(text, stanza.next, link, stanza.stack)
 }
