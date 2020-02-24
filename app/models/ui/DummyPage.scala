@@ -18,6 +18,9 @@
 
 package models.ui
 
+//
+// All Welsh translations are temporary placeholders and for testing purposes only
+//
 object DummyPage {
   val title = Text("Telling HMRC about extra income", "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 

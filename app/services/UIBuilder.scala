@@ -56,14 +56,10 @@ object UIBuilder {
   def pages(stanzaPages: Seq[models.ocelot.Page]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
 
-
   private def placeholdersToItems(enM: List[Match], cyM: List[Match]): List[TextItem] = {
-    def isInteger(str: String): Boolean = str.forall(_.isDigit)
 
-    def createBoldText(en: String, cy: String): TextItem = Text(en, cy, true)
-
-    def createLink(en: String, cy: String): Option[TextItem] = {
-      // TODO Assume en and cy similar order for now
+    // TODO Assume en and cy similar order for now
+    def createLink(en: String, cy: String): Option[TextItem] =
       for{
         enMatch <- linkRegex.findFirstMatchIn(en)
         cyMatch <- linkRegex.findFirstMatchIn(cy)
@@ -73,14 +69,13 @@ object UIBuilder {
         val cyTxt = cyMatch.group(1)
         //val cyLink = cyMatch.group(2)
         // TODO also assume en and cy links are identical
-        if (isInteger(enLink)) {
+        if (enLink.forall(_.isDigit)) {
           PageLink(enLink, Text(enTxt, cyTxt))
         }
         else {
           HyperLink(enLink, Text(enTxt, cyTxt))
         }
       }
-    }
 
     enM.zip(cyM).map{ t =>
       val( en, cy) = t
@@ -91,11 +86,11 @@ object UIBuilder {
             // if no matching link reconstitute original as Text
             Text(s"[link:${en.group(2)}]", s"[link:${cy.group(2)}]")
           }
-        case ("bold", "bold") =>
-          createBoldText(en.group(2), cy.group(2))
-        case (x,y) =>
-            // if en and cy dont match reconstitute original as Text
-            Text(s"${x}:${en.group(2)}]", s"[${y}:${cy.group(2)}]")
+
+        case ("bold", "bold") => Text(en.group(2), cy.group(2), true)
+
+        // if en and cy dont match reconstitute original as Text
+        case (x,y) => Text(s"[${x}:${en.group(2)}]", s"[${y}:${cy.group(2)}]")
       }
     }
   }
@@ -126,10 +121,6 @@ object UIBuilder {
                    Nil)
   }
 
-  //val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  //val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
-  //val urlLinkRegex = """\[link:(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
   val placeholderRegex = """\[(link|bold):(.+?)\]""".r
   val linkRegex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
-  //val boldPattern = """\[bold:(.*)\]""".r
 }
