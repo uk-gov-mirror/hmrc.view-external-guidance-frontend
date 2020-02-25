@@ -16,35 +16,35 @@
 
 package services
 
-
 import models.ocelot.stanzas._
-import models.ocelot.{Link, Phrase}
-import models.ui.{Text,H1,H2,H3,Paragraph,Page,UIComponent,TextItem,HyperLink}
-import scala.util.matching.Regex
-import Regex._
-import scala.annotation.tailrec
+import models.ocelot.Link
+import models.ui.{Text,H1,H2,H3,Paragraph,Page,UIComponent,HyperLink}
 
 object UIBuilder {
 
-  def fromCallout(c: Callout): UIComponent =
+  private def fromCallout(c: Callout): UIComponent =
     c.noteType match {
       case Title => H1(Text(c.text.langs))
       case SubTitle => H2(Text(c.text.langs))
       case Lede => Paragraph(Seq(Text(c.text.langs)), true)
       case Error => H3(Text(c.text.langs)) // TODO
-    }
+  }
 
-  def fromStanzaPage(pge: models.ocelot.Page): Page =
+  def fromStanzaPage(pge: models.ocelot.Page)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
-      pge.stanzas.foldLeft(Seq[UIComponent]()){(acc, el) =>
-        el match {
+      pge.stanzas.foldLeft(Seq[UIComponent]()){(acc, stanza) =>
+        stanza match {
           case c: Callout => acc ++ Seq(fromCallout(c))
 
+          case Instruction(txt,_,Some(Link(id,dest,_,window)),_) if dest.forall(_.isDigit) =>
+            acc ++ Seq(Paragraph(Seq(HyperLink(stanzaIdToUrlMap(dest), Text(txt.langs), window))))
+
           case Instruction(txt,_,Some(Link(id,dest,_,window)),_) =>
-            acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window)), false))
+            acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window))))
+
           case Instruction(txt,_,_,_) =>
-            acc ++ Seq(Paragraph(fromText(txt), false))
+            acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
           case Question(_,_,_,_) => acc // TODO
           case ValueStanza(_,_,_) => acc
@@ -53,48 +53,8 @@ object UIBuilder {
       }
     )
 
-  def pages(stanzaPages: Seq[models.ocelot.Page]): Map[String, Page] =
-    stanzaPages.map(p => (p.url, fromStanzaPage(p))).toMap
-
-
-  def fromText(txt: Phrase): Seq[TextItem] = {
-
-    def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
-      (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
-
-    def matchesToLinks(enM: List[Match], cyM: List[Match]): List[HyperLink] =
-      enM.zip(cyM).map{ t =>
-        val( en, cy) = t
-        HyperLink( en.group(2), Text(en.group(1), cy.group(1)), false)
-      }
-
-    def textToTexts(enT: List[String], cyT: List[String]): List[Text] =
-      enT.zip(cyT).map{ t =>
-        val (en, cy) = t
-        Text(en, cy)
-      }
-
-    @tailrec
-    def joinTextsAndLinks(txts: List[Text], links: List[HyperLink], acc: Seq[TextItem]): Seq[TextItem] =
-      (txts, links) match {
-        case (Nil, Nil) =>  acc
-        case (t :: txs, l :: lxs ) => joinTextsAndLinks(txs, lxs, (acc :+t) :+ l)
-        case (t, Nil) => acc ++ t
-        case (Nil, _) => acc
-      }
-
-    val (enTexts, enMatches) = fromPattern(urlHttpLinkRegex, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(urlHttpLinkRegex, txt.langs(1))
-
-    joinTextsAndLinks(textToTexts(enTexts, cyTexts),
-                      matchesToLinks(enMatches, cyMatches),
-                      Nil)
+  def pages(stanzaPages: Seq[models.ocelot.Page]): Map[String, Page] = {
+    val stanzaIdToUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
+    stanzaPages.map(p => (p.url, fromStanzaPage(p)(stanzaIdToUrlMap))).toMap
   }
-
-  // TODO handle [] within label text????
-  // TODO use urlLinkRegex to capture stand and http links in one match
-  val urlHttpLinkRegex =   """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val urlStanzaLinkRegex =   """\[link:([^:]+):(\d+)\]""".r
-  val urlLinkRegex = """\[link:([^:]+):(([htps]+:[a-zA-Z0-9\/\.\-]+))|(([^:]+):(\d+))\]""".r
-  val boldPattern = """\[bold:(.*)\]""".r
 }
