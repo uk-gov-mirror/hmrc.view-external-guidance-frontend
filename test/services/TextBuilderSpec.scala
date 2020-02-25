@@ -19,9 +19,9 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{Text, HyperLink, PageLink}
+import models.ui.{Text, HyperLink, PageLink, TextItem}
 
-class UIBuilderSpec extends BaseSpec with ProcessJson {
+class TextBuilderSpec extends BaseSpec {
 
   trait Test extends ProcessJson {
 
@@ -110,70 +110,41 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
   }
 
-  "UIBuilder" must {
+  "TextBuilder placeholder parsing" must {
+    "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
 
-    "convert and Ocelot page into a UI page with the same url" in new Test{
+      val txtItems = TextBuilder.fromPhrase(txtWithLinks)
 
-      UIBuilder.fromStanzaPage(page) match {
-        case p if p.urlPath == page.url => succeed
-        case p => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
-      }
+      txtItems(0) mustBe ltxt1
+      txtItems(1) mustBe link1
+      txtItems(2) mustBe ltxt2
+      txtItems(3) mustBe link2
+      txtItems(4) mustBe ltxt3
     }
 
-    "convert 1st Callout type Title to H1" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(1) mustBe models.ui.H1(Text(lang0))
+    "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
+      val items: Seq[TextItem] = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
+
+      items.length mustBe 2
+
+      items(0) mustBe Text("Hello ","Welsh, Hello ")
+      items(1) mustBe Text("[link:Blah Blah:htts://www.bbc.co.uk]","[link:Blah Blah:htts://www.bbc.co.uk]")
     }
 
-    "convert 2nd Callout type SubTitle to H2" in new Test{
+    "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
+      val linkPhrase = Phrase(Vector("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
+                                     "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]"))
 
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(2) mustBe models.ui.H2(Text(lang1))
+      val items: Seq[TextItem] = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
+
+      items.length mustBe 4
+
+      items(0) mustBe Text("Hello ","Welsh, Hello ")
+      items(1) mustBe HyperLink("https://www.bbc.co.uk",Text("Blah Blah","Blah Blah"))
+      items(2) mustBe Text(" "," ")
+      items(3) mustBe PageLink("dummy-path/blah",Text("Blah Blah","Blah Blah"))
     }
 
-    "convert Callout type Lede to lede Paragraph" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(3) mustBe models.ui.Paragraph(Seq(Text(lang2)), true)
-    }
-
-    "convert Simple instruction to Paragraph" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(4) mustBe models.ui.Paragraph(Seq(Text(lang3)), false)
-    }
-
-    "convert Link instruction to Paragraph" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(5) mustBe models.ui.Paragraph(Seq(models.ui.HyperLink("/somewhere", Text(lang4), false)), false)
-    }
-
-    "convert page with instruction stanza containing a sequence of Text and HyperLink items" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks)
-      uiPage.components(5) mustBe models.ui.Paragraph(textItems, false)
-    }
-
-    "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)(urlMap1)
-      uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
-    }
-
-    "convert page with instruction stanza text containing PageLinks and Text" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)(urlMap1)
-      uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
-    }
-
-    "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
-      val pageMap = UIBuilder.pages(stanzaPages)
-
-      pageMap.keys.toList.length mustBe stanzaPages.length
-
-      stanzaPages.foreach{ p =>
-        pageMap.contains(p.url) mustBe true
-      }
-    }
   }
 
 }

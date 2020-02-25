@@ -285,6 +285,14 @@ class UIComponentsSpec extends BaseSpec {
       }
     }
 
+    "use PageLink components which correctly support isEmpty" in {
+      val blankTxt: Text = Text("", "")
+      val txt: Text = Text("Hello", "Welsh, Hello")
+      PageLink("4", blankTxt).isEmpty mustBe true
+
+      PageLink("4", txt).isEmpty mustBe false
+    }
+
     "build a complete page" in {
 
       // Define page title

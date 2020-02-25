@@ -16,8 +16,7 @@
 
 package services
 
-import models.ocelot.stanzas._
-import models.ocelot.{Link, Phrase}
+import models.ocelot.Phrase
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
