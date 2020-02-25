@@ -58,7 +58,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "12" -> InstructionStanza(0, Seq("13"), None, false),
       "13" -> QuestionStanza(1, Seq(2, 3), Seq(pageId6, pageId2), false),
 
-      pageId6 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this14")), Seq("5"), false),
+      pageId6 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this14")), Seq("15"), false),
       "15" -> InstructionStanza(0, Seq("end"), None, false),
       "end" -> EndStanza
     )
@@ -377,12 +377,13 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
             val pageMap = pages.map(p => (p.id, p.linked)).toMap
 
             pageIds.forall(pageMap.contains) mustBe true
+
             pageMap(pageId1) mustBe List(pageId5)
             pageMap(pageId2) mustBe List(pageId3)
             pageMap(pageId3) mustBe Nil
             pageMap(pageId4) mustBe List(pageId5)
             pageMap(pageId5) mustBe Nil
-            pageMap(pageId6) mustBe List(pageId3)
+            pageMap(pageId6) mustBe Nil
 
           case Left(err) => fail(s"FlowError $err")
         }
@@ -416,9 +417,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
           case Left(err) => fail(s"Flow error $err")
         }
-
     }
-
   }
 
   "When processing a 2 page flow seperated by a ValueStanza" must {
