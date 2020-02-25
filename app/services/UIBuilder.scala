@@ -19,7 +19,7 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.{Link, Phrase}
-import models.ui._
+import models.ui.{Text,H1,H2,H3,Paragraph,Page,UIComponent,TextItem,HyperLink}
 import scala.util.matching.Regex
 import Regex._
 import scala.annotation.tailrec
