@@ -49,8 +49,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val link2_1 = HyperLink("https://www.bbc.co.uk", link1Txt2, false)
     val link2_2 = HyperLink("https://www.gov.uk", link2Txt2, false)
 
-    val pageLink1 = PageLink("34", pageLink1Text)
-    val pageLink2 = PageLink("3", pageLink2Text)
+    val pageLink1 = PageLink("dummy-path/next", pageLink1Text)
+    val pageLink2 = PageLink("dummy-path", pageLink2Text)
+    implicit val emptyUrlMap: Map[String, String] = Map()
+    val urlMap1: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(
       Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
@@ -103,16 +105,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
                                          "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
-    val linkPhrase = Phrase(Vector("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
-                                         "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]"))
     // for multi page testing
     val stanzaPages = PageBuilder.pages(prototypeJson.as[Process]).right.get
+    val prototypeUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
+
   }
 
   "UIBuilder placeholder parsing" must {
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
 
-      val txtItems = UIBuilder.fromText(txtWithLinks)
+      val txtItems = TextBuilder.fromPhrase(txtWithLinks)
 
       txtItems(0) mustBe ltxt1
       txtItems(1) mustBe link1
@@ -168,14 +170,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)(urlMap1)
       uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
     }
 
     "convert page with instruction stanza text containing PageLinks and Text" in new Test{
-
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)(urlMap1)
       uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
@@ -190,7 +190,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
-      val items: Seq[TextItem] = UIBuilder.fromText(brokenLinkPhrase)
+      val items: Seq[TextItem] = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
 
       items.length mustBe 2
 
@@ -199,14 +199,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
-      val items: Seq[TextItem] = UIBuilder.fromText(linkPhrase)
+      val linkPhrase = Phrase(Vector("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
+                                     "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]"))
+
+      val items: Seq[TextItem] = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
 
       items.length mustBe 4
 
       items(0) mustBe Text("Hello ","Welsh, Hello ")
       items(1) mustBe HyperLink("https://www.bbc.co.uk",Text("Blah Blah","Blah Blah"))
       items(2) mustBe Text(" "," ")
-      items(3) mustBe PageLink("5",Text("Blah Blah","Blah Blah"))
+      items(3) mustBe PageLink("dummy-path/blah",Text("Blah Blah","Blah Blah"))
     }
 
   }
