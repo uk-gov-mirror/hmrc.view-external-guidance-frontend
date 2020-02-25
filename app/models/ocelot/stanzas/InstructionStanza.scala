@@ -45,9 +45,13 @@ object InstructionStanza {
 case class Instruction(text: Phrase,
                        override val next: Seq[String],
                        link: Option[Link],
-                       stack: Boolean) extends PopulatedStanza
+                       stack: Boolean) extends PopulatedStanza {
+  val linkIds: Seq[String] = link.map(lnk => Seq(lnk.dest.trim))
+                                 .filter(l => l.head.forall(c => c.isDigit))
+                                 .getOrElse(Nil)
+}
 
 object Instruction {
-  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link] ): Instruction =
+  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link]): Instruction =
     Instruction(text, stanza.next, link, stanza.stack)
 }
