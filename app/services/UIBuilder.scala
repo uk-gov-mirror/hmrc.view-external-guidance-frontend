@@ -18,7 +18,7 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.Link
-import models.ui._
+import models.ui.{Text,H1,H2,H3,Paragraph,Page,UIComponent,HyperLink}
 
 object UIBuilder {
 
