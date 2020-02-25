@@ -27,6 +27,8 @@ trait StanzaHelper {
   val four: Int = 4
   val five: Int = 5
   val six: Int = 6
+  val seven: Int = 7
+  val eight: Int = 8
 
   val phrases: Vector[Phrase] = Vector(Phrase(Vector("Text 0","Welsh, Text 0")),
                                 Phrase(Vector("Text 1","Welsh, Text 1")),
