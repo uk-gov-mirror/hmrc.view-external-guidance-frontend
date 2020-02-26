@@ -17,12 +17,15 @@
 package services
 
 import models.ocelot.stanzas._
-import models.ocelot.{Process, Page}
+import models.ocelot.{Page, Process}
+import utils.BulletPointListUtils
+
 import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder extends ProcessPopulation {
+
   private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
 
   private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
@@ -62,7 +65,7 @@ object PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
-            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(_.stanza), next, linked))
+            Right(Page(ks.head.key, pageUrl(v.values).get, groupBulletPointInstructions( ks.map(_.stanza), Nil ), next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
       case Left(err) => Left(err)
@@ -86,7 +89,41 @@ object PageBuilder extends ProcessPopulation {
       }
 
 
-    pagesByKeys(List(start), Nil)
+    pagesByKeys( List(start), Nil )
+
   }
+
+    @tailrec
+    def groupBulletPointInstructions( inputSeq: Seq[Stanza], acc: Seq[Stanza] ) : Seq[Stanza] = {
+
+      inputSeq match {
+        case Nil => acc
+        case x :: xs => x match {
+          case i: Instruction =>
+            val matchedInstructions: Seq[Instruction] = groupMatchedInstructions( xs, Seq( i ) )
+            if( matchedInstructions.size > 1 ) {
+              groupBulletPointInstructions(
+                xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
+            } else {
+              groupBulletPointInstructions( xs, acc :+ matchedInstructions.head )
+            }
+          case s: Stanza => groupBulletPointInstructions( xs, acc :+ s )
+        }
+      }
+
+    }
+
+    @tailrec
+    private def groupMatchedInstructions( inputSeq: Seq[Stanza], acc: Seq[Instruction] ) : Seq[Instruction] = {
+
+      inputSeq match {
+        case Nil => acc
+        case x :: xs => x match {
+          case i: Instruction if BulletPointListUtils.matchInstructions( acc.last, i ) => groupMatchedInstructions( xs, acc :+ i )
+          case _ => acc
+        }
+      }
+
+    }
 
 }

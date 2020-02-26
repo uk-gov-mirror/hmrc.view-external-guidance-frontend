@@ -18,6 +18,7 @@ package services
 
 import models.ocelot.Phrase
 import models.ui._
+
 import scala.util.matching.Regex
 import Regex._
 import scala.annotation.tailrec
@@ -78,12 +79,34 @@ object TextBuilder {
       case (Nil, l) => acc ++ l
     }
 
+
   def wordsToDisplayInPlaceholderString(str: String): Seq[String] = {
     val isEmpty:String => Boolean = _.isEmpty
 
     val (txts, matches) = fromPattern(placeholdersPattern, str)
     val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
     merge(txts, matchTexts, Nil, isEmpty).mkString(" ").split(" +")
+  }
+
+  private def extractPlaceHolderAnnotation( matcher: Regex, txt: String ) : String = {
+
+    // Find matches with regex
+    val matches: List[Match] = matcher.findAllMatchIn(txt).toList
+
+    // Find additional text components
+    val texts: List[String] = matcher.split(txt).toList
+
+    if (texts.size == 1 && matches.size == 0) {
+      texts.head
+    } else if (texts.size == 0 && matches.size == 1) {
+      matches.head.group(1)
+    } else {
+      val matchTexts: List[String] = matches.map(_.group(1))
+
+      val mergedTexts: List[String] = texts.zipAll(matchTexts, "", "") flatMap { case (a, b) => Seq(a, b) }
+
+      mergedTexts.mkString
+    }
   }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Seq[TextItem] = {
@@ -95,7 +118,25 @@ object TextBuilder {
     merge(textToTexts(enTexts, cyTexts), placeholdersToItems(enMatches, cyMatches), Nil, isEmpty)
   }
 
-  val placeholdersPattern = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val placeholderRegex = """\[(link|bold):(.+?)\]""".r
-  val linkRegex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
+  def extractBoldAndLinkTextAnnotation( txt: String ) : String = {
+
+    extractLinkPlaceHolderAnnotation( extractBoldPlaceHolderAnnotation( txt ) )
+  }
+
+  def extractBoldPlaceHolderAnnotation( txt: String ) : String = {
+
+    extractPlaceHolderAnnotation( boldTextRegex, txt )
+  }
+
+  def extractLinkPlaceHolderAnnotation( txt: String ) : String = {
+
+    extractPlaceHolderAnnotation( linkRegex2, txt )
+  }
+
+  val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
+  val placeholderRegex: Regex = """\[(link|bold):(.+?)\]""".r
+  val linkRegex: Regex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
+
+  val linkRegex2: Regex = """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
+  val boldTextRegex: Regex = """\[bold:([^\]]*)\]""".r
 }
