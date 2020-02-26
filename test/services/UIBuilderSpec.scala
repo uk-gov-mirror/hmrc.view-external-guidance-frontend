@@ -71,8 +71,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       "[bold:Welsh, This is a ][link:Welsh, A page link:34] Welsh, followed by [link:Welsh, Another page link:3] Welsh, and nothing")
     )
     val txtWithAllLinks = Phrase(
-      Vector("[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:Another Link at end of phrase:34]",
-      "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:A page link:34]")
+      Vector("[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34]",
+      "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34]")
     )
 
     val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"/somewhere","",false)), false)
@@ -114,7 +114,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val textItems = Seq(ltxt1, link1, ltxt2, link2, ltxt3)
     val textItems2 = Seq(link2_1, ltxt2, link2_2)
     val pageLinkTextItems = Seq(ltxt1, pageLink1, ltxt2, pageLink2, ltxt3)
-    val AllLinksTextItems = Seq(link2_1, ltxt2, pageLink1)
+    val allLinksTextItems = Seq(link2_1, ltxt2, pageLink1)
 
     val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEmbeddedLinks)
     val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)
@@ -192,6 +192,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       stanzaPages.foreach{ p =>
         pageMap.contains(p.url) mustBe true
       }
+    }
+
+    "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddAllLinks)(urlMap1)
+
+      uiPage.components(5) mustBe models.ui.Paragraph(allLinksTextItems, false)
+
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {

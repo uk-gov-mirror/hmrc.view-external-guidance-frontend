@@ -285,12 +285,30 @@ class UIComponentsSpec extends BaseSpec {
       }
     }
 
+    "use HyperLinkl components which correctly support isEmpty" in {
+      val blankTxt: Text = Text("", "")
+      val txt: Text = Text("Hello", "Welsh, Hello")
+      HyperLink("4", blankTxt).isEmpty mustBe true
+
+      HyperLink("4", txt).isEmpty mustBe false
+    }
+
     "use PageLink components which correctly support isEmpty" in {
       val blankTxt: Text = Text("", "")
       val txt: Text = Text("Hello", "Welsh, Hello")
       PageLink("4", blankTxt).isEmpty mustBe true
 
       PageLink("4", txt).isEmpty mustBe false
+    }
+
+    "use PageLink components which correctly support toString" in {
+      val txt: Text = Text("Hello", "Welsh, Hello")
+      PageLink("4", txt).toString mustBe s"[link:${txt.toString}:4]"
+    }
+
+    "use BilingualText components which correctly support toString if not overridden" in {
+      val txt = TestableBilingualText("HELLO", "Welsh, HELLO")
+      txt.toString mustBe txt.english
     }
 
     "build a complete page" in {

@@ -28,6 +28,8 @@ sealed trait BilingualText {
   override def toString: String = english
 }
 
+case class TestableBilingualText(english: String, welsh: String) extends BilingualText
+
 sealed trait TextItem {
   def isEmpty:Boolean
 }
