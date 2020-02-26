@@ -69,25 +69,33 @@ object TextBuilder {
     enT.zip(cyT).map(t => Text(t._1, t._2))
 
   @tailrec
-  private def mergeTextItems(txts: List[TextItem], links: List[TextItem], acc: Seq[TextItem]): Seq[TextItem] =
+  private def merge[A,B](txts: List[A], links: List[A], acc: Seq[A], isEmpty:A => Boolean): Seq[A] =
     (txts, links) match {
       case (Nil, Nil) =>  acc
-      case (t :: txs, l :: lxs ) if t.isEmpty => mergeTextItems(txs, lxs, acc :+ l)
-      case (t :: txs, l :: lxs ) => mergeTextItems(txs, lxs, (acc :+t) :+ l)
+      case (t :: txs, l :: lxs ) if isEmpty(t) => merge(txs, lxs, acc :+ l, isEmpty)
+      case (t :: txs, l :: lxs ) => merge(txs, lxs, (acc :+t) :+ l, isEmpty)
       case (t, Nil) => acc ++ t
       case (Nil, l) => acc ++ l
     }
 
+  def wordsToDisplayInPlaceholderString(str: String):Seq[String] = {
+    val isEmpty:String => Boolean = _.isEmpty
+
+    val (txts, matches) = fromPattern(placeholdersPattern, str)
+    val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
+    merge(txts, matchTexts, Nil, isEmpty).mkString(" ").split(" +")
+  }
+
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Seq[TextItem] = {
+    val isEmpty: TextItem => Boolean = _.isEmpty
 
     val (enTexts, enMatches) = fromPattern(placeholderRegex, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(placeholderRegex, txt.langs(1))
 
-    mergeTextItems(textToTexts(enTexts, cyTexts),
-                   placeholdersToItems(enMatches, cyMatches),
-                   Nil)
+    merge(textToTexts(enTexts, cyTexts), placeholdersToItems(enMatches, cyMatches), Nil, isEmpty)
   }
 
+  val placeholdersPattern = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
   val placeholderRegex = """\[(link|bold):(.+?)\]""".r
   val linkRegex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
 }
