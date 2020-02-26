@@ -568,7 +568,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   }
 
-  
+
   "When processing a 2 page flow separated by a ValueStanza" must {
     val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(Phrase(Vector("Some Text","Welsh, Some Text")),
                                                                                 Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())

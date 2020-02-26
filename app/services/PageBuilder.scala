@@ -25,6 +25,7 @@ import scala.annotation.tailrec
 case class KeyedStanza(key: String, stanza: Stanza)
 
 object PageBuilder extends ProcessPopulation {
+
   private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
 
   private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
@@ -64,7 +65,7 @@ object PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
-            Right(Page(ks.head.key, pageUrl(v.values).get, ks.map(_.stanza), next, linked))
+            Right(Page(ks.head.key, pageUrl(v.values).get, groupBulletPointInstructions( ks.map(_.stanza), Nil ), next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
       case Left(err) => Left(err)
@@ -88,14 +89,9 @@ object PageBuilder extends ProcessPopulation {
       }
 
 
-    pagesByKeys( List(start), Nil ) match {
-      case Right( pages ) => Right( pages.map( identifyBulletPointListInstructions(_) ) )
-      case Left(err) => Left( err )
-    }
+    pagesByKeys( List(start), Nil )
 
   }
-
-  private def identifyBulletPointListInstructions( page: Page ) : Page = {
 
     @tailrec
     def groupBulletPointInstructions( inputSeq: Seq[Stanza], acc: Seq[Stanza] ) : Seq[Stanza] = {
@@ -118,7 +114,7 @@ object PageBuilder extends ProcessPopulation {
     }
 
     @tailrec
-    def groupMatchedInstructions( inputSeq: Seq[Stanza], acc: Seq[Instruction] ) : Seq[Instruction] = {
+    private def groupMatchedInstructions( inputSeq: Seq[Stanza], acc: Seq[Instruction] ) : Seq[Instruction] = {
 
       inputSeq match {
         case Nil => acc
@@ -129,10 +125,5 @@ object PageBuilder extends ProcessPopulation {
       }
 
     }
-
-    val groupedStanzas: Seq[Stanza] = groupBulletPointInstructions( page.stanzas, Nil )
-
-    Page( page.id, page.url, groupedStanzas, page.next, page.linked )
-  }
 
 }
