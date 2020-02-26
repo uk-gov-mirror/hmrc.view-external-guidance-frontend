@@ -78,7 +78,7 @@ object TextBuilder {
       case (Nil, l) => acc ++ l
     }
 
-  def wordsToDisplayInPlaceholderString(str: String):Seq[String] = {
+  def wordsToDisplayInPlaceholderString(str: String): Seq[String] = {
     val isEmpty:String => Boolean = _.isEmpty
 
     val (txts, matches) = fromPattern(placeholdersPattern, str)
