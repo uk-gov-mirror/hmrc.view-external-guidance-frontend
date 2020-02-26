@@ -24,44 +24,33 @@ import Regex._
 import scala.annotation.tailrec
 
 object TextBuilder {
-  private def placeholdersToItems(enM: List[Match], cyM: List[Match])(implicit urlMap: Map[String, String]): List[TextItem] = {
 
-    // TODO Assume en and cy similar order for now
-    def createLink(en: String, cy: String): Option[TextItem] =
-      for{
-        enMatch <- linkRegex.findFirstMatchIn(en)
-        cyMatch <- linkRegex.findFirstMatchIn(cy)
-      } yield {
-        val enTxt = enMatch.group(1)
-        val enLink = enMatch.group(2)
-        val cyTxt = cyMatch.group(1)
-        //val cyLink = cyMatch.group(2)
-        // TODO also assume en and cy links are identical
-        if (enLink.forall(_.isDigit)) {
-          PageLink(urlMap(enLink), Text(enTxt, cyTxt))
-        }
-        else {
-          HyperLink(enLink, Text(enTxt, cyTxt))
-        }
-      }
-
+  private def placeholdersToItems(enM: List[Match], cyM: List[Match])(implicit urlMap: Map[String, String]): List[TextItem] =
     enM.zip(cyM).map{ t =>
       val( en, cy) = t
       // TODO Assume en and cy similar order of placeholders for now
-      (en.group(1), cy.group(1)) match {
-        case ("link", "link") =>
-          createLink(en.group(2), cy.group(2)).getOrElse{
-            // if no matching link reconstitute original as Text
-            Text(s"[link:${en.group(2)}]", s"[link:${cy.group(2)}]")
+      (Option(en.group(1)), Option(cy.group(1))) match {
+        case (Some(enBold), Some(cyBold)) =>
+          Text(enBold, cyBold, true)
+
+        case (None, None) =>
+          val enTxt = en.group(2)
+          val enDest = en.group(3)
+          val cyTxt = cy.group(2)
+          //val cyDest = cy.group(3)
+          // TODO also assume en and cy links are identical
+          if (enDest.forall(_.isDigit)) {
+            PageLink(urlMap(enDest), Text(enTxt, cyTxt))
+          }
+          else {
+            HyperLink(enDest, Text(enTxt, cyTxt))
           }
 
-        case ("bold", "bold") => Text(en.group(2), cy.group(2), true)
-
         // if en and cy dont match reconstitute original as Text
-        case (x,y) => Text(s"[${x}:${en.group(2)}]", s"[${y}:${cy.group(2)}]")
+        case (Some(enBold),None) => Text(enBold, cy.group(2), true)
+        case (None, Some(cyBold)) => Text(en.group(2), cyBold, true)
       }
     }
-  }
 
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
     (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
@@ -79,64 +68,24 @@ object TextBuilder {
       case (Nil, l) => acc ++ l
     }
 
-
-  def wordsToDisplayInPlaceholderString(str: String): Seq[String] = {
+  def wordsToDisplayAsList(str: String): List[String] = {
     val isEmpty:String => Boolean = _.isEmpty
 
     val (txts, matches) = fromPattern(placeholdersPattern, str)
     val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
-    merge(txts, matchTexts, Nil, isEmpty).mkString(" ").split(" +")
+    merge(txts, matchTexts, Nil, isEmpty).mkString(" ").split(" +").toList
   }
 
-  private def extractPlaceHolderAnnotation( matcher: Regex, txt: String ) : String = {
-
-    // Find matches with regex
-    val matches: List[Match] = matcher.findAllMatchIn(txt).toList
-
-    // Find additional text components
-    val texts: List[String] = matcher.split(txt).toList
-
-    if (texts.size == 1 && matches.size == 0) {
-      texts.head
-    } else if (texts.size == 0 && matches.size == 1) {
-      matches.head.group(1)
-    } else {
-      val matchTexts: List[String] = matches.map(_.group(1))
-
-      val mergedTexts: List[String] = texts.zipAll(matchTexts, "", "") flatMap { case (a, b) => Seq(a, b) }
-
-      mergedTexts.mkString
-    }
-  }
+  def wordsToDisplay(str: String): String = wordsToDisplayAsList(str).mkString(" ")
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Seq[TextItem] = {
     val isEmpty: TextItem => Boolean = _.isEmpty
 
-    val (enTexts, enMatches) = fromPattern(placeholderRegex, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(placeholderRegex, txt.langs(1))
+    val (enTexts, enMatches) = fromPattern(placeholdersPattern, txt.langs(0))
+    val (cyTexts, cyMatches) = fromPattern(placeholdersPattern, txt.langs(1))
 
     merge(textToTexts(enTexts, cyTexts), placeholdersToItems(enMatches, cyMatches), Nil, isEmpty)
   }
 
-  def extractBoldAndLinkTextAnnotation( txt: String ) : String = {
-
-    extractLinkPlaceHolderAnnotation( extractBoldPlaceHolderAnnotation( txt ) )
-  }
-
-  def extractBoldPlaceHolderAnnotation( txt: String ) : String = {
-
-    extractPlaceHolderAnnotation( boldTextRegex, txt )
-  }
-
-  def extractLinkPlaceHolderAnnotation( txt: String ) : String = {
-
-    extractPlaceHolderAnnotation( linkRegex2, txt )
-  }
-
   val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val placeholderRegex: Regex = """\[(link|bold):(.+?)\]""".r
-  val linkRegex: Regex = """(.+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)""".r
-
-  val linkRegex2: Regex = """\[link:(.*?):(http[s]?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val boldTextRegex: Regex = """\[bold:([^\]]*)\]""".r
 }
