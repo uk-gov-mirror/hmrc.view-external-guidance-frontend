@@ -81,7 +81,7 @@ class UIComponentsSpec extends BaseSpec {
       val english = "Example text"
       val welsh = "Welsh example text"
 
-      Text( english, welsh ).toString mustBe english
+      Text( english, welsh ).toString mustBe s"[$english:$welsh:false]"
     }
 
     "Support English and Welsh text in HTML h1 elements" in {
@@ -213,15 +213,15 @@ class UIComponentsSpec extends BaseSpec {
       val bulletPointList: BulletPointList = BulletPointList( bulletPointListLeadingText, bulletPointListItems )
 
       // Test components of bullet point list
-      bulletPointList.leadingText.head.toString mustBe "Leading text 1"
-      bulletPointList.leadingText(1).toString mustBe "[link:Leading text link:http://leadingTextUrl:false]"
-      bulletPointList.leadingText(2).toString mustBe "Leading text 2"
+      bulletPointList.leadingText.head.toString mustBe "[Leading text 1:Welsh leading text 1:false]"
+      bulletPointList.leadingText(1).toString mustBe "[link:[Leading text link:Welsh leading text link:false]:http://leadingTextUrl:false]"
+      bulletPointList.leadingText(2).toString mustBe "[Leading text 2:Welsh leading text 2:false]"
 
-      bulletPointList.listItems.head.head.toString mustBe "Bullet point 1 text"
-      bulletPointList.listItems.head(1).toString mustBe "[link:Bullet point 1 link:http://bulletPointOneUrl:false]"
+      bulletPointList.listItems.head.head.toString mustBe "[Bullet point 1 text:Welsh bullet point 1 text:false]"
+      bulletPointList.listItems.head(1).toString mustBe "[link:[Bullet point 1 link:Welsh bullet point 1 link:false]:http://bulletPointOneUrl:false]"
 
-      bulletPointList.listItems(1).head.toString mustBe "Bullet point 2 text"
-      bulletPointList.listItems(1)(1).toString mustBe "[link:Bullet point 2 link:http://bulletPointTwoUrl:true]"
+      bulletPointList.listItems(1).head.toString mustBe "[Bullet point 2 text:Welsh bullet point 2 text:false]"
+      bulletPointList.listItems(1)(1).toString mustBe "[link:[Bullet point 2 link:Welsh bullet point 2 link:false]:http://bulletPointTwoUrl:true]"
     }
 
     "use HyperLink components with an implementation of the toString method for use in debugging" in {
@@ -233,7 +233,7 @@ class UIComponentsSpec extends BaseSpec {
 
       val hyperLink: HyperLink = HyperLink( destination, Text( englishLinkText, welshLinkText ), false )
 
-      hyperLink.toString mustBe s"[link:$englishLinkText:$destination:false]"
+      hyperLink.toString mustBe s"[link:[$englishLinkText:$welshLinkText:false]:$destination:false]"
     }
 
     "build into a page of text only paragraph and RadioGroup" in {
@@ -283,6 +283,14 @@ class UIComponentsSpec extends BaseSpec {
         case p:Paragraph => p.txt.length mustBe 3
         case _ => fail("unknown ParagraphItem")
       }
+    }
+
+    "use PageLink components which correctly support isEmpty" in {
+      val blankTxt: Text = Text("", "")
+      val txt: Text = Text("Hello", "Welsh, Hello")
+      PageLink("4", blankTxt).isEmpty mustBe true
+
+      PageLink("4", txt).isEmpty mustBe false
     }
 
     "build a complete page" in {

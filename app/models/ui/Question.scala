@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{TextItem, HyperLink}
+package models.ui
 
-@(items: Seq[TextItem])(implicit messages: Messages)
-
-@for(item <- items) {
-  @{
-    item match {
-      case t: models.ui.Text =>
-        if (t.bold) {
-          <strong>{t.value(messages.lang)}</strong>
-        }
-        else {
-          t.value(messages.lang)
-        }
-      case l: HyperLink => components.link(l)
-    }
-  }
-}
-@{
-     //$COVERAGE-OFF$
-}
-
+case class Answer(txt: Text, hint: Option[Text], dest: String) extends UIComponent
+case class Question(heading: Text, body: Seq[UIComponent], answers: Seq[Answer], vertical: Boolean) extends UIComponent
