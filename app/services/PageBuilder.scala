@@ -88,10 +88,14 @@ object PageBuilder extends ProcessPopulation {
       }
 
 
-    pagesByKeys(List(start), Nil)
+    pagesByKeys( List(start), Nil ) match {
+      case Right( pages ) => Right( pages.map( identifyBulletPointListInstructions(_) ) )
+      case Left(err) => Left( err )
+    }
+
   }
 
-  def identifyBulletPointListInstructions( page: Page ) : Page = {
+  private def identifyBulletPointListInstructions( page: Page ) : Page = {
 
     @tailrec
     def groupBulletPointInstructions( inputSeq: Seq[Stanza], acc: Seq[Stanza] ) : Seq[Stanza] = {

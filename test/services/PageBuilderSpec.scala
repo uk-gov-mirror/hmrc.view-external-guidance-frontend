@@ -437,12 +437,11 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
          PageBuilder.pages( process ) match {
            case Right(pages) => {
-             val newPage: Page = PageBuilder.identifyBulletPointListInstructions( pages.head )
 
-             assert( newPage.stanzas.size == 4 )
+             assert( pages.head.stanzas.size == 4 )
 
-             newPage.stanzas(1) mustBe Instruction( instructionStanza1, phrase1, None )
-             newPage.stanzas(2) mustBe Instruction( instructionStanza2, phrase2, None )
+             pages.head.stanzas(1) mustBe Instruction( instructionStanza1, phrase1, None )
+             pages.head.stanzas(2) mustBe Instruction( instructionStanza2, phrase2, None )
            }
            case Left(err) => fail( s"Flow error $err" )
          }
@@ -470,9 +469,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       PageBuilder.pages( process ) match {
         case Right(pages) => {
-          val newPage: Page = PageBuilder.identifyBulletPointListInstructions( pages.head )
 
-          assert( newPage.stanzas.size == 3 )
+          assert( pages.head.stanzas.size == 3 )
 
           // Construct expected instruction group stanza
           val instruction1: Instruction = Instruction( instructionStanza1, phrase1, None )
@@ -483,7 +481,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
             instruction2,
             instruction3 ) )
 
-          newPage.stanzas(1) mustBe expectedInstructionGroup
+          pages.head.stanzas(1) mustBe expectedInstructionGroup
         }
         case Left(err) => fail( s"Flow error $err" )
       }
@@ -545,9 +543,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       PageBuilder.pages( process ) match {
         case Right(pages) => {
-          val newPage: Page = PageBuilder.identifyBulletPointListInstructions( pages.head )
 
-          assert( newPage.stanzas.size == 10 )
+          assert( pages.head.stanzas.size == 10 )
 
           // Test expected instruction group stanzas
           val instruction1: Instruction = Instruction( instructionStanza1, phrase2, None )
@@ -555,14 +552,14 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
           val expectedInstructionGroup1: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
 
-          newPage.stanzas(2) mustBe expectedInstructionGroup1
+          pages.head.stanzas(2) mustBe expectedInstructionGroup1
 
           val instruction6: Instruction = Instruction( instructionStanza6, phrase8, None )
           val instruction7: Instruction = Instruction( instructionStanza7, phrase9, None )
 
           val expectedInstructionGroup2: InstructionGroup = InstructionGroup( Seq( instruction6, instruction7 ) )
 
-          newPage.stanzas( eight ) mustBe expectedInstructionGroup2
+          pages.head.stanzas( eight ) mustBe expectedInstructionGroup2
         }
         case Left(err) => fail( s"Flow error $err" )
       }
@@ -571,8 +568,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   }
 
-
-
+  
   "When processing a 2 page flow separated by a ValueStanza" must {
     val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(Phrase(Vector("Some Text","Welsh, Some Text")),
                                                                                 Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())
