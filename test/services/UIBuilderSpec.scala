@@ -51,12 +51,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val link2 = HyperLink("https://www.gov.uk", link2Txt, false)
     val link2_1 = HyperLink("https://www.bbc.co.uk", link1Txt2, false)
     val link2_2 = HyperLink("https://www.gov.uk", link2Txt2, false)
+    val link3 = HyperLink("dummy-path/blah", Text(lang4), false)
+    val link4 = HyperLink("https://www.bbc.co.uk", Text(lang4), false)
 
     val pageLink1 = PageLink("dummy-path/next", pageLink1Text)
     val pageLink2 = PageLink("dummy-path", pageLink2Text)
 
-    implicit val emptyUrlMap: Map[String, String] = Map()
-    val urlMap1: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
+    implicit val urlMap: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(
       Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
@@ -75,7 +76,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34]")
     )
 
-    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"/somewhere","",false)), false)
+    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"5","",false)), false)
+    val hyperLinkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(Link(7,"https://www.bbc.co.uk","",false)), false)
     val embeddedLinkInstructionStanza = Instruction(txtWithLinks, Seq("end"), None, false)
     val embeddedLinkInstructionStanza2 = Instruction(txtWithLinks2, Seq("end"), None, false)
     val embeddedPageLinkInstructionStanza = Instruction(txtWithPageLinks, Seq("end"), None, false)
@@ -105,12 +107,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionPage = Page("start","/",stanzasWithQuestion, Seq(""), Nil)
 
     val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
+    val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
     val stanzasWithEmbeddedLinks = initialStanza ++ Seq(embeddedLinkInstructionStanza, EndStanza)
     val stanzasWithEmbeddedLinks2 = initialStanza ++ Seq(embeddedLinkInstructionStanza2, EndStanza)
     val stanzasWithEmbeddedPageLinks = initialStanza ++ Seq(embeddedPageLinkInstructionStanza, EndStanza)
     val stanzasWithEmbeddedAllLinks = initialStanza ++ Seq(embeddedAllLinkInstructionStanza, EndStanza)
     val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
+    val hyperLinkPage = Page("start", "/test-page", stanzasWithHyperLink, Seq(""), Nil)
 
+    val pageItems = Seq(ltxt1, link1, ltxt2, link2, ltxt3)
     val textItems = Seq(ltxt1, link1, ltxt2, link2, ltxt3)
     val textItems2 = Seq(link2_1, ltxt2, link2_2)
     val pageLinkTextItems = Seq(ltxt1, pageLink1, ltxt2, pageLink2, ltxt3)
@@ -165,7 +170,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     "convert Link instruction to Paragraph" in new Test{
 
       val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(5) mustBe models.ui.Paragraph(Seq(models.ui.HyperLink("/somewhere", Text(lang4), false)), false)
+      uiPage.components(5) mustBe models.ui.Paragraph(Seq(models.ui.HyperLink("dummy-path/blah", Text(lang4), false)), false)
     }
 
     "convert page with instruction stanza containing a sequence of Text and HyperLink items" in new Test{
@@ -175,12 +180,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)(urlMap1)
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)
       uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
     }
 
     "convert page with instruction stanza text containing PageLinks and Text" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)(urlMap1)
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
       uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
@@ -195,14 +200,22 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddAllLinks)(urlMap1)
-
+      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddAllLinks)
       uiPage.components(5) mustBe models.ui.Paragraph(allLinksTextItems, false)
+    }
 
+    "convert page including a PageLink instruction stanza" in new Test {
+      val uiPage = UIBuilder.fromStanzaPage(page)
+      uiPage.components(5) mustBe models.ui.Paragraph(Seq(link3), false)
+    }
+
+    "convert page including a HyperLink instruction stanza" in new Test {
+      val uiPage = UIBuilder.fromStanzaPage(hyperLinkPage)
+      uiPage.components(5) mustBe models.ui.Paragraph(Seq(link4), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(questionPage)(urlMap1)
+      val uiPage = UIBuilder.fromStanzaPage(questionPage)
 
       uiPage.components.length mustBe 1
 
