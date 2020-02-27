@@ -49,12 +49,12 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
 
   "GET /dummy-service/dummy-process/dummy-path" should {
     "return 200" in new Test {
-      val result = controller.renderPage("dummy-service","dummy-process","dummy-path")(fakeRequest)
+      val result = controller.renderServicePage("dummy-service","dummy-process","dummy-path")(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in new Test {
-      val result = controller.renderPage("dummy-service","dummy-process","dummy-path")(fakeRequest)
+      val result = controller.renderServicePage("dummy-service","dummy-process","dummy-path")(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result)     shouldBe Some("utf-8")
     }
@@ -63,7 +63,7 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
 
   "GET /dummy-service/dummy-process/unknown" should {
     "return NOT_FOUND" in new Test {
-      val result = controller.renderPage("dummy-service","dummy-process","unknown")(fakeRequest)
+      val result = controller.renderServicePage("dummy-service","dummy-process","unknown")(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
   }
