@@ -25,19 +25,14 @@ object BulletPointListUtils {
   def matchInstructions( i1: Instruction, i2: Instruction ) : Boolean = {
 
     // Apply matching logic to English text as this is how Ocelot works currently
-    if( !i1.stack  && !i2.stack ) {
+    if( !i1.stack && !i2.stack ) {
 
-      // Apply matching logic to English text as this is how Ocelot works currently
-      val i1Text: String = TextBuilder.extractBoldAndLinkTextAnnotation(i1.text.langs(0))
-
-      val i2Text: String = TextBuilder.extractBoldAndLinkTextAnnotation(i2.text.langs(0))
-
-      val i1TextList: List[String] = i1Text.trim().split( " +" ).toList
-      val i2TextList: List[String] = i2Text.trim().split( " +" ).toList
+      val i1TextList: List[String] = TextBuilder.wordsToDisplayAsList(i1.text.langs(0))
+      val i2TextList: List[String] = TextBuilder.wordsToDisplayAsList(i2.text.langs(0))
 
       val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1)
 
-      if (matchedTextItems.size >= matchLimit) true else false
+      matchedTextItems.size >= matchLimit
     } else {
       false
     }
