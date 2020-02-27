@@ -17,4 +17,4 @@
 package models.ui
 
 case class Answer(txt: Text, hint: Option[Text], dest: String) extends UIComponent
-case class Question(heading: Text, body: Seq[UIComponent], answers: Seq[Answer], vertical: Boolean) extends UIComponent
+case class Question(heading: Text, body: Seq[UIComponent], answers: Seq[Answer], vertical: Boolean = true) extends UIComponent

@@ -88,9 +88,7 @@ object PageBuilder extends ProcessPopulation {
         case _ :: xs => pagesByKeys(xs, acc)
       }
 
-
-    pagesByKeys( List(start), Nil )
-
+    pagesByKeys(List(start), Nil)
   }
 
     @tailrec

@@ -16,9 +16,9 @@
 
 package services
 
-import models.ocelot.stanzas._
+import models.ocelot.stanzas.{Instruction,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error}
 import models.ocelot.Link
-import models.ui.{Text,H1,H2,H3,Paragraph,Page,UIComponent,HyperLink}
+import models.ui._
 
 object UIBuilder {
 
@@ -46,7 +46,14 @@ object UIBuilder {
           case Instruction(txt,_,_,_) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
-          case Question(_,_,_,_) => acc // TODO
+          case models.ocelot.stanzas.Question(txt,ans,next,stack) =>
+            val answers = (ans zip next).map{ t =>
+              val (phrase, stanzaId) = t
+              val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
+              Answer(answer, hint, stanzaId)
+            }
+            Seq(Question(Text(txt.langs), acc, answers))
+
           case ValueStanza(_,_,_) => acc
           case EndStanza => acc
         }
@@ -58,3 +65,4 @@ object UIBuilder {
     stanzaPages.map(p => (p.url, fromStanzaPage(p)(stanzaIdToUrlMap))).toMap
   }
 }
+

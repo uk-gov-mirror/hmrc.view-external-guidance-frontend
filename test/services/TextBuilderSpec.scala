@@ -42,6 +42,11 @@ class TextBuilderSpec extends BaseSpec {
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
                                          "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     implicit val stanzaIdToUrlMap: Map[String, String] = Map()
+
+    val answerWithNoHint = Phrase(Vector("Yes", "Welsh, Yes"))
+    val answerWithHint = Phrase(Vector("Yes[hint:You agreee with the assertion]", """Welsh, Yes[hint:You DON'T agree with the assertion]"""))
+    val answer = Text("Yes","Welsh, Yes")
+    val hint = Text("You agreee with the assertion","""You DON'T agree with the assertion""")
   }
 
   "TextBuilder placeholder parsing" must {
@@ -59,10 +64,9 @@ class TextBuilderSpec extends BaseSpec {
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
       val items: Seq[TextItem] = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
 
-      items.length mustBe 2
+      items.length mustBe 1
 
-      items(0) mustBe Text("Hello ","Welsh, Hello ")
-      items(1) mustBe Text("[link:Blah Blah:htts://www.bbc.co.uk]","[link:Blah Blah:htts://www.bbc.co.uk]")
+      items(0) mustBe Text("Hello [link:Blah Blah:htts://www.bbc.co.uk]","Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
     }
 
     "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
@@ -87,63 +91,77 @@ class TextBuilderSpec extends BaseSpec {
 
       val text = ""
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe text
+      TextBuilder.wordsToDisplay( text ) mustBe text
     }
 
     "Return text unchanged when no bold text present" in {
 
       val text: String = "Today the weather is fine"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe text
+      TextBuilder.wordsToDisplay( text ) mustBe text
     }
 
     "Return bold text only when normal text is not defined" in {
 
       val text: String = "[bold:Important]"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "Important"
+      TextBuilder.wordsToDisplay( text ) mustBe "Important"
     }
 
     "Return both normal and bold text for combination of leading text followed by bold text" in {
 
       val text: String = "This is [bold:Important]"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "This is Important"
+      TextBuilder.wordsToDisplay( text ) mustBe "This is Important"
     }
 
     "Return both normal text and bold text for combination of leading bold text followed by normal text" in {
 
       val text: String = "[bold:Important] do not do this"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text) mustBe "Important do not do this"
+      TextBuilder.wordsToDisplay( text) mustBe "Important do not do this"
     }
 
     "Return both normal and bold text for text with single embedded bold text" in {
 
       val text: String = "Hello from [bold:Team Ocelot] in Greenland"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "Hello from Team Ocelot in Greenland"
+      TextBuilder.wordsToDisplay( text ) mustBe "Hello from Team Ocelot in Greenland"
     }
 
     "Return both normal and bold text with normal text embedded in bold text" in {
 
       val text: String = "[bold:Greetings from] our home in lovely [bold:Nova Scotia]"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "Greetings from our home in lovely Nova Scotia"
+      TextBuilder.wordsToDisplay( text ) mustBe "Greetings from our home in lovely Nova Scotia"
     }
 
     "Return both normal and bold text from mixed text starting with normal text" in {
 
       val text: String = "Today is [bold:Wednesday 10th May] and tomorrow is [bold:Thursday 11th May]"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      TextBuilder.wordsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and bold text from mixed text staring with bold text" in {
 
       val text: String = "[bold:Here and now] we must all [bold:try] to be calm"
 
-      TextBuilder.extractBoldPlaceHolderAnnotation( text ) mustBe "Here and now we must all try to be calm"
+      TextBuilder.wordsToDisplay( text ) mustBe "Here and now we must all try to be calm"
+    }
+  }
+
+  "TextBuilder answer processing" must {
+    "return display answer text only when there is no hint" in new Test {
+      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithNoHint)
+      displayText mustBe Text(answerWithNoHint.langs)
+      hintText mustBe None
+    }
+
+    "return display answer text with hint" in new Test {
+      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithHint)
+      displayText mustBe answer
+      hintText mustBe Some(hint)
     }
   }
 
@@ -153,70 +171,70 @@ class TextBuilderSpec extends BaseSpec {
 
       val text = ""
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe text
+      TextBuilder.wordsToDisplay( text ) mustBe text
     }
 
     "Return text unchanged when no link text present" in {
 
       val text: String = "Today the weather is fine"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe text
+      TextBuilder.wordsToDisplay( text ) mustBe text
     }
 
     "Return link text only when normal text is not defined" in {
 
       val text: String = "[link:View options:https://mydomain/options]"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "View options"
+      TextBuilder.wordsToDisplay( text ) mustBe "View options"
     }
 
     "Return both normal and link text for combination of leading text followed by link text" in {
 
       val text: String = "View instructions for [link:mending a broken axle:http://mechanicsAreUs/axles]"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "View instructions for mending a broken axle"
+      TextBuilder.wordsToDisplay( text ) mustBe "View instructions for mending a broken axle"
     }
 
     "Return both normal text and link text for combination of leading link text followed by normal text" in {
 
       val text: String = "[link:Click here:https://my.com/details] for information"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "Click here for information"
+      TextBuilder.wordsToDisplay( text ) mustBe "Click here for information"
     }
 
     "Return both normal and link text for text with single embedded link" in {
 
       val text: String = "For details [link:click here:https://info.co.uk/details] and follow the instructions shown"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "For details click here and follow the instructions shown"
+      TextBuilder.wordsToDisplay( text ) mustBe "For details click here and follow the instructions shown"
     }
 
     "Return both normal and link text with normal text embedded in links" in {
 
       val text: String = "[link:Link 1 text:http://link1] and [link:link 2 text:https://link2]"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "Link 1 text and link 2 text"
+      TextBuilder.wordsToDisplay( text ) mustBe "Link 1 text and link 2 text"
     }
 
     "Return both normal and link text from mixed text starting with normal text" in {
 
       val text: String = "Today is [link:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link:Thursday 11th May:http://my.com/calendar]"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      TextBuilder.wordsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and link text from mixed text staring with link" in {
 
       val text: String = "[link:Here and now:http://thisyear/today] we must all [link:try:https://explain] to be calm"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "Here and now we must all try to be calm"
+      TextBuilder.wordsToDisplay( text ) mustBe "Here and now we must all try to be calm"
     }
 
     "Return correct text with back to back links" in {
 
       val text: String = "This should [link:be interesting:https://my.com/interesting?part=2] [link:and informative:http://my.com/inform]"
 
-      TextBuilder.extractLinkPlaceHolderAnnotation( text ) mustBe "This should be interesting and informative"
+      TextBuilder.wordsToDisplay( text ) mustBe "This should be interesting and informative"
     }
 
   }

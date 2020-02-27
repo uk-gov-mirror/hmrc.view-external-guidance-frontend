@@ -56,4 +56,9 @@ class RenderPageController @Inject()(appConfig: AppConfig,
              .getOrElse(NotFound(errorHandler.notFoundTemplate))
     )
   }
+
+  def onSubmit(): Action[AnyContent] = Action.async {
+    implicit request =>
+      Future.successful(NotFound(errorHandler.notFoundTemplate))
+  }
 }
