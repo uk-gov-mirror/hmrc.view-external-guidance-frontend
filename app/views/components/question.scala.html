@@ -14,23 +14,30 @@
  * limitations under the License.
  *@
 
-@import models.ui.Question
+@import models.ui._
 @import controllers.routes._
 
-@*
-@this(formHelper: FormWithCSRF)
+@(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
-form: Form[_], mode: Mode,
-*@
-
-@(q: Question)(implicit request: Request[_], messages: Messages)
-
-BLAH
-@*
-@formHelper(action = RenderPageController.onSubmit(), 'autoComplete -> "off") {
-  BLAH
-}
-*@
+<div class="govuk-form-group">
+  <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+      <h1 class="govuk-fieldset__heading">
+        @q.heading.value(messages.lang)
+      </h1>
+    </legend>
+    @for(cmp <- q.body) {
+      @{
+        cmp match {
+          case p: Paragraph =>
+            <span id="@name-hint" class="govuk-hint">{components.text_items(p.txt)}</span>
+          case x =>
+        }
+      }
+    }
+    @components.answers(q.answers, q.vertical, name)
+  </fieldset>
+</div>
 @{
      //$COVERAGE-OFF$
 }

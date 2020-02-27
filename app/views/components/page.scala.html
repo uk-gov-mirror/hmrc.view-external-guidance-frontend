@@ -21,7 +21,7 @@
 @for( cmp <- pge.components) {
   @{
     cmp match {
-      case q: Question => components.question(q)
+      case q: Question => components.question(q, q.heading.value(messages.lang).replace(" ","-"))
       case p: Paragraph => components.paragraph(p)
       case l: HyperLink => components.hyperlink(l)
       case h: H1 => components.h1_heading(h)
@@ -32,6 +32,8 @@
     }
   }
 }
+
+
 @{
      //$COVERAGE-OFF$
 }
