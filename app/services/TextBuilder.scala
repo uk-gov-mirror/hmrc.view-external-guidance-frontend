@@ -87,5 +87,13 @@ object TextBuilder {
     merge(textToTexts(enTexts, cyTexts), placeholdersToItems(enMatches, cyMatches), Nil, isEmpty)
   }
 
+  def answerTextWithOptionalHint(txt: Phrase):(Text, Option[Text]) = {
+    val (enTexts, enMatches) = fromPattern(answerHintPattern, txt.langs(0))
+    val (cyTexts, cyMatches) = fromPattern(answerHintPattern, txt.langs(1))
+    val hint = enMatches.headOption.map(enM => Text(enM.group(1), cyMatches.headOption.map(cyM => cyM.group(1)).getOrElse("")))
+    (Text(enTexts.head, cyTexts.head), hint)
+  }
+
+  val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
   val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
 }

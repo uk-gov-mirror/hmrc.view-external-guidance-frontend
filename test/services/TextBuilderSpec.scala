@@ -42,6 +42,11 @@ class TextBuilderSpec extends BaseSpec {
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
                                          "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     implicit val stanzaIdToUrlMap: Map[String, String] = Map()
+
+    val answerWithNoHint = Phrase(Vector("Yes", "Welsh, Yes"))
+    val answerWithHint = Phrase(Vector("Yes[hint:You agreee with the assertion]", """Welsh, Yes[hint:You DON'T agree with the assertion]"""))
+    val answer = Text("Yes","Welsh, Yes")
+    val hint = Text("You agreee with the assertion","""You DON'T agree with the assertion""")
   }
 
   "TextBuilder placeholder parsing" must {
@@ -143,6 +148,20 @@ class TextBuilderSpec extends BaseSpec {
       val text: String = "[bold:Here and now] we must all [bold:try] to be calm"
 
       TextBuilder.wordsToDisplay( text ) mustBe "Here and now we must all try to be calm"
+    }
+  }
+
+  "TextBuilder answer processing" must {
+    "return display answer text only when there is no hint" in new Test {
+      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithNoHint)
+      displayText mustBe Text(answerWithNoHint.langs)
+      hintText mustBe None
+    }
+
+    "return display answer text with hint" in new Test {
+      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithHint)
+      displayText mustBe answer
+      hintText mustBe Some(hint)
     }
   }
 
