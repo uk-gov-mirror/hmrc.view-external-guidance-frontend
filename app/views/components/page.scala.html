@@ -23,7 +23,7 @@
     cmp match {
       case q: Question => components.question(q)
       case p: Paragraph => components.paragraph(p)
-      case l: HyperLink => components.link(l)
+      case l: HyperLink => components.hyperlink(l)
       case h: H1 => components.h1_heading(h)
       case h: H2 => components.h2_heading(h)
       case h: H3 => components.h3_heading(h)
@@ -35,4 +35,3 @@
 @{
      //$COVERAGE-OFF$
 }
-

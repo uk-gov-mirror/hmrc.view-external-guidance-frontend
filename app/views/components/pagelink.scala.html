@@ -14,25 +14,11 @@
  * limitations under the License.
  *@
 
-@import models.ui.{TextItem, HyperLink, PageLink}
+@import models.ui.PageLink
 
-@(items: Seq[TextItem])(implicit messages: Messages)
+@(link: PageLink)(implicit messages: Messages)
 
-@for(item <- items) {
-  @{
-    item match {
-      case t: models.ui.Text =>
-        if (t.bold) {
-          <strong>{t.value(messages.lang)}</strong>
-        }
-        else {
-          t.value(messages.lang)
-        }
-      case l: HyperLink => components.hyperlink(l)
-      case p: PageLink => components.pagelink(p)
-    }
-  }
-}
+<a class="govuk-link" href="@link.dest">@link.txt.value(messages.lang)</a>
 @{
      //$COVERAGE-OFF$
 }

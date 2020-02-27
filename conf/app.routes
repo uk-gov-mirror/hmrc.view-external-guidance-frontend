@@ -3,8 +3,9 @@ GET        /assets/*file            controllers.Assets.versioned(path="/public",
 
 GET        /hello-world                             controllers.HelloWorldController.helloWorld
 GET        /bye-world                               controllers.HelloWorldController.byeWorld
+GET        /process/scratch*url                     controllers.RenderPageController.renderProcessUrl(url)
+GET        /:service/:process                       controllers.RenderPageController.renderRootPage(service, process)
 GET        /:service/:process/*pageUrl              controllers.RenderPageController.renderPage(service, process, pageUrl)
-POST       /                                        controllers.RenderPageController.onSubmit()
 
 GET        /language/:lang                          controllers.SwitchLanguageController.switchToLanguage(lang: String)
 

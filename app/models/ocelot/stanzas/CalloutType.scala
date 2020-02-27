@@ -28,6 +28,8 @@ case object Error extends CalloutType
 
 case object Lede extends CalloutType
 
+case object Section extends CalloutType
+
 object CalloutType {
   implicit val reads: Reads[CalloutType] = new Reads[CalloutType] {
     override def reads(json: JsValue): JsResult[CalloutType] = json match {
@@ -35,6 +37,7 @@ object CalloutType {
       case JsString("SubTitle") => JsSuccess(SubTitle, __)
       case JsString("Lede") => JsSuccess(Lede, __)
       case JsString("Error") => JsSuccess(Error, __)
+      case JsString("Section") => JsSuccess(Section, __)
       case _ => JsError("Invalid Callout type")
     }
   }

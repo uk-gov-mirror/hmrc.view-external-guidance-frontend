@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{TextItem, HyperLink, PageLink}
+package models.ocelot
 
-@(items: Seq[TextItem])(implicit messages: Messages)
+import org.scalatest.{Matchers, WordSpec}
+import play.api.libs.json.{Json, JsObject}
+import services.PageBuilder
 
-@for(item <- items) {
-  @{
-    item match {
-      case t: models.ui.Text =>
-        if (t.bold) {
-          <strong>{t.value(messages.lang)}</strong>
-        }
-        else {
-          t.value(messages.lang)
-        }
-      case l: HyperLink => components.hyperlink(l)
-      case p: PageLink => components.pagelink(p)
+class PrototypeJsonSpec extends WordSpec with Matchers {
+
+  trait Test {
+    val jsObject: JsObject = Json.parse(PrototypeJson.json).as[JsObject]
+    val process: Process = jsObject.as[Process]
+  }
+
+  "Prototype Json" must {
+
+    "Parse into a valid Process object" in new Test {
+      PageBuilder.pages(process) match {
+        case Right(pges) =>
+          println(s"Pages count: ${pges.length}")
+        case Left(err) => fail(s"Invalid json ${err}")
+      }
     }
   }
-}
-@{
-     //$COVERAGE-OFF$
 }

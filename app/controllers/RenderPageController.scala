@@ -21,11 +21,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import play.api.libs.json.Json
 import config.{AppConfig, ErrorHandler}
 import scala.concurrent.Future
 import play.api.Logger
+import models.ocelot.{PrototypeJson, Process}
 import models.ui._
-//import services._
+import services._
 
 @Singleton
 class RenderPageController @Inject()(appConfig: AppConfig,
@@ -39,6 +41,25 @@ class RenderPageController @Inject()(appConfig: AppConfig,
   val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
   val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
 
+  def renderRootPage(service: String, process: String): Action[AnyContent] = renderPage(service, process, "")
+
+  def renderProcessUrl(url: String): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"""Url "$url" requested""")
+
+    Future.successful(
+      PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
+        case Right(pages) =>
+          val urltoPageMap = pages.map(p => (p.url, p)).toMap
+          urltoPageMap.keys.foreach(println)
+          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/process/scratch${p.url}")).toMap
+          val uiPage = UIBuilder.fromStanzaPage(urltoPageMap(s"$url"))
+          Ok(view(uiPage))
+        case Left(err) =>
+          NotFound(errorHandler.notFoundTemplate)
+      }
+    )
+  }
+
   def renderPage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
 
@@ -46,9 +67,15 @@ class RenderPageController @Inject()(appConfig: AppConfig,
       // pageMap.get(s"${service}!${process}!${pageUrl}")
       //        .map(page => Ok(view(page)))
       //        .getOrElse(
-      //           PageBuilder.pages(DummyProcess.process) match {
-      //             case Right(pages) => Ok(view(UIBuilder.fromStanzaPage(pages(pageUrl.toInt))))
-      //             case Left(err) => NotFound(errorHandler.notFoundTemplate)
+      //           PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
+      //             case Right(pages) =>
+      //               val urltoPageMap = pages.map(p => (p.url, p)).toMap
+      //               urltoPageMap.keys.foreach(println)
+      //               implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/process/scratch${p.url}")).toMap
+      //               val uiPage = UIBuilder.fromStanzaPage(urltoPageMap(s"/$pageUrl"))
+      //               Ok(view(uiPage))
+      //             case Left(err) =>
+      //               NotFound(errorHandler.notFoundTemplate)
       //           }
       //         )
       pageMap.get(s"${service}!${process}!${pageUrl}")
