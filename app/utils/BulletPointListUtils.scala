@@ -32,8 +32,8 @@ object BulletPointListUtils {
 
       val i2Text: String = TextBuilder.extractBoldAndLinkTextAnnotation(i2.text.langs(0))
 
-      val i1TextList: List[String] = i1Text.split( ' ' ).toList.map( _.trim )
-      val i2TextList: List[String] = i2Text.split( ' ' ).toList.map( _.trim )
+      val i1TextList: List[String] = i1Text.trim().split( " +" ).toList
+      val i2TextList: List[String] = i2Text.trim().split( " +" ).toList
 
       val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1)
 
