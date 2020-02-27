@@ -43,9 +43,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink1Text = Text("A page link","Welsh, A page link")
     val pageLink2Text = Text("Another page link","Welsh, Another page link")
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
-    val ans1 = Vector("Yes [hint:You agree with the assertion", "Welsh, Yes [hint:You agree with the assertion")
-    val ans2 = Vector("No [hint:You DONT agree with the assertion", "Welsh, Yes [hint:You DONT agree with the assertion")
-    val ans3 = Vector("Not sure [hint:You dont know", "Welsh, Yes [hint:You dont know")
+    val ans1 = Vector("Yes", "Welsh, Yes")
+    val ans2 = Vector("No", "Welsh, Yes")
+    val ans3 = Vector("Not sure", "Welsh, Yes")
+
+    val ans1WithHint = Vector("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
+    val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
+    val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
+
+    val hint1 = Text("You agree with the assertion","Welsh, You agree with the assertion")
+    val hint2 = Text("You DONT agree with the assertion","Welsh, You DONT agree with the assertion")
+    val hint3 = Text("You dont know","Welsh, You dont know")
 
     val link1 = HyperLink("https://www.bbc.co.uk", link1Txt, false)
     val link2 = HyperLink("https://www.gov.uk", link2Txt, false)
@@ -85,8 +93,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1),Phrase(ans2),Phrase(ans3))
+    val answersWithHints = Seq(Phrase(ans1WithHint),Phrase(ans2WithHint),Phrase(ans3WithHint))
     val answerDestinations = Seq("4","5","6")
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
+    val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
     val initialStanza = Seq(
       ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
@@ -104,7 +114,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       question
     )
 
+    val stanzasWithQuestionAndHints = Seq(
+      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      Instruction(Phrase(lang2), Seq("2"), None, false),
+      Instruction(Phrase(lang3), Seq("3"), None, false),
+      questionWithAnswerHints
+    )
+
     val questionPage = Page("start","/",stanzasWithQuestion, Seq(""), Nil)
+    val questionPageWithHints = Page("start","/",stanzasWithQuestionAndHints, Seq(""), Nil)
 
     val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
     val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
@@ -234,6 +252,28 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Found non question UIComponent")
       }
     }
+
+    "convert a question page including answer hints into a Seq of a single Question UI object" in new Test {
+      val uiPage = UIBuilder.fromStanzaPage(questionPageWithHints)
+
+      uiPage.components.length mustBe 1
+
+      uiPage.components.head match {
+        case q:models.ui.Question =>
+          q.answers.length mustBe 3
+
+          q.body.length mustBe 2
+
+          q.answers(0) mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinations(0))
+
+          q.answers(1) mustBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinations(1))
+
+          q.answers(2) mustBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinations(2))
+
+        case _ => fail("Found non question UIComponent")
+      }
+    }
+
   }
 
 }

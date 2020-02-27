@@ -49,7 +49,8 @@ object UIBuilder {
           case models.ocelot.stanzas.Question(txt,ans,next,stack) =>
             val answers = (ans zip next).map{ t =>
               val (phrase, stanzaId) = t
-              Answer(Text(phrase.langs), None, stanzaId)
+              val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
+              Answer(answer, hint, stanzaId)
             }
             Seq(Question(Text(txt.langs), acc, answers))
 
