@@ -65,7 +65,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink1 = PageLink("dummy-path/next", pageLink1Text)
     val pageLink2 = PageLink("dummy-path", pageLink2Text)
 
-    implicit val urlMap: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
+    implicit val urlMap: Map[String, String] = Map("3" -> "dummy-path",
+                                                   "4" -> "dummy-path/question",
+                                                   "5" -> "dummy-path/blah",
+                                                   "6" -> "dummy-path/anotherquestion",
+                                                   "34" -> "dummy-path/next")
+    val answerDestinations = Seq("4","5","6")
+    val answerDestinationUrls = Seq("dummy-path/question","dummy-path/blah","dummy-path/anotherquestion")
 
     val txtWithLinks = Phrase(
       Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
@@ -94,7 +100,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1),Phrase(ans2),Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint),Phrase(ans2WithHint),Phrase(ans3WithHint))
-    val answerDestinations = Seq("4","5","6")
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
     val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
@@ -243,11 +248,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length mustBe 2
 
-          q.answers(0) mustBe models.ui.Answer(Text(ans1), None, answerDestinations(0))
+          q.answers(0) mustBe models.ui.Answer(Text(ans1), None, answerDestinationUrls(0))
 
-          q.answers(1) mustBe models.ui.Answer(Text(ans2), None, answerDestinations(1))
+          q.answers(1) mustBe models.ui.Answer(Text(ans2), None, answerDestinationUrls(1))
 
-          q.answers(2) mustBe models.ui.Answer(Text(ans3), None, answerDestinations(2))
+          q.answers(2) mustBe models.ui.Answer(Text(ans3), None, answerDestinationUrls(2))
 
         case _ => fail("Found non question UIComponent")
       }
@@ -264,11 +269,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length mustBe 2
 
-          q.answers(0) mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinations(0))
+          q.answers(0) mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls(0))
 
-          q.answers(1) mustBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinations(1))
+          q.answers(1) mustBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinationUrls(1))
 
-          q.answers(2) mustBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinations(2))
+          q.answers(2) mustBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinationUrls(2))
 
         case _ => fail("Found non question UIComponent")
       }

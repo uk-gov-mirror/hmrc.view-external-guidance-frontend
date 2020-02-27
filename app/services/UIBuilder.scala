@@ -50,7 +50,7 @@ object UIBuilder {
             val answers = (ans zip next).map{ t =>
               val (phrase, stanzaId) = t
               val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
-              Answer(answer, hint, stanzaId)
+              Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
             }
             Seq(Question(Text(txt.langs), acc, answers))
 
