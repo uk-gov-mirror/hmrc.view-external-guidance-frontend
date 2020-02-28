@@ -279,6 +279,28 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
+    "Process page with a simple instruction group" in new Test {
+
+      val phrase1: Phrase = Phrase( Vector( "My favourite sweets are wine gums", "Fy hoff losin yw deintgig gwin" ) )
+      val phrase2: Phrase = Phrase( Vector( "My favourite sweets are humbugs", "Fy hoff losin yw humbugs" ) )
+
+      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, false )
+      val instruction2: Instruction = Instruction( phrase2, Seq( "end" ), None, false )
+
+      val instructionGroup: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
+
+      val bulletPointListStanzas = Seq(
+        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        instructionGroup
+      )
+
+      val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
+
+      val uiPage = UIBuilder.fromStanzaPage( bulletPointListPage )
+
+      uiPage.components.length mustBe 1
+    }
+
   }
 
 }

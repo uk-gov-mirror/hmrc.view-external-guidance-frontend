@@ -16,8 +16,9 @@
 
 package services
 
-import models.ocelot.stanzas.{Instruction,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error}
+import models.ocelot.stanzas.{Instruction,InstructionGroup,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error}
 import models.ocelot.Link
+import models.ocelot.Phrase
 import models.ui._
 
 object UIBuilder {
@@ -28,6 +29,25 @@ object UIBuilder {
       case SubTitle => H2(Text(c.text.langs))
       case Lede => Paragraph(Seq(Text(c.text.langs)), true)
       case Error => H3(Text(c.text.langs)) // TODO
+  }
+
+  def fromInstructionGroup( instructionGroup: InstructionGroup, langIndex: Int  = 0 ) : BulletPointList = {
+
+    val firstInstructionPhrase: models.ocelot.Phrase = instructionGroup.group.head.text
+    val secondInstructionPhrase: models.ocelot.Phrase = instructionGroup.group(1).text
+
+    val noOfMatchingLeadingWordsEnglish: Int = TextBuilder.matchedLeadingWordsToDisplayAsList(
+      firstInstructionPhrase.langs(0),
+      secondInstructionPhrase.langs(0)
+    )
+
+    val noOfMatchingLeadingWordsWelsh: Int = TextBuilder.matchedLeadingWordsToDisplayAsList(
+      firstInstructionPhrase.langs(1),
+      secondInstructionPhrase.langs(1)
+    )
+
+    println( noOfMatchingLeadingWordsEnglish )
+    null
   }
 
   def fromStanzaPage(pge: models.ocelot.Page)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
@@ -45,6 +65,8 @@ object UIBuilder {
 
           case Instruction(txt,_,_,_) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
+
+          case ig: InstructionGroup => acc ++ Seq( fromInstructionGroup( ig ) )
 
           case models.ocelot.stanzas.Question(txt,ans,next,stack) =>
             val answers = (ans zip next).map{ t =>

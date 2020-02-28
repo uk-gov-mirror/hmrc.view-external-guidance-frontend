@@ -239,4 +239,119 @@ class TextBuilderSpec extends BaseSpec {
 
   }
 
+  "Text builder identification of bullet point list leading text must" must {
+
+    "Identify leading text in simple sentences" in {
+
+      val text1: String = "Types of fruit you can buy: apples"
+      val text2: String = "Types of fruit you can buy: oranges"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Types of fruit you can buy:"
+    }
+
+    "Identify leading text in sentences starting with bold text" in {
+
+       val text1: String = "[bold:Types of automobile] you can buy saloon"
+       val text2: String = "[bold:Types of automobile] you can buy sports utility vehicle"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[bold:Types of automobile] you can buy"
+    }
+
+    "Identify leading text is sentences where the leading text ends with bold text" in {
+
+      // Note the final space after the bold text can be ignored
+
+      val text1: String = "Things you might like [bold:TO DO] this very day"
+      val text2: String = "Things you might like [bold:TO DO] on another day"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Things you might like [bold:TO DO]"
+    }
+
+    "Identify leading text in sentences where the leading text contains bold text items embedded in normal text" in {
+
+      val text1: String = "Things [bold:to do] on sunny [bold:days] in the winter season"
+      val text2: String = "Things [bold:to do] on sunny [bold:days] in the summer season"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Things [bold:to do] on sunny [bold:days] in the"
+    }
+
+    "Identify leading text in sentences where the leading text contains normal text embedded in bold text" in {
+
+      val text1: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] mud"
+      val text2: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] snow"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
+    }
+
+    "Identify leading text in simple sentences with multiple spaces between some words" in {
+
+      val text1: String = "Types of  fruit you  can buy: apples"
+      val text2: String = "Types of  fruit you  can buy: oranges"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Types of  fruit you  can buy:"
+    }
+
+    "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
+
+      val text1: String = "[bold:Types of  automobile] you can buy saloon"
+      val text2: String = "[bold:Types of  automobile] you can buy sports utility vehicle"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[bold:Types of  automobile] you can buy"
+    }
+
+    "Identify leading text in sentences starting with link text" in {
+
+      val text1: String = "[link:Types of automobile:http://mydomain/cars] you can buy saloon"
+      val text2: String = "[link:Types of automobile:http://mydomain/cars] you can buy sports utility vehicle"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[link:Types of automobile:http://mydomain/cars] you can buy"
+    }
+
+    "Identify leading text is sentences where the leading text ends with link text" in {
+
+      // Note the final space after the bold text can be ignored
+
+      val text1: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] this very day"
+      val text2: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] on another day"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
+    }
+
+    "Identify leading text in sentences where the leading text contains link text items embedded in normal text" in {
+
+      val text1: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the winter season"
+      val text2: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the summer season"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe
+        "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
+    }
+
+    "Identify leading text in sentences where the leading text contains normal text embedded in link text" in {
+
+      val text1: String =
+        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] muddy lanes"
+      val text2: String =
+        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] snow covered mountains"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe
+        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
+    }
+
+    "Identify leading text in sentences starting with link text with multiple spaces between some of the words" in {
+
+      val text1: String = "[link:Types of  automobile:5] you  can buy saloon"
+      val text2: String = "[link:Types of  automobile:5] you  can buy sports utility vehicle"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[link:Types of  automobile:5] you  can buy"
+    }
+
+    "Identify leading text in sentences starting with leading text with both links and bold text" in {
+
+      val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
+      val text2: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Hednesford Raceway"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
+    }
+  }
+
 }
