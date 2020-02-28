@@ -21,11 +21,11 @@
 
 <div class="govuk-form-group">
   <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
+
     <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-      <h1 class="govuk-fieldset__heading">
-        @q.heading.value(messages.lang)
-      </h1>
+      <h1 class="govuk-fieldset__heading">@q.heading.value(messages.lang)</h1>
     </legend>
+
     @for(cmp <- q.body) {
       @{
         cmp match {
@@ -35,9 +35,12 @@
         }
       }
     }
+
     @components.answers(q.answers, q.vertical, name)
+
   </fieldset>
 </div>
+
 @{
      //$COVERAGE-OFF$
 }

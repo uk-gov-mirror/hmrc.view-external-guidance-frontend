@@ -41,17 +41,16 @@ class RenderPageController @Inject()(appConfig: AppConfig,
   val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
   val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
 
+  def renderRootPage(): Action[AnyContent] = renderPage("")
   def renderPage(pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""pageUrl "$pageUrl" requested""")
 
     Future.successful(
       PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
         case Right(pages) =>
-
           val urltoPageMap = pages.map(p => (p.url, p)).toMap
-          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/process/scratch${p.url}")).toMap
-          val url = if (pageUrl.equals("scratch")) "/" else pageUrl.drop(7)
-          Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(s"${url}"))))
+          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
+          Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(s"/${pageUrl}"))))
 
         case Left(err) =>
           NotFound(errorHandler.notFoundTemplate)
