@@ -38,121 +38,25 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
+    val para1Text = Text("This is a question", "Welsh, This is a question")
+    val para1 = Paragraph(Seq(para1Text))
 
-    val paraText1 = Text("Hello","Welsh Hello")
-    val paraText2 = Text("World","Welsh World")
+    val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
+    val ans1 = Vector("Yes", "Welsh, Yes")
+    val ans2 = Vector("No", "Welsh, Yes")
+    val ans3 = Vector("Not sure", "Welsh, Yes")
 
-    val ledePara = Paragraph(Seq(paraText1), lede = true)
-    val para = Paragraph(Seq(paraText1), lede = false)
-    val dest1 = "https://www.bbc.co.uk"
-    val dest2 = "https://www.bbc.co.uk/news"
-    val link1 = HyperLink(dest1, Text("The BBC", "Welsh, The BBC"), window = true)
-    val link2 = HyperLink(dest2, Text("BBC News", "Welsh, BBC News"), window = false)
-
-    val paraWithMultipleLinks =  Paragraph(Seq(paraText1, link1, paraText2, link2))
+    val ans1Hint = Vector("You agree with the assertion", "Welsh, You agree with the assertion")
+    val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
+    val ans3Hint = Vector("You dont know", "Welsh, You dont know")
+    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), "/yes")
+    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), "/no")
+    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), "/dontknow")
+    val answers = Seq(a1, a2, a3)
+    val question = Question(Text(q1), Seq(para1), answers, false)
   }
 
   trait WelshTest extends Test {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
-
-  "Paragraph component" should {
-
-    "generate English html containing a lede text paragraph" in new Test {
-
-      val doc = asDocument(paragraph(ledePara))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english
-      paras.first.classNames.toString shouldBe "[govuk-body-l]"
-    }
-
-    "generate English html containing a normal text paragraph" in new Test {
-
-      val doc = asDocument(paragraph(para))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english
-      paras.first.classNames.toString shouldBe "[govuk-body]"
-    }
-
-    "generate English html containing Text and links" in new Test {
-
-      val doc = asDocument(paragraph(paraWithMultipleLinks))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-
-      val links = paras.first.getElementsByTag("a").asScala
-      links.length shouldBe 2
-
-      val txtNodes = paras.first.textNodes().asScala
-      txtNodes.length shouldBe 3
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
-
-      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link1Attrs.contains("href") shouldBe true
-      link1Attrs("href") shouldBe dest1
-      link1Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link1Attrs.contains("target") shouldBe true
-      link1Attrs("target") shouldBe """"_blank""""
-
-      val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link2Attrs.contains("href") shouldBe true
-      link2Attrs("href") shouldBe dest2
-      link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link2Attrs.contains("target") shouldBe false
-    }
-
-    "generate Welsh html containing a lede text paragraph" in new WelshTest {
-
-      val doc = asDocument(paragraph(ledePara))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh
-      paras.first.classNames.toString shouldBe "[govuk-body-l]"
-    }
-
-    "generate Welsh html containing a normal text paragraph" in new WelshTest {
-
-      val doc = asDocument(paragraph(para))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh
-      paras.first.classNames.toString shouldBe "[govuk-body]"
-    }
-
-    "generate Welsh html containing Text and links" in new WelshTest {
-
-      val doc = asDocument(paragraph(paraWithMultipleLinks))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-
-      val links = paras.first.getElementsByTag("a").asScala
-      links.length shouldBe 2
-
-      val txtNodes = paras.first.textNodes().asScala
-      txtNodes.length shouldBe 3
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
-
-      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link1Attrs.contains("href") shouldBe true
-      link1Attrs("href") shouldBe dest1
-      link1Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link1Attrs.contains("target") shouldBe true
-      link1Attrs("target") shouldBe """"_blank""""
-
-      val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link2Attrs.contains("href") shouldBe true
-      link2Attrs("href") shouldBe dest2
-      link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link2Attrs.contains("target") shouldBe false
-    }
-  }
-
 }
