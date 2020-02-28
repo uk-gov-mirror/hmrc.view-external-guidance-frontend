@@ -37,12 +37,7 @@ class RenderPageController @Inject()(appConfig: AppConfig,
 
   implicit val config: AppConfig = appConfig
 
-  // TODO turn this into real Process/page access
-  val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
-  val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
-
-  def renderRootPage(): Action[AnyContent] = renderPage("")
-  def renderPage(pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+  def onPageLoad(pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""pageUrl "$pageUrl" requested""")
 
     Future.successful(
@@ -50,7 +45,7 @@ class RenderPageController @Inject()(appConfig: AppConfig,
         case Right(pages) =>
           val urltoPageMap = pages.map(p => (p.url, p)).toMap
           implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
-          Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(s"/${pageUrl}"))))
+          Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(s"${pageUrl}"))))
 
         case Left(err) =>
           NotFound(errorHandler.notFoundTemplate)
@@ -58,6 +53,9 @@ class RenderPageController @Inject()(appConfig: AppConfig,
     )
   }
 
+  // TODO turn this into real Process/page access
+  val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
+  val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
   def renderServicePage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""Service: $service, Process "$process", pageUrl "$pageUrl" requested""")
 
