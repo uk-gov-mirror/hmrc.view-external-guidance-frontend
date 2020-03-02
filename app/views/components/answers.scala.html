@@ -34,7 +34,7 @@
       </label>
 
       @ans.hint.map{ hint =>
-        <span id="@name-item-hint" class="govuk-hint govuk-radios__hint">
+        <span id="@name-item-@index-hint" class="govuk-hint govuk-radios__hint">
           @hint.value(messages.lang)
         </span>
       }
