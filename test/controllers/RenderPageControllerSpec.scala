@@ -68,4 +68,18 @@ class RenderPageControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
     }
   }
 
+  "GET /scratch/" should {
+    "return 200" in new Test {
+      val result = controller.onPageLoad("/", None)(fakeRequest)
+      status(result) shouldBe Status.OK
+    }
+  }
+
+  "GET /scratch/tell-me-about?questionPageUrl=/guidance/scratch/tell-me-about-blah" should {
+    "return 303" in new Test {
+      val result = controller.onPageLoad("/", Some("/blah"))(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
+
 }

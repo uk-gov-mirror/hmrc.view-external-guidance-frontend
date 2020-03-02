@@ -33,7 +33,7 @@ TODO temporarily included form with action to Get of the first answer
 
       @for((cmp, index) <- q.body.zipWithIndex){
         @{cmp match {
-              case p: Paragraph => components.answer_hint(p, name+"-hint-"+index)
+              case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
               case x =>
             }
         }

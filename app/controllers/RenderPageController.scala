@@ -47,7 +47,6 @@ class RenderPageController @Inject()(appConfig: AppConfig,
         PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
           case Right(pages) =>
             val urltoPageMap = pages.map(p => (p.url, p)).toMap
-            urltoPageMap.keys.foreach(println)
             implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
             Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(pageUrl))))
 

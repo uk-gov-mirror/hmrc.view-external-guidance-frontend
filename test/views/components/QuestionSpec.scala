@@ -23,7 +23,7 @@ import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
-import views.html.components.paragraph
+import views.html._
 import models.ui.{Paragraph,Text, Question, Answer}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
@@ -58,5 +58,96 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   trait WelshTest extends Test {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
+  }
+
+
+  "English Question component" must {
+
+    "render question text as a header" in new Test {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val heading = doc.getElementsByTag("h1")
+      heading.size shouldBe 1
+      heading.first.text() shouldBe q1(0)
+    }
+
+    "render contained paragraph as hints" in new Test {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val hint = doc.getElementsByTag("span").first
+      val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hintAttrs("class") shouldBe "govuk-hint"
+      hint.text() shouldBe para1Text.value(messages.lang)
+    }
+
+    "render answers as radio buttons" in new Test {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val radios = doc.getElementsByTag("input")
+      radios.size shouldBe answers.length
+      val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
+      radioLabels.size shouldBe answers.length
+      radioLabels(0) shouldBe Text(ans1).value(messages.lang)
+      radioLabels(1) shouldBe Text(ans2).value(messages.lang)
+      radioLabels(2) shouldBe Text(ans3).value(messages.lang)
+    }
+
+    "render answers with hints" in new Test {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+
+      val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang)
+      val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang)
+      val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+    }
+
+  }
+
+  "Welsh Question component" must {
+
+    "render question text as a header" in new WelshTest {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val heading = doc.getElementsByTag("h1")
+      heading.size shouldBe 1
+      heading.first.text() shouldBe q1(1)
+    }
+
+    "render contained paragraph as hints" in new WelshTest {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val hint = doc.getElementsByTag("span").first
+      val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hintAttrs("class") shouldBe "govuk-hint"
+      hint.text() shouldBe para1Text.value(messages.lang)
+    }
+
+    "render answers as radio buttons" in new WelshTest {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val radios = doc.getElementsByTag("input")
+      radios.size shouldBe answers.length
+      val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
+      radioLabels.size shouldBe answers.length
+      radioLabels(0) shouldBe Text(ans1).value(messages.lang)
+      radioLabels(1) shouldBe Text(ans2).value(messages.lang)
+      radioLabels(2) shouldBe Text(ans3).value(messages.lang)
+    }
+
+    "render answers with hints" in new WelshTest {
+      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+
+      val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang)
+      val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang)
+      val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
+      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+    }
+
   }
 }
