@@ -70,7 +70,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
 
-      val doc = asDocument(page(simplePage))
+      val doc = asDocument(page(simplePage)(fakeRequest, messages))
 
       val paras = doc.getElementsByTag("p")
 
@@ -96,7 +96,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(page(simplePage))
+      val doc = asDocument(page(simplePage)(fakeRequest, messages))
 
       val paras = doc.getElementsByTag("p")
 

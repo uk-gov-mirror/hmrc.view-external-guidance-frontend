@@ -14,26 +14,11 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Page, Paragraph, HyperLink, H1, H2, H3, BulletPointList, Question}
+@import models.ui.PageLink
 
-@(pge: Page)(implicit request: Request[_], messages: Messages)
+@(link: PageLink)(implicit messages: Messages)
 
-@for( cmp <- pge.components) {
-  @{
-    cmp match {
-      case q: Question => components.question(q, request.path.split("/").last)
-      case p: Paragraph => components.paragraph(p)
-      case l: HyperLink => components.hyperlink(l)
-      case h: H1 => components.h1_heading(h)
-      case h: H2 => components.h2_heading(h)
-      case h: H3 => components.h3_heading(h)
-      case b: BulletPointList => components.bullet_point_list(b)
-      case x => {x}
-    }
-  }
-}
-
-
+<a class="govuk-link" href="@link.dest">@link.txt.value(messages.lang)</a>
 @{
      //$COVERAGE-OFF$
 }
