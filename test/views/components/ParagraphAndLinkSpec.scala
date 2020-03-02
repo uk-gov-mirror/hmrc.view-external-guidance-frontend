@@ -103,15 +103,15 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link2Attrs.contains("href") shouldBe true
       link2Attrs("href") shouldBe dest2
       link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
+      link2Attrs("class") shouldBe "govuk-link"
       link2Attrs.contains("target") shouldBe false
 
       val link3Attrs = links(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link2Attrs.contains("href") shouldBe true
-      link2Attrs("href") shouldBe dest2
-      link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link2Attrs.contains("target") shouldBe false
+      link3Attrs.contains("href") shouldBe true
+      link3Attrs("href") shouldBe dest2
+      link3Attrs.contains("class") shouldBe true
+      link3Attrs("class") shouldBe "govuk-link"
+      link3Attrs.contains("target") shouldBe false
     }
 
     "generate Welsh html containing a lede text paragraph" in new WelshTest {
@@ -158,15 +158,15 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link2Attrs.contains("href") shouldBe true
       link2Attrs("href") shouldBe dest2
       link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
+      link2Attrs("class") shouldBe "govuk-link"
       link2Attrs.contains("target") shouldBe false
 
       val link3Attrs = links(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link2Attrs.contains("href") shouldBe true
-      link2Attrs("href") shouldBe dest2
-      link2Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link2Attrs.contains("target") shouldBe false
+      link3Attrs.contains("href") shouldBe true
+      link3Attrs("href") shouldBe dest2
+      link3Attrs.contains("class") shouldBe true
+      link3Attrs("class") shouldBe "govuk-link"
+      link3Attrs.contains("target") shouldBe false
 
     }
 
