@@ -16,7 +16,7 @@
 
 package services
 
-import models.ocelot.stanzas.{Instruction,InstructionGroup,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error}
+import models.ocelot.stanzas.{Instruction,InstructionGroup,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error,Section}
 import models.ocelot.Link
 import models.ocelot.Phrase
 import models.ui._
@@ -27,6 +27,7 @@ object UIBuilder {
     c.noteType match {
       case Title => H1(Text(c.text.langs))
       case SubTitle => H2(Text(c.text.langs))
+      case Section => H3(Text(c.text.langs))
       case Lede => Paragraph(Seq(Text(c.text.langs)), true)
       case Error => H3(Text(c.text.langs)) // TODO
   }

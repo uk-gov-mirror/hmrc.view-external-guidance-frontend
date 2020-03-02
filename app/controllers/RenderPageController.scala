@@ -21,11 +21,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import play.api.libs.json.Json
 import config.{AppConfig, ErrorHandler}
 import scala.concurrent.Future
 import play.api.Logger
+import models.ocelot.{PrototypeJson, Process}
 import models.ui._
-//import services._
+import services._
 
 @Singleton
 class RenderPageController @Inject()(appConfig: AppConfig,
@@ -35,22 +37,33 @@ class RenderPageController @Inject()(appConfig: AppConfig,
 
   implicit val config: AppConfig = appConfig
 
+  // TODO placeholder controller to demonstrate prototype json to view
+  def onPageLoad(pageUrl: String, questionPageUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"""pageUrl "$pageUrl" requested""")
+    Future.successful(
+      questionPageUrl.map{ answerUrl =>
+        Redirect(routes.RenderPageController.onPageLoad(answerUrl.drop("/guidance/scratch".length), None))
+      }.getOrElse {
+        PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
+          case Right(pages) =>
+            val urltoPageMap = pages.map(p => (p.url, p)).toMap
+            implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
+            Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(pageUrl))))
+
+          case Left(err) =>
+            NotFound(errorHandler.notFoundTemplate)
+        }
+      }
+    )
+  }
+
   // TODO turn this into real Process/page access
   val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
   val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
-
-  def renderPage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"""Service "$service", Process "$process", pageUrl "$pageUrl" requested""")
+  def renderServicePage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"""Service: $service, Process "$process", pageUrl "$pageUrl" requested""")
 
     Future.successful(
-      // pageMap.get(s"${service}!${process}!${pageUrl}")
-      //        .map(page => Ok(view(page)))
-      //        .getOrElse(
-      //           PageBuilder.pages(DummyProcess.process) match {
-      //             case Right(pages) => Ok(view(UIBuilder.fromStanzaPage(pages(pageUrl.toInt))))
-      //             case Left(err) => NotFound(errorHandler.notFoundTemplate)
-      //           }
-      //         )
       pageMap.get(s"${service}!${process}!${pageUrl}")
              .map(page => Ok(view(page)))
              .getOrElse(NotFound(errorHandler.notFoundTemplate))
