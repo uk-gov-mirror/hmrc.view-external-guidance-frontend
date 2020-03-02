@@ -17,9 +17,6 @@
 @import models.ui._
 @import controllers.routes._
 
-@*
-TODO temporarily included form with action to Get of the first answer
-*@
 @(p: Paragraph, id: String)(implicit request: Request[_], messages: Messages)
 
 <span id="@id" class="govuk-hint">@components.text_items(p.txt)</span>
