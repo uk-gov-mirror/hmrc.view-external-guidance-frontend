@@ -53,7 +53,10 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), "/no")
     val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), "/dontknow")
     val answers = Seq(a1, a2, a3)
-    val question = Question(Text(q1), Seq(para1), answers, false)
+    val horizontalAnswers = Seq(a1.copy(hint = None),a2.copy(hint = None))
+    val question = Question(Text(q1), Seq(para1), answers)
+
+    val questionWithHorizontalAnswers = Question(Text(q1), Seq(para1), horizontalAnswers)
   }
 
   trait WelshTest extends Test {
@@ -89,7 +92,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radioLabels(2) shouldBe Text(ans3).value(messages.lang)
     }
 
-    "render answers with hints" in new Test {
+    "render answers with hints vertically" in new Test {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
@@ -102,6 +105,23 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+    }
+
+    "render answers with hints horizontally" in new Test {
+      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test")(fakeRequest, messages))
+      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+
+      hints shouldBe Nil
+      val divs = doc.getElementsByTag("div").asScala.toList.filter{ div =>
+        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        attrs("class").contains("govuk-radios")
+      }
+      divs.headOption.map{ div =>
+        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        attrs("class").contains("govuk-radios--inline") shouldBe true
+      } orElse {
+        fail("Missing govuk-radios--inline, answers not horizontal")
+      }
     }
 
   }
@@ -147,6 +167,23 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+    }
+
+    "render answers with hints horizontally" in new Test {
+      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test")(fakeRequest, messages))
+      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+
+      hints shouldBe Nil
+      val divs = doc.getElementsByTag("div").asScala.toList.filter{ div =>
+        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        attrs("class").contains("govuk-radios")
+      }
+      divs.headOption.map{ div =>
+        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        attrs("class").contains("govuk-radios--inline") shouldBe true
+      } orElse {
+        fail("Missing govuk-radios--inline, answers not horizontal")
+      }
     }
 
   }
