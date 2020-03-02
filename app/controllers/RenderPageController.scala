@@ -37,18 +37,23 @@ class RenderPageController @Inject()(appConfig: AppConfig,
 
   implicit val config: AppConfig = appConfig
 
-  def onPageLoad(pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+  // TODO placeholder controller to demonstrate prototype json to view
+  def onPageLoad(pageUrl: String, questionPageUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"""pageUrl "$pageUrl" requested""")
-
     Future.successful(
-      PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
-        case Right(pages) =>
-          val urltoPageMap = pages.map(p => (p.url, p)).toMap
-          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
-          Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(s"${pageUrl}"))))
+      questionPageUrl.map{ answerUrl =>
+        Redirect(routes.RenderPageController.onPageLoad(answerUrl.drop("/guidance/scratch".length), None))
+      }.getOrElse {
+        PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
+          case Right(pages) =>
+            val urltoPageMap = pages.map(p => (p.url, p)).toMap
+            urltoPageMap.keys.foreach(println)
+            implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
+            Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(pageUrl))))
 
-        case Left(err) =>
-          NotFound(errorHandler.notFoundTemplate)
+          case Left(err) =>
+            NotFound(errorHandler.notFoundTemplate)
+        }
       }
     )
   }
@@ -64,10 +69,5 @@ class RenderPageController @Inject()(appConfig: AppConfig,
              .map(page => Ok(view(page)))
              .getOrElse(NotFound(errorHandler.notFoundTemplate))
     )
-  }
-
-  def onSubmit(): Action[AnyContent] = Action.async {
-    implicit request =>
-      Future.successful(NotFound(errorHandler.notFoundTemplate))
   }
 }

@@ -22,7 +22,7 @@ TODO temporarily included form with action to Get of the first answer
 *@
 @(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
-<form action=@q.answers.head.dest method="get" novalidate>
+<form action="/guidance/scratch/" method="get" novalidate>
 
   <div class="govuk-form-group">
     <fieldset class="govuk-fieldset" aria-describedby="@name-hint">

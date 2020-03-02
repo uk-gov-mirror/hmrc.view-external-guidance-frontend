@@ -5,9 +5,7 @@ GET        /language/:lang                          controllers.SwitchLanguageCo
 GET        /hello-world                             controllers.HelloWorldController.helloWorld
 GET        /bye-world                               controllers.HelloWorldController.byeWorld
 
-POST       /scratch                                 controllers.RenderPageController.onSubmit
-GET        /scratch*pageUrl                         controllers.RenderPageController.onPageLoad(pageUrl)
-
+GET        /scratch*pageUrl                         controllers.RenderPageController.onPageLoad(pageUrl: String, questionPageUrl: Option[String])
 GET        /:service/:process/*pageUrl              controllers.RenderPageController.renderServicePage(service, process, pageUrl)
 
 
