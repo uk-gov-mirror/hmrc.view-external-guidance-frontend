@@ -27,12 +27,13 @@ object BulletPointListUtils {
     // Apply matching logic to English text as this is how Ocelot works currently
     if( !i1.stack && !i2.stack ) {
 
-      val i1TextList: List[String] = TextBuilder.wordsToDisplayAsList(i1.text.langs(0))
-      val i2TextList: List[String] = TextBuilder.wordsToDisplayAsList(i2.text.langs(0))
+      val i1TextList: List[String] = TextBuilder.fragmentsToDisplayAsList(i1.text.langs(0))
+      val i2TextList: List[String] = TextBuilder.fragmentsToDisplayAsList(i2.text.langs(0))
 
-      val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1)
+      val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1).filter( _ != "" )
 
-      matchedTextItems.size >= matchLimit
+      // Matching instructions must have matching leading text followed dissimilar trailing text
+      matchedTextItems.size >= matchLimit && ( matchedTextItems.size < i1TextList.size ) && ( matchedTextItems.size < i2TextList.size )
     } else {
       false
     }

@@ -20,6 +20,8 @@ import base.BaseSpec
 import models.ocelot._
 import models.ui.{HyperLink, PageLink, Text, TextItem}
 
+import scala.util.matching.Regex.Match
+
 class TextBuilderSpec extends BaseSpec {
 
   trait Test extends ProcessJson {
@@ -91,63 +93,63 @@ class TextBuilderSpec extends BaseSpec {
 
       val text = ""
 
-      TextBuilder.wordsToDisplay( text ) mustBe text
+      TextBuilder.fragmentsToDisplay( text ) mustBe text
     }
 
     "Return text unchanged when no bold text present" in {
 
       val text: String = "Today the weather is fine"
 
-      TextBuilder.wordsToDisplay( text ) mustBe text
+      TextBuilder.fragmentsToDisplay( text ) mustBe text
     }
 
     "Return bold text only when normal text is not defined" in {
 
       val text: String = "[bold:Important]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Important"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Important"
     }
 
     "Return both normal and bold text for combination of leading text followed by bold text" in {
 
       val text: String = "This is [bold:Important]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "This is Important"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "This is Important"
     }
 
     "Return both normal text and bold text for combination of leading bold text followed by normal text" in {
 
       val text: String = "[bold:Important] do not do this"
 
-      TextBuilder.wordsToDisplay( text) mustBe "Important do not do this"
+      TextBuilder.fragmentsToDisplay( text) mustBe "Important do not do this"
     }
 
     "Return both normal and bold text for text with single embedded bold text" in {
 
       val text: String = "Hello from [bold:Team Ocelot] in Greenland"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Hello from Team Ocelot in Greenland"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Hello from Team Ocelot in Greenland"
     }
 
     "Return both normal and bold text with normal text embedded in bold text" in {
 
       val text: String = "[bold:Greetings from] our home in lovely [bold:Nova Scotia]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Greetings from our home in lovely Nova Scotia"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Greetings from our home in lovely Nova Scotia"
     }
 
     "Return both normal and bold text from mixed text starting with normal text" in {
 
       val text: String = "Today is [bold:Wednesday 10th May] and tomorrow is [bold:Thursday 11th May]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and bold text from mixed text staring with bold text" in {
 
       val text: String = "[bold:Here and now] we must all [bold:try] to be calm"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Here and now we must all try to be calm"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Here and now we must all try to be calm"
     }
   }
 
@@ -171,70 +173,70 @@ class TextBuilderSpec extends BaseSpec {
 
       val text = ""
 
-      TextBuilder.wordsToDisplay( text ) mustBe text
+      TextBuilder.fragmentsToDisplay( text ) mustBe text
     }
 
     "Return text unchanged when no link text present" in {
 
       val text: String = "Today the weather is fine"
 
-      TextBuilder.wordsToDisplay( text ) mustBe text
+      TextBuilder.fragmentsToDisplay( text ) mustBe text
     }
 
     "Return link text only when normal text is not defined" in {
 
       val text: String = "[link:View options:https://mydomain/options]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "View options"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "View options"
     }
 
     "Return both normal and link text for combination of leading text followed by link text" in {
 
       val text: String = "View instructions for [link:mending a broken axle:http://mechanicsAreUs/axles]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "View instructions for mending a broken axle"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "View instructions for mending a broken axle"
     }
 
     "Return both normal text and link text for combination of leading link text followed by normal text" in {
 
       val text: String = "[link:Click here:https://my.com/details] for information"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Click here for information"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Click here for information"
     }
 
     "Return both normal and link text for text with single embedded link" in {
 
       val text: String = "For details [link:click here:https://info.co.uk/details] and follow the instructions shown"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "For details click here and follow the instructions shown"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "For details click here and follow the instructions shown"
     }
 
     "Return both normal and link text with normal text embedded in links" in {
 
       val text: String = "[link:Link 1 text:http://link1] and [link:link 2 text:https://link2]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Link 1 text and link 2 text"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Link 1 text and link 2 text"
     }
 
     "Return both normal and link text from mixed text starting with normal text" in {
 
       val text: String = "Today is [link:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link:Thursday 11th May:http://my.com/calendar]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and link text from mixed text staring with link" in {
 
       val text: String = "[link:Here and now:http://thisyear/today] we must all [link:try:https://explain] to be calm"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "Here and now we must all try to be calm"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "Here and now we must all try to be calm"
     }
 
     "Return correct text with back to back links" in {
 
       val text: String = "This should [link:be interesting:https://my.com/interesting?part=2] [link:and informative:http://my.com/inform]"
 
-      TextBuilder.wordsToDisplay( text ) mustBe "This should be interesting and informative"
+      TextBuilder.fragmentsToDisplay( text ) mustBe "This should be interesting and informative"
     }
 
   }
@@ -333,8 +335,7 @@ class TextBuilderSpec extends BaseSpec {
       val text2: String =
         "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] snow covered mountains"
 
-      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe
-        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
     }
 
     "Identify leading text in sentences starting with link text with multiple spaces between some of the words" in {
@@ -351,6 +352,50 @@ class TextBuilderSpec extends BaseSpec {
       val text2: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Hednesford Raceway"
 
       TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
+    }
+
+    "Identify leading text in sentences where leading text and trailing text are both bold" in {
+
+      val text1: String = "[bold:Today is the first day in ][bold:May]"
+      val text2: String = "[bold:Today is the first day in ][bold:July]"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[bold:Today is the first day in ]"
+    }
+
+    "Identify leading text in sentences where leading text and trailing text are both in links" in {
+
+      val text1: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:May:https://nydomain/calendar/may]"
+      val text2: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:July:https://mydomain/calendar/july]"
+
+      TextBuilder.determineMatchedLeadingText( text1, text2 ) mustBe "[link:Today is the first day in :https://mydomain/calendar/today]"
+    }
+
+  }
+
+  "Method locateTextsAndMatchesContainingLeadingText" must {
+
+    "Handle so far theoretical case when no text or match components are present" in {
+
+      val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
+
+      val texts: List[String] = TextBuilder.placeholdersPattern.split( text1 ).toList
+      val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn( text1 ).toList
+
+      // Test invocation with "matchText" set to true
+      val ( wordsProcessed1, outputTexts1, outputMatches1 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, true, 0 )
+
+      wordsProcessed1 mustBe 0
+
+      outputTexts1 mustBe texts
+      outputMatches1 mustBe matches
+
+      // Test invocation with "matchText" set to false
+      val ( wordsProcessed2, outputTexts2, outputMatches2 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, false, 2 )
+
+      wordsProcessed2 mustBe 2
+
+      outputTexts2 mustBe texts
+      outputMatches2 mustBe matches
     }
   }
 

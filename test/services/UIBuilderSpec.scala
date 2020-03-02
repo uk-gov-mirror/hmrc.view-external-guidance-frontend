@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{Text, HyperLink, PageLink}
+import models.ui.{BulletPointList, HyperLink, PageLink, Text}
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -299,6 +299,25 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val uiPage = UIBuilder.fromStanzaPage( bulletPointListPage )
 
       uiPage.components.length mustBe 1
+
+      // Check contents of bullet point list
+      val leadingTextItems: Text = Text( "My favourite sweets are", "Fy hoff losin yw", false  )
+
+      val bulletPointOne: Text = Text( "wine gums", "deintgig gwin", false )
+      val bulletPointTwo: Text = Text( "humbugs", "humbugs", false )
+
+      uiPage.components.head match {
+        case b: BulletPointList => {
+
+          b.leadingText.head mustBe leadingTextItems
+
+          b.listItems.size mustBe 2
+
+          b.listItems.head mustBe Seq( bulletPointOne )
+          b.listItems.last mustBe Seq( bulletPointTwo )
+        }
+        case _ => fail( "Did not find bullet point list")
+      }
     }
 
   }

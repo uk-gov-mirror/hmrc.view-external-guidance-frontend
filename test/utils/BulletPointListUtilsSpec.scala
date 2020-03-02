@@ -69,8 +69,8 @@ class BulletPointListUtilsSpec extends BaseSpec {
 
     "Match instructions with multiple similar leading words" in {
 
-      val firstInstructionText: String = "The road is long and winding"
-      val secondInstructionText: String = "The road is long and winding"
+      val firstInstructionText: String = "The road is long and winding over there"
+      val secondInstructionText: String = "The road is long and winding and here"
 
       val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
       val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
@@ -79,6 +79,20 @@ class BulletPointListUtilsSpec extends BaseSpec {
       val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
       BulletPointListUtils.matchInstructions( i1, i2 ) mustBe true
+    }
+
+    "Not match instructions with multiple similar leading words but different spacing between the second and third words" in {
+
+      val firstInstructionText: String = "The road   is long and winding over there"
+      val secondInstructionText: String = "The road is long and winding and here"
+
+      val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
+      val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
+
+      val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
+      val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
+
+      BulletPointListUtils.matchInstructions( i1, i2 ) mustBe false
     }
 
     "Not match instructions with two similar leading words in bold" in {
@@ -109,6 +123,20 @@ class BulletPointListUtilsSpec extends BaseSpec {
       BulletPointListUtils.matchInstructions( i1, i2 ) mustBe true
     }
 
+    "Not match instructions with three similar leading words in bold but different spacings between the first and second words" in {
+
+      val firstInstructionText: String = "[bold:I have bought: apples]"
+      val secondInstructionText: String = "[bold:I  have bought: oranges]"
+
+      val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
+      val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
+
+      val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
+      val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
+
+      BulletPointListUtils.matchInstructions( i1, i2 ) mustBe false
+    }
+
     "Not match instructions with two similar leading words one normal text and one bold" in {
 
       val firstInstructionText: String = "Today [bold:is Monday]"
@@ -125,8 +153,8 @@ class BulletPointListUtilsSpec extends BaseSpec {
 
     "Match instructions with three similar leading words one normal text and two bold" in {
 
-      val firstInstructionText: String = "Today [bold:is Monday]"
-      val secondInstructionText: String = "Today [bold:is Monday]"
+      val firstInstructionText: String = "Today [bold:is Monday] 1st"
+      val secondInstructionText: String = "Today [bold:is Monday] 2nd"
 
       val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
       val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
@@ -139,8 +167,8 @@ class BulletPointListUtilsSpec extends BaseSpec {
 
     "Match instructions with multiple similar leading words with multiple sets of bold words" in {
 
-      val firstInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday]"
-      val secondInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday]"
+      val firstInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 4th"
+      val secondInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 7th"
 
       val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
       val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
@@ -177,6 +205,20 @@ class BulletPointListUtilsSpec extends BaseSpec {
       val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
       BulletPointListUtils.matchInstructions( i1, i2 ) mustBe true
+    }
+
+    "Not match instructions with link in leading text but differing spaces between the second and third words" in {
+
+      val firstInstructionText: String = "[link:The news  this: morning:https://mydomain/news/morning] Early riser fails to get up"
+      val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
+
+      val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
+      val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
+
+      val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
+      val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
+
+      BulletPointListUtils.matchInstructions( i1, i2 ) mustBe false
     }
 
     "Match instructions with links in trailing text" in {

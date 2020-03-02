@@ -68,15 +68,16 @@ object TextBuilder {
       case (Nil, l) => acc ++ l
     }
 
-  def wordsToDisplayAsList(str: String): List[String] = {
+
+  def fragmentsToDisplayAsList(str: String): List[String] = {
     val isEmpty:String => Boolean = _.isEmpty
 
     val (txts, matches) = fromPattern(placeholdersPattern, str)
     val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
-    merge(txts, matchTexts, Nil, isEmpty).mkString(" ").split(" +").toList
+    merge(txts, matchTexts, Nil, isEmpty).mkString.split( ' ' ).toList
   }
 
-  def wordsToDisplay(str: String): String = wordsToDisplayAsList(str).mkString(" ")
+  def fragmentsToDisplay( str: String ) : String = fragmentsToDisplayAsList( str ).mkString(" ")
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Seq[TextItem] = {
     val isEmpty: TextItem => Boolean = _.isEmpty
@@ -118,10 +119,10 @@ object TextBuilder {
 
   def matchedLeadingWordsToDisplayAsList( text1: String, text2: String ) : Int = {
 
-    val text1WordsToDisplayAsList: List[String] = wordsToDisplayAsList( text1 )
-    val text2WordsToDisplayAsList: List[String] = wordsToDisplayAsList( text2 )
+    val text1WordsToDisplayAsList: List[String] = fragmentsToDisplayAsList( text1 )
+    val text2WordsToDisplayAsList: List[String] = fragmentsToDisplayAsList( text2 )
 
-    val matchedWords: List[String] = (text1WordsToDisplayAsList zip text2WordsToDisplayAsList).takeWhile(t => t._1 == t._2).map(_._1)
+    val matchedWords: List[String] = (text1WordsToDisplayAsList zip text2WordsToDisplayAsList).takeWhile(t => t._1 == t._2).map(_._1).filter( _ != "" )
 
     matchedWords.size
   }
@@ -152,26 +153,23 @@ object TextBuilder {
 
     if (matchText) {
       if (inputTexts.isEmpty) {
-        (wordsProcessed, outputTexts.toList, outputMatches.toList)
+        if( inputMatches.isEmpty ) {
+          (wordsProcessed, outputTexts.toList, outputMatches.toList)
+        } else {
+          locateTextsAndMatchesContainingLeadingText( noOfWordsToMatch, inputTexts, inputMatches, outputTexts, outputMatches, !matchText, wordsProcessed )
+        }
       } else {
         val text: String = inputTexts.head
         val noOfWords: Int = wordsInString(text)
         if (wordsProcessed + noOfWords < noOfWordsToMatch) {
-          locateTextsAndMatchesContainingLeadingText(
-            noOfWordsToMatch,
-            inputTexts.drop(1),
-            inputMatches,
-            outputTexts :+ text,
-            outputMatches,
-            !matchText,
-            wordsProcessed + noOfWords)
+          locateTextsAndMatchesContainingLeadingText( noOfWordsToMatch, inputTexts.drop(1), inputMatches, outputTexts :+ text, outputMatches, !matchText, wordsProcessed + noOfWords)
         } else {
           (wordsProcessed + noOfWords, (outputTexts :+ text).toList, outputMatches.toList)
         }
       }
     } else {
       if (inputMatches.isEmpty) {
-        (wordsProcessed, outputTexts.toList, outputMatches.toList)
+          (wordsProcessed, outputTexts.toList, outputMatches.toList)
       } else {
         val text: String = getMatchText(inputMatches.head)
         val noOfWords: Int = wordsInString(text)
@@ -211,7 +209,10 @@ object TextBuilder {
                            matchText: Boolean, wordsProcessed: Int): List[String] = {
 
     if (matchText) {
-      if (texts.size == 1 && matches.size == 0) {
+      if( texts.size == 0 && matches.size > 0 ) {
+        constructLeadingText(wordLimit, texts, matches, items, !matchText, wordsProcessed )
+      }
+      else if (texts.size == 1 && matches.size == 0) {
         val noOfWordsToAdd: Int = wordLimit - wordsProcessed
         val leadingText: String = extractLeadingMatchedWords( noOfWordsToAdd, texts.head )
         items :+ leadingText
