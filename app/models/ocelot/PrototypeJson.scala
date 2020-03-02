@@ -1251,12 +1251,12 @@ object PrototypeJson {
       ],
       ["Overview", "Welsh: Overview"],
       [
-        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to \u00a311,000, tax free, if you are: selling goods or services (trading)",
-        "Welsh: In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to \u00a311,000, tax free, if you are: selling goods or services (trading)"
+        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)",
+        "Welsh: In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)"
       ],
       [
-        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to \u00a311,000, tax free, if you are: renting land or property",
-        "Welsh: In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to \u00a311,000, tax free, if you are: renting land or property"
+        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property",
+        "Welsh: In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property"
       ],
       [
         "A tax year runs from 6 April one year to 5 April the next.",
@@ -1284,16 +1284,16 @@ object PrototypeJson {
       ],
       ["The trading allowance", "Welsh: The trading allowance"],
       [
-        "The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling items online or face to face",
-        "Welsh: The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling items online or face to face"
+        "The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling items online or face to face",
+        "Welsh: The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling items online or face to face"
       ],
       [
-        "The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling freelance services (such as gardening or babysitting)",
-        "Welsh: The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling freelance services (such as gardening or babysitting)"
+        "The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling freelance services (such as gardening or babysitting)",
+        "Welsh: The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: selling freelance services (such as gardening or babysitting)"
       ],
       [
-        "The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: hiring out personal equipment (such as power tools)",
-        "Welsh: The trading allowance lets you earn up to \u00a311,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: hiring out personal equipment (such as power tools)"
+        "The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: hiring out personal equipment (such as power tools)",
+        "Welsh: The trading allowance lets you earn up to £11,000 from any trading, casual or miscellaneous income, tax free, in each tax year. For example: hiring out personal equipment (such as power tools)"
       ],
       [
         "Check if you need to tell HMRC about income you've made by selling goods or services",
@@ -1309,20 +1309,20 @@ object PrototypeJson {
       ],
       ["The property allowance", "Welsh: The property allowance"],
       [
-        "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house",
-        "Welsh: The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
+        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting a flat or house",
+        "Welsh: The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
       ],
       [
-        "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home",
-        "Welsh: The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
+        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting out a room in your home",
+        "Welsh: The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
       ],
       [
-        "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: short term holiday lets",
-        "Welsh: The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: short term holiday lets"
+        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: short term holiday lets",
+        "Welsh: The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: short term holiday lets"
       ],
       [
-        "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage",
-        "Welsh: The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage"
+        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage",
+        "Welsh: The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage"
       ],
       [
         "Check if you need to tell HMRC about income you've made by renting land or property",
@@ -1334,8 +1334,8 @@ object PrototypeJson {
         "Welsh: How much was your income from property and/or land?"
       ],
       [
-        "Was your income from land or property less than \u00a311,000?",
-        "Welsh: Was your income from land or property less than \u00a311,000?"
+        "Was your income from land or property less than £11,000?",
+        "Welsh: Was your income from land or property less than £11,000?"
       ],
       ["Yes", "Welsh: Yes"],
       ["No", "Welsh: No"],
@@ -1360,8 +1360,8 @@ object PrototypeJson {
         "Welsh: Have you only rented a room in your main home?"
       ],
       [
-        "You can choose whether to: use the Rent a Room Scheme. This means you are automatically entitled to \u00a317,500 of tax-free property income (or \u00a313,750 if you share your property income with other people)",
-        "Welsh: You can choose whether to: use the Rent a Room Scheme. This means you are automatically entitled to \u00a317,500 of tax-free property income (or \u00a313,750 if you share your property income with other people)"
+        "You can choose whether to: use the Rent a Room Scheme. This means you are automatically entitled to £17,500 of tax-free property income (or £13,750 if you share your property income with other people)",
+        "Welsh: You can choose whether to: use the Rent a Room Scheme. This means you are automatically entitled to £17,500 of tax-free property income (or £13,750 if you share your property income with other people)"
       ],
       [
         "You can choose whether to: claim allowable expenses (such as the cost of maintenance and a percentage of your mortgage interest) from your rental income. This reduces the amount of tax they pay on that income. It can also be used to declare a loss.",
@@ -1388,8 +1388,8 @@ object PrototypeJson {
         "Welsh: Because you have received trade or property income from a company, partnership or your employer, you need to complete a Self Assessment tax return."
       ],
       [
-        "However, if your rental income is less than \u00a317,500 (or \u00a313,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC.",
-        "Welsh: However, if your rental income is less than \u00a317,500 (or \u00a313,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC."
+        "However, if your rental income is less than £17,500 (or £13,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC.",
+        "Welsh: However, if your rental income is less than £17,500 (or £13,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC."
       ],
       [
         "If you want to opt out of the Rent a Room Scheme in future (for example, if you want to claim allowable expenses), you must let HMRC know within one year of 31 January following the end of the tax year.",
@@ -1424,8 +1424,8 @@ object PrototypeJson {
         "Welsh: Find out more about [link:claiming allowable expenses:https://www.gov.uk/expenses-if-youre-self-employed] and [link:deducting other financial costs from your rental income:https://www.gov.uk/guidance/changes-to-tax-relief-for-residential-landlords-how-its-worked-out-including-case-studies]."
       ],
       [
-        "You are automatically entitled to the \u00a311000 tax-free property allowance. You do not need to report this income to HMRC.",
-        "Welsh: You are automatically entitled to the \u00a311000 tax-free property allowance. You do not need to report this income to HMRC."
+        "You are automatically entitled to the £11000 tax-free property allowance. You do not need to report this income to HMRC.",
+        "Welsh: You are automatically entitled to the £11000 tax-free property allowance. You do not need to report this income to HMRC."
       ],
       [
         "There are some circumstances where you may still want to tell HMRC about your income using a Self Assessment form. For example: you've made a loss and want to claim relief on a tax return",
@@ -1452,12 +1452,12 @@ object PrototypeJson {
         "Welsh: This includes: a partnership where you (or a relative) is a partner"
       ],
       [
-        "Was your income from renting a room/rooms more than \u00a317,500?",
-        "Welsh: Was your income from renting a room/rooms more than \u00a317,500?"
+        "Was your income from renting a room/rooms more than £17,500?",
+        "Welsh: Was your income from renting a room/rooms more than £17,500?"
       ],
       [
-        "If your rental income is less than \u00a317,500 (or \u00a313,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC.",
-        "Welsh: If your rental income is less than \u00a317,500 (or \u00a313,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC."
+        "If your rental income is less than £17,500 (or £13,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC.",
+        "Welsh: If your rental income is less than £17,500 (or £13,750 if you share your income), you are automatically entitled to use the Rent a Room Scheme. This means you do not need to pay tax on this income, and you do not need to tell HMRC."
       ],
       [
         "Find out more about the [link:Rent a Room Scheme:https://www.gov.uk/government/publications/rent-a-room-for-traders-hs223-self-assessment-helpsheet/hs223-rent-a-room-scheme-2019].",
@@ -1472,22 +1472,22 @@ object PrototypeJson {
         "Welsh: To work this out, add up all the income you've received from your land or property. Include money received from tenants for rent, utility bills and food. Do not deduct any expenses."
       ],
       [
-        "Was your income from renting a room/rooms more than \u00a313,750?",
-        "Welsh: Was your income from renting a room/rooms more than \u00a313,750?"
+        "Was your income from renting a room/rooms more than £13,750?",
+        "Welsh: Was your income from renting a room/rooms more than £13,750?"
       ],
       ["Please select", "Welsh: Please select"],
       ["This has not been built yet", "Welsh: This has not been built yet"],
       [
-        "Between \u00a311,000 and \u00a312,500 [hint:A hint for the 'Between \u00a311,000 and \u00a312,500' answer]",
-        "Welsh: Between \u00a311,000 and \u00a312,500 [hint:A hint for the 'Between \u00a311,000 and \u00a312,500' answer]"
+        "Between £11,000 and £12,500 [hint:A hint for the 'Between £11,000 and £12,500' answer]",
+        "Welsh: Between £11,000 and £12,500 [hint:A hint for the 'Between £11,000 and £12,500' answer]"
       ],
       [
-        "More than \u00a312,500 [hint:A hint for the 'More than \u00a312,500' answer]",
-        "Welsh: More than \u00a312,500 [hint:A hint for the 'More than \u00a312,500' answer]"
+        "More than £12,500 [hint:A hint for the 'More than £12,500' answer]",
+        "Welsh: More than £12,500 [hint:A hint for the 'More than £12,500' answer]"
       ],
       [
-        "If you claim the \u00a311000 tax-free property allowance, you cannot deduct allowable expenses or other allowances.",
-        "Welsh: If you claim the \u00a311000 tax-free property allowance, you cannot deduct allowable expenses or other allowances."
+        "If you claim the £11000 tax-free property allowance, you cannot deduct allowable expenses or other allowances.",
+        "Welsh: If you claim the £11000 tax-free property allowance, you cannot deduct allowable expenses or other allowances."
       ],
       [
         "Find out more about [link:Tax-free allowances:https://www.gov.uk/guidance/tax-free-allowances-on-property-and-trading-income], claiming [link:allowable expenses:https://www.gov.uk/expenses-if-youre-self-employed] and [link:deducting other financial costs from your rental income:https://www.gov.uk/guidance/changes-to-tax-relief-for-residential-landlords-how-its-worked-out-including-case-studies].",
