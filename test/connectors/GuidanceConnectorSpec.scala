@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.AppConfig
-@import play.api.i18n.Lang
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
+package connectors
 
-@this(layout: main_layout,
-        hmrcHeading: HmrcPageHeading,
-        appConfig: AppConfig)
+import base.BaseSpec
+import uk.gov.hmrc.http.HeaderCarrier
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
+import scala.concurrent.ExecutionContext.Implicits.global
 
-@layout(pageTitle) {
- @hmrcHeading(PageHeading(heading))
- <p>@message</p>
-}
+class GuidanceConnectorSpec extends BaseSpec {
 
-@{
-  //$COVERAGE-OFF$
+  "Calling the getProcess with an existing process ID" should {
+    "return a model representing the Ocelot Process" in {
+      val hc: HeaderCarrier = HeaderCarrier()
+      val target = new GuidanceConnector()
+      val expectProcess = target.stubbedProcess
+      val result = target.getProcess("ext90002")(hc, implicitly)
+
+      whenReady(result) { _ mustBe expectProcess }
+    }
+  }
 }

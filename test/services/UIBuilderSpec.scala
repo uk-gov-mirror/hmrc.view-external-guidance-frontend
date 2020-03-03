@@ -215,6 +215,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
+      implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
       val pageMap = UIBuilder.pages(stanzaPages)
 
       pageMap.keys.toList.length mustBe stanzaPages.length
