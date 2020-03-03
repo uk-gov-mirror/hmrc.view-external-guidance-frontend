@@ -43,13 +43,9 @@ class GuidanceController @Inject() (
   }
 
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
-    val url = questionPageUrl.fold(path) { qpu =>
-      qpu.drop("/guidance".length)
-    }
-
-    val modifiedUrl = if (url.startsWith("/")) url else "/" + url
+    val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
     val processId = request.session.get("processId").get
-    service.getPage(modifiedUrl, processId).map {
+    service.getPage(url, processId).map {
       case Some(page) => Ok(view(page))
       case _ => NotFound(errorHandler.notFoundTemplate)
     }
