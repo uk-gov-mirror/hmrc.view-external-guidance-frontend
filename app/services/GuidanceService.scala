@@ -32,6 +32,9 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
         case Right(pages) =>
           val startPage = pages.find(p => p.id == "start")
           startPage.fold("")(p => p.url)
+
+        // TODO
+        case Left(err) => ""
       }
     }
   }
@@ -42,6 +45,10 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
         case Right(pages) =>
           implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance${p.url}")).toMap
           pages.find(p => p.url == url).map(p => UIBuilder.fromStanzaPage(p))
+
+         // TODO
+        case Left(err) =>
+          None
       }
     }
   }
