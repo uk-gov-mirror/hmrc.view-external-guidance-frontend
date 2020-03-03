@@ -1,14 +1,18 @@
 # microservice specific routes
-GET        /assets/*file            controllers.Assets.versioned(path="/public", file: Asset)
+GET        /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
 
-GET        /language/:lang                          controllers.SwitchLanguageController.switchToLanguage(lang: String)
-GET        /hello-world                             controllers.HelloWorldController.helloWorld
-GET        /bye-world                               controllers.HelloWorldController.byeWorld
+GET        /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
+GET        /hello-world                       controllers.HelloWorldController.helloWorld
+GET        /bye-world                         controllers.HelloWorldController.byeWorld
 
-GET        /scratch*pageUrl                         controllers.RenderPageController.onPageLoad(pageUrl: String, questionPageUrl: Option[String])
-GET        /:service/:process/*pageUrl              controllers.RenderPageController.renderServicePage(service, process, pageUrl)
+#GET        /scratch*pageUrl                   controllers.RenderPageController.onPageLoad(pageUrl: String, questionPageUrl: Option[String])
+#GET        /:service/:process/*pageUrl        controllers.RenderPageController.renderServicePage(service, process, pageUrl)
 
 
 
-->         /govuk-frontend          govuk.Routes
-->         /hmrc-frontend           hmrcfrontend.Routes
+->         /govuk-frontend                    govuk.Routes
+->         /hmrc-frontend                     hmrcfrontend.Routes
+
+GET        /start/:processId                  controllers.GuidanceController.startJourney(processId)
+GET        /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
+GET        /                                  controllers.GuidanceController.getPage(path: String = "/", questionPageUrl: Option[String])
