@@ -30,43 +30,42 @@ import models.ui._
 import services._
 
 @Singleton
-class RenderPageController @Inject()(appConfig: AppConfig,
-                                    errorHandler: ErrorHandler,
-                                    mcc: MessagesControllerComponents,
-                                    view: views.html.render_page) extends FrontendController(mcc) with I18nSupport {
+class RenderPageController @Inject() (appConfig: AppConfig, errorHandler: ErrorHandler, mcc: MessagesControllerComponents, view: views.html.render_page)
+    extends FrontendController(mcc)
+    with I18nSupport {
 
   implicit val config: AppConfig = appConfig
 
-  // TODO placeholder controller to demonstrate prototype json to view
-  def onPageLoad(pageUrl: String, questionPageUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"""pageUrl "$pageUrl" requested""")
-    Future.successful(
-      questionPageUrl.map{ answerUrl =>
-        Redirect(routes.RenderPageController.onPageLoad(answerUrl.drop("/guidance/scratch".length), None))
-      }.getOrElse {
-        PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
-          case Right(pages) =>
-            val urltoPageMap = pages.map(p => (p.url, p)).toMap
-            implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
-            Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(pageUrl))))
-
-          case Left(err) =>
-            NotFound(errorHandler.notFoundTemplate)
-        }
-      }
-    )
-  }
-
-  // TODO turn this into real Process/page access
-  val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
-  val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
-  def renderServicePage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"""Service: $service, Process "$process", pageUrl "$pageUrl" requested""")
-
-    Future.successful(
-      pageMap.get(s"${service}!${process}!${pageUrl}")
-             .map(page => Ok(view(page)))
-             .getOrElse(NotFound(errorHandler.notFoundTemplate))
-    )
-  }
+//  // TODO placeholder controller to demonstrate prototype json to view
+//  def onPageLoad(pageUrl: String, questionPageUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
+//    Logger.info(s"""pageUrl "$pageUrl" requested""")
+//    Future.successful(
+//      questionPageUrl.map{ answerUrl =>
+//        Redirect(routes.RenderPageController.onPageLoad(answerUrl.drop("/guidance/scratch".length), None))
+//      }.getOrElse {
+//        PageBuilder.pages(Json.parse(PrototypeJson.json).as[Process]) match {
+//          case Right(pages) =>
+//            val urltoPageMap = pages.map(p => (p.url, p)).toMap
+//            implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance/scratch${p.url}")).toMap
+//            Ok(view(UIBuilder.fromStanzaPage(urltoPageMap(pageUrl))))
+//
+//          case Left(err) =>
+//            NotFound(errorHandler.notFoundTemplate)
+//        }
+//      }
+//    )
+//  }
+//
+//  // TODO turn this into real Process/page access
+//  val serviceProcessPageKey = s"dummy-service!dummy-process!${DummyPage.page.urlPath}"
+//  val pageMap = Map(serviceProcessPageKey -> DummyPage.page)
+//  def renderServicePage(service: String, process: String, pageUrl: String): Action[AnyContent] = Action.async { implicit request =>
+//    Logger.info(s"""Service: $service, Process "$process", pageUrl "$pageUrl" requested""")
+//
+//    Future.successful(
+//      pageMap.get(s"${service}!${process}!${pageUrl}")
+//             .map(page => Ok(view(page)))
+//             .getOrElse(NotFound(errorHandler.notFoundTemplate))
+//    )
+//  }
 }

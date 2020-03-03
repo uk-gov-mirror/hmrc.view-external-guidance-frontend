@@ -42,9 +42,9 @@ class GuidanceController @Inject() (
     }
   }
 
-  def getPage(url: String): Action[AnyContent] = Action.async { implicit request =>
+  def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     val processId = request.session.get("processId").get
-    service.getPage(url, processId).map {
+    service.getPage("/" + path, processId).map {
       case Some(page) => Ok(view(page))
       case _ => NotFound(errorHandler.notFoundTemplate)
     }
