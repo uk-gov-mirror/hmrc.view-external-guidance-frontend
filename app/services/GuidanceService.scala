@@ -39,7 +39,9 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
   def getPage(url: String, processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] = {
     connector.getProcess(processId) map { process =>
       PageBuilder.pages(process) match {
-        case Right(pages) => UIBuilder.pages(pages).get(url)
+        case Right(pages) =>
+          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance${p.url}")).toMap
+          pages.find(p => p.url == url).map(p => UIBuilder.fromStanzaPage(p))
       }
     }
   }

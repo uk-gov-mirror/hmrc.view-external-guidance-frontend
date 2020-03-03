@@ -14,5 +14,5 @@ GET        /bye-world                         controllers.HelloWorldController.b
 ->         /hmrc-frontend                     hmrcfrontend.Routes
 
 GET        /start/:processId                  controllers.GuidanceController.startJourney(processId)
-GET        /*path                             controllers.GuidanceController.getPage(path)
-GET        /                            controllers.GuidanceController.getPage(path = "")
+GET        /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
+GET        /                                  controllers.GuidanceController.getPage(path: String = "", questionPageUrl: Option[String])

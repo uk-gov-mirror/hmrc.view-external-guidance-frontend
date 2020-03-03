@@ -31,12 +31,7 @@ object UIBuilder {
       case Error => H3(Text(c.text.langs)) // TODO
     }
 
-  def fromStanzaPage(pge: models.ocelot.Page)(implicit stanzaIdToUrlMap: Map[String, String]): Page = {
-    val stanzaToRelativeUrlMap = stanzaIdToUrlMap.map { pair =>
-      val (stanzaId, url) = pair
-      stanzaId -> s"/guidance$url"
-    }
-
+  def fromStanzaPage(pge: models.ocelot.Page)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
       pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
@@ -44,7 +39,7 @@ object UIBuilder {
           case c: Callout => acc ++ Seq(fromCallout(c))
 
           case Instruction(txt, _, Some(Link(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
-            acc ++ Seq(Paragraph(Seq(HyperLink(stanzaToRelativeUrlMap(dest), Text(txt.langs), window))))
+            acc ++ Seq(Paragraph(Seq(HyperLink(stanzaIdToUrlMap(dest), Text(txt.langs), window))))
 
           case Instruction(txt, _, Some(Link(id, dest, _, window)), _) =>
             acc ++ Seq(Paragraph(Seq(HyperLink(dest, Text(txt.langs), window))))
@@ -56,7 +51,7 @@ object UIBuilder {
             val answers = (ans zip next).map { t =>
               val (phrase, stanzaId) = t
               val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
-              Answer(answer, hint, stanzaToRelativeUrlMap(stanzaId))
+              Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
             }
             Seq(Question(Text(txt.langs), acc, answers))
 
@@ -65,10 +60,8 @@ object UIBuilder {
         }
       }
     )
-  }
 
-  def pages(stanzaPages: Seq[models.ocelot.Page]): Map[String, Page] = {
-    val stanzaIdToUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
+  def pages(stanzaPages: Seq[models.ocelot.Page])(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p)(stanzaIdToUrlMap))).toMap
-  }
+
 }
