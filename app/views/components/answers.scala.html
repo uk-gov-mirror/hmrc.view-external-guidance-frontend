@@ -17,9 +17,9 @@
 @import models.ui._
 @import controllers.routes._
 
-@(answers: Seq[Answer], vertical: Boolean, name: String)(implicit request: Request[_], messages: Messages)
+@(answers: Seq[Answer], horizontal: Boolean, name: String)(implicit request: Request[_], messages: Messages)
 
-<div class="govuk-radios">
+<div class="govuk-radios@{if(horizontal) " govuk-radios--inline" else ""}">
   @for((ans, index) <- answers.zipWithIndex) {
     <div class="govuk-radios__item">
       <input class="govuk-radios__input"
