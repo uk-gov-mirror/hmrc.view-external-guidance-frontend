@@ -31,7 +31,9 @@ case object Lede extends CalloutType
 case object Section extends CalloutType
 
 object CalloutType {
+
   implicit val reads: Reads[CalloutType] = new Reads[CalloutType] {
+
     override def reads(json: JsValue): JsResult[CalloutType] = json match {
       case JsString("Title") => JsSuccess(Title, __)
       case JsString("SubTitle") => JsSuccess(SubTitle, __)

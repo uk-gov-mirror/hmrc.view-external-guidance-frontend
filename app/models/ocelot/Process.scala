@@ -20,15 +20,11 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{Reads, __}
 import models.ocelot.stanzas._
 
-case class Process(meta: Meta,
-                   flow: Map[String, Stanza],
-                   phrases: Vector[Phrase],
-                   links: Vector[Link]) {
+case class Process(meta: Meta, flow: Map[String, Stanza], phrases: Vector[Phrase], links: Vector[Link]) {
 
-  lazy val phraseOption:Int => Option[Phrase] = phrases.lift
-  lazy val linkOption:Int => Option[Link] = links.lift
+  lazy val phraseOption: Int => Option[Phrase] = phrases.lift
+  lazy val linkOption: Int => Option[Link] = links.lift
 }
-
 
 object Process {
 
@@ -37,5 +33,5 @@ object Process {
       (__ \ "flow").read[Map[String, Stanza]] and
       (__ \ "phrases").read[Vector[Phrase]] and
       (__ \ "links").read[Vector[Link]]
-    )(Process.apply _)
+  )(Process.apply _)
 }

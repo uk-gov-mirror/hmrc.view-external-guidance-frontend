@@ -25,9 +25,9 @@ import config.AppConfig
 import scala.concurrent.Future
 
 @Singleton
-class HelloWorldController @Inject()(appConfig: AppConfig,
-                                     mcc: MessagesControllerComponents,
-                                     view: views.html.hello_world) extends FrontendController(mcc) with I18nSupport {
+class HelloWorldController @Inject() (appConfig: AppConfig, mcc: MessagesControllerComponents, view: views.html.hello_world)
+    extends FrontendController(mcc)
+    with I18nSupport {
 
   implicit val config: AppConfig = appConfig
 
@@ -35,6 +35,8 @@ class HelloWorldController @Inject()(appConfig: AppConfig,
     Future.successful(Ok(view()))
   }
 
-  val byeWorld: Action[AnyContent] = Action.async { _ => throw new Exception( "Something went wrong!" ) }
+  val byeWorld: Action[AnyContent] = Action.async { _ =>
+    throw new Exception("Something went wrong!")
+  }
 
 }

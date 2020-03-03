@@ -23,35 +23,31 @@ import models.ocelot.Phrase
 
 import models.ocelot.Link
 
-case class InstructionStanza(text: Int,
-                             override val next: Seq[String],
-                             link: Option[Int],
-                             stack: Boolean) extends Stanza
+case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza
 
 object InstructionStanza {
 
   implicit val instructionReads: Reads[InstructionStanza] = {
 
-    (( JsPath \ "text" ).read[Int] and
-      ( JsPath \ "next" ).read[Seq[String]](minLength[Seq[String]](1)) and
-      ( JsPath \ "link" ).readNullable[Int] and
-      ( JsPath \ "stack" ).read[Boolean]
-      ) ( InstructionStanza.apply _)
+    ((JsPath \ "text").read[Int] and
+      (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
+      (JsPath \ "link").readNullable[Int] and
+      (JsPath \ "stack").read[Boolean])(InstructionStanza.apply _)
 
   }
 
 }
 
-case class Instruction(text: Phrase,
-                       override val next: Seq[String],
-                       link: Option[Link],
-                       stack: Boolean) extends PopulatedStanza {
-  val linkIds: Seq[String] = link.map(lnk => Seq(lnk.dest.trim))
-                                 .filter(l => l.head.forall(c => c.isDigit))
-                                 .getOrElse(Nil)
+case class Instruction(text: Phrase, override val next: Seq[String], link: Option[Link], stack: Boolean) extends PopulatedStanza {
+
+  val linkIds: Seq[String] = link
+    .map(lnk => Seq(lnk.dest.trim))
+    .filter(l => l.head.forall(c => c.isDigit))
+    .getOrElse(Nil)
 }
 
 object Instruction {
+
   def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link]): Instruction =
     Instruction(text, stanza.next, link, stanza.stack)
 }

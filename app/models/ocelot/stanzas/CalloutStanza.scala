@@ -21,31 +21,24 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import models.ocelot.Phrase
 
-case class CalloutStanza(noteType: CalloutType,
-                         text: Int,
-                         override val next: Seq[String],
-                         stack: Boolean) extends Stanza
+case class CalloutStanza(noteType: CalloutType, text: Int, override val next: Seq[String], stack: Boolean) extends Stanza
 
 object CalloutStanza {
+
   implicit val calloutReads: Reads[CalloutStanza] = {
 
     ((JsPath \ "noteType").read[CalloutType] and
       (JsPath \ "text").read[Int] and
       (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
-      (JsPath \ "stack").read[Boolean]
-      ) (CalloutStanza.apply _)
+      (JsPath \ "stack").read[Boolean])(CalloutStanza.apply _)
 
   }
 }
 
-case class Callout(noteType: CalloutType,
-                   text: Phrase,
-                   override val next: Seq[String],
-                   stack: Boolean) extends PopulatedStanza
+case class Callout(noteType: CalloutType, text: Phrase, override val next: Seq[String], stack: Boolean) extends PopulatedStanza
 
 object Callout {
-  def apply( stanza: CalloutStanza, text: Phrase): Callout =
-    Callout( stanza.noteType, text, stanza.next, stanza.stack)
+
+  def apply(stanza: CalloutStanza, text: Phrase): Callout =
+    Callout(stanza.noteType, text, stanza.next, stanza.stack)
 }
-
-

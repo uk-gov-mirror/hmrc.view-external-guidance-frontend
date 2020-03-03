@@ -16,7 +16,7 @@
 
 package services
 
-import models.ocelot.stanzas.{Instruction,InstructionGroup,ValueStanza,EndStanza,Callout,Title,SubTitle,Lede,Error,Section}
+import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
 import models.ocelot.Link
 import models.ocelot.Phrase
 import models.ui._
@@ -32,7 +32,7 @@ object UIBuilder {
       case Error => H3(Text(c.text.langs)) // TODO
     }
 
-  def fromInstructionGroup( instructionGroup: InstructionGroup, langIndex: Int  = 0 )(implicit stanzaIdToUrlMap: Map[String, String]) : BulletPointList = {
+  def fromInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int = 0)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
 
     val leadingTextEnglish: String = TextBuilder.determineMatchedLeadingText(
       instructionGroup.group.head.text.langs(0),
@@ -44,54 +44,60 @@ object UIBuilder {
       instructionGroup.group(1).text.langs(1)
     )
 
-    val leadingPhrase: Phrase = Phrase( Vector( leadingTextEnglish, leadingTextWelsh ) )
+    val leadingPhrase: Phrase = Phrase(Vector(leadingTextEnglish, leadingTextWelsh))
 
-    val leadingItems: Seq[TextItem] = TextBuilder.fromPhrase( leadingPhrase )
+    val leadingItems: Seq[TextItem] = TextBuilder.fromPhrase(leadingPhrase)
 
     // Determine first bullet point
-    val firstBulletPointEnglish: String = instructionGroup.group.head.text.langs(0).substring(
-      leadingTextEnglish.size,
-      instructionGroup.group.head.text.langs(0).size ).trim
+    val firstBulletPointEnglish: String =
+      instructionGroup.group.head.text.langs(0).substring(leadingTextEnglish.size, instructionGroup.group.head.text.langs(0).size).trim
 
-    val firstBulletPointWelsh: String = instructionGroup.group.head.text.langs(1).substring(
-      leadingTextWelsh.size,
-      instructionGroup.group.head.text.langs(1).size
-    ).trim
+    val firstBulletPointWelsh: String = instructionGroup.group.head.text
+      .langs(1)
+      .substring(
+        leadingTextWelsh.size,
+        instructionGroup.group.head.text.langs(1).size
+      )
+      .trim
 
-    val firstBulletPointPhrase: Phrase = Phrase( Vector( firstBulletPointEnglish, firstBulletPointWelsh ) )
+    val firstBulletPointPhrase: Phrase = Phrase(Vector(firstBulletPointEnglish, firstBulletPointWelsh))
 
-    val firstBulletPointItems: Seq[TextItem] = TextBuilder.fromPhrase( firstBulletPointPhrase )
+    val firstBulletPointItems: Seq[TextItem] = TextBuilder.fromPhrase(firstBulletPointPhrase)
 
     // Process remaining bullet points
-    val remainder: Seq[Seq[TextItem]] = createRemainingBulletPointItems( leadingTextEnglish, leadingTextWelsh, instructionGroup.group.drop(1) )
+    val remainder: Seq[Seq[TextItem]] = createRemainingBulletPointItems(leadingTextEnglish, leadingTextWelsh, instructionGroup.group.drop(1))
 
     val bulletPointItems: Seq[Seq[TextItem]] = firstBulletPointItems +: remainder
 
-    BulletPointList( leadingItems, bulletPointItems )
+    BulletPointList(leadingItems, bulletPointItems)
   }
 
-  def createRemainingBulletPointItems( leadingTextEnglish: String,
-                                       leadingTextWelsh: String,
-                                       remainder: Seq[Instruction] )(implicit stanzaIdToUrlMap: Map[String, String]) : Seq[Seq[TextItem]] = {
+  def createRemainingBulletPointItems(leadingTextEnglish: String, leadingTextWelsh: String, remainder: Seq[Instruction])(
+      implicit stanzaIdToUrlMap: Map[String, String]
+  ): Seq[Seq[TextItem]] = {
 
+    remainder.map { instruction =>
+      {
 
-    remainder.map {
+        val bulletPointEnglish: String = instruction.text
+          .langs(0)
+          .substring(
+            leadingTextEnglish.size,
+            instruction.text.langs(0).size
+          )
+          .trim
 
-      instruction => {
+        val bulletPointWelsh: String = instruction.text
+          .langs(1)
+          .substring(
+            leadingTextWelsh.size,
+            instruction.text.langs(1).size
+          )
+          .trim
 
-        val bulletPointEnglish: String = instruction.text.langs(0).substring(
-          leadingTextEnglish.size,
-          instruction.text.langs(0).size
-        ).trim
+        val bulletPointPhrase: Phrase = Phrase(Vector(bulletPointEnglish, bulletPointWelsh))
 
-        val bulletPointWelsh: String = instruction.text.langs(1).substring(
-          leadingTextWelsh.size,
-          instruction.text.langs(1).size
-        ).trim
-
-        val bulletPointPhrase: Phrase = Phrase( Vector( bulletPointEnglish, bulletPointWelsh ) )
-
-        TextBuilder.fromPhrase( bulletPointPhrase )
+        TextBuilder.fromPhrase(bulletPointPhrase)
       }
     }
   }
@@ -112,7 +118,7 @@ object UIBuilder {
           case Instruction(txt, _, _, _) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
-          case ig: InstructionGroup => acc :+ fromInstructionGroup( ig )
+          case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
 
           case models.ocelot.stanzas.Question(txt, ans, next, stack) =>
             val answers = (ans zip next).map { t =>

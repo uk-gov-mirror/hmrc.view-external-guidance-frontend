@@ -17,16 +17,16 @@
 package models.ocelot.stanzas
 
 /**
- * Case class InstructionGroup is a container class for groups of Instructions
- * with similar leading text that comprise bullet point lists
- *
- * @param next - Identifier for next stanza in page
- * @param group - A group of instructions
- */
-case class InstructionGroup ( override val next: Seq[String], group: Seq[Instruction] ) extends PopulatedStanza
+  * Case class InstructionGroup is a container class for groups of Instructions
+  * with similar leading text that comprise bullet point lists
+  *
+  * @param next - Identifier for next stanza in page
+  * @param group - A group of instructions
+  */
+case class InstructionGroup(override val next: Seq[String], group: Seq[Instruction]) extends PopulatedStanza
 
 object InstructionGroup {
 
-  def apply( group: Seq[Instruction] ) : InstructionGroup = InstructionGroup( group.last.next, group )
+  def apply(group: Seq[Instruction]): InstructionGroup = InstructionGroup(group.last.next, group)
 
 }

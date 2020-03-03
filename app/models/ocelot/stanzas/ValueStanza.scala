@@ -20,22 +20,24 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-case class Value(valueType:ValueType, label: String, value: String)
+case class Value(valueType: ValueType, label: String, value: String)
 
 object Value {
+
   implicit val reads: Reads[Value] =
     ((__ \ "type").read[ValueType] and
-     (__ \ "label").read[String] and
-     (__ \ "value").read[String]) (Value.apply _)
+      (__ \ "label").read[String] and
+      (__ \ "value").read[String])(Value.apply _)
 
 }
 
 case class ValueStanza(values: List[Value], override val next: Seq[String], stack: Boolean) extends Stanza
 
 object ValueStanza {
+
   implicit val reads: Reads[ValueStanza] =
     ((__ \ "values").read[List[Value]](minLength[List[Value]](1)) and
-     (__ \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
-     (__ \ "stack").read[Boolean] ) (ValueStanza.apply _)
+      (__ \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
+      (__ \ "stack").read[Boolean])(ValueStanza.apply _)
 
 }

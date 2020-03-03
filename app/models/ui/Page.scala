@@ -24,11 +24,12 @@ case class Page(urlPath: String, components: Seq[UIComponent]) {
   private def findFirstH1Text(c: Seq[UIComponent]): Option[Text] =
     c match {
       case Nil => None
-      case x :: xs => x match {
-        case h:H1 => Some(h.txt)
-        case _ => findFirstH1Text(xs)
-      }
+      case x :: xs =>
+        x match {
+          case h: H1 => Some(h.txt)
+          case _ => findFirstH1Text(xs)
+        }
     }
 
-  val heading: Text = findFirstH1Text(components).getOrElse(Text("",""))
+  val heading: Text = findFirstH1Text(components).getOrElse(Text("", ""))
 }

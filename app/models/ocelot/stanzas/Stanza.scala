@@ -19,7 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.json._
 
 trait Stanza {
-  val next:Seq[String] = Nil
+  val next: Seq[String] = Nil
 }
 
 trait PopulatedStanza extends Stanza
@@ -29,6 +29,7 @@ case object EndStanza extends Stanza
 object Stanza {
 
   implicit val reads: Reads[Stanza] = new Reads[Stanza] {
+
     def reads(js: JsValue): JsResult[Stanza] = {
       (js \ "type").as[String] match {
         case "QuestionStanza" => JsSuccess(js.as[QuestionStanza], __)

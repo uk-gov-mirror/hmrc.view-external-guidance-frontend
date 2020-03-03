@@ -91,8 +91,8 @@ object DummyPage {
   val bulletOpt3c = Text("short term holiday lets", "gosodiadau gwyliau tymor byr")
   val bulletOpt3d = Text("renting out a parking space or garage", "rhentu lle parcio neu garej")
 
-  val para6 = Text("A tax year runs from 6 April one year to 5 April the next.",
-                   "Mae blwyddyn dreth yn rhedeg rhwng 6 Ebrill un flwyddyn a 5 Ebrill y flwyddyn nesaf.")
+  val para6 =
+    Text("A tax year runs from 6 April one year to 5 April the next.", "Mae blwyddyn dreth yn rhedeg rhwng 6 Ebrill un flwyddyn a 5 Ebrill y flwyddyn nesaf.")
 
   val link1 = Text("Check if you need to tell HMRC about your extra income", "Gwiriwch a oes angen i chi ddweud wrth HMRC am eich incwm ychwanegol")
 

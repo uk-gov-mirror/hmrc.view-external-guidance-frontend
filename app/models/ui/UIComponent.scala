@@ -31,11 +31,11 @@ sealed trait BilingualText {
 case class TestableBilingualText(english: String, welsh: String) extends BilingualText
 
 sealed trait TextItem {
-  def isEmpty:Boolean
+  def isEmpty: Boolean
 }
 
 case class Text(english: String, welsh: String, bold: Boolean = false) extends BilingualText with TextItem {
-  def isEmpty:Boolean = english.isEmpty
+  def isEmpty: Boolean = english.isEmpty
   override def toString: String = s"[$english:$welsh:$bold]"
 }
 
@@ -45,10 +45,10 @@ object Text {
 
 case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
   override def toString: String = s"[link:$txt:$dest:$window]"
-  def isEmpty:Boolean = txt.isEmpty
+  def isEmpty: Boolean = txt.isEmpty
 }
 
 case class PageLink(dest: String, txt: Text) extends TextItem {
   override def toString: String = s"[link:$txt:$dest]"
-  def isEmpty:Boolean = txt.isEmpty
+  def isEmpty: Boolean = txt.isEmpty
 }

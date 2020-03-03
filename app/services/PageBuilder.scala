@@ -37,16 +37,14 @@ object PageBuilder extends ProcessPopulation {
       case _ => None
     }
 
-  private def pageUrlUnique(url: String, existingPages:Seq[Page]): Boolean = !existingPages.exists(_.url == url)
+  private def pageUrlUnique(url: String, existingPages: Seq[Page]): Boolean = !existingPages.exists(_.url == url)
 
   private def pageLinkIds(str: String): Seq[String] = pageLinkRegex.findAllMatchIn(str).map(_.group(1)).toList
 
   def buildPage(key: String, process: Process): Either[FlowError, Page] = {
 
     @tailrec
-    def collectStanzas(key: String,
-                       acc: Seq[KeyedStanza],
-                       linkedAcc: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
+    def collectStanzas(key: String, acc: Seq[KeyedStanza], linkedAcc: Seq[String]): Either[FlowError, (Seq[KeyedStanza], Seq[String], Seq[String])] =
       stanza(key, process) match {
         case Right(v: ValueStanza) if isNewPageStanza(acc, v) => Right((acc, acc.last.stanza.next, linkedAcc))
         case Right(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedAcc)
@@ -64,7 +62,7 @@ object PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
-            Right(Page(ks.head.key, pageUrl(v.values).get, groupBulletPointInstructions( ks.map(_.stanza), Nil ), next, linked))
+            Right(Page(ks.head.key, pageUrl(v.values).get, groupBulletPointInstructions(ks.map(_.stanza), Nil), next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
       case Left(err) => Left(err)
@@ -90,37 +88,38 @@ object PageBuilder extends ProcessPopulation {
     pagesByKeys(List(start), Nil)
   }
 
-    @tailrec
-    def groupBulletPointInstructions( inputSeq: Seq[Stanza], acc: Seq[Stanza] ) : Seq[Stanza] = {
+  @tailrec
+  def groupBulletPointInstructions(inputSeq: Seq[Stanza], acc: Seq[Stanza]): Seq[Stanza] = {
 
-      inputSeq match {
-        case Nil => acc
-        case x :: xs => x match {
+    inputSeq match {
+      case Nil => acc
+      case x :: xs =>
+        x match {
           case i: Instruction if i.stack =>
-            val matchedInstructions: Seq[Instruction] = groupMatchedInstructions( xs, Seq( i ) )
-            if( matchedInstructions.size > 1 ) {
-              groupBulletPointInstructions(
-                xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
+            val matchedInstructions: Seq[Instruction] = groupMatchedInstructions(xs, Seq(i))
+            if (matchedInstructions.size > 1) {
+              groupBulletPointInstructions(xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
             } else {
-              groupBulletPointInstructions( xs, acc :+ matchedInstructions.head )
+              groupBulletPointInstructions(xs, acc :+ matchedInstructions.head)
             }
-          case s: Stanza => groupBulletPointInstructions( xs, acc :+ s )
+          case s: Stanza => groupBulletPointInstructions(xs, acc :+ s)
         }
-      }
-
     }
 
-    @tailrec
-    private def groupMatchedInstructions( inputSeq: Seq[Stanza], acc: Seq[Instruction] ) : Seq[Instruction] = {
+  }
 
-      inputSeq match {
-        case Nil => acc
-        case x :: xs => x match {
-          case i: Instruction if TextBuilder.matchInstructions( acc.last, i ) => groupMatchedInstructions( xs, acc :+ i )
+  @tailrec
+  private def groupMatchedInstructions(inputSeq: Seq[Stanza], acc: Seq[Instruction]): Seq[Instruction] = {
+
+    inputSeq match {
+      case Nil => acc
+      case x :: xs =>
+        x match {
+          case i: Instruction if TextBuilder.matchInstructions(acc.last, i) => groupMatchedInstructions(xs, acc :+ i)
           case _ => acc
         }
-      }
-
     }
+
+  }
 
 }
