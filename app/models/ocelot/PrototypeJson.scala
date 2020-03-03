@@ -1252,7 +1252,7 @@ object PrototypeJson {
       ["Overview", "Trosolwg"],
       [
         "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)",
-        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi'n: gwerthu nwyddau neu wasanaethau (masnachu)"
+        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: gwerthu nwyddau neu wasanaethau (masnachu)"
       ],
       [
         "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property",
@@ -1317,8 +1317,8 @@ object PrototypeJson {
         "Mae'r lwfans eiddo yn caniatáu ichi ennill hyd at £ 11,000 mewn incwm rhent, di-dreth, ym mhob blwyddyn dreth. Er enghraifft: rhentu ystafell yn eich cartref"
       ],
       [
-        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: short term holiday lets",
-        "Mae'r lwfans eiddo yn caniatáu ichi ennill hyd at £ 11,000 mewn incwm rhent, di-dreth, ym mhob blwyddyn dreth. Er enghraifft: gosodiadau gwyliau tymor byr"
+        "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting short term holiday lets",
+        "Mae'r lwfans eiddo yn caniatáu ichi ennill hyd at £ 11,000 mewn incwm rhent, di-dreth, ym mhob blwyddyn dreth. Er enghraifft: rhentu gosodiadau gwyliau tymor byr"
       ],
       [
         "The property allowance lets you earn up to £11,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage",

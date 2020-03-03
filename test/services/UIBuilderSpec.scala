@@ -322,6 +322,52 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
+    "Process page with a simple instruction group from prototypeJson" in new Test {
+
+      val phrase1: Phrase = Phrase(
+        Vector( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)",
+          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: gwerthu nwyddau neu wasanaethau (masnachu)" ) )
+      val phrase2: Phrase = Phrase(
+        Vector( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property",
+          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: rhentu tir neu eiddo" ) )
+
+      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, true )
+      val instruction2: Instruction = Instruction( phrase2, Seq( "end" ), None, false )
+
+      val instructionGroup: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
+
+      val bulletPointListStanzas = Seq(
+        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        instructionGroup
+      )
+
+      val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
+
+      val uiPage = UIBuilder.fromStanzaPage( bulletPointListPage )
+
+      uiPage.components.length mustBe 1
+
+      // Check contents of bullet point list
+      val leadingTextItems: Text = Text( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:",
+        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi:", false  )
+
+      val bulletPointOne: Text = Text( "selling goods or services (trading)", "gwerthu nwyddau neu wasanaethau (masnachu)", false )
+      val bulletPointTwo: Text = Text( "renting land or property", "rhentu tir neu eiddo", false )
+
+      uiPage.components.head match {
+        case b: BulletPointList => {
+
+          b.leadingText.head mustBe leadingTextItems
+
+          b.listItems.size mustBe 2
+
+          b.listItems.head mustBe Seq( bulletPointOne )
+          b.listItems.last mustBe Seq( bulletPointTwo )
+        }
+        case _ => fail( "Did not find bullet point list")
+      }
+    }
+
     "Process complex page with both instruction groups and single instructions" in new Test {
 
       val phrase1: Phrase = Phrase( Vector( "Going to the market", "Mynd i'r farchnad" ) )

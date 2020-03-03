@@ -663,10 +663,24 @@ class TextBuilderSpec extends BaseSpec {
         TextBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
-      "Match test instructions from Json prototype" in {
+      "Match test instructions from Json prototype 1" in {
 
         val firstInstructionText: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
         val secondInstructionText: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
+
+        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
+        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
+
+        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
+        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
+
+        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+      }
+
+      "Match test instructions from Json prototype 2" in {
+
+        val firstInstructionText: String =  "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)"
+        val secondInstructionText: String = "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property"
 
         val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
         val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )

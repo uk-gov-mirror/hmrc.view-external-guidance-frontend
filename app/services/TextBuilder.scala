@@ -287,7 +287,7 @@ object TextBuilder {
 
   val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
   val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
-  val notSpaceRegex: Regex = """([^' ']+)""".r
+  val notSpaceRegex: Regex = """([^ ]+)""".r
 
   val matchLimit: Int = 3
 }
