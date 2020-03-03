@@ -5,11 +5,6 @@ GET        /language/:lang                    controllers.SwitchLanguageControll
 GET        /hello-world                       controllers.HelloWorldController.helloWorld
 GET        /bye-world                         controllers.HelloWorldController.byeWorld
 
-#GET        /scratch*pageUrl                   controllers.RenderPageController.onPageLoad(pageUrl: String, questionPageUrl: Option[String])
-#GET        /:service/:process/*pageUrl        controllers.RenderPageController.renderServicePage(service, process, pageUrl)
-
-
-
 ->         /govuk-frontend                    govuk.Routes
 ->         /hmrc-frontend                     hmrcfrontend.Routes
 
