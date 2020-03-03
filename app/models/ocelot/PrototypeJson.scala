@@ -234,12 +234,6 @@ object PrototypeJson {
       "31": {
         "type": "InstructionStanza",
         "text": 30,
-        "next": ["32"],
-        "stack": true
-      },
-      "32": {
-        "type": "InstructionStanza",
-        "text": 30,
         "next": ["33"],
         "stack": true
       },
@@ -528,12 +522,6 @@ object PrototypeJson {
       "72": {
         "type": "InstructionStanza",
         "text": 56,
-        "next": ["73"],
-        "stack": true
-      },
-      "73": {
-        "type": "InstructionStanza",
-        "text": 30,
         "next": ["74"],
         "stack": true
       },
