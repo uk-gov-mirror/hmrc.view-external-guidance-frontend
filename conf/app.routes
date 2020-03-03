@@ -15,4 +15,4 @@ GET        /bye-world                         controllers.HelloWorldController.b
 
 GET        /start/:processId                  controllers.GuidanceController.startJourney(processId)
 GET        /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
-GET        /                                  controllers.GuidanceController.getPage(path: String = "", questionPageUrl: Option[String])
+GET        /                                  controllers.GuidanceController.getPage(path: String = "/", questionPageUrl: Option[String])

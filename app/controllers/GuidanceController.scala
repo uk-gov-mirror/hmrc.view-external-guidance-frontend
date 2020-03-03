@@ -23,7 +23,6 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html._
-import scala.concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,16 +42,16 @@ class GuidanceController @Inject() (
     }
   }
 
-  def getPage(path: String, questionPageUrl: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    questionPageUrl.map{ answerUrl =>
-      Future.successful(Redirect(routes.GuidanceController.getPage(answerUrl.drop("/guidance/".length), None)))
-    }.getOrElse {
-      val processId = request.session.get("processId").get
-      service.getPage("/" + path, processId).map {
-        case Some(page) => Ok(view(page))
-        case _ => NotFound(errorHandler.notFoundTemplate)
-      }
+  def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
+    val url = questionPageUrl.fold(path) { qpu =>
+      qpu.drop("/guidance".length)
+    }
+
+    val modifiedUrl = if (url.startsWith("/")) url else "/" + url
+    val processId = request.session.get("processId").get
+    service.getPage(modifiedUrl, processId).map {
+      case Some(page) => Ok(view(page))
+      case _ => NotFound(errorHandler.notFoundTemplate)
     }
   }
-
 }

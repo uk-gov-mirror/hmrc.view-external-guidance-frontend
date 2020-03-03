@@ -65,7 +65,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     trait Test extends MockGuidanceService {
       import models.ui._
 
-      val url = "/"
+      val url = "/something"
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
         FakeRequest("GET", "/")
@@ -88,11 +88,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return a success response" in new Test {
-      //status(result) mustBe Status.OK
+      status(result) mustBe Status.OK
     }
 
     "be a HTML response" in new Test {
-      //contentType(result) mustBe Some("text/html")
+      contentType(result) mustBe Some("text/html")
     }
 
   }
@@ -118,11 +118,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return a not found response" in new Test {
-      //status(result) mustBe Status.NOT_FOUND
+      status(result) mustBe Status.NOT_FOUND
     }
 
     "be a HTML response" in new Test {
-      //contentType(result) mustBe Some("text/html")
+      contentType(result) mustBe Some("text/html")
     }
 
   }

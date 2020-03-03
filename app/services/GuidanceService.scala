@@ -46,7 +46,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
           implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance${p.url}")).toMap
           pages.find(p => p.url == url).map(p => UIBuilder.fromStanzaPage(p))
 
-         // TODO
+        // TODO
         case Left(err) =>
           None
       }
