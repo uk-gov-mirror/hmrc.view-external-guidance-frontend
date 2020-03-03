@@ -60,70 +60,70 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
   }
 
-  "Calling a valid URL for a page in a process" should {
+  // "Calling a valid URL for a page in a process" should {
 
-    trait Test extends MockGuidanceService {
-      import models.ui._
+  //   trait Test extends MockGuidanceService {
+  //     import models.ui._
 
-      val url = "/"
-      lazy val processId = "ext90002"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest("GET", "/")
-          .withSession("processId" -> processId)
+  //     val url = "/"
+  //     lazy val processId = "ext90002"
+  //     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+  //       FakeRequest("GET", "/")
+  //         .withSession("processId" -> processId)
 
-      val expectedPage: Page = Page(
-        url,
-        Seq(H1(Text("hello", "Welsh: hello")))
-      )
+  //     val expectedPage: Page = Page(
+  //       url,
+  //       Seq(H1(Text("hello", "Welsh: hello")))
+  //     )
 
-      MockGuidanceService
-        .getPage(url, processId)
-        .returns(Future.successful(Some(expectedPage)))
+  //     MockGuidanceService
+  //       .getPage(url, processId)
+  //       .returns(Future.successful(Some(expectedPage)))
 
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+  //     private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+  //     private lazy val view = app.injector.instanceOf[views.html.render_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
-    }
+  //     lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+  //     lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
+  //   }
 
-    "return a success response" in new Test {
-      status(result) mustBe Status.OK
-    }
+  //   "return a success response" in new Test {
+  //     status(result) mustBe Status.OK
+  //   }
 
-    "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
-    }
+  //   "be a HTML response" in new Test {
+  //     contentType(result) mustBe Some("text/html")
+  //   }
 
-  }
+  // }
 
-  "Calling a non-existing URL for a page in a process" should {
+  // "Calling a non-existing URL for a page in a process" should {
 
-    trait Test extends MockGuidanceService {
-      val url = "/"
-      lazy val processId = "ext90002"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest("GET", "/")
-          .withSession("processId" -> processId)
+  //   trait Test extends MockGuidanceService {
+  //     val url = "/"
+  //     lazy val processId = "ext90002"
+  //     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+  //       FakeRequest("GET", "/")
+  //         .withSession("processId" -> processId)
 
-      MockGuidanceService
-        .getPage(url, processId)
-        .returns(Future.successful(None))
+  //     MockGuidanceService
+  //       .getPage(url, processId)
+  //       .returns(Future.successful(None))
 
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+  //     private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+  //     private lazy val view = app.injector.instanceOf[views.html.render_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
-    }
+  //     lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+  //     lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
+  //   }
 
-    "return a not found response" in new Test {
-      status(result) mustBe Status.NOT_FOUND
-    }
+  //   "return a not found response" in new Test {
+  //     status(result) mustBe Status.NOT_FOUND
+  //   }
 
-    "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
-    }
+  //   "be a HTML response" in new Test {
+  //     contentType(result) mustBe Some("text/html")
+  //   }
 
-  }
+  // }
 }
