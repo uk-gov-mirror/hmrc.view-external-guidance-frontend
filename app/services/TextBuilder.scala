@@ -17,6 +17,7 @@
 package services
 
 import models.ocelot.Phrase
+import models.ocelot.stanzas.Instruction
 import models.ui._
 
 import scala.util.matching.Regex
@@ -209,10 +210,10 @@ object TextBuilder {
                            matchText: Boolean, wordsProcessed: Int): List[String] = {
 
     if (matchText) {
-      if( texts.size == 0 && matches.size > 0 ) {
+      if( texts.isEmpty && matches.size > 0 ) {
         constructLeadingText(wordLimit, texts, matches, items, !matchText, wordsProcessed )
       }
-      else if (texts.size == 1 && matches.size == 0) {
+      else if (texts.size == 1 && matches.isEmpty) {
         val noOfWordsToAdd: Int = wordLimit - wordsProcessed
         val leadingText: String = extractLeadingMatchedWords( noOfWordsToAdd, texts.head )
         items :+ leadingText
@@ -222,7 +223,7 @@ object TextBuilder {
         constructLeadingText(wordLimit, texts.drop(1), matches, items :+ text, !matchText, wordsProcessed + noOfWords)
       }
     } else {
-      if (matches.size == 1 && texts.size == 0) {
+      if (matches.size == 1 && texts.isEmpty) {
         items :+ matches.head.toString
       } else {
         val text: String = getMatchText(matches.head)
@@ -252,6 +253,18 @@ object TextBuilder {
     }
   }
 
+  def matchInstructions( i1: Instruction, i2: Instruction ) : Boolean = {
+
+    // Apply matching logic to English text as this is how Ocelot works currently
+    val i1TextList: List[String] = TextBuilder.fragmentsToDisplayAsList(i1.text.langs(0))
+    val i2TextList: List[String] = TextBuilder.fragmentsToDisplayAsList(i2.text.langs(0))
+
+    val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1).filter( _ != "" )
+
+    // Matching instructions must have matching leading text followed dissimilar trailing text
+    matchedTextItems.size >= matchLimit && ( matchedTextItems.size < i1TextList.size ) && ( matchedTextItems.size < i2TextList.size )
+  }
+
   def getMatchText(m: Match): String = {
 
     Option(m.group(1)) match {
@@ -275,4 +288,6 @@ object TextBuilder {
   val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
   val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
   val notSpaceRegex: Regex = """([^' ']+)""".r
+
+  val matchLimit: Int = 3
 }

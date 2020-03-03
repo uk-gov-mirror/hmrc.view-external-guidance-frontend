@@ -112,7 +112,7 @@ object UIBuilder {
           case Instruction(txt,_,_,_) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
-          case ig: InstructionGroup => acc ++ Seq( fromInstructionGroup( ig ) )
+          case ig: InstructionGroup => acc :+ fromInstructionGroup( ig )
 
           case models.ocelot.stanzas.Question(txt,ans,next,stack) =>
             val answers = (ans zip next).map{ t =>

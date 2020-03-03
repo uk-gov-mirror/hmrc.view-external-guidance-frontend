@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, HyperLink, PageLink, Text}
+import models.ui.{BulletPointList, HyperLink, PageLink, Paragraph, Text}
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -155,6 +155,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzaPages = PageBuilder.pages(prototypeJson.as[Process]).right.get
     val prototypeUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
 
+    val four: Int = 4
+    val five: Int = 5
   }
 
   "UIBuilder" must {
@@ -284,7 +286,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val phrase1: Phrase = Phrase( Vector( "My favourite sweets are wine gums", "Fy hoff losin yw deintgig gwin" ) )
       val phrase2: Phrase = Phrase( Vector( "My favourite sweets are humbugs", "Fy hoff losin yw humbugs" ) )
 
-      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, false )
+      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, true )
       val instruction2: Instruction = Instruction( phrase2, Seq( "end" ), None, false )
 
       val instructionGroup: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
@@ -317,6 +319,82 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems.last mustBe Seq( bulletPointTwo )
         }
         case _ => fail( "Did not find bullet point list")
+      }
+    }
+
+    "Process complex page with both instruction groups and single instructions" in new Test {
+
+      val phrase1: Phrase = Phrase( Vector( "Going to the market", "Mynd i'r farchnad" ) )
+      val phrase2: Phrase = Phrase( Vector( "Fruit and Vegetables", "Ffrwythau a llysiau" ) )
+      val phrase3: Phrase = Phrase( Vector( "Vegetables", "Llysiau" ) )
+      val phrase4: Phrase = Phrase( Vector( "What you can buy in our lovely vegetable market", "Beth allwch chi ei brynu yn ein marchnad llysiau hyfryd" ) )
+      val phrase5: Phrase = Phrase( Vector( "Today we have special parsnips for sale", "Heddiw mae gennym bananas arbennig ar werth" ) )
+      val phrase6: Phrase = Phrase( Vector( "Today we have special purple carrots for sale", "Heddiw mae gennym foron porffor arbennig ar werth") )
+      val phrase7: Phrase = Phrase( Vector( "Today we have special brussels sprouts for sale", "Heddiw mae gennym ysgewyll cregyn gleision arbennig ar werth" ) )
+      val phrase8: Phrase = Phrase( Vector( "Thank you", "Diolch" ) )
+
+      val titleCallout: Callout = Callout( Title, phrase1, Seq( "1" ), false )
+      val instruction1: Instruction = Instruction( phrase2, Seq( "2" ), None, false )
+      val subTitleCallout: Callout = Callout( SubTitle, phrase3, Seq( "3"), false )
+      val instruction2: Instruction = Instruction( phrase4, Seq( "4") , None, false )
+
+      val instructionGroupInstruction1: Instruction = Instruction( phrase5, Seq( "5" ), None, true )
+      val instructionGroupInstruction2: Instruction = Instruction( phrase6, Seq( "6" ), None, false )
+      val instructionGroupInstruction3: Instruction = Instruction( phrase7, Seq( "7" ), None, false )
+
+      val instructionGroup: InstructionGroup = InstructionGroup( Seq(
+        instructionGroupInstruction1,
+        instructionGroupInstruction2,
+        instructionGroupInstruction3)
+        )
+
+      val instruction3: Instruction = Instruction( phrase8, Seq( "8" ), None, false )
+
+      // Build sequence of stanzas
+      val stanzaSeq = Seq(
+        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        titleCallout,
+        instruction1,
+        subTitleCallout,
+        instruction2,
+        instructionGroup,
+        instruction3
+      )
+
+      val complexPage = Page( "start","/", stanzaSeq, Seq(""), Nil )
+
+      val complexUiPage = UIBuilder.fromStanzaPage( complexPage )
+
+      complexUiPage.components.size mustBe 6
+
+      // Check contents of bullet point list
+      val leadingTextItems: Text = Text( "Today we have special", "Heddiw mae gennym" )
+
+      val bulletPointOne: Text = Text( "parsnips for sale", "bananas arbennig ar werth", false )
+      val bulletPointTwo: Text = Text( "purple carrots for sale", "foron porffor arbennig ar werth", false )
+      val bulletPointThree: Text = Text( "brussels sprouts for sale", "ysgewyll cregyn gleision arbennig ar werth", false )
+
+      complexUiPage.components( four ) match {
+        case b: BulletPointList => {
+
+          b.leadingText.head mustBe leadingTextItems
+
+          b.listItems.size mustBe 3
+
+          b.listItems.head mustBe Seq( bulletPointOne )
+          b.listItems(1) mustBe Seq( bulletPointTwo )
+          b.listItems.last mustBe Seq( bulletPointThree )
+        }
+        case _ => fail( "Did not find bullet point list")
+      }
+
+      val finalParagraph: Paragraph = Paragraph( Seq( Text( "Thank you", "Diolch", false ) ) )
+
+      complexUiPage.components( five ) match {
+        case p: Paragraph => {
+          p mustBe finalParagraph
+        }
+        case _  => fail( "The last components is not an instruction" )
       }
     }
 

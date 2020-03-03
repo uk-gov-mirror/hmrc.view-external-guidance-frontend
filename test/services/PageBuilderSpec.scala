@@ -449,7 +449,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Return grouped Instruction stanzas when text contents start with similar text" in {
 
-      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, false)
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, true)
       val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, false)
       val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, false )
 
@@ -492,12 +492,12 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val calloutStanza1:CalloutStanza =  CalloutStanza( Title, 0, Seq("2"), false )
       val calloutStanza2:CalloutStanza = CalloutStanza( SubTitle, four, Seq( "6" ), false )
 
-      val instructionStanza1: InstructionStanza = InstructionStanza( 1, Seq( "3" ), None, false )
-      val instructionStanza2: InstructionStanza = InstructionStanza( 2, Seq( "4" ), None, false )
+      val instructionStanza1: InstructionStanza = InstructionStanza( 1, Seq( "3" ), None, true )
+      val instructionStanza2: InstructionStanza = InstructionStanza( 2, Seq( "4" ), None, true )
       val instructionStanza3: InstructionStanza = InstructionStanza( 3, Seq( "5" ), None, false )
       val instructionStanza4: InstructionStanza = InstructionStanza( five, Seq( "7" ), None, false )
       val instructionStanza5: InstructionStanza = InstructionStanza( six, Seq( "9" ), None, false )
-      val instructionStanza6: InstructionStanza = InstructionStanza( seven, Seq( "10" ), None, false )
+      val instructionStanza6: InstructionStanza = InstructionStanza( seven, Seq( "10" ), None, true )
       val instructionStanza7: InstructionStanza = InstructionStanza( eight, Seq( "end" ), None, false )
 
       // Define phrases
