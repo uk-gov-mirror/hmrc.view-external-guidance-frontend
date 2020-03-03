@@ -19,9 +19,10 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
 @this(layout: main_layout,
-        hmrcHeading: HmrcPageHeading)
+        hmrcHeading: HmrcPageHeading,
+        appConfig: AppConfig)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle) {
  @hmrcHeading(PageHeading(heading))

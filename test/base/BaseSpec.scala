@@ -16,7 +16,7 @@
 
 package base
 
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json._
 
