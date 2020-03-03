@@ -18,7 +18,6 @@ package services
 
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process}
-import utils.BulletPointListUtils
 
 import scala.annotation.tailrec
 
@@ -97,7 +96,7 @@ object PageBuilder extends ProcessPopulation {
       inputSeq match {
         case Nil => acc
         case x :: xs => x match {
-          case i: Instruction =>
+          case i: Instruction if i.stack =>
             val matchedInstructions: Seq[Instruction] = groupMatchedInstructions( xs, Seq( i ) )
             if( matchedInstructions.size > 1 ) {
               groupBulletPointInstructions(
@@ -117,7 +116,7 @@ object PageBuilder extends ProcessPopulation {
       inputSeq match {
         case Nil => acc
         case x :: xs => x match {
-          case i: Instruction if BulletPointListUtils.matchInstructions( acc.last, i ) => groupMatchedInstructions( xs, acc :+ i )
+          case i: Instruction if TextBuilder.matchInstructions( acc.last, i ) => groupMatchedInstructions( xs, acc :+ i )
           case _ => acc
         }
       }
