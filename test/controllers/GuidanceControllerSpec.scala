@@ -60,31 +60,31 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
   }
 
-  "Calling a valid URL for a page in a process" should {
+  "Calling a valid URL path for a page in a process" should {
 
     trait Test extends MockGuidanceService {
       import models.ui._
 
-      val url = "/something"
+      val path = "some-path"
+      private val pathUsedToFindPage = "/" + path
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest("GET", "/")
-          .withSession("processId" -> processId)
+        FakeRequest().withSession("processId" -> processId)
 
       val expectedPage: Page = Page(
-        url,
+        path,
         Seq(H1(Text("hello", "Welsh: hello")))
       )
 
       MockGuidanceService
-        .getPage(url, processId)
+        .getPage(pathUsedToFindPage, processId)
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
       private lazy val view = app.injector.instanceOf[views.html.render_page]
 
       lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
+      lazy val result: Future[Result] = target.getPage(path, None)(fakeRequest)
     }
 
     "return a success response" in new Test {
@@ -97,24 +97,61 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   }
 
-  "Calling a non-existing URL for a page in a process" should {
+  "Calling a valid URL path via a form submission for a page in a process" should {
 
     trait Test extends MockGuidanceService {
-      val url = "/"
+      import models.ui._
+
+      val path = "some-path"
+      val pathInQuerystring = "/guidance/some-other-path"
+      private val pathUsedToFindPage = pathInQuerystring.replace("/guidance", "")
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest("GET", "/")
-          .withSession("processId" -> processId)
+        FakeRequest().withSession("processId" -> processId)
+
+      val expectedPage: Page = Page(
+        path,
+        Seq(H1(Text("hello", "Welsh: hello")))
+      )
 
       MockGuidanceService
-        .getPage(url, processId)
+        .getPage(pathUsedToFindPage, processId)
+        .returns(Future.successful(Some(expectedPage)))
+
+      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+      private lazy val view = app.injector.instanceOf[views.html.render_page]
+
+      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val result: Future[Result] = target.getPage(path, Some(pathInQuerystring))(fakeRequest)
+    }
+
+    "return a success response" in new Test {
+      status(result) mustBe Status.OK
+    }
+
+    "be a HTML response" in new Test {
+      contentType(result) mustBe Some("text/html")
+    }
+
+  }
+
+  "Calling a non-existing URL path for a page in a process" should {
+
+    trait Test extends MockGuidanceService {
+      val path = "unknown/route"
+      lazy val processId = "ext90002"
+      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+        FakeRequest().withSession("processId" -> processId)
+
+      MockGuidanceService
+        .getPage("/" + path, processId)
         .returns(Future.successful(None))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
       private lazy val view = app.injector.instanceOf[views.html.render_page]
 
       lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(url, None)(fakeRequest)
+      lazy val result: Future[Result] = target.getPage(path, None)(fakeRequest)
     }
 
     "return a not found response" in new Test {

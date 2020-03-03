@@ -30,11 +30,11 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
     connector.getProcess(processId) map { process =>
       PageBuilder.pages(process) match {
         case Right(pages) =>
-          val startPage = pages.find(p => p.id == "start")
-          startPage.fold("")(p => p.url)
+          val startPage = pages.find(page => page.id == "start")
+          startPage.fold("")(page => page.url)
 
         // TODO
-        case Left(err) => ""
+        case Left(_) => ""
       }
     }
   }
@@ -43,11 +43,16 @@ class GuidanceService @Inject() (connector: GuidanceConnector) {
     connector.getProcess(processId) map { process =>
       PageBuilder.pages(process) match {
         case Right(pages) =>
-          implicit val stanzaIdToUrlMap = pages.map(p => (p.id, s"/guidance${p.url}")).toMap
-          pages.find(p => p.url == url).map(p => UIBuilder.fromStanzaPage(p))
+          val stanzaIdToUrlMap = pages
+            .map(page => (page.id, s"/guidance${page.url}"))
+            .toMap
+
+          pages
+            .find(page => page.url == url)
+            .map(page => UIBuilder.fromStanzaPage(page)(stanzaIdToUrlMap))
 
         // TODO
-        case Left(err) =>
+        case Left(_) =>
           None
       }
     }
