@@ -23,6 +23,7 @@ sealed trait ValueType
 case object Scalar extends ValueType
 
 object ValueType {
+
   implicit val reads: Reads[ValueType] = new Reads[ValueType] {
 
     override def reads(json: JsValue): JsResult[ValueType] = json match {

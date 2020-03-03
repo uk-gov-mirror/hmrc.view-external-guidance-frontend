@@ -19,22 +19,17 @@ package models.ocelot
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class Meta(id: String,
-                title: String,
-                ocelot: Int,
-                lastAuthor: String,
-                lastUpdate: Long,
-                version: Int,
-                fileName: String)
+case class Meta(id: String, title: String, ocelot: Int, lastAuthor: String, lastUpdate: Long, version: Int, fileName: String)
 
 object Meta {
+
   implicit val metaReads: Reads[Meta] = (
     (__ \ "id").read[String] and
-    (__ \ "title").read[String] and
-    (__ \ "ocelot").read[Int] and
-    (__ \ "lastAuthor").read[String] and
-    (__ \ "lastUpdate").read[Long] and
-    (__ \ "version").read[Int] and
-    (__ \ "filename").read[String]
+      (__ \ "title").read[String] and
+      (__ \ "ocelot").read[Int] and
+      (__ \ "lastAuthor").read[String] and
+      (__ \ "lastUpdate").read[Long] and
+      (__ \ "version").read[Int] and
+      (__ \ "filename").read[String]
   )(Meta.apply _)
 }

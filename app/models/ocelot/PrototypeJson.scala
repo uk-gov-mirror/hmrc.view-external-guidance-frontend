@@ -22,6 +22,7 @@ package models.ocelot
 // All Welsh translations are temporary placeholders and for testing purposes only
 //
 object PrototypeJson {
+
   val json =
     """
     {

@@ -19,15 +19,14 @@ package models.ocelot
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class Link(id: Int,
-                dest: String,
-                title: String,
-                window: Boolean)
+case class Link(id: Int, dest: String, title: String, window: Boolean)
+
 object Link {
+
   implicit val reads: Reads[Link] = (
     (__ \ "id").read[Int] and
-    (__ \ "dest").read[String] and
-    (__ \ "title").read[String] and
-    (__ \ "window").read[Boolean]
+      (__ \ "dest").read[String] and
+      (__ \ "title").read[String] and
+      (__ \ "window").read[Boolean]
   )(Link.apply _)
 }

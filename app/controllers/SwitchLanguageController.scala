@@ -23,13 +23,11 @@ import config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
-class SwitchLanguageController @Inject()(appConfig: AppConfig,
-                                         languageUtils: LanguageUtils,
-                                         cc: MessagesControllerComponents) extends LanguageController(appConfig.config, languageUtils, cc) {
+class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
+    extends LanguageController(appConfig.config, languageUtils, cc) {
 
   override def languageMap: Map[String, Lang] = appConfig.languageMap
 
   // TODO requires suitable index like fallback URL
   override def fallbackURL: String = routes.HelloWorldController.helloWorld().url
 }
-

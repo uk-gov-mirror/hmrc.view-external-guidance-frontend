@@ -38,32 +38,36 @@ trait ProcessPopulation {
     def phrases(indexes: Seq[Int], acc: Seq[Phrase]): Either[FlowError, Seq[Phrase]] =
       indexes match {
         case Nil => Right(acc)
-        case index :: xs => phrase(index) match {
-          case Right(phrase) => phrases(xs, acc :+ phrase)
-          case Left(_) => Left(PhraseNotFound(index))
-        }
+        case index :: xs =>
+          phrase(index) match {
+            case Right(phrase) => phrases(xs, acc :+ phrase)
+            case Left(_) => Left(PhraseNotFound(index))
+          }
       }
 
-    def link( linkIndex: Int ) : Either[LinkNotFound, Link ] =
-      process.linkOption( linkIndex ).map( Right(_)).getOrElse(Left( LinkNotFound( linkIndex ) ) )
+    def link(linkIndex: Int): Either[LinkNotFound, Link] =
+      process.linkOption(linkIndex).map(Right(_)).getOrElse(Left(LinkNotFound(linkIndex)))
 
-    def populateInstruction( i: InstructionStanza ) : Either[FlowError, Instruction] = {
-      phrase( i.text ).fold( Left(_),
+    def populateInstruction(i: InstructionStanza): Either[FlowError, Instruction] = {
+      phrase(i.text).fold(
+        Left(_),
         text => {
           i.link match {
-            case Some( linkIndex ) => link( linkIndex ).fold(Left(_), link => Right( Instruction( i, text, Some(link) ) ) )
-            case None => Right( Instruction( i, text, None ) )
+            case Some(linkIndex) => link(linkIndex).fold(Left(_), link => Right(Instruction(i, text, Some(link))))
+            case None => Right(Instruction(i, text, None))
           }
-        })
+        }
+      )
     }
 
     stanza match {
-      case q: QuestionStanza => phrases(q.text +: q.answers, Nil) match {
-        case Right(texts) => Right(Question(q, texts.head, texts.tail))
-        case Left(err) => Left(err)
-      }
-      case i: InstructionStanza => populateInstruction( i )
-      case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c,text)))
+      case q: QuestionStanza =>
+        phrases(q.text +: q.answers, Nil) match {
+          case Right(texts) => Right(Question(q, texts.head, texts.tail))
+          case Left(err) => Left(err)
+        }
+      case i: InstructionStanza => populateInstruction(i)
+      case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c, text)))
       case s: Stanza => Right(s)
     }
   }
