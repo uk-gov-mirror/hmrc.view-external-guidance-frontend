@@ -19,7 +19,6 @@ package models.ui
 case class Answer(txt: Text, hint: Option[Text], dest: String) extends UIComponent
 
 case class Question(heading: Text, body: Seq[UIComponent], answers: Seq[Answer]) extends UIComponent {
-
   val horizontal: Boolean = answers.length == 2 &&
-    answers.forall(ans => ans.hint.isEmpty && ans.txt.english.split(" +").length == 1)
+    answers.forall(ans => ans.hint.isEmpty && ans.txt.english.map(_.toWords.length).sum == 1)
 }

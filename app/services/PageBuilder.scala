@@ -62,7 +62,7 @@ object PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case v: ValueStanza if pageUrl(v.values).isDefined =>
-            Right(Page(ks.head.key, pageUrl(v.values).get, groupBulletPointInstructions(ks.map(_.stanza), Nil), next, linked))
+            Right(Page(ks.head.key, pageUrl(v.values).get, BulletPointBuilder.groupBulletPointInstructions(ks.map(_.stanza), Nil), next, linked))
           case _ => Left(MissingPageUrlValueStanza(key))
         }
       case Left(err) => Left(err)
@@ -87,39 +87,4 @@ object PageBuilder extends ProcessPopulation {
 
     pagesByKeys(List(start), Nil)
   }
-
-  @tailrec
-  def groupBulletPointInstructions(inputSeq: Seq[Stanza], acc: Seq[Stanza]): Seq[Stanza] = {
-
-    inputSeq match {
-      case Nil => acc
-      case x :: xs =>
-        x match {
-          case i: Instruction if i.stack =>
-            val matchedInstructions: Seq[Instruction] = groupMatchedInstructions(xs, Seq(i))
-            if (matchedInstructions.size > 1) {
-              groupBulletPointInstructions(xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
-            } else {
-              groupBulletPointInstructions(xs, acc :+ matchedInstructions.head)
-            }
-          case s: Stanza => groupBulletPointInstructions(xs, acc :+ s)
-        }
-    }
-
-  }
-
-  @tailrec
-  private def groupMatchedInstructions(inputSeq: Seq[Stanza], acc: Seq[Instruction]): Seq[Instruction] = {
-
-    inputSeq match {
-      case Nil => acc
-      case x :: xs =>
-        x match {
-          case i: Instruction if TextBuilder.matchInstructions(acc.last, i) => groupMatchedInstructions(xs, acc :+ i)
-          case _ => acc
-        }
-    }
-
-  }
-
 }

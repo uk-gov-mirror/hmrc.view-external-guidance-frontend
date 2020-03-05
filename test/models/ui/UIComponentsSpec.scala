@@ -236,33 +236,6 @@ class UIComponentsSpec extends BaseSpec {
       hyperLink.toString mustBe s"[link:[$englishLinkText:$welshLinkText:false]:$destination:false]"
     }
 
-    "build into a page of text only paragraph and RadioGroup" in {
-
-      val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
-      val langs4 = Vector("Not bad", "Welsh, Not bad")
-      val langs5 = Vector("you think this is not bad", "Welsh, you think this is not bad")
-      val langs6 = Vector("ok","Welsh, ok")
-      val langs7 = Vector("you think this is not bad", "Wels,you think this is not bad")
-
-      val txt1 = Text(langs1(0), langs1(1))
-      val para = Paragraph(Seq(txt1))
-
-      val radio1 = Radio(Text(langs4(0), langs4(1)), Some(Text(langs5(0), langs5(1))), "/firstpage/notbad")
-      val radio2 = Radio(Text(langs6(0), langs6(1)), Some(Text(langs7(0), langs7(1))), "/firstpage/notbad")
-      val radios = RadioGroup(Seq(radio1, radio2), false)
-
-      val components = Seq(para, radios)
-      val page = Page("/firstpage", components)
-
-      page.components.length mustBe 2
-
-      page.components.foreach{
-        case p: Paragraph => p.txt.length mustBe 1
-        case q: RadioGroup => q.radios.length mustBe 2
-        case _ => fail("unknown ParagraphItem")
-      }
-    }
-
     "build into a page of text and link paragraph" in {
 
       val langs1 = Vector("Hello my name is ....","Welsh, Hello my name is ....")
@@ -304,11 +277,6 @@ class UIComponentsSpec extends BaseSpec {
     "use PageLink components which correctly support toString" in {
       val txt: Text = Text("Hello", "Welsh, Hello")
       PageLink("4", txt).toString mustBe s"[link:${txt.toString}:4]"
-    }
-
-    "use BilingualText components which correctly support toString if not overridden" in {
-      val txt = TestableBilingualText("HELLO", "Welsh, HELLO")
-      txt.toString mustBe txt.english
     }
 
     "build a complete page" in {

@@ -16,4 +16,4 @@
 
 package models.ui
 
-case class Paragraph(txt: Seq[TextItem], lede: Boolean = false) extends UIComponent
+case class Paragraph(txt: Text, lede: Boolean = false) extends UIComponent

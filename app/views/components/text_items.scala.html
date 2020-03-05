@@ -14,22 +14,16 @@
  * limitations under the License.
  *@
 
-@import models.ui.{TextItem, HyperLink, PageLink}
+@import models.ui.{Text, Link, Words}
 
-@(items: Seq[TextItem])(implicit messages: Messages)
+@(text: Text)(implicit messages: Messages)
 
-@for(item <- items) {
+@for(item <- text.value(messages.lang)) {
   @{
     item match {
-      case t: models.ui.Text =>
-        if (t.bold) {
-          <strong>{t.value(messages.lang)}</strong>
-        }
-        else {
-          t.value(messages.lang)
-        }
-      case l: HyperLink => components.hyperlink(l)
-      case p: PageLink => components.pagelink(p)
+      case w: Words if w.bold => <strong>{w.toString}</strong>
+      case w: Words => w.toString
+      case l: Link => components.link(l)
     }
   }
 }

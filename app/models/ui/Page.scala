@@ -31,5 +31,5 @@ case class Page(urlPath: String, components: Seq[UIComponent]) {
         }
     }
 
-  val heading: Text = findFirstH1Text(components).getOrElse(Text("", ""))
+  val heading: Text = findFirstH1Text(components).getOrElse(Text())
 }

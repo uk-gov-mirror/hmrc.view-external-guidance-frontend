@@ -20,35 +20,40 @@ import play.api.i18n.Lang
 
 trait UIComponent
 
-sealed trait BilingualText {
-  val english: String
-  val welsh: String
-
-  def value(implicit lang: Lang): String = if (lang.code.equals("cy")) welsh else english
-  override def toString: String = english
-}
-
-case class TestableBilingualText(english: String, welsh: String) extends BilingualText
-
+//
+// Monolingual
+//
 sealed trait TextItem {
   def isEmpty: Boolean
+  def toWords:Seq[String]
 }
 
-case class Text(english: String, welsh: String, bold: Boolean = false) extends BilingualText with TextItem {
+case class Words(s: String, bold: Boolean = false) extends TextItem {
+  def isEmpty: Boolean = s.isEmpty
+  def toWords:Seq[String] = s.split(" +").toSeq
+  override def toString: String = s
+}
+
+case class Link(dest: String, txt: String, window: Boolean = false) extends TextItem {
+  override def toString: String = s"[link:$txt:$dest:$window]"
+  def isEmpty: Boolean = txt.isEmpty
+  def toWords:Seq[String] = txt.split(" +").toSeq
+}
+
+//
+// Bilingual
+//
+case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
+  def value(implicit lang: Lang): Seq[TextItem] = if (lang.code.equals("cy")) welsh else english
   def isEmpty: Boolean = english.isEmpty
-  override def toString: String = s"[$english:$welsh:$bold]"
+  def isEmpty(implicit lang: Lang): Boolean = if (lang.code.equals("cy")) welsh.isEmpty else english.isEmpty
+  def toWords(implicit lang: Lang): Seq[String] = value(lang).flatMap(_.toWords)
+  override def toString: String =  s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
 }
 
 object Text {
-  def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
-}
-
-case class HyperLink(dest: String, txt: Text, window: Boolean = false) extends TextItem {
-  override def toString: String = s"[link:$txt:$dest:$window]"
-  def isEmpty: Boolean = txt.isEmpty
-}
-
-case class PageLink(dest: String, txt: Text) extends TextItem {
-  override def toString: String = s"[link:$txt:$dest]"
-  def isEmpty: Boolean = txt.isEmpty
+  def apply(phrase: Vector[String]): Text = Text(Words(phrase(0)), Words(phrase(1)))
+  def apply(english: String, welsh: String): Text = Text(Seq(Words(english)), Seq(Words(welsh)))
+  def apply(english: TextItem, welsh: TextItem): Text = Text(Seq(english), Seq(welsh))
+  def apply(): Text = Text(Nil,Nil)
 }
