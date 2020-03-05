@@ -25,19 +25,19 @@ trait UIComponent
 //
 sealed trait TextItem {
   def isEmpty: Boolean
-  def toWords:Seq[String]
+  def toWords: Seq[String]
 }
 
 case class Words(s: String, bold: Boolean = false) extends TextItem {
   def isEmpty: Boolean = s.isEmpty
-  def toWords:Seq[String] = s.split(" +").toSeq
+  def toWords: Seq[String] = s.split(" +").toSeq
   override def toString: String = s
 }
 
 case class Link(dest: String, txt: String, window: Boolean = false) extends TextItem {
   override def toString: String = s"[link:$txt:$dest:$window]"
   def isEmpty: Boolean = txt.isEmpty
-  def toWords:Seq[String] = txt.split(" +").toSeq
+  def toWords: Seq[String] = txt.split(" +").toSeq
 }
 
 //
@@ -48,7 +48,7 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
   def isEmpty: Boolean = english.isEmpty
   def isEmpty(implicit lang: Lang): Boolean = if (lang.code.equals("cy")) welsh.isEmpty else english.isEmpty
   def toWords(implicit lang: Lang): Seq[String] = value(lang).flatMap(_.toWords)
-  override def toString: String =  s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
+  override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
   def add(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
 }
 
@@ -56,5 +56,5 @@ object Text {
   def apply(phrase: Vector[String]): Text = Text(Words(phrase(0)), Words(phrase(1)))
   def apply(english: String, welsh: String): Text = Text(Seq(Words(english)), Seq(Words(welsh)))
   def apply(english: TextItem, welsh: TextItem): Text = Text(Seq(english), Seq(welsh))
-  def apply(): Text = Text(Nil,Nil)
+  def apply(): Text = Text(Nil, Nil)
 }

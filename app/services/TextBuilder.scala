@@ -53,7 +53,7 @@ object TextBuilder {
         } else {
           Link(m.group(3), m.group(2))
         }
-      )( _ => Words(m.group(1), true))
+      )(_ => Words(m.group(1), true))
     }
 
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =

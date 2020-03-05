@@ -33,8 +33,7 @@ object UIBuilder {
           case c: Callout => acc ++ Seq(fromCallout(c))
 
           case Instruction(txt, _, Some(models.ocelot.Link(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
-            val linkText = Text(Link(stanzaIdToUrlMap(dest), txt.langs(0)),
-                                Link(stanzaIdToUrlMap(dest), txt.langs(1)))
+            val linkText = Text(Link(stanzaIdToUrlMap(dest), txt.langs(0)), Link(stanzaIdToUrlMap(dest), txt.langs(1)))
             acc ++ Seq(Paragraph(linkText, window))
 
           case Instruction(txt, _, Some(models.ocelot.Link(id, dest, _, window)), _) =>
@@ -71,10 +70,7 @@ object UIBuilder {
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
 
-    def createRemainingItems(leadingEn: String,
-                                     leadingCy: String,
-                                     remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
-
+    def createRemainingItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
       remainder.map { instruction =>
         val bulletPointEnglish: String = instruction.text
           .langs(0)
@@ -105,7 +101,7 @@ object UIBuilder {
 
     val firstBpCy: String = insGroup.group.head.text
       .langs(1)
-      .substring(leadingCy.length,insGroup.group.head.text.langs(1).length)
+      .substring(leadingCy.length, insGroup.group.head.text.langs(1).length)
       .trim
 
     val firstBulletPointItems: Text = TextBuilder.fromPhrase(Phrase(firstBpEn, firstBpCy))
@@ -113,8 +109,7 @@ object UIBuilder {
     // Process remaining bullet points
     val remainder: Seq[Text] = createRemainingItems(leadingEn, leadingCy, insGroup.group.drop(1))
 
-    BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)),
-                    firstBulletPointItems +: remainder)
+    BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), firstBulletPointItems +: remainder)
   }
 
 }
