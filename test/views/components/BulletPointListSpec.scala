@@ -64,12 +64,12 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
       val englishBulletPointThree: String = "pears"
       val welshBulletPointThree: String = "gellyg"
 
-      val leadingText: Seq[TextItem] = Seq( Text( englishLeadingText, welshLeadingText ) )
+      val leadingText: Text = Text( englishLeadingText, welshLeadingText )
 
-      val listItems: Seq[Seq[TextItem]] = Seq(
-        Seq( Text( englishBulletPointOne, welshBulletPointOne ) ),
-        Seq( Text( englishBulletPointTwo, welshBulletPointTwo ) ),
-        Seq( Text( englishBulletPointThree, welshBulletPointThree ) )
+      val listItems: Seq[Text] = Seq(
+        Text( englishBulletPointOne, welshBulletPointOne ),
+        Text( englishBulletPointTwo, welshBulletPointTwo ),
+        Text( englishBulletPointThree, welshBulletPointThree )
       )
 
       val simpleBulletPointList: BulletPointList = BulletPointList( leadingText, listItems )
@@ -144,15 +144,14 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
       val englishBulletPointTwoText: String = "Continue to section B"
       val welshBulletPointTwoText: String = "Welsh continue to section B"
 
-      val bulletPointLeadingText: Seq[TextItem] = Seq(
-        Text( englishLeadingTextPartOne, welshLeadingTextPartOne ),
-        HyperLink( linkUrl, Text( linkEnglishText, linkWelshText ) ),
-        Text( englishLeadingTextPartTwo, welshLeadingTextPartTwo )
-      )
+      val bulletPointLeadingText: Text =
+        Text( englishLeadingTextPartOne, welshLeadingTextPartOne )
+          .add(Text(Link(linkUrl, linkEnglishText), Link(linkUrl, linkWelshText)))
+          .add(Text( englishLeadingTextPartTwo, welshLeadingTextPartTwo ))
 
-      val bulletPointListItems: Seq[Seq[TextItem]] = Seq(
-        Seq( Text( englishBulletPointOneText, welshBulletPointOneText ) ),
-        Seq( Text( englishBulletPointTwoText, welshBulletPointTwoText ) )
+      val bulletPointListItems: Seq[Text] = Seq(
+        Text( englishBulletPointOneText, welshBulletPointOneText ),
+        Text( englishBulletPointTwoText, welshBulletPointTwoText )
       )
 
       val bulletPointList: BulletPointList = BulletPointList( bulletPointLeadingText, bulletPointListItems )
@@ -248,15 +247,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
       val englishBulletPointTwoLinkText: String = "Bullet point two link text"
       val welshBulletPointTwoLinkText: String = "Welsh bullet point two link text"
 
-      val bulletPointLeadingText: Seq[TextItem] = Seq(
-        Text( englishLeadingText, welshLeadingText )
-      )
+      val bulletPointLeadingText: Text = Text(englishLeadingText, welshLeadingText)
 
-      val bulletPointListItems: Seq[Seq[TextItem]] = Seq(
-        Seq( Text( englishBulletPointOneText, welshBulletPointOneText),
-          HyperLink( bulletPointOneLinkUrl, Text( englishBulletPointOneLinkText, welshBulletPointOneLinkText ) ) ),
-        Seq( Text( englishBulletPointTwoText, welshBulletPointTwoText ),
-          HyperLink( bulletPointTwoLinkUrl, Text( englishBulletPointTwoLinkText, welshBulletPointTwoLinkText ), true ) )
+      val bulletPointListItems: Seq[Text] = Seq(
+        Text(englishBulletPointOneText, welshBulletPointOneText).add(Text(Link(bulletPointOneLinkUrl, englishBulletPointOneLinkText),
+                                                                          Link(bulletPointOneLinkUrl, welshBulletPointOneLinkText))),
+        Text(englishBulletPointTwoText, welshBulletPointTwoText).add(Text(Link( bulletPointTwoLinkUrl, englishBulletPointTwoLinkText, true),
+                                                                          Link(bulletPointTwoLinkUrl, welshBulletPointTwoLinkText, true)))
       )
 
       val bulletPointList: BulletPointList = BulletPointList( bulletPointLeadingText, bulletPointListItems )

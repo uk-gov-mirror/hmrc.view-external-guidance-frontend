@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.paragraph
-import models.ui.{Paragraph,Text, HyperLink, PageLink}
+import models.ui.{Paragraph,Text, Link}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -42,15 +42,22 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     val paraText1 = Text("Hello","Welsh Hello")
     val paraText2 = Text("World","Welsh World")
 
-    val ledePara = Paragraph(Seq(paraText1), lede = true)
-    val para = Paragraph(Seq(paraText1), lede = false)
+    val ledePara = Paragraph(paraText1, lede = true)
+    val para = Paragraph(paraText1, lede = false)
     val dest1 = "https://www.bbc.co.uk"
     val dest2 = "https://www.bbc.co.uk/news"
-    val link1 = HyperLink(dest1, Text("The BBC", "Welsh, The BBC"), window = true)
-    val link2 = HyperLink(dest2, Text("BBC News", "Welsh, BBC News"), window = false)
-    val pageLink = PageLink(dest2, Text("BBC News", "Welsh, BBC News"))
+    val link1En = Link(dest1, "The BBC", window = true)
+    val link2En = Link(dest2, "BBC News", window = false)
+    val pageLinkEn = Link(dest2, "BBC News")
+    val link1Cy = Link(dest1, "Welsh, The BBC", window = true)
+    val link2Cy = Link(dest2, "Welsh, BBC News", window = false)
+    val pageLinkCy = Link(dest2, "Welsh, BBC News")
 
-    val paraWithMultipleLinks =  Paragraph(Seq(paraText1, link1, paraText2, link2, pageLink))
+    val link1 = Text(link1En, link1Cy)
+    val link2 = Text(link2En, link2Cy)
+    val pageLink = Text(pageLinkEn, pageLinkCy)
+
+    val paraWithMultipleLinks =  Paragraph(paraText1.add(link1).add(paraText2).add(link2).add(pageLink))
   }
 
   trait WelshTest extends Test {

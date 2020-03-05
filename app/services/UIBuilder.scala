@@ -78,12 +78,12 @@ object UIBuilder {
       remainder.map { instruction =>
         val bulletPointEnglish: String = instruction.text
           .langs(0)
-          .substring(leadingEn.size, instruction.text.langs(0).size)
+          .substring(leadingEn.length, instruction.text.langs(0).length)
           .trim
 
         val bulletPointWelsh: String = instruction.text
           .langs(1)
-          .substring(leadingCy.size, instruction.text.langs(1).size)
+          .substring(leadingCy.length, instruction.text.langs(1).length)
           .trim
 
         TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
@@ -101,11 +101,11 @@ object UIBuilder {
 
     // Determine first bullet point
     val firstBpEn: String =
-      insGroup.group.head.text.langs(0).substring(leadingEn.size, insGroup.group.head.text.langs(0).size).trim
+      insGroup.group.head.text.langs(0).substring(leadingEn.length, insGroup.group.head.text.langs(0).length).trim
 
     val firstBpCy: String = insGroup.group.head.text
       .langs(1)
-      .substring(leadingCy.size,insGroup.group.head.text.langs(1).size)
+      .substring(leadingCy.length,insGroup.group.head.text.langs(1).length)
       .trim
 
     val firstBulletPointItems: Text = TextBuilder.fromPhrase(Phrase(firstBpEn, firstBpCy))

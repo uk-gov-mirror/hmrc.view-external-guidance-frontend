@@ -193,7 +193,7 @@ object BulletPointBuilder {
   ): List[String] = {
 
     if (matchText) {
-      if (texts.isEmpty && matches.size > 0) {
+      if (texts.isEmpty && matches.nonEmpty) {
         constructLeadingText(wordLimit, texts, matches, items, !matchText, wordsProcessed)
       } else if (texts.size == 1 && matches.isEmpty) {
         val noOfWordsToAdd: Int = wordLimit - wordsProcessed

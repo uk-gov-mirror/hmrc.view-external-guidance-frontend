@@ -39,7 +39,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
     val para1Text = Text("This is a question", "Welsh, This is a question")
-    val para1 = Paragraph(Seq(para1Text))
+    val para1 = Paragraph(para1Text)
 
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
     val ans1 = Vector("Yes", "Welsh, Yes")

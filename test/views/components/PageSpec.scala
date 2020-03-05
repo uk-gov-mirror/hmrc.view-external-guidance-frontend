@@ -55,9 +55,9 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val bulletPointThree = Text( "hiring out personal equipment (such as power tools)",
       "llogi offer personol (fel offer pŵer)" )
 
-    val para = Paragraph(Seq(openingPara))
-    val bulletPointList = BulletPointList( Seq( bulletPointLeadingText ),
-      Seq( Seq( bulletPointOne ), Seq( bulletPointTwo ), Seq( bulletPointThree ) ) )
+    val para = Paragraph(openingPara)
+    val bulletPointList = BulletPointList(bulletPointLeadingText,
+      Seq( bulletPointOne, bulletPointTwo, bulletPointThree ) )
 
     val simplePage =  Page("root", Seq(para, H1(title), bulletPointList ) )
   }
@@ -87,9 +87,9 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List( bulletPointOne.english,
-        bulletPointTwo.english,
-        bulletPointThree.english )
+      val expectedListItems: List[String] = List( bulletPointOne.english.map(_.toWords).mkString(" "),
+        bulletPointTwo.english.map(_.toWords).mkString(" "),
+        bulletPointThree.english.map(_.toWords).mkString(" ") )
 
       assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
     }
@@ -113,9 +113,9 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List( bulletPointOne.welsh,
-        bulletPointTwo.welsh,
-        bulletPointThree.welsh )
+      val expectedListItems: List[String] = List( bulletPointOne.welsh.map(_.toWords).mkString(" "),
+        bulletPointTwo.welsh.map(_.toWords).mkString(" "),
+        bulletPointThree.welsh.map(_.toWords).mkString(" ") )
 
       assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
     }

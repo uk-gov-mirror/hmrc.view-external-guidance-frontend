@@ -19,11 +19,10 @@ package services
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas.Instruction
-import models.ui.{HyperLink, PageLink, Text, TextItem}
-
 import scala.util.matching.Regex.Match
 
-class TextBuilderSpec extends BaseSpec {
+class BulletPointBuilderSpec extends BaseSpec {
+
   "Text builder identification of bullet point list leading text must" must {
 
     "Identify leading text in simple sentences" in {
@@ -31,7 +30,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Types of fruit you can buy: apples"
       val text2: String = "Types of fruit you can buy: oranges"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of fruit you can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of fruit you can buy:"
     }
 
     "Identify leading text in sentences starting with bold text" in {
@@ -39,7 +38,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[bold:Types of automobile] you can buy saloon"
       val text2: String = "[bold:Types of automobile] you can buy sports utility vehicle"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of automobile] you can buy"
     }
 
     "Identify leading text in complex sentences" in {
@@ -47,7 +46,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
       val text2: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
     }
 
@@ -58,7 +57,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Things you might like [bold:TO DO] this very day"
       val text2: String = "Things you might like [bold:TO DO] on another day"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [bold:TO DO]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [bold:TO DO]"
     }
 
     "Identify leading text in sentences where the leading text contains bold text items embedded in normal text" in {
@@ -66,7 +65,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Things [bold:to do] on sunny [bold:days] in the winter season"
       val text2: String = "Things [bold:to do] on sunny [bold:days] in the summer season"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things [bold:to do] on sunny [bold:days] in the"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things [bold:to do] on sunny [bold:days] in the"
     }
 
     "Identify leading text in sentences where the leading text contains normal text embedded in bold text" in {
@@ -74,7 +73,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] mud"
       val text2: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] snow"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
     }
 
     "Identify leading text in simple sentences with multiple spaces between some words" in {
@@ -82,7 +81,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Types of  fruit you  can buy: apples"
       val text2: String = "Types of  fruit you  can buy: oranges"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of  fruit you  can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of  fruit you  can buy:"
     }
 
     "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
@@ -90,7 +89,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[bold:Types of  automobile] you can buy saloon"
       val text2: String = "[bold:Types of  automobile] you can buy sports utility vehicle"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of  automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of  automobile] you can buy"
     }
 
     "Identify leading text in sentences starting with link text" in {
@@ -98,7 +97,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[link:Types of automobile:http://mydomain/cars] you can buy saloon"
       val text2: String = "[link:Types of automobile:http://mydomain/cars] you can buy sports utility vehicle"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of automobile:http://mydomain/cars] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of automobile:http://mydomain/cars] you can buy"
     }
 
     "Identify leading text is sentences where the leading text ends with link text" in {
@@ -108,7 +107,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] this very day"
       val text2: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] on another day"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
     }
 
     "Identify leading text in sentences where the leading text contains link text items embedded in normal text" in {
@@ -116,7 +115,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the winter season"
       val text2: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the summer season"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
         "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
     }
 
@@ -127,7 +126,7 @@ class TextBuilderSpec extends BaseSpec {
       val text2: String =
         "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] snow covered mountains"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
     }
 
     "Identify leading text in sentences starting with link text with multiple spaces between some of the words" in {
@@ -135,7 +134,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[link:Types of  automobile:5] you  can buy saloon"
       val text2: String = "[link:Types of  automobile:5] you  can buy sports utility vehicle"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of  automobile:5] you  can buy"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of  automobile:5] you  can buy"
     }
 
     "Identify leading text in sentences starting with leading text with both links and bold text" in {
@@ -143,7 +142,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
       val text2: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Hednesford Raceway"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
     }
 
     "Identify leading text in sentences where leading text and trailing text are both bold" in {
@@ -151,7 +150,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[bold:Today is the first day in ][bold:May]"
       val text2: String = "[bold:Today is the first day in ][bold:July]"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Today is the first day in ]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Today is the first day in ]"
     }
 
     "Identify leading text in sentences where leading text and trailing text are both in links" in {
@@ -159,7 +158,7 @@ class TextBuilderSpec extends BaseSpec {
       val text1: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:May:https://nydomain/calendar/may]"
       val text2: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:July:https://mydomain/calendar/july]"
 
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Today is the first day in :https://mydomain/calendar/today]"
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Today is the first day in :https://mydomain/calendar/today]"
     }
 
     "Method locateTextsAndMatchesContainingLeadingText" must {
@@ -172,7 +171,7 @@ class TextBuilderSpec extends BaseSpec {
         val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
 
         // Test invocation with "matchText" set to true
-        val (wordsProcessed1, outputTexts1, outputMatches1) = TextBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, true, 0)
+        val (wordsProcessed1, outputTexts1, outputMatches1) = BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, true, 0)
 
         wordsProcessed1 mustBe 0
 
@@ -180,7 +179,7 @@ class TextBuilderSpec extends BaseSpec {
         outputMatches1 mustBe matches
 
         // Test invocation with "matchText" set to false
-        val (wordsProcessed2, outputTexts2, outputMatches2) = TextBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, false, 2)
+        val (wordsProcessed2, outputTexts2, outputMatches2) = BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, false, 2)
 
         wordsProcessed2 mustBe 2
 
@@ -201,7 +200,7 @@ class TextBuilderSpec extends BaseSpec {
       val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn( text1 ).toList
 
       // Test invocation with "matchText" set to true
-      val ( wordsProcessed1, outputTexts1, outputMatches1 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, true, 0 )
+      val ( wordsProcessed1, outputTexts1, outputMatches1 ) = BulletPointBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, true, 0 )
 
       wordsProcessed1 mustBe 0
 
@@ -209,7 +208,7 @@ class TextBuilderSpec extends BaseSpec {
       outputMatches1 mustBe matches
 
       // Test invocation with "matchText" set to false
-      val ( wordsProcessed2, outputTexts2, outputMatches2 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, false, 2 )
+      val ( wordsProcessed2, outputTexts2, outputMatches2 ) = BulletPointBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, false, 2 )
 
       wordsProcessed2 mustBe 2
 
@@ -231,7 +230,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Not match instructions with two similar leading words" in {
@@ -245,7 +244,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Match instructions with three similar leading words" in {
@@ -259,7 +258,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Match instructions with multiple similar leading words" in {
@@ -273,7 +272,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Not match instructions with multiple similar leading words but different spacing between the second and third words" in {
@@ -287,7 +286,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Not match instructions with two similar leading words in bold" in {
@@ -301,7 +300,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Match instructions with three similar leading words in bold" in {
@@ -315,7 +314,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Not match instructions with three similar leading words in bold but different spacings between the first and second words" in {
@@ -329,7 +328,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true)
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Not match instructions with two similar leading words one normal text and one bold" in {
@@ -343,7 +342,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Match instructions with three similar leading words one normal text and two bold" in {
@@ -357,7 +356,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Match instructions with multiple similar leading words with multiple sets of bold words" in {
@@ -371,7 +370,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Not match instructions with two similar leading words in links" in {
@@ -385,7 +384,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Match instructions with link in leading text" in {
@@ -399,7 +398,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Not match instructions with link in leading text but differing spaces between the second and third words" in {
@@ -413,7 +412,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe false
       }
 
       "Match instructions with links in trailing text" in {
@@ -427,7 +426,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Match instructions with complex leading and trailing text" in {
@@ -441,7 +440,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Match test instructions from Json prototype 1" in {
@@ -455,7 +454,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
 
       "Match test instructions from Json prototype 2" in {
@@ -469,7 +468,7 @@ class TextBuilderSpec extends BaseSpec {
         val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
         val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
 
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
+        BulletPointBuilder.matchInstructions( i1, i2 ) mustBe true
       }
     }
 
