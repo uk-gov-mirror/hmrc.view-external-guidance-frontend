@@ -58,7 +58,7 @@ class UIComponentsSpec extends BaseSpec {
 
       implicit val lang: Lang = Lang("cy")
 
-      Text(english, welsh).value mustBe welsh
+      Text(english, welsh).value mustBe Seq(Words(welsh))
     }
 
     "return appropriate lang text from Text and Text given Lang english" in {
@@ -66,7 +66,7 @@ class UIComponentsSpec extends BaseSpec {
       val english = "Hello my name is ...."
       implicit val lang: Lang = Lang("en")
 
-      Text(english, welsh).value mustBe english
+      Text(english, welsh).value mustBe Seq(Words(english))
     }
 
     "return appropriate lang text from Text and Text given Lang unknown" in {
@@ -74,32 +74,32 @@ class UIComponentsSpec extends BaseSpec {
       val english = "Hello my name is ...."
       implicit val lang: Lang = Lang("jp")
 
-      Text(english, welsh).value mustBe english
+      Text(english, welsh).value mustBe Seq(Words(english))
     }
 
     "use text components with an overriding implementation of the method toString" in {
       val english = "Example text"
       val welsh = "Welsh example text"
 
-      Text( english, welsh ).toString mustBe s"[$english:$welsh:false]"
+      Text( english, welsh ).toString mustBe s"[$english:$welsh]"
     }
 
     "Support English and Welsh text in HTML h1 elements" in {
 
-      h1.txt.value(englishLang) mustBe h1English
-      h1.txt.value(welshLang) mustBe h1Welsh
+      h1.txt.value(englishLang) mustBe Seq(Words(h1English))
+      h1.txt.value(welshLang) mustBe Seq(Words(h1Welsh))
     }
 
     "Support English and Welsh text in HTML h2 elements" in {
 
-      h2.txt.value(englishLang) mustBe h2English
-      h2.txt.value(welshLang) mustBe h2Welsh
+      h2.txt.value(englishLang) mustBe Seq(Words(h2English))
+      h2.txt.value(welshLang) mustBe Seq(Words(h2Welsh))
     }
 
     "Support English and Welsh text in HTML h3 elements" in {
 
-      h3.txt.value(englishLang) mustBe h3English
-      h3.txt.value(welshLang) mustBe h3Welsh
+      h3.txt.value(englishLang) mustBe Seq(Words(h3English))
+      h3.txt.value(welshLang) mustBe Seq(Words(h3Welsh))
     }
 
     "Support the identification of heading components in a list of UIComponents" in {
@@ -132,17 +132,17 @@ class UIComponentsSpec extends BaseSpec {
 
       implicit val lang: Lang = Lang( "en" )
 
-      bulletPointList.leadingText.english match {
+      bulletPointList.leadingText match {
         case text: Text => text.value mustBe leadingText.english
         case _ => fail( "The first text item in leading text is not an instance of the class Text")
       }
 
-      bulletPointList.listItems.head.english match {
+      bulletPointList.listItems.head match {
         case text: Text => text.value mustBe bulletPointOne.english
         case _ => fail( "The first text item in the first bullet point is not an instance of the class Text")
       }
 
-      bulletPointList.listItems(1).english match {
+      bulletPointList.listItems(1) match {
         case text: Text => text.value mustBe bulletPointTwo.english
         case _ => fail( "The first text item in the second bullet point is not an instance of the class Text")
       }
@@ -157,17 +157,17 @@ class UIComponentsSpec extends BaseSpec {
 
       implicit val lang: Lang = Lang( "cy" )
 
-      bulletPointList.leadingText.welsh match {
+      bulletPointList.leadingText match {
         case text: Text => text.value mustBe leadingText.welsh
         case _ => fail( "The first text item in leading text is not an instance of the class Text")
       }
 
-      bulletPointList.listItems.head.welsh match {
+      bulletPointList.listItems.head match {
         case text: Text => text.value mustBe bulletPointOne.welsh
         case _ => fail( "The first text item in the first bullet point is not an instance of the class Text")
       }
 
-      bulletPointList.listItems(1).welsh match {
+      bulletPointList.listItems(1) match {
         case text: Text => text.value mustBe bulletPointTwo.welsh
         case _ => fail( "The first text item in the second bullet point is not an instance of the class Text")
       }
@@ -188,26 +188,14 @@ class UIComponentsSpec extends BaseSpec {
       val bp1TxtEn: Words = Words( "Bullet point 1 text" )
       val bp1TxtCy: Words = Words( "Welsh bullet point 1 text" )
 
-      val bp1LinkEn: Link = Link(
-        "http://bulletPointOneUrl",
-        "Bullet point 1 link",
-        false )
-      val bp1LinkCy: Link = Link(
-        "http://bulletPointOneUrl",
-        "Welsh bullet point 1 link",
-        false )
+      val bp1LinkEn: Link = Link("http://bulletPointOneUrl","Bullet point 1 link",false)
+      val bp1LinkCy: Link = Link("http://bulletPointOneUrl","Welsh bullet point 1 link", false)
 
       val bp2TxtEn: Words = Words( "Bullet point 2 text" )
       val bp2TxtCy: Words = Words( "Welsh bullet point 2 text" )
 
-      val bp2LinkEn: Link = Link(
-        "http://bulletPointTwoUrl",
-        "Bullet point 2 link",
-        true )
-      val bp2LinkCy: Link = Link(
-        "http://bulletPointTwoUrl",
-        "Welsh bullet point 2 link",
-        true )
+      val bp2LinkEn: Link = Link("http://bulletPointTwoUrl", "Bullet point 2 link", true)
+      val bp2LinkCy: Link = Link("http://bulletPointTwoUrl", "Welsh bullet point 2 link", true)
 
       val bpListLeadingText: Text =
         Text(Seq( leadingTxt1En, leadingLinkEn, leadingTxt2En ),
@@ -222,15 +210,15 @@ class UIComponentsSpec extends BaseSpec {
       val bulletPointList: BulletPointList = BulletPointList( bpListLeadingText, bulletPointListItems )
 
       // Test components of bullet point list
-      bulletPointList.leadingText.english(0).toString mustBe "[Leading text 1:Welsh leading text 1:false]"
-      bulletPointList.leadingText.english(1).toString mustBe "[link:[Leading text link:Welsh leading text link:false]:http://leadingTextUrl:false]"
-      bulletPointList.leadingText.english(2).toString mustBe "[Leading text 2:Welsh leading text 2:false]"
+      bulletPointList.leadingText.english(0).toString mustBe "Leading text 1"
+      bulletPointList.leadingText.english(1).toString mustBe "[link:Leading text link:http://leadingTextUrl:false]"
+      bulletPointList.leadingText.english(2).toString mustBe "Leading text 2"
 
-      bulletPointList.listItems.head.english(0).toString mustBe "[Bullet point 1 text:Welsh bullet point 1 text:false]"
-      bulletPointList.listItems.head.english(1).toString mustBe "[link:[Bullet point 1 link:Welsh bullet point 1 link:false]:http://bulletPointOneUrl:false]"
+      bulletPointList.listItems.head.english(0).toString mustBe "Bullet point 1 text"
+      bulletPointList.listItems.head.english(1).toString mustBe "[link:Bullet point 1 link:http://bulletPointOneUrl:false]"
 
-      bulletPointList.listItems(1).english(0).toString mustBe "[Bullet point 2 text:Welsh bullet point 2 text:false]"
-      bulletPointList.listItems(1).english(1).toString mustBe "[link:[Bullet point 2 link:Welsh bullet point 2 link:false]:http://bulletPointTwoUrl:true]"
+      bulletPointList.listItems(1).english(0).toString mustBe "Bullet point 2 text"
+      bulletPointList.listItems(1).english(1).toString mustBe "[link:Bullet point 2 link:http://bulletPointTwoUrl:true]"
     }
 
     "use Link components with an implementation of the toString method for use in debugging" in {
@@ -279,7 +267,7 @@ class UIComponentsSpec extends BaseSpec {
 
     "use Link components which correctly support toString" in {
       val en: String = "Hello"
-      Link("4", en).toString mustBe s"[link:${en}:4]"
+      Link("4", en).toString mustBe s"[link:${en}:4:false]"
     }
 
     "build a complete page" in {
@@ -317,9 +305,7 @@ class UIComponentsSpec extends BaseSpec {
         "Welsh closing section of second paragraph"
       )
 
-      val secondParagraph: Paragraph = Paragraph(
-        secondParagraphLeadingText.add(link).add(secondParagraphClosingText)
-      )
+      val secondParagraph: Paragraph = Paragraph(secondParagraphLeadingText + link + secondParagraphClosingText)
 
       // Define text of some note
       val h3Page: H3 = H3( Text( "Note", "Welsh note" ) )
@@ -340,7 +326,7 @@ class UIComponentsSpec extends BaseSpec {
 
       val bulletPointList: BulletPointList = BulletPointList(
         leadingText,
-        Seq(bulletPointOne, bulletPointTwo, bulletPointThree.add(Text(bp3LinkEn, bp3LinkCy)))
+        Seq(bulletPointOne, bulletPointTwo, bulletPointThree + Text(bp3LinkEn, bp3LinkCy))
       )
 
       val components: Seq[UIComponent] = Seq(
@@ -353,7 +339,7 @@ class UIComponentsSpec extends BaseSpec {
 
       val page: Page = Page( "/pageUrl", components )
 
-      page.components.length mustBe 7
+      page.components.length mustBe 6
 
       page.components.head match {
         case matchedH1: H1 => matchedH1 mustBe h1Page

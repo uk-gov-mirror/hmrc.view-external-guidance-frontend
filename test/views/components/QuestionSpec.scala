@@ -78,7 +78,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint = doc.getElementsByTag("span").first
       val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hintAttrs("class") shouldBe "govuk-hint"
-      hint.text() shouldBe para1Text.value(messages.lang)
+      hint.text() shouldBe para1Text.value(messages.lang).head.toString
     }
 
     "render answers as radio buttons" in new Test {
@@ -87,9 +87,9 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radios.size shouldBe answers.length
       val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
       radioLabels.size shouldBe answers.length
-      radioLabels(0) shouldBe Text(ans1).value(messages.lang)
-      radioLabels(1) shouldBe Text(ans2).value(messages.lang)
-      radioLabels(2) shouldBe Text(ans3).value(messages.lang)
+      radioLabels(0) shouldBe Text(ans1).value(messages.lang).head.toString
+      radioLabels(1) shouldBe Text(ans2).value(messages.lang).head.toString
+      radioLabels(2) shouldBe Text(ans3).value(messages.lang).head.toString
     }
 
     "render answers with hints vertically" in new Test {
@@ -98,13 +98,13 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang)
+      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang).head.toString
       val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang)
+      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang).head.toString
       val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang).head.toString
     }
 
     "render answers with hints horizontally" in new Test {
@@ -140,7 +140,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint = doc.getElementsByTag("span").first
       val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hintAttrs("class") shouldBe "govuk-hint"
-      hint.text() shouldBe para1Text.value(messages.lang)
+      hint.text() shouldBe para1Text.value(messages.lang).head.toString
     }
 
     "render answers as radio buttons" in new WelshTest {
@@ -149,9 +149,9 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radios.size shouldBe answers.length
       val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
       radioLabels.size shouldBe answers.length
-      radioLabels(0) shouldBe Text(ans1).value(messages.lang)
-      radioLabels(1) shouldBe Text(ans2).value(messages.lang)
-      radioLabels(2) shouldBe Text(ans3).value(messages.lang)
+      radioLabels(0) shouldBe Text(ans1).value(messages.lang).head.toString
+      radioLabels(1) shouldBe Text(ans2).value(messages.lang).head.toString
+      radioLabels(2) shouldBe Text(ans3).value(messages.lang).head.toString
     }
 
     "render answers with hints" in new WelshTest {
@@ -160,13 +160,13 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang)
+      hints(0).text() shouldBe Text(ans1Hint).value(messages.lang).head.toString
       val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang)
+      hints(1).text() shouldBe Text(ans2Hint).value(messages.lang).head.toString
       val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
-      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang)
+      hints(2).text() shouldBe Text(ans3Hint).value(messages.lang).head.toString
     }
 
     "render answers with hints horizontally" in new Test {

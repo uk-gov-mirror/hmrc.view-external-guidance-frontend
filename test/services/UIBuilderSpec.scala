@@ -154,17 +154,18 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
     val hyperLinkPage = Page("start", "/test-page", stanzasWithHyperLink, Seq(""), Nil)
 
-    // val pageItems = Seq(ltxt1, link1, ltxt2, link2, ltxt3)
-    val textItems = ltxt1.add(Text(link1En,link1Cy))
-                         .add(ltxt2)
-                         .add(Text(link2En,link2Cy))
-                         .add(ltxt3)
-    val textItems2 = Text(link2_1En,link2_1Cy).add(ltxt2).add(Text(link2_2En,link2_2Cy))
-    val pageLinkTextItems = ltxt1.add(Text(pageLink1En,pageLink1Cy))
-                                 .add(ltxt2)
-                                 .add(Text(pageLink2En,pageLink2Cy))
-                                 .add(ltxt3)
-    val allLinksTextItems = Text(link2_1En,link2_1Cy).add(ltxt2).add(Text(pageLink1En,pageLink1Cy))
+    val textItems = ltxt1 +
+                    Text(link1En,link1Cy) +
+                    ltxt2 +
+                    Text(link2En,link2Cy) +
+                    ltxt3
+    val textItems2 = Text(link2_1En,link2_1Cy) + ltxt2 + Text(link2_2En,link2_2Cy)
+    val pageLinkTextItems = ltxt1 +
+                            Text(pageLink1En,pageLink1Cy) +
+                            ltxt2 +
+                            Text(pageLink2En,pageLink2Cy) +
+                            ltxt3
+    val allLinksTextItems = Text(link2_1En,link2_1Cy) + ltxt2 + Text(pageLink1En,pageLink1Cy)
 
     val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEmbeddedLinks)
     val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)

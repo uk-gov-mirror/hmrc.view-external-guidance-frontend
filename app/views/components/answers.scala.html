@@ -33,12 +33,12 @@
             aria-describedby="@name-@index-item-hint">
 
       <label class="govuk-label govuk-radios__label govuk-label--s" for="@name-@index">
-        @components.text_items(ans.txt)
+        @components.render_text(ans.txt)
       </label>
 
       @ans.hint.map{ hintText =>
         <span id="@name-item-@index-hint" class="govuk-hint govuk-radios__hint">
-          @components.text_items(hintText)
+          @components.render_text(hintText)
         </span>
       }
     </div>

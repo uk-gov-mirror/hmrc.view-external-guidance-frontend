@@ -57,7 +57,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     val link2 = Text(link2En, link2Cy)
     val pageLink = Text(pageLinkEn, pageLinkCy)
 
-    val paraWithMultipleLinks =  Paragraph(paraText1.add(link1).add(paraText2).add(link2).add(pageLink))
+    val paraWithMultipleLinks =  Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink)
   }
 
   trait WelshTest extends Test {
@@ -71,7 +71,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       val doc = asDocument(paragraph(ledePara))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english
+      paras.first.text shouldBe paraText1.english.head.toString
       paras.first.classNames.toString shouldBe "[govuk-body-l]"
     }
 
@@ -80,7 +80,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       val doc = asDocument(paragraph(para))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english
+      paras.first.text shouldBe paraText1.english.head.toString
       paras.first.classNames.toString shouldBe "[govuk-body]"
     }
 
@@ -95,8 +95,8 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
 
       val txtNodes = paras.first.textNodes().asScala
       txtNodes.length shouldBe 4
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
+      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
+      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
 
       val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link1Attrs.contains("href") shouldBe true
@@ -126,7 +126,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       val doc = asDocument(paragraph(ledePara))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh
+      paras.first.text shouldBe paraText1.welsh.head.toString
       paras.first.classNames.toString shouldBe "[govuk-body-l]"
     }
 
@@ -135,7 +135,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       val doc = asDocument(paragraph(para))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh
+      paras.first.text shouldBe paraText1.welsh.head.toString
       paras.first.classNames.toString shouldBe "[govuk-body]"
     }
 
@@ -150,8 +150,8 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
 
       val txtNodes = paras.first.textNodes().asScala
       txtNodes.length shouldBe 4
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang)
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang)
+      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
+      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
 
       val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link1Attrs.contains("href") shouldBe true

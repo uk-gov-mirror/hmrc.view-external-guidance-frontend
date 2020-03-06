@@ -43,8 +43,8 @@ class TextBuilderSpec extends BaseSpec {
 
 
     val txtWithLinks = Phrase(
-      Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
-      "[bold:Welsh, This is a ][link:Welsh, A link:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link:https://www.gov.uk] Welsh, and nothing")
+      Vector(s"[bold:This is a ][link:${link1EnWords}:https://www.bbc.co.uk] followed by [link:${link2EnWords}:https://www.gov.uk] and nothing",
+      s"[bold:Welsh, This is a ][link:${link1CyWords}:https://www.bbc.co.uk] Welsh, followed by [link:${link2CyWords}:https://www.gov.uk] Welsh, and nothing")
     )
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
@@ -52,9 +52,10 @@ class TextBuilderSpec extends BaseSpec {
     implicit val stanzaIdToUrlMap: Map[String, String] = Map()
 
     val answerWithNoHint = Phrase("Yes", "Welsh, Yes")
-    val answerWithHint = Phrase("Yes[hint:You agreee with the assertion]", """Welsh, Yes[hint:You DON'T agree with the assertion]""")
+    val answerWithHint = Phrase("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
+
     val answer = Text("Yes","Welsh, Yes")
-    val hint = Text("You agreee with the assertion","""You DON'T agree with the assertion""")
+    val hint = Text("You agree with the assertion","Welsh, You agree with the assertion")
   }
 
   "TextBuilder placeholder parsing" must {
@@ -66,14 +67,14 @@ class TextBuilderSpec extends BaseSpec {
       txt.english(0) mustBe lEnWords1
       txt.welsh(0) mustBe lCyWords1
 
-      txt.english(1) mustBe link1EnWords
-      txt.welsh(1) mustBe link1CyWords
+      txt.english(1).toWords mustBe Link("https://www.bbc.co.uk",link1EnWords).toWords
+      txt.welsh(1).toWords mustBe Link("https://www.bbc.co.uk",link1CyWords).toWords
 
       txt.english(2) mustBe lEnWords2
       txt.welsh(2) mustBe lCyWords2
 
-      txt.english(3) mustBe link2EnWords
-      txt.welsh(3) mustBe link2CyWords
+      txt.english(3).toWords mustBe Link("https://www.gov.uk",link2EnWords).toWords
+      txt.welsh(3).toWords mustBe Link("https://www.gov.uk",link2CyWords).toWords
 
       txt.english(4) mustBe lEnWords3
       txt.welsh(4) mustBe lCyWords3
