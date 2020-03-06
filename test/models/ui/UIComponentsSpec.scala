@@ -84,6 +84,16 @@ class UIComponentsSpec extends BaseSpec {
       Text( english, welsh ).toString mustBe s"[$english:$welsh]"
     }
 
+    "support isEmpty within Text" in {
+      Text().isEmpty(Lang("en")) mustBe true
+      Text().isEmpty(Lang("cy")) mustBe true
+
+      Text("","").isEmpty(Lang("en")) mustBe false
+
+      Text("","").english.forall(_.isEmpty) mustBe true
+      Text("","").welsh.forall(_.isEmpty) mustBe true
+    }
+
     "Support English and Welsh text in HTML h1 elements" in {
 
       h1.txt.value(englishLang) mustBe Seq(Words(h1English))
