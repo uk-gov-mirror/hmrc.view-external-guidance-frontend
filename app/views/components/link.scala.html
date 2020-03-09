@@ -16,7 +16,7 @@
 
 @import models.ui.Link
 
-@(link: Link)(implicit messages: Messages)
+@(link: Link)
 
 <a class="govuk-link" href="@link.dest" @{if (link.window) "target=\"_blank\""}>@link.txt</a>
 
