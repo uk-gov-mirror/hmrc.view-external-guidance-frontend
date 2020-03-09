@@ -66,11 +66,6 @@ object UIBuilder {
       case Section => H3(TextBuilder.fromPhrase(c.text))
       case Lede => Paragraph(TextBuilder.fromPhrase(c.text), true)
       case Error => H3(TextBuilder.fromPhrase(c.text)) // TODO
-      // case Title => H1(Text(c.text.langs))
-      // case SubTitle => H2(Text(c.text.langs))
-      // case Section => H3(Text(c.text.langs))
-      // case Lede => Paragraph(Text(c.text.langs), true)
-      // case Error => H3(Text(c.text.langs)) // TODO
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
