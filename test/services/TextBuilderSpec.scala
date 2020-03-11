@@ -18,141 +18,101 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ocelot.stanzas.Instruction
-import models.ui.{HyperLink, PageLink, Text, TextItem}
-
-import scala.util.matching.Regex.Match
+import models.ui.{Link, Text, Words}
 
 class TextBuilderSpec extends BaseSpec {
 
   trait Test extends ProcessJson {
 
-    val ltxt1 = Text("This is a ","Welsh, This is a ", true)
-    val ltxt2 = Text(" followed by "," Welsh, followed by ")
-    val ltxt3 = Text(" and nothing"," Welsh, and nothing")
-    val link1Txt = Text("A link","Welsh, A link")
-    val link2Txt = Text("Another Link","Welsh, Another Link")
+    val lEnWords1 = Words("This is a ", true)
+    val lCyWords1 = Words("Welsh, This is a ", true)
+    val lEnWords2 = Words(" followed by ")
+    val lCyWords2 = Words(" Welsh, followed by ")
+    val lEnWords3 = Words(" and nothing")
+    val lCyWords3 = Words(" Welsh, and nothing")
+    val link1EnWords = "A link"
+    val link1CyWords = "Welsh, A link"
+    val link2EnWords = "Another Link"
+    val link2CyWords = "Welsh, Another Link"
 
-    val link1 = HyperLink("https://www.bbc.co.uk", link1Txt, false)
-    val link2 = HyperLink("https://www.gov.uk", link2Txt, false)
+    val linkEn1 = Link("https://www.bbc.co.uk", link1EnWords, false)
+    val linkCy1 = Link("https://www.bbc.co.uk", link1CyWords, false)
+    val linkEn2 = Link("https://www.gov.uk", link2EnWords, false)
+    val linkCy2 = Link("https://www.gov.uk", link2CyWords, false)
     val urlMap1: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
 
+
     val txtWithLinks = Phrase(
-      Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
-      "[bold:Welsh, This is a ][link:Welsh, A link:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link:https://www.gov.uk] Welsh, and nothing")
+      Vector(s"[bold:This is a ][link:${link1EnWords}:https://www.bbc.co.uk] followed by [link:${link2EnWords}:https://www.gov.uk] and nothing",
+      s"[bold:Welsh, This is a ][link:${link1CyWords}:https://www.bbc.co.uk] Welsh, followed by [link:${link2CyWords}:https://www.gov.uk] Welsh, and nothing")
     )
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
                                          "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     implicit val stanzaIdToUrlMap: Map[String, String] = Map()
 
-    val answerWithNoHint = Phrase(Vector("Yes", "Welsh, Yes"))
-    val answerWithHint = Phrase(Vector("Yes[hint:You agreee with the assertion]", """Welsh, Yes[hint:You DON'T agree with the assertion]"""))
+    val answerWithNoHint = Phrase("Yes", "Welsh, Yes")
+    val answerWithHint = Phrase("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
+
     val answer = Text("Yes","Welsh, Yes")
-    val hint = Text("You agreee with the assertion","""You DON'T agree with the assertion""")
+    val hint = Text("You agree with the assertion","Welsh, You agree with the assertion")
   }
 
   "TextBuilder placeholder parsing" must {
 
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
 
-      val txtItems = TextBuilder.fromPhrase(txtWithLinks)
+      val txt = TextBuilder.fromPhrase(txtWithLinks)
 
-      txtItems(0) mustBe ltxt1
-      txtItems(1) mustBe link1
-      txtItems(2) mustBe ltxt2
-      txtItems(3) mustBe link2
-      txtItems(4) mustBe ltxt3
+      txt.english(0) mustBe lEnWords1
+      txt.welsh(0) mustBe lCyWords1
+
+      txt.english(1).toWords mustBe Link("https://www.bbc.co.uk",link1EnWords).toWords
+      txt.welsh(1).toWords mustBe Link("https://www.bbc.co.uk",link1CyWords).toWords
+
+      txt.english(2) mustBe lEnWords2
+      txt.welsh(2) mustBe lCyWords2
+
+      txt.english(3).toWords mustBe Link("https://www.gov.uk",link2EnWords).toWords
+      txt.welsh(3).toWords mustBe Link("https://www.gov.uk",link2CyWords).toWords
+
+      txt.english(4) mustBe lEnWords3
+      txt.welsh(4) mustBe lCyWords3
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
-      val items: Seq[TextItem] = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
+      val txt: Text = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
 
-      items.length mustBe 1
+      txt.english.length mustBe 1
+      txt.welsh.length mustBe 1
 
-      items(0) mustBe Text("Hello [link:Blah Blah:htts://www.bbc.co.uk]","Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
+      txt.english(0) mustBe Words("Hello [link:Blah Blah:htts://www.bbc.co.uk]")
+      txt.welsh(0) mustBe Words("Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
     }
 
     "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
-      val linkPhrase = Phrase(Vector("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
-                                     "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]"))
+      val linkPhrase = Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
+                              "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]")
 
-      val items: Seq[TextItem] = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
+      val txt: Text = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
 
-      items.length mustBe 4
+      txt.english.length mustBe 4
+      txt.welsh.length mustBe 4
 
-      items(0) mustBe Text("Hello ","Welsh, Hello ")
-      items(1) mustBe HyperLink("https://www.bbc.co.uk",Text("Blah Blah","Blah Blah"))
-      items(2) mustBe Text(" "," ")
-      items(3) mustBe PageLink("dummy-path/blah",Text("Blah Blah","Blah Blah"))
+      txt.english(0) mustBe Words("Hello ")
+      txt.welsh(0) mustBe Words("Welsh, Hello ")
+
+      txt.english(1) mustBe Link("https://www.bbc.co.uk","Blah Blah")
+      txt.welsh(1) mustBe Link("https://www.bbc.co.uk","Blah Blah")
+
+      txt.english(2) mustBe Words(" ")
+      txt.welsh(2) mustBe Words(" ")
+
+      txt.english(3) mustBe Link("dummy-path/blah","Blah Blah")
+      txt.welsh(3) mustBe Link("dummy-path/blah","Blah Blah")
+
     }
 
-  }
-
-  "TextBuilder bold text annotation removal processing" must {
-
-    "Manage  a blank text string" in {
-
-      val text = ""
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe text
-    }
-
-    "Return text unchanged when no bold text present" in {
-
-      val text: String = "Today the weather is fine"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe text
-    }
-
-    "Return bold text only when normal text is not defined" in {
-
-      val text: String = "[bold:Important]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Important"
-    }
-
-    "Return both normal and bold text for combination of leading text followed by bold text" in {
-
-      val text: String = "This is [bold:Important]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "This is Important"
-    }
-
-    "Return both normal text and bold text for combination of leading bold text followed by normal text" in {
-
-      val text: String = "[bold:Important] do not do this"
-
-      TextBuilder.fragmentsToDisplay( text) mustBe "Important do not do this"
-    }
-
-    "Return both normal and bold text for text with single embedded bold text" in {
-
-      val text: String = "Hello from [bold:Team Ocelot] in Greenland"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Hello from Team Ocelot in Greenland"
-    }
-
-    "Return both normal and bold text with normal text embedded in bold text" in {
-
-      val text: String = "[bold:Greetings from] our home in lovely [bold:Nova Scotia]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Greetings from our home in lovely Nova Scotia"
-    }
-
-    "Return both normal and bold text from mixed text starting with normal text" in {
-
-      val text: String = "Today is [bold:Wednesday 10th May] and tomorrow is [bold:Thursday 11th May]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
-    }
-
-    "Return both normal and bold text from mixed text staring with bold text" in {
-
-      val text: String = "[bold:Here and now] we must all [bold:try] to be calm"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Here and now we must all try to be calm"
-    }
   }
 
   "TextBuilder answer processing" must {
@@ -168,533 +128,4 @@ class TextBuilderSpec extends BaseSpec {
       hintText mustBe Some(hint)
     }
   }
-
-  "TextBuilder link text annotation removal processing" must {
-
-    "Manage a blank text string" in {
-
-      val text = ""
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe text
-    }
-
-    "Return text unchanged when no link text present" in {
-
-      val text: String = "Today the weather is fine"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe text
-    }
-
-    "Return link text only when normal text is not defined" in {
-
-      val text: String = "[link:View options:https://mydomain/options]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "View options"
-    }
-
-    "Return both normal and link text for combination of leading text followed by link text" in {
-
-      val text: String = "View instructions for [link:mending a broken axle:http://mechanicsAreUs/axles]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "View instructions for mending a broken axle"
-    }
-
-    "Return both normal text and link text for combination of leading link text followed by normal text" in {
-
-      val text: String = "[link:Click here:https://my.com/details] for information"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Click here for information"
-    }
-
-    "Return both normal and link text for text with single embedded link" in {
-
-      val text: String = "For details [link:click here:https://info.co.uk/details] and follow the instructions shown"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "For details click here and follow the instructions shown"
-    }
-
-    "Return both normal and link text with normal text embedded in links" in {
-
-      val text: String = "[link:Link 1 text:http://link1] and [link:link 2 text:https://link2]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Link 1 text and link 2 text"
-    }
-
-    "Return both normal and link text from mixed text starting with normal text" in {
-
-      val text: String = "Today is [link:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link:Thursday 11th May:http://my.com/calendar]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
-    }
-
-    "Return both normal and link text from mixed text staring with link" in {
-
-      val text: String = "[link:Here and now:http://thisyear/today] we must all [link:try:https://explain] to be calm"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "Here and now we must all try to be calm"
-    }
-
-    "Return correct text with back to back links" in {
-
-      val text: String = "This should [link:be interesting:https://my.com/interesting?part=2] [link:and informative:http://my.com/inform]"
-
-      TextBuilder.fragmentsToDisplay( text ) mustBe "This should be interesting and informative"
-    }
-
-  }
-
-  "Text builder identification of bullet point list leading text must" must {
-
-    "Identify leading text in simple sentences" in {
-
-      val text1: String = "Types of fruit you can buy: apples"
-      val text2: String = "Types of fruit you can buy: oranges"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of fruit you can buy:"
-    }
-
-    "Identify leading text in sentences starting with bold text" in {
-
-      val text1: String = "[bold:Types of automobile] you can buy saloon"
-      val text2: String = "[bold:Types of automobile] you can buy sports utility vehicle"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of automobile] you can buy"
-    }
-
-    "Identify leading text in complex sentences" in {
-
-      val text1: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
-      val text2: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe
-        "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
-    }
-
-    "Identify leading text is sentences where the leading text ends with bold text" in {
-
-      // Note the final space after the bold text can be ignored
-
-      val text1: String = "Things you might like [bold:TO DO] this very day"
-      val text2: String = "Things you might like [bold:TO DO] on another day"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [bold:TO DO]"
-    }
-
-    "Identify leading text in sentences where the leading text contains bold text items embedded in normal text" in {
-
-      val text1: String = "Things [bold:to do] on sunny [bold:days] in the winter season"
-      val text2: String = "Things [bold:to do] on sunny [bold:days] in the summer season"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things [bold:to do] on sunny [bold:days] in the"
-    }
-
-    "Identify leading text in sentences where the leading text contains normal text embedded in bold text" in {
-
-      val text1: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] mud"
-      val text2: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] snow"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
-    }
-
-    "Identify leading text in simple sentences with multiple spaces between some words" in {
-
-      val text1: String = "Types of  fruit you  can buy: apples"
-      val text2: String = "Types of  fruit you  can buy: oranges"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Types of  fruit you  can buy:"
-    }
-
-    "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
-
-      val text1: String = "[bold:Types of  automobile] you can buy saloon"
-      val text2: String = "[bold:Types of  automobile] you can buy sports utility vehicle"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Types of  automobile] you can buy"
-    }
-
-    "Identify leading text in sentences starting with link text" in {
-
-      val text1: String = "[link:Types of automobile:http://mydomain/cars] you can buy saloon"
-      val text2: String = "[link:Types of automobile:http://mydomain/cars] you can buy sports utility vehicle"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of automobile:http://mydomain/cars] you can buy"
-    }
-
-    "Identify leading text is sentences where the leading text ends with link text" in {
-
-      // Note the final space after the bold text can be ignored
-
-      val text1: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] this very day"
-      val text2: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] on another day"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
-    }
-
-    "Identify leading text in sentences where the leading text contains link text items embedded in normal text" in {
-
-      val text1: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the winter season"
-      val text2: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the summer season"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe
-        "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
-    }
-
-    "Identify leading text in sentences where the leading text contains normal text embedded in link text" in {
-
-      val text1: String =
-        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] muddy lanes"
-      val text2: String =
-        "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] snow covered mountains"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
-    }
-
-    "Identify leading text in sentences starting with link text with multiple spaces between some of the words" in {
-
-      val text1: String = "[link:Types of  automobile:5] you  can buy saloon"
-      val text2: String = "[link:Types of  automobile:5] you  can buy sports utility vehicle"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Types of  automobile:5] you  can buy"
-    }
-
-    "Identify leading text in sentences starting with leading text with both links and bold text" in {
-
-      val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
-      val text2: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Hednesford Raceway"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
-    }
-
-    "Identify leading text in sentences where leading text and trailing text are both bold" in {
-
-      val text1: String = "[bold:Today is the first day in ][bold:May]"
-      val text2: String = "[bold:Today is the first day in ][bold:July]"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[bold:Today is the first day in ]"
-    }
-
-    "Identify leading text in sentences where leading text and trailing text are both in links" in {
-
-      val text1: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:May:https://nydomain/calendar/may]"
-      val text2: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:July:https://mydomain/calendar/july]"
-
-      TextBuilder.determineMatchedLeadingText(text1, text2) mustBe "[link:Today is the first day in :https://mydomain/calendar/today]"
-    }
-
-    "Method locateTextsAndMatchesContainingLeadingText" must {
-
-      "Handle so far theoretical case when no text or match components are present" in {
-
-        val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
-
-        val texts: List[String] = TextBuilder.placeholdersPattern.split(text1).toList
-        val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
-
-        // Test invocation with "matchText" set to true
-        val (wordsProcessed1, outputTexts1, outputMatches1) = TextBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, true, 0)
-
-        wordsProcessed1 mustBe 0
-
-        outputTexts1 mustBe texts
-        outputMatches1 mustBe matches
-
-        // Test invocation with "matchText" set to false
-        val (wordsProcessed2, outputTexts2, outputMatches2) = TextBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, false, 2)
-
-        wordsProcessed2 mustBe 2
-
-        outputTexts2 mustBe texts
-        outputMatches2 mustBe matches
-      }
-
-    }
-  }
-
-  "Method locateTextsAndMatchesContainingLeadingText" must {
-
-    "Handle so far theoretical case when no text or match components are present" in {
-
-      val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
-
-      val texts: List[String] = TextBuilder.placeholdersPattern.split( text1 ).toList
-      val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn( text1 ).toList
-
-      // Test invocation with "matchText" set to true
-      val ( wordsProcessed1, outputTexts1, outputMatches1 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, true, 0 )
-
-      wordsProcessed1 mustBe 0
-
-      outputTexts1 mustBe texts
-      outputMatches1 mustBe matches
-
-      // Test invocation with "matchText" set to false
-      val ( wordsProcessed2, outputTexts2, outputMatches2 ) = TextBuilder.locateTextsAndMatchesContainingLeadingText( 2, List(), List(), texts, matches, false, 2 )
-
-      wordsProcessed2 mustBe 2
-
-      outputTexts2 mustBe texts
-      outputMatches2 mustBe matches
-    }
-  }
-
-    "Bullet point list instruction match testing" must {
-
-      "Not match instructions with no similar text" in {
-
-        val firstInstructionText: String = "Good Morning"
-        val secondInstructionText: String = "Buen día"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Not match instructions with two similar leading words" in {
-
-        val firstInstructionText: String = "Today is Wednesday"
-        val secondInstructionText: String = "Today is Thursday"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Match instructions with three similar leading words" in {
-
-        val firstInstructionText: String = "I have bought: apples"
-        val secondInstructionText: String = "I have bought: oranges"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Match instructions with multiple similar leading words" in {
-
-        val firstInstructionText: String = "The road is long and winding over there"
-        val secondInstructionText: String = "The road is long and winding and here"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Not match instructions with multiple similar leading words but different spacing between the second and third words" in {
-
-        val firstInstructionText: String = "The road   is long and winding over there"
-        val secondInstructionText: String = "The road is long and winding and here"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Not match instructions with two similar leading words in bold" in {
-
-        val firstInstructionText: String = "[bold:Today is Monday]"
-        val secondInstructionText: String = "[bold:Today is Thursday]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Match instructions with three similar leading words in bold" in {
-
-        val firstInstructionText: String = "[bold:I have bought: apples]"
-        val secondInstructionText: String = "[bold:I have bought: oranges]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Not match instructions with three similar leading words in bold but different spacings between the first and second words" in {
-
-        val firstInstructionText: String = "[bold:I have bought: apples]"
-        val secondInstructionText: String = "[bold:I  have bought: oranges]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, true)
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Not match instructions with two similar leading words one normal text and one bold" in {
-
-        val firstInstructionText: String = "Today [bold:is Monday]"
-        val secondInstructionText: String = "Today [bold:is Thursday]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Match instructions with three similar leading words one normal text and two bold" in {
-
-        val firstInstructionText: String = "Today [bold:is Monday] 1st"
-        val secondInstructionText: String = "Today [bold:is Monday] 2nd"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Match instructions with multiple similar leading words with multiple sets of bold words" in {
-
-        val firstInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 4th"
-        val secondInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 7th"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Not match instructions with two similar leading words in links" in {
-
-        val firstInstructionText: String = "[link:Today is Monday:http://mydomain/test]"
-        val secondInstructionText: String = "[link:Today is Thursday:http://mydomain/test]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Match instructions with link in leading text" in {
-
-        val firstInstructionText: String = "[link:The news this: morning:https://mydomain/news/morning] Early riser fails to get up"
-        val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Not match instructions with link in leading text but differing spaces between the second and third words" in {
-
-        val firstInstructionText: String = "[link:The news  this: morning:https://mydomain/news/morning] Early riser fails to get up"
-        val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe false
-      }
-
-      "Match instructions with links in trailing text" in {
-
-        val firstInstructionText: String = "Today I bought some [link:oranges:http://mydomain/fruits/oranges]"
-        val secondInstructionText: String = "Today I bought some [link:apples:http://mydomain/fruits/apples]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Match instructions with complex leading and trailing text" in {
-
-        val firstInstructionText: String = "Today [bold: I bought] some [link:fruits:http://mydomain/fruits] at [bold:Stafford Fruit Market] see [link:Staffordshire markets:https://mydomain/markets/staffordshire]"
-        val secondInstructionText: String = "Today [bold: I bought] some [link:fruits:http://mydomain/fruits] at [bold:Shrewsbury Market] see [link:Shropshire markets:https://mydomain/markets/shropshire]"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Match test instructions from Json prototype 1" in {
-
-        val firstInstructionText: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
-        val secondInstructionText: String = "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-
-      "Match test instructions from Json prototype 2" in {
-
-        val firstInstructionText: String =  "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)"
-        val secondInstructionText: String = "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property"
-
-        val firstInstructionPhrase: Phrase = createPhrase( firstInstructionText, "" )
-        val secondInstructionPhrase: Phrase = createPhrase( secondInstructionText, "" )
-
-        val i1: Instruction = new Instruction( firstInstructionPhrase, Nil, None, false )
-        val i2: Instruction = new Instruction( secondInstructionPhrase, Nil, None, false )
-
-        TextBuilder.matchInstructions( i1, i2 ) mustBe true
-      }
-    }
-
-  def createPhrase( englishText: String, welshText: String ) : Phrase = {
-
-    Phrase( Vector( englishText, welshText ) )
-  }
-
 }

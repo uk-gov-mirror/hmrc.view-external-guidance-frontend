@@ -20,10 +20,8 @@
 
 @(page: Page)(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.value(messages.lang)) {
-
-@components.page(page)
-
+@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+  @components.page(page)
 }
 @{
      //$COVERAGE-OFF$

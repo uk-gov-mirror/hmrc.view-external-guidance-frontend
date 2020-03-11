@@ -14,11 +14,12 @@
  * limitations under the License.
  *@
 
-@import models.ui.HyperLink
+@import models.ui.Link
 
-@(link: HyperLink)(implicit messages: Messages)
+@(link: Link)
 
-<a class="govuk-link" href="@link.dest" @{if (link.window) "target=\"_blank\""}>@link.txt.value(messages.lang)</a>
+<a class="govuk-link" href="@link.dest" @{if (link.window) "target=\"_blank\""}>@link.txt</a>
+
 @{
      //$COVERAGE-OFF$
 }

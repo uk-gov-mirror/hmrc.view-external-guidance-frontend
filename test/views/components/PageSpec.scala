@@ -55,9 +55,9 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val bulletPointThree = Text( "hiring out personal equipment (such as power tools)",
       "llogi offer personol (fel offer pŵer)" )
 
-    val para = Paragraph(Seq(openingPara))
-    val bulletPointList = BulletPointList( Seq( bulletPointLeadingText ),
-      Seq( Seq( bulletPointOne ), Seq( bulletPointTwo ), Seq( bulletPointThree ) ) )
+    val para = Paragraph(openingPara)
+    val bulletPointList = BulletPointList(bulletPointLeadingText,
+      Seq( bulletPointOne, bulletPointTwo, bulletPointThree ) )
 
     val simplePage =  Page("root", Seq(para, H1(title), bulletPointList ) )
   }
@@ -75,21 +75,21 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val paras = doc.getElementsByTag("p")
 
       paras.size shouldBe 2
-      paras.first.text shouldBe openingPara.english
+      paras.first.text shouldBe openingPara.value(messages.lang).head.toString
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe title.english
+      h1s.first.text shouldBe title.english.head.toString
 
       val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.english
+      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
 
       val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List( bulletPointOne.english,
-        bulletPointTwo.english,
-        bulletPointThree.english )
+      val expectedListItems: List[String] = List(bulletPointOne.english.head.toString,
+                                                 bulletPointTwo.english.head.toString,
+                                                 bulletPointThree.english.head.toString)
 
       assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
     }
@@ -101,21 +101,21 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val paras = doc.getElementsByTag("p")
 
       paras.size shouldBe 2
-      paras.first.text shouldBe openingPara.welsh
+      paras.first.text shouldBe openingPara.welsh.head.toString
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe title.welsh
+      h1s.first.text shouldBe title.welsh.head.toString
 
       val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.welsh
+      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
 
       val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List( bulletPointOne.welsh,
-        bulletPointTwo.welsh,
-        bulletPointThree.welsh )
+      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString,
+                                                 bulletPointTwo.welsh.head.toString,
+                                                 bulletPointThree.welsh.head.toString)
 
       assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
     }

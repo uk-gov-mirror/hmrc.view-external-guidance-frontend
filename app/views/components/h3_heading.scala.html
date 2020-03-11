@@ -18,7 +18,7 @@
 
 @( h3: H3 )( implicit messages: Messages )
 
-<h3 class="govuk-heading-m">@{h3.txt.value(messages.lang)}</h3>
+<h3 class="govuk-heading-m">@components.render_text(h3.txt)</h3>
 
 @{
 //$COVERAGE-OFF$
