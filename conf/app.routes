@@ -8,7 +8,7 @@ GET        /bye-world                         controllers.HelloWorldController.b
 ->         /govuk-frontend                    govuk.Routes
 ->         /hmrc-frontend                     hmrcfrontend.Routes
 
-GET 	   /scratch/:uuid		      controllers.GuidanceController.scratch(uuid: String)
+GET 	   /scratch/:uuid		              controllers.GuidanceController.scratch(uuid: String)
 
 GET        /start/:processId                  controllers.GuidanceController.startJourney(processId)
 GET        /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])

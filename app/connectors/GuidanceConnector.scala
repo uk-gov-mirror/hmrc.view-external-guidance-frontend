@@ -29,5 +29,5 @@ class GuidanceConnector @Inject() () {
   private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
 
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Process] = Future.successful(stubbedProcess)
-  def scratchProcess(guid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Process] = Future.successful(stubbedProcess)
+  def scratchProcess(guid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = Future.successful(Some(stubbedProcess))
 }

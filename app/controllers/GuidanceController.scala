@@ -38,6 +38,7 @@ class GuidanceController @Inject() (
     with I18nSupport {
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
+    println(s"startJourney: $processId")
     service.getStartPageUrl(processId).map { url =>
       val relativeUrl = s"/guidance$url"
       Redirect(relativeUrl).withSession("processId" -> processId)
@@ -47,7 +48,7 @@ class GuidanceController @Inject() (
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
     val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
     request.session.get(SessionKeys.sessionId).map{ sessionId =>
-      Logger.info(s"getPage: sessionId = sessionId")
+      Logger.info(s"getPage: sessionId = $sessionId")
       service.getPage(url, sessionId).map {
         case Some(page) => Ok(view(page))
         case _ => NotFound(errorHandler.notFoundTemplate)
@@ -58,9 +59,11 @@ class GuidanceController @Inject() (
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"Scratch Controller: $uuid")
     service.scratchProcess(uuid).map { url =>
-      val sessionId = request.session.get(SessionKeys.sessionId).getOrElse(java.util.UUID.randomUUID.toString)
+      // val sessionId = request.session.get(SessionKeys.sessionId).getOrElse(java.util.UUID.randomUUID.toString)
       val redirectUrl = s"/guidance$url"
-      Logger.info(s"Redirecting to $redirectUrl, sessionId = $sessionId")
+      // Logger.info(s"Redirecting to $redirectUrl, sessionId = $sessionId")
+      // Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
+      val sessionId: String = hc.sessionId.fold(uuid)(_.value)
       Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
     }
   }

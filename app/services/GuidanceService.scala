@@ -21,53 +21,55 @@ import javax.inject.{Inject, Singleton}
 import models.ui.Page
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.Logger
+import scala.util.{Success, Failure}
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.SessionRepository
 
 @Singleton
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
 
+  // def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
+  //   for{
+  //     processOption <- connector.scratchProcess(uuid)
+  //     res <- sessionRepository.set(hc.sessionId.fold(uuid)(_.value), processOption.get)
+  //   } yield PageBuilder.pages(processOption.get).fold(_ => "",pages => pages.head.url)
+
+
   def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
-    connector.scratchProcess(uuid) map { process =>
-      Logger.info(s"scratch: process returned, meta: ${process.meta}")
-      PageBuilder.pages(process) match {
-        case Right(Nil) => ""
-        case Right(pages) => 
-          Logger.info(s"scratch: return Url of start page: ${pages.head.url}")
-          pages.head.url
-        case Left(_) => ""
-      }
+    connector.scratchProcess(uuid).flatMap{
+      _.map{process =>
+        Future.successful{
+          val key = hc.sessionId.fold(uuid)(_.value)
+          sessionRepository.set(key, process)
+          PageBuilder.pages(process).fold(_ => "",pages => pages.head.url)
+        }
+      }.getOrElse(Future.successful(""))
     }
 
-  def getStartPageUrl(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
+  def getStartPageUrl(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
     connector.getProcess(processId) map { process =>
+      println(s"SAVING ${process.meta}")
+      sessionRepository.set(processId, process)
       PageBuilder.pages(process) match {
         case Right(pages) =>
           val startPage = pages.find(page => page.id == "start")
           startPage.fold("")(page => page.url)
-
-        // TODO
-        case Left(_) => ""
+        case _ => ""
       }
     }
-  }
 
-  def getPage(url: String, processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] = {
-    connector.getProcess(processId) map { process =>
-      PageBuilder.pages(process) match {
-        case Right(pages) =>
-          val stanzaIdToUrlMap = pages
-            .map(page => (page.id, s"/guidance${page.url}"))
-            .toMap
-
-          pages
-            .find(page => page.url == url)
-            .map(page => UIBuilder.fromStanzaPage(page)(stanzaIdToUrlMap))
-
-        // TODO
-        case Left(_) =>
-          None
-      }
+  def getPage(url: String, sessionId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
+    sessionRepository.get(sessionId).flatMap{ 
+      _.map{ process =>
+          Future.successful(
+            PageBuilder.pages(process).fold( _ => None, pages => {
+                val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
+                pages.find(page => page.url == url)
+                     .map( pge => UIBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
+              }
+            )
+          )
+      }.getOrElse(Future.successful(None))
     }
-  }
+
 }

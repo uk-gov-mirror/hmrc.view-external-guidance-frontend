@@ -17,7 +17,7 @@
 package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads, Writes, OWrites}
+import play.api.libs.json.{JsPath, Reads, OWrites}
 import play.api.libs.json.Reads._
 import models.ocelot.Phrase
 

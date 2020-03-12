@@ -26,7 +26,6 @@ object Phrase {
   implicit val reads: Reads[Phrase] = __.read[Vector[String]](minLength[Vector[String]](2)).map(Phrase(_))
   
   implicit val writes: Writes[Phrase] = new Writes[Phrase] {
-
     override def writes(phrase: Phrase): JsValue = Json.toJson(phrase.langs)
   }
 }

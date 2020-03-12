@@ -18,11 +18,9 @@ package repositories
 
 import config.AppConfig
 import com.google.inject.{Inject, Singleton}
-//import org.joda.time.{DateTime, DateTimeZone}
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.Logger
 import models.ocelot._
-import models.ocelot.stanzas._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
@@ -35,66 +33,34 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import scala.concurrent.{ExecutionContext, Future}
 
 object SessionRepository {
-  final case class Data(id: String, json: Process)
+  final case class Data(id: String, process: Process)
 
   object Data {
-    implicit lazy val format: Format[Data] = ReactiveMongoFormats.mongoEntity {
-      Json.format[Data]
-    }
+    implicit lazy val format: Format[Data] = ReactiveMongoFormats.mongoEntity { Json.format[Data] }
   }
 }
 
 @Singleton
-class SessionRepository @Inject()(config: AppConfig,component: ReactiveMongoComponent)
+class SessionRepository @Inject()(config: AppConfig, component: ReactiveMongoComponent)
                                  (implicit ec: ExecutionContext) extends ReactiveRepository[SessionRepository.Data, BSONObjectID](
-  collectionName = "view-external-guidance-session",
-  mongo = component.mongoConnector.db,
-  domainFormat = SessionRepository.Data.format
-) {
+                                                                            collectionName = "view-external-guidance-session",
+                                                                            mongo = component.mongoConnector.db,
+                                                                            domainFormat = SessionRepository.Data.format
+                                                                         ) {
+  def get(key: String): Future[Option[Process]] =
+    collection.find(Json.obj("_id" -> key), None)
+              .one[SessionRepository.Data]
+              .map(_.map(_.process))
 
-  // private val cacheTtl = config.get[Int]("parcels-cache.timeout")
-  // private val indexName = "parcels-cache-ttl"
-
-  // private val index = Index(
-  //   key = Seq("lastUpdated" -> IndexType.Ascending),
-  //   name = Some(indexName),
-  //   options = BSONDocument("expireAfterSeconds" -> cacheTtl)
-  // )
-
-  // dropInvalidIndexes.flatMap {
-  //   _ =>
-  //     collection.indexesManager.ensure(index)
-  // }
-
-  //def get(key: String): Future[Option[JsValue]] = collection.find(Json.obj("_id" -> key), None).one[SessionRepository.Data].map(_.map(_.json))
-
-  def set(key: String, value: Process): Future[WriteResult] = {
+  def set(key: String, value: Process): Future[Boolean] = {
     val selector = Json.obj("_id" -> key)
     val document = Json.toJson(SessionRepository.Data(key, value))
     val modifier = Json.obj("$set" -> document)
 
-    collection.update(false).one(selector, modifier, upsert = true)
+    collection.update(false).one(selector, modifier, upsert = true) map {
+      case _ => true
+    } recover {
+      case lastError => false
+    }
   }
-
-  // def invalidate(key: String): Future[FindAndModifyCommand.FindAndModifyResult] = {
-
-  //   val selector = Json.obj("_id" -> key)
-
-  //   collection.findAndRemove(selector)
-  // }
-
-  // private def dropInvalidIndexes: Future[_] = {
-  //   collection.indexesManager.list().flatMap {
-  //     indexes =>
-  //       indexes.find {
-  //         index =>
-  //           index.name.contains(indexName) &&
-  //             !index.options.getAs[Int]("expireAfterSeconds").contains(cacheTtl)
-  //       }.map {
-  //         _ =>
-  //           cacheLogger.warn("dropping parcels-cache-ttl index as ttl value is incorrect")
-  //           collection.indexesManager.drop(indexName)
-  //       }.getOrElse(Future.successful(()))
-  //   }
-  // }
 }

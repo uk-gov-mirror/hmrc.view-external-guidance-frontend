@@ -37,7 +37,7 @@ object ValueType {
 
     override def writes(valueType: ValueType): JsValue = 
     	valueType match {
-      	case Scalar => Json.toJson("Scalar")
+      	case Scalar => Json.toJson("scalar")
       }
 
   }
