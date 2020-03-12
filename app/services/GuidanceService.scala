@@ -20,11 +20,24 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.Page
 import uk.gov.hmrc.http.HeaderCarrier
-
+import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
+import repositories.SessionRepository
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector) {
+class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
+
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
+    connector.scratchProcess(uuid) map { process =>
+      Logger.info(s"scratch: process returned, meta: ${process.meta}")
+      PageBuilder.pages(process) match {
+        case Right(Nil) => ""
+        case Right(pages) => 
+          Logger.info(s"scratch: return Url of start page: ${pages.head.url}")
+          pages.head.url
+        case Left(_) => ""
+      }
+    }
 
   def getStartPageUrl(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
     connector.getProcess(processId) map { process =>

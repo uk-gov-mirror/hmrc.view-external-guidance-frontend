@@ -23,7 +23,9 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html._
-
+import uk.gov.hmrc.http.SessionKeys
+import play.api.Logger
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
@@ -44,10 +46,23 @@ class GuidanceController @Inject() (
 
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
     val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
-    val processId = request.session.get("processId").get
-    service.getPage(url, processId).map {
-      case Some(page) => Ok(view(page))
-      case _ => NotFound(errorHandler.notFoundTemplate)
+    request.session.get(SessionKeys.sessionId).map{ sessionId =>
+      Logger.info(s"getPage: sessionId = sessionId")
+      service.getPage(url, sessionId).map {
+        case Some(page) => Ok(view(page))
+        case _ => NotFound(errorHandler.notFoundTemplate)
+      }
+    }.getOrElse(Future.successful(NotFound(errorHandler.notFoundTemplate)))
+  }
+
+  def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
+    Logger.info(s"Scratch Controller: $uuid")
+    service.scratchProcess(uuid).map { url =>
+      val sessionId = request.session.get(SessionKeys.sessionId).getOrElse(java.util.UUID.randomUUID.toString)
+      val redirectUrl = s"/guidance$url"
+      Logger.info(s"Redirecting to $redirectUrl, sessionId = $sessionId")
+      Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
     }
   }
+
 }

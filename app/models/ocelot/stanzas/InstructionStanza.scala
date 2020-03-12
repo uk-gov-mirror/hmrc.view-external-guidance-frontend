@@ -17,7 +17,7 @@
 package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json.{JsPath, Reads, Writes, OWrites}
 import play.api.libs.json.Reads._
 import models.ocelot.Phrase
 
@@ -27,14 +27,19 @@ case class InstructionStanza(text: Int, override val next: Seq[String], link: Op
 
 object InstructionStanza {
 
-  implicit val instructionReads: Reads[InstructionStanza] = {
-
+  implicit val reads: Reads[InstructionStanza] =
     ((JsPath \ "text").read[Int] and
       (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
       (JsPath \ "link").readNullable[Int] and
       (JsPath \ "stack").read[Boolean])(InstructionStanza.apply _)
 
-  }
+  implicit val owrites: OWrites[InstructionStanza] =
+    (
+      (JsPath \ "text").write[Int] and
+      (JsPath \ "next").write[Seq[String]] and
+      (JsPath \ "link").writeNullable[Int] and
+      (JsPath \ "stack").write[Boolean]
+    )(unlift(InstructionStanza.unapply))
 
 }
 
