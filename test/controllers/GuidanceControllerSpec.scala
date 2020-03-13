@@ -24,6 +24,7 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
+import uk.gov.hmrc.http.SessionKeys
 
 import scala.concurrent.Future
 
@@ -56,7 +57,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "add the process ID to the user's session" in new StartJourneyTest {
-      session(result).data must contain("processId" -> processId)
+      session(result).data must contain(SessionKeys.sessionId -> processId)
     }
   }
 
@@ -69,7 +70,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       private val pathUsedToFindPage = "/" + path
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest().withSession("processId" -> processId)
+        FakeRequest().withSession(SessionKeys.sessionId -> processId)
 
       val expectedPage: Page = Page(
         path,
@@ -107,7 +108,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       private val pathUsedToFindPage = pathInQuerystring.replace("/guidance", "")
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest().withSession("processId" -> processId)
+        FakeRequest().withSession(SessionKeys.sessionId -> processId)
 
       val expectedPage: Page = Page(
         path,
@@ -141,7 +142,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val path = "unknown/route"
       lazy val processId = "ext90002"
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
-        FakeRequest().withSession("processId" -> processId)
+        FakeRequest().withSession(SessionKeys.sessionId -> processId)
 
       MockGuidanceService
         .getPage("/" + path, processId)

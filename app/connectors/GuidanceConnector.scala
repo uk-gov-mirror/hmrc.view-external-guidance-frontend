@@ -30,5 +30,5 @@ class GuidanceConnector @Inject() () {
   private[connectors] val scratchStubbedProcess: Process = stubbedProcess.copy(meta = stubbedProcess.meta.copy(id = "SCRATCH"))
 
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = Future.successful(Some(stubbedProcess))
-  def scratchProcess(guid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = Future.successful(Some(scratchStubbedProcess))
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = Future.successful(Some(scratchStubbedProcess))
 }

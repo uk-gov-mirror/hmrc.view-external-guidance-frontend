@@ -18,7 +18,7 @@ package models.ocelot.stanzas
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.api.libs.json.{Reads, Writes}
+import play.api.libs.json.Reads
 import models.ocelot.Phrase
 
 case class QuestionStanza(text: Int, answers: Seq[Int], override val next: Seq[String], stack: Boolean) extends Stanza

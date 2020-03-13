@@ -18,21 +18,17 @@ package repositories
 
 import config.AppConfig
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{Format, JsValue, Json}
-import play.api.Logger
+import play.api.libs.json.{Format, Json}
 import models.ocelot._
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object SessionRepository {
+object DefaultSessionRepository {
   final case class Data(id: String, process: Process)
 
   object Data {
@@ -40,21 +36,26 @@ object SessionRepository {
   }
 }
 
+trait SessionRepository {
+  def get(key: String): Future[Option[Process]]
+  def set(key: String, value: Process): Future[Boolean]
+}
+
 @Singleton
-class SessionRepository @Inject()(config: AppConfig, component: ReactiveMongoComponent)
-                                 (implicit ec: ExecutionContext) extends ReactiveRepository[SessionRepository.Data, BSONObjectID](
+class DefaultSessionRepository @Inject()(config: AppConfig, component: ReactiveMongoComponent)
+                                 (implicit ec: ExecutionContext) extends ReactiveRepository[DefaultSessionRepository.Data, BSONObjectID](
                                                                             collectionName = "view-external-guidance-session",
                                                                             mongo = component.mongoConnector.db,
-                                                                            domainFormat = SessionRepository.Data.format
-                                                                         ) {
+                                                                            domainFormat = DefaultSessionRepository.Data.format
+                                                                         ) with SessionRepository {
   def get(key: String): Future[Option[Process]] =
     collection.find(Json.obj("_id" -> key), None)
-              .one[SessionRepository.Data]
+              .one[DefaultSessionRepository.Data]
               .map(_.map(_.process))
 
   def set(key: String, value: Process): Future[Boolean] = {
     val selector = Json.obj("_id" -> key)
-    val document = Json.toJson(SessionRepository.Data(key, value))
+    val document = Json.toJson(DefaultSessionRepository.Data(key, value))
     val modifier = Json.obj("$set" -> document)
 
     collection.update(false).one(selector, modifier, upsert = true) map {

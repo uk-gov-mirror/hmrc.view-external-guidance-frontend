@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package connectors
+package config
 
-import base.BaseSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import com.google.inject.AbstractModule
+import repositories.{DefaultSessionRepository, SessionRepository}
 
-import scala.concurrent.ExecutionContext.Implicits.global
+class Module extends AbstractModule {
 
-class GuidanceConnectorSpec extends BaseSpec {
+  override def configure(): Unit = {
 
-  "Calling the getProcess with an existing process ID" should {
-    "return a model representing the Ocelot Process" in {
-      val hc: HeaderCarrier = HeaderCarrier()
-      val target = new GuidanceConnector()
-      val expectProcess = Some(target.stubbedProcess)
-      val result = target.getProcess("ext90002")(hc, implicitly)
-
-      whenReady(result) { _ mustBe expectProcess }
-    }
+    bind(classOf[SessionRepository]).to(classOf[DefaultSessionRepository]).asEagerSingleton()
   }
 }

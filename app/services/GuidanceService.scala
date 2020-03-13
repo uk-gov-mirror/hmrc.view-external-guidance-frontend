@@ -20,8 +20,6 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.Page
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.Logger
-import scala.util.{Success, Failure}
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.SessionRepository
 import models.ocelot.Process
