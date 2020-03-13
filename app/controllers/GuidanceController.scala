@@ -38,10 +38,10 @@ class GuidanceController @Inject() (
     with I18nSupport {
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    println(s"startJourney: $processId")
     service.getStartPageUrl(processId).map { url =>
       val relativeUrl = s"/guidance$url"
-      Redirect(relativeUrl).withSession("processId" -> processId)
+      val sessionId: String = hc.sessionId.fold(processId)(_.value)
+      Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
     }
   }
 
@@ -59,10 +59,7 @@ class GuidanceController @Inject() (
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     Logger.info(s"Scratch Controller: $uuid")
     service.scratchProcess(uuid).map { url =>
-      // val sessionId = request.session.get(SessionKeys.sessionId).getOrElse(java.util.UUID.randomUUID.toString)
       val redirectUrl = s"/guidance$url"
-      // Logger.info(s"Redirecting to $redirectUrl, sessionId = $sessionId")
-      // Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
       val sessionId: String = hc.sessionId.fold(uuid)(_.value)
       Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
     }

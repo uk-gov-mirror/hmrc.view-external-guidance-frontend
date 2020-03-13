@@ -24,41 +24,28 @@ import play.api.Logger
 import scala.util.{Success, Failure}
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.SessionRepository
+import models.ocelot.Process
 
 @Singleton
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
 
-  // def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
-  //   for{
-  //     processOption <- connector.scratchProcess(uuid)
-  //     res <- sessionRepository.set(hc.sessionId.fold(uuid)(_.value), processOption.get)
-  //   } yield PageBuilder.pages(processOption.get).fold(_ => "",pages => pages.head.url)
-
-
-  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
-    connector.scratchProcess(uuid).flatMap{
+  private def startProcessView( id: String, processById: String => Future[Option[Process]])(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
+    processById(id).flatMap{
       _.map{process =>
-        Future.successful{
-          val key = hc.sessionId.fold(uuid)(_.value)
-          sessionRepository.set(key, process)
-          PageBuilder.pages(process).fold(_ => "",pages => pages.head.url)
-        }
+          sessionRepository.set(hc.sessionId.fold(id)(_.value), process).map{ result =>
+            if (result) PageBuilder.pages(process).fold(_ => "",pages => pages.head.url) else ""
+          }          
       }.getOrElse(Future.successful(""))
     }
+  }
+
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
+    startProcessView(uuid, connector.scratchProcess)
 
   def getStartPageUrl(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] =
-    connector.getProcess(processId) map { process =>
-      println(s"SAVING ${process.meta}")
-      sessionRepository.set(processId, process)
-      PageBuilder.pages(process) match {
-        case Right(pages) =>
-          val startPage = pages.find(page => page.id == "start")
-          startPage.fold("")(page => page.url)
-        case _ => ""
-      }
-    }
+    startProcessView(processId, connector.getProcess)
 
-  def getPage(url: String, sessionId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
+  def getPage(url: String, sessionId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] = {
     sessionRepository.get(sessionId).flatMap{ 
       _.map{ process =>
           Future.successful(
@@ -71,5 +58,6 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
           )
       }.getOrElse(Future.successful(None))
     }
+  }
 
 }
