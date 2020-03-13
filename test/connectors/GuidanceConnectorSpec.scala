@@ -33,4 +33,17 @@ class GuidanceConnectorSpec extends BaseSpec {
       whenReady(result) { _ mustBe expectProcess }
     }
   }
+
+  "Calling the scratchProcess with an existing scratch process UUID" should {
+
+    "return a model representing the Ocelot Scatch Process" in {
+      val hc: HeaderCarrier = HeaderCarrier()
+      val target = new GuidanceConnector()
+      val expectProcess = Some(target.scratchStubbedProcess)
+      val result = target.scratchProcess("683d9aa0-2a0e-4e28-9ac8-65ce453d2730")(hc, implicitly)
+
+      whenReady(result) { _ mustBe expectProcess }
+    }
+  }
+
 }

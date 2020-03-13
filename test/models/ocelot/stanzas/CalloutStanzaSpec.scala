@@ -155,6 +155,20 @@ class CalloutStanzaSpec extends BaseSpec {
 
     }
 
+    "serialise to json" in {
+      val expectedJson: String = """{"noteType":"Title","text":0,"next":["1"],"stack":false}"""
+      val json: String = Json.toJson(expectedTitleCalloutStanza).toString
+      json mustBe expectedJson
+    }
+
+    "serialise to json from a Stanza reference" in {
+      val stanza: Stanza = expectedTitleCalloutStanza
+      val expectedJson: String = """{"next":["1"],"noteType":"Title","stack":false,"text":0,"type":"CalloutStanza"}"""
+      val json: String = Json.toJson(stanza).toString
+      json mustBe expectedJson
+    }
+
+
     /** Test for missing properties in Json object representing instruction stanzas */
     missingJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
 

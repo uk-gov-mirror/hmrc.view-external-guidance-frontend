@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+ // $COVERAGE-OFF$Problem
+
 package repositories
 
 import config.AppConfig

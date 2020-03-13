@@ -30,6 +30,12 @@ trait MockGuidanceService extends MockFactory {
 
   object MockGuidanceService {
 
+    def scratchProcess(uuid: String): CallHandler[Future[String]] = {
+      (mockGuidanceService
+        .scratchProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(uuid, *, *)
+    }
+
     def getStartPageUrl(processId: String): CallHandler[Future[String]] = {
       (mockGuidanceService
         .getStartPageUrl(_: String)(_: HeaderCarrier, _: ExecutionContext))
