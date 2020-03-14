@@ -31,7 +31,7 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import scala.concurrent.{ExecutionContext, Future}
 
 object DefaultSessionRepository {
-  final case class Data(id: String, process: Process)
+  final case class Data(id: String, processId: String, process: Process)
 
   object Data {
     implicit lazy val format: Format[Data] = ReactiveMongoFormats.mongoEntity { Json.format[Data] }
@@ -40,7 +40,7 @@ object DefaultSessionRepository {
 
 trait SessionRepository {
   def get(key: String): Future[Option[Process]]
-  def set(key: String, value: Process): Future[Boolean]
+  def set(key: String, process: Process): Future[Boolean]
 }
 
 @Singleton
@@ -55,9 +55,9 @@ class DefaultSessionRepository @Inject()(config: AppConfig, component: ReactiveM
               .one[DefaultSessionRepository.Data]
               .map(_.map(_.process))
 
-  def set(key: String, value: Process): Future[Boolean] = {
+  def set(key: String, process: Process): Future[Boolean] = {
     val selector = Json.obj("_id" -> key)
-    val document = Json.toJson(DefaultSessionRepository.Data(key, value))
+    val document = Json.toJson(DefaultSessionRepository.Data(key, process.meta.id, process))
     val modifier = Json.obj("$set" -> document)
 
     collection.update(false).one(selector, modifier, upsert = true) map {
