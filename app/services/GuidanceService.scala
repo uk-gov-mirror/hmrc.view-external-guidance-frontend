@@ -27,7 +27,8 @@ import models.ocelot.Process
 @Singleton
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
 
-  private def startProcessView( id: String, processById: String => Future[Option[Process]])(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
+  private def startProcessView( id: String, processById: String => Future[Option[Process]])
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
     processById(id).flatMap{
       _.map{process =>
           sessionRepository.set(hc.sessionId.fold(id)(_.value), process).map{ result =>
@@ -49,8 +50,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
           Future.successful(
             PageBuilder.pages(process).fold( _ => None, pages => {
                 val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-                pages.find(page => page.url == url)
-                     .map( pge => UIBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
+                pages.find(page => page.url == url).map( pge => UIBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
               }
             )
           )
