@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package config
 
-import play.api.libs.json._
-import play.api.libs.json.Reads._
+import com.google.inject.AbstractModule
+import repositories.{DefaultSessionRepository, SessionRepository}
 
-case class Phrase(langs: Vector[String])
+class Module extends AbstractModule {
 
-object Phrase {
-  def apply(first: String, second: String): Phrase = Phrase(Vector(first, second))
-  implicit val reads: Reads[Phrase] = __.read[Vector[String]](minLength[Vector[String]](2)).map(Phrase(_))
-  
-  implicit val writes: Writes[Phrase] = new Writes[Phrase] {
-    override def writes(phrase: Phrase): JsValue = Json.toJson(phrase.langs)
+  override def configure(): Unit = {
+
+    bind(classOf[SessionRepository]).to(classOf[DefaultSessionRepository]).asEagerSingleton()
   }
 }

@@ -86,6 +86,20 @@ class ValueStanzaSpec extends BaseSpec {
       stanza.values(1) mustBe Value(Scalar, pageUrlLabel, pageUrl)
     }
 
+    "serialise to json" in {
+      val stanza: ValueStanza = ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "/")), Seq("4"), true)
+      val expectedJson: String = """{"values":[{"type":"scalar","label":"PageUrl","value":"/"}],"next":["4"],"stack":true}"""
+      val json: String = Json.toJson(stanza).toString
+      json mustBe expectedJson
+    }
+
+    "serialise to json from a Stanza reference" in {
+      val stanza: Stanza = ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "/")), Seq("4"), true)
+      val expectedJson: String = """{"next":["4"],"stack":true,"values":[{"type":"scalar","label":"PageUrl","value":"/"}],"type":"ValueStanza"}"""
+      val json: String = Json.toJson(stanza).toString
+      json mustBe expectedJson
+    }
+
     "fail to parse if an unkown value type is found" in {
       invalidValueStanzaJson.as[JsObject].validate[ValueStanza] match {
         case JsSuccess(_, _) => fail(s"Value objects must be of valid type")

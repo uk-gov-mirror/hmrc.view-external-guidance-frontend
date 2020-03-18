@@ -17,7 +17,7 @@
 package services
 
 import base.BaseSpec
-import mocks.MockGuidanceConnector
+import mocks.{MockGuidanceConnector, MockSessionRepository}
 import models.ocelot.{Process, ProcessJson}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -26,10 +26,10 @@ import scala.concurrent.Future
 
 class GuidanceServiceSpec extends BaseSpec {
 
-  private trait Test extends MockGuidanceConnector with ProcessJson {
+  private trait Test extends MockGuidanceConnector with MockSessionRepository with ProcessJson {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     val process: Process = prototypeJson.as[Process]
-    lazy val target = new GuidanceService(mockGuidanceConnector)
+    lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository)
   }
 
   "Calling getPage with a valid URL" should {
@@ -37,9 +37,10 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a page for the process" in new Test {
       val processId = "ext90001"
       val url = "/"
-      MockGuidanceConnector
-        .getProcess(processId)
-        .returns(Future.successful(process))
+
+      MockSessionRepository
+        .get(processId)
+        .returns(Future.successful(Some(process)))
 
       private val result = target.getPage(url, processId)
 
@@ -56,9 +57,10 @@ class GuidanceServiceSpec extends BaseSpec {
     "not retrieve a page from the process" in new Test {
       val processId = "ext90001"
       val url = "scooby"
-      MockGuidanceConnector
-        .getProcess(processId)
-        .returns(Future.successful(process))
+
+      MockSessionRepository
+        .get(processId)
+        .returns(Future.successful(Some(process)))
 
       private val result = target.getPage(url, processId)
 
@@ -70,14 +72,19 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "retrieve the url of the start page for the process" in new Test {
       val processId = "ext90001"
+
       MockGuidanceConnector
         .getProcess(processId)
-        .returns(Future.successful(process))
+        .returns(Future.successful(Some(process)))
+        
+      MockSessionRepository
+        .set(processId, process)
+        .returns(Future.successful(Some(())))
 
-      private val result = target.getStartPageUrl(processId)
+      private val result = target.getStartPageUrl(processId, processId)
 
       whenReady(result) { url =>
-        url mustBe "/"
+        url mustBe Some("/")
       }
     }
   }

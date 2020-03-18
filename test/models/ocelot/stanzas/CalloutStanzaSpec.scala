@@ -155,6 +155,41 @@ class CalloutStanzaSpec extends BaseSpec {
 
     }
 
+    "serialise to json with noteType Title" in {
+      Json.toJson(expectedTitleCalloutStanza).toString mustBe """{"noteType":"Title","text":0,"next":["1"],"stack":false}"""
+    }
+
+    "serialise to json noteType Title from a Stanza reference" in {
+      val stanza: Stanza = expectedTitleCalloutStanza
+      Json.toJson(stanza).toString mustBe """{"next":["1"],"noteType":"Title","stack":false,"text":0,"type":"CalloutStanza"}"""
+    }
+
+    "serialise to json with noteType SubTitle" in {
+      Json.toJson(expectedSubTitleCalloutStanza).toString mustBe """{"noteType":"SubTitle","text":1,"next":["2"],"stack":true}"""
+    }
+
+    "serialise to json noteType SubTitle from a Stanza reference" in {
+      val stanza: Stanza = expectedSubTitleCalloutStanza
+      Json.toJson(stanza).toString mustBe """{"next":["2"],"noteType":"SubTitle","stack":true,"text":1,"type":"CalloutStanza"}"""
+    }
+
+    "serialise to json with noteType Lede" in {
+      Json.toJson(expectedLedeCalloutStanza).toString mustBe """{"noteType":"Lede","text":2,"next":["3"],"stack":false}"""
+    }
+
+    "serialise to json noteType Lede from a Stanza reference" in {
+      val stanza: Stanza = expectedLedeCalloutStanza
+      Json.toJson(stanza).toString mustBe """{"next":["3"],"noteType":"Lede","stack":false,"text":2,"type":"CalloutStanza"}"""
+    }
+    "serialise to json with noteType Error" in {
+      Json.toJson(expectedErrorCalloutStatus).toString mustBe """{"noteType":"Error","text":10,"next":["end"],"stack":false}"""
+    }
+
+    "serialise to json noteType Error from a Stanza reference" in {
+      val stanza: Stanza = expectedErrorCalloutStatus
+      Json.toJson(stanza).toString mustBe """{"next":["end"],"noteType":"Error","stack":false,"text":10,"type":"CalloutStanza"}"""
+    }
+
     /** Test for missing properties in Json object representing instruction stanzas */
     missingJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
 

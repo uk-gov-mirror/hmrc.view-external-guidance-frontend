@@ -16,7 +16,7 @@
 
 package mocks
 
-import connectors.GuidanceConnector
+import repositories.SessionRepository
 import models.ocelot.Process
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -24,24 +24,22 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockGuidanceConnector extends MockFactory {
+trait MockSessionRepository extends MockFactory {
 
-  val mockGuidanceConnector: GuidanceConnector = mock[GuidanceConnector]
+  val mockSessionRepository: SessionRepository = mock[SessionRepository]
 
-  object MockGuidanceConnector {
+  object MockSessionRepository {
 
-    def getProcess(id: String): CallHandler[Future[Option[Process]]] = {
-      (mockGuidanceConnector
-        .getProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(id, *, *)
-    }
+    def get(key: String): CallHandler[Future[Option[Process]]] =
+      (mockSessionRepository
+        .get(_: String))
+        .expects(key)
 
-	def scratchProcess(uuid: String): CallHandler[Future[Option[Process]]] = {
-      (mockGuidanceConnector
-        .scratchProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(uuid, *, *)
-
-	}
+	def set(key: String, process: Process): CallHandler[Future[Option[Unit]]] =
+      (mockSessionRepository
+        .set(_: String, _: Process))
+        .expects(key, process)
+        
   }
 
 }

@@ -19,42 +19,44 @@ package services
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.Page
+import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
-
 import scala.concurrent.{ExecutionContext, Future}
+import repositories.SessionRepository
+import models.ocelot.Process
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector) {
+class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
+  val logger: Logger = Logger(getClass)
 
-  def getStartPageUrl(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[String] = {
-    connector.getProcess(processId) map { process =>
-      PageBuilder.pages(process) match {
-        case Right(pages) =>
-          val startPage = pages.find(page => page.id == "start")
-          startPage.fold("")(page => page.url)
-
-        // TODO
-        case Left(_) => ""
-      }
-    }
-  }
-
-  def getPage(url: String, processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] = {
-    connector.getProcess(processId) map { process =>
-      PageBuilder.pages(process) match {
-        case Right(pages) =>
-          val stanzaIdToUrlMap = pages
-            .map(page => (page.id, s"/guidance${page.url}"))
-            .toMap
-
-          pages
-            .find(page => page.url == url)
-            .map(page => UIBuilder.fromStanzaPage(page)(stanzaIdToUrlMap))
-
-        // TODO
-        case Left(_) =>
+  def getPage(url: String, sessionId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
+    sessionRepository.get(sessionId).map{ processOption =>
+      processOption.flatMap{ process =>
+        PageBuilder.pages(process).fold(err => {
+          logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
           None
+          },
+          pages => {
+            val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
+            pages.find(page => page.url == url).map( pge => UIBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
+          }
+        )
       }
     }
-  }
+
+  def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+    startProcessView(uuid, repositoryId, connector.scratchProcess)
+
+  def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+    startProcessView(processId, repositoryId, connector.getProcess)
+
+  private def startProcessView( id: String, repositoryId: String, processById: String => Future[Option[Process]])
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+    processById(id).flatMap {
+      case Some(process) =>
+        sessionRepository.set(repositoryId, process).map { _ =>
+          PageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
+        }
+      case None => Future.successful(None)
+    }
 }

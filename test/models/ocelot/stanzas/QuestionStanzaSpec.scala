@@ -85,6 +85,17 @@ class QuestionStanzaSpec extends BaseSpec {
       threeAnswersQuestionStanza mustBe expectedThreeAnswersQuestionStanza
     }
 
+    "serialise to json" in {
+      val stanza: QuestionStanza = QuestionStanza(0, Seq(1,2), Seq("4", "5"), true)
+      val expectedJson: String = """{"text":0,"answers":[1,2],"next":["4","5"],"stack":true}"""
+      Json.toJson(stanza).toString mustBe expectedJson
+    }
+
+    "serialise to json from a Stanza reference" in {
+      val stanza: Stanza = QuestionStanza(0, Seq(1,2), Seq("4", "5"), true)
+      val expectedJson: String = """{"next":["4","5"],"stack":true,"answers":[1,2],"text":0,"type":"QuestionStanza"}"""
+      Json.toJson(stanza).toString mustBe expectedJson
+    }
 
     /** Test for missing properties in Json object */
     missingJsObjectAttrTests[QuestionStanza]( validQuestionStanzaJson, List( "type" ) )

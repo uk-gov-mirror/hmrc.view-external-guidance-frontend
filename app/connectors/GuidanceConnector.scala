@@ -27,6 +27,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class GuidanceConnector @Inject() () {
 
   private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
+  private[connectors] val scratchStubbedProcess: Process = stubbedProcess.copy(meta = stubbedProcess.meta.copy(id = "SCRATCH"))
 
-  def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Process] = Future.successful(stubbedProcess)
+  def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+    Future.successful(Some(stubbedProcess))
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+    Future.successful(Some(scratchStubbedProcess))
 }

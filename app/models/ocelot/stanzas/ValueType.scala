@@ -32,6 +32,16 @@ object ValueType {
     }
 
   }
+
+  implicit val writes: Writes[ValueType] = new Writes[ValueType] {
+
+    override def writes(valueType: ValueType): JsValue = 
+    	valueType match {
+      	case Scalar => Json.toJson("scalar")
+      }
+
+  }
+
 }
 
 class WithName(string: String) {

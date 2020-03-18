@@ -50,6 +50,11 @@ class PhraseSpec extends PlaySpec with ProcessJson {
 
     }
 
+    "serialise from Phrase to json" in {
+      val phrase = Phrase(Vector("Hello World", "Welsh, Hello World"))
+      Json.toJson(phrase).toString mustBe """["Hello World","Welsh, Hello World"]"""
+    }
+
     "allow access to Phrase language strings" in {
 
       val protoTypePhrases = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
