@@ -34,7 +34,7 @@ object Value {
     (
     	(__ \ "type").write[ValueType] and
       (__ \ "label").write[String] and
-      (__ \ "value").write[String] 
+      (__ \ "value").write[String]
   	)(unlift(Value.unapply))
 
 }

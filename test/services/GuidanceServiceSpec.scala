@@ -79,12 +79,12 @@ class GuidanceServiceSpec extends BaseSpec {
         
       MockSessionRepository
         .set(processId, process)
-        .returns(Future.successful(true))
+        .returns(Future.successful(Some(())))
 
-      private val result = target.getStartPageUrl(processId)
+      private val result = target.getStartPageUrl(processId, processId)
 
       whenReady(result) { url =>
-        url mustBe "/"
+        url mustBe Some("/")
       }
     }
   }

@@ -36,33 +36,35 @@ class GuidanceController @Inject() (
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
+  val logger: Logger = Logger( getClass )
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    service.getStartPageUrl(processId).map { url =>
-      val relativeUrl = s"/guidance$url"
-      val sessionId: String = hc.sessionId.fold(processId)(_.value)
-      Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
-    }
+    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    startUrlById(processId, sessionId, service.getStartPageUrl)
+  }
+
+  def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
+    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
     val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
-    request.session.get(SessionKeys.sessionId).map{ sessionId =>
-      Logger.info(s"getPage: sessionId = $sessionId")
+    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
       service.getPage(url, sessionId).map {
         case Some(page) => Ok(view(page))
         case _ => NotFound(errorHandler.notFoundTemplate)
       }
-    }.getOrElse(Future.successful(NotFound(errorHandler.notFoundTemplate)))
+    )
   }
 
-  def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
-    Logger.info(s"Scratch Controller: $uuid")
-    service.scratchProcess(uuid).map { url =>
-      val redirectUrl = s"/guidance$url"
-      val sessionId: String = hc.sessionId.fold(uuid)(_.value)
-      Redirect(redirectUrl).withSession(SessionKeys.sessionId -> sessionId)
+  private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
+                          (implicit request: Request[_]): Future[Result] =
+    processStartUrl(id, sessionId).map { urlOption =>
+      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => {
+          val relativeUrl = s"/guidance$url"
+          Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
+        }
+      )
     }
-  }
-
 }

@@ -35,7 +35,7 @@ trait MockSessionRepository extends MockFactory {
         .get(_: String))
         .expects(key)
 
-	def set(key: String, process: Process): CallHandler[Future[Boolean]] =
+	def set(key: String, process: Process): CallHandler[Future[Option[Unit]]] =
       (mockSessionRepository
         .set(_: String, _: Process))
         .expects(key, process)

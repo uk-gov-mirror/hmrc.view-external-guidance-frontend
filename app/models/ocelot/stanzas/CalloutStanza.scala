@@ -31,7 +31,7 @@ object CalloutStanza {
       (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
       (JsPath \ "stack").read[Boolean])(CalloutStanza.apply _)
 
-  implicit val owrite: OWrites[CalloutStanza] =
+  implicit val owrites: OWrites[CalloutStanza] =
     (
     	(JsPath \ "noteType").write[CalloutType] and
       (JsPath \ "text").write[Int] and

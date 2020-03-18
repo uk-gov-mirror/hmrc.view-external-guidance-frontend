@@ -47,7 +47,7 @@ object CalloutType {
 
   implicit val writes: Writes[CalloutType] = new Writes[CalloutType] {
 
-    override def writes(calloutType: CalloutType): JsValue = 
+    override def writes(calloutType: CalloutType): JsValue =
       calloutType match {
       case Title => Json.toJson("Title")
       case SubTitle => Json.toJson("SubTitle")

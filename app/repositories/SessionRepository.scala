@@ -40,7 +40,7 @@ object DefaultSessionRepository {
 
 trait SessionRepository {
   def get(key: String): Future[Option[Process]]
-  def set(key: String, process: Process): Future[Boolean]
+  def set(key: String, process: Process): Future[Option[Unit]]
 }
 
 @Singleton
@@ -50,20 +50,21 @@ class DefaultSessionRepository @Inject()(config: AppConfig, component: ReactiveM
                                                                             mongo = component.mongoConnector.db,
                                                                             domainFormat = DefaultSessionRepository.Data.format
                                                                          ) with SessionRepository {
+
   def get(key: String): Future[Option[Process]] =
     collection.find(Json.obj("_id" -> key), None)
               .one[DefaultSessionRepository.Data]
               .map(_.map(_.process))
 
-  def set(key: String, process: Process): Future[Boolean] = {
+  def set(key: String, process: Process): Future[Option[Unit]] = {
     val selector = Json.obj("_id" -> key)
     val document = Json.toJson(DefaultSessionRepository.Data(key, process.meta.id, process))
     val modifier = Json.obj("$set" -> document)
 
-    collection.update(false).one(selector, modifier, upsert = true) map {
-      case _ => true
-    } recover {
-      case lastError => false
+    collection.update(false).one(selector, modifier, upsert = true) map (_ => Some(())) recover {
+      case lastError =>
+        logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
+        None
     }
   }
 }

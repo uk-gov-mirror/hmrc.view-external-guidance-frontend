@@ -44,7 +44,7 @@ object Stanza {
 
   implicit val writes: Writes[Stanza] = new Writes[Stanza] {
 
-    override def writes(stanza: Stanza): JsValue = 
+    override def writes(stanza: Stanza): JsValue =
       stanza match {
       case q:QuestionStanza => Json.obj("type" -> "QuestionStanza") ++ Json.toJsObject[QuestionStanza](q)
       case i:InstructionStanza => Json.obj("type" -> "InstructionStanza") ++ Json.toJsObject[InstructionStanza](i)

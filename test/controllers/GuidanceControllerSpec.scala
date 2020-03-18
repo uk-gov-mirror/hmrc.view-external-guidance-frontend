@@ -38,8 +38,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val expectedUrl = "/start-url"
 
       MockGuidanceService
-        .scratchProcess(uuid)
-        .returns(Future.successful(expectedUrl))
+        .scratchProcess(uuid, uuid)
+        .returns(Future.successful(Some(expectedUrl)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
       private lazy val view = app.injector.instanceOf[views.html.render_page]
@@ -57,7 +57,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "add the process ID to the user's session" in new ScratchTest {
-      session(result).data must contain(SessionKeys.sessionId -> uuid)
+      session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
 
@@ -69,8 +69,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val expectedUrl = "/start-url"
 
       MockGuidanceService
-        .getStartPageUrl(processId)
-        .returns(Future.successful(expectedUrl))
+        .getStartPageUrl(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
       private lazy val view = app.injector.instanceOf[views.html.render_page]
@@ -88,7 +88,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "add the process ID to the user's session" in new StartJourneyTest {
-      session(result).data must contain(SessionKeys.sessionId -> processId)
+      session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
 
