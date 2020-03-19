@@ -23,7 +23,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.libs.json.Json
 import models.ocelot.Process
-import models.RequestOutcome
 import scala.concurrent.Future
 
 class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
@@ -34,7 +33,6 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     val gc: GuidanceConnector = new GuidanceConnector(mockHttpClient, MockAppConfig)
     val endPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"
   }
-
 
   "Calling the getProcess with an existing process ID" should {
     "return a model representing the Ocelot Process" in  new Test {

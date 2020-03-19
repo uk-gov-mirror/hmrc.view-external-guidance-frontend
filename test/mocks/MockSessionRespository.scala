@@ -20,9 +20,7 @@ import repositories.SessionRepository
 import models.ocelot.Process
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait MockSessionRepository extends MockFactory {
 
