@@ -35,7 +35,6 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     Future.successful(Some(stubbedProcess))
 
-
   def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {
     import connectors.httpParsers.GetScratchProcessHttpParser.getScratchProcessHttpReads
     val endpoint: String = appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid"

@@ -38,6 +38,16 @@ class GuidanceController @Inject() (
     with I18nSupport {
   val logger: Logger = Logger( getClass )
 
+  def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
+    val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
+    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
+      service.getPage(url, sessionId).map {
+        case Some(page) => Ok(view(page))
+        case _ => NotFound(errorHandler.notFoundTemplate)
+      }
+    )
+  }
+
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting journey with sessionId = $sessionId")
@@ -48,16 +58,6 @@ class GuidanceController @Inject() (
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting scratch with sessionId = $sessionId")
     startUrlById(uuid, sessionId, service.scratchProcess)
-  }
-
-  def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
-    val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
-    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(url, sessionId).map {
-        case Some(page) => Ok(view(page))
-        case _ => NotFound(errorHandler.notFoundTemplate)
-      }
-    )
   }
 
   private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
