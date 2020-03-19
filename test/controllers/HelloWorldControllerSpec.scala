@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 import play.api.{Configuration, Environment, _}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
-import config.AppConfig
+import config.AppConfigImpl
 
 class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -35,7 +35,7 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
     private val configuration = Configuration.load(env)
 
     private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
-    private val appConfig = new AppConfig(configuration, serviceConfig)
+    private val appConfig = new AppConfigImpl(configuration, serviceConfig)
 
     private val view = app.injector.instanceOf[views.html.hello_world]
     val controller = new HelloWorldController(appConfig, stubMessagesControllerComponents(), view)

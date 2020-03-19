@@ -17,20 +17,32 @@
 package connectors
 
 import javax.inject.{Inject, Singleton}
+import models.RequestOutcome
 import models.ocelot._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import config.AppConfig
+
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class GuidanceConnector @Inject() () {
+class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig) {
 
   private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
-  private[connectors] val scratchStubbedProcess: Process = stubbedProcess.copy(meta = stubbedProcess.meta.copy(id = "SCRATCH"))
 
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     Future.successful(Some(stubbedProcess))
-  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
-    Future.successful(Some(scratchStubbedProcess))
+
+
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {
+    import connectors.httpParsers.GetScratchProcessHttpParser.getScratchProcessHttpReads
+    val endpoint: String = appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid"
+
+    httpClient.GET[RequestOutcome[Process]](endpoint, Seq.empty, Seq.empty).map{
+      case Right(process) => Some(process)
+      case Left(err) => None
+    }
+  }
 }

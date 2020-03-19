@@ -40,11 +40,13 @@ class GuidanceController @Inject() (
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    logger.info(s"Starting journey with sessionId = $sessionId")
     startUrlById(processId, sessionId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    logger.info(s"Starting scratch with sessionId = $sessionId")
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 

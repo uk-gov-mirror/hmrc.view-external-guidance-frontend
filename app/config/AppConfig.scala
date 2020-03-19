@@ -22,8 +22,19 @@ import play.api.i18n.Lang
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.collection.immutable.ListMap
 
+trait AppConfig {
+  val assetsPrefix: String
+  val analyticsToken: String
+  val analyticsHost: String
+  val reportAProblemPartialUrl: String
+  val reportAProblemNonJSUrl: String
+  val languageMap: Map[String, Lang]
+  val externalGuidanceBaseUrl: String
+  val config: Configuration
+}
+
 @Singleton
-class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesConfig) {
+class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: ServicesConfig) extends AppConfig {
   private val contactBaseUrl = servicesConfig.baseUrl("contact-frontend")
 
   private val assetsUrl = config.get[String]("assets.url")
@@ -32,9 +43,9 @@ class AppConfig @Inject() (val config: Configuration, servicesConfig: ServicesCo
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
   val analyticsToken: String = config.get[String](s"google-analytics.token")
   val analyticsHost: String = config.get[String](s"google-analytics.host")
-
   val reportAProblemPartialUrl: String = s"$contactBaseUrl/contact/problem_reports_ajax?service=$serviceIdentifier"
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
-
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
+
+  lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")  
 }
