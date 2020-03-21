@@ -337,7 +337,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case b: BulletPointList => {
 
-          b.leadingText mustBe leadingTextItems
+          b.text mustBe leadingTextItems
 
           b.listItems.size mustBe 2
 
@@ -383,7 +383,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case b: BulletPointList => {
 
-          b.leadingText mustBe leadingTextItems
+          b.text mustBe leadingTextItems
 
           b.listItems.size mustBe 2
 
@@ -449,7 +449,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       complexUiPage.components( four ) match {
         case b: BulletPointList => {
 
-          b.leadingText mustBe leadingTextItems
+          b.text mustBe leadingTextItems
 
           b.listItems.size mustBe 3
 

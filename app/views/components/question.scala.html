@@ -28,7 +28,7 @@ TODO temporarily included form with action to Get of the first answer
     <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
 
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-        <h1 class="govuk-fieldset__heading">@components.render_text(q.heading)</h1>
+        <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
       </legend>
 
       @for((cmp, index) <- q.body.zipWithIndex){

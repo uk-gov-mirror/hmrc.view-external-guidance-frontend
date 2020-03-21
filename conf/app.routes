@@ -1,15 +1,17 @@
 # microservice specific routes
-GET        /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
+GET   /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
 
-GET        /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
-GET        /hello-world                       controllers.HelloWorldController.helloWorld
-GET        /bye-world                         controllers.HelloWorldController.byeWorld
+GET   /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
+GET   /hello-world                       controllers.HelloWorldController.helloWorld
+GET   /bye-world                         controllers.HelloWorldController.byeWorld
 
-->         /govuk-frontend                    govuk.Routes
-->         /hmrc-frontend                     hmrcfrontend.Routes
+->    /govuk-frontend                    govuk.Routes
+->    /hmrc-frontend                     hmrcfrontend.Routes
 
-GET 	   /scratch/:uuid		              controllers.GuidanceController.scratch(uuid: String)
+GET   /scratch/$uuid<[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>     controllers.GuidanceController.scratch(uuid: String)
 
-GET        /start/:processId                  controllers.GuidanceController.startJourney(processId)
-GET        /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
-GET        /                                  controllers.GuidanceController.getPage(path: String ?= "", questionPageUrl: Option[String])
+GET   /start/:processId                  controllers.GuidanceController.startJourney(processId)
+GET   /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
+POST  /*path                             controllers.GuidanceController.submitPage(path: String)
+GET   /                                  controllers.GuidanceController.getPage(path: String ?= "", questionPageUrl: Option[String])
+POST  /                                  controllers.GuidanceController.submitPage(path: String ?= "")

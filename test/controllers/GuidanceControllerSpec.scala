@@ -42,9 +42,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(expectedUrl)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.scratch(uuid)(fakeRequest)
     }
 
@@ -73,9 +74,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(expectedUrl)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.startJourney(processId)(fakeRequest)
     }
 
@@ -113,9 +116,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path, None)(fakeRequest)
     }
 
@@ -148,9 +152,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path, None)(fakeRequest)
     }
 
@@ -186,9 +191,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path, Some(pathInQuerystring))(fakeRequest)
     }
 
@@ -215,9 +221,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(None))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.render_page]
+      private lazy val view = app.injector.instanceOf[views.html.components.standard_page]
+      private lazy val questionView = app.injector.instanceOf[views.html.components.question_page]
 
-      lazy val target = new GuidanceController(errorHandler, view, mockGuidanceService, stubMessagesControllerComponents())
+      lazy val target = new GuidanceController(errorHandler, view, questionView, mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path, None)(fakeRequest)
     }
 

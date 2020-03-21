@@ -23,7 +23,7 @@ import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
-import views.html.components.page
+import views.html.components.standard_page
 import models.ui.{BulletPointList,Page,H1,Paragraph,Text}
 import org.jsoup.nodes.Document
 import scala.collection.JavaConverters._
@@ -39,7 +39,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
-
+    val standardPageView = app.injector.instanceOf[views.html.components.standard_page]
     val title = Text("Telling HMRC about extra income",
                      "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 
@@ -70,21 +70,23 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
 
-      val doc = asDocument(page(simplePage)(fakeRequest, messages))
-
-      val paras = doc.getElementsByTag("p")
-
-      paras.size shouldBe 2
-      paras.first.text shouldBe openingPara.value(messages.lang).head.toString
-
+      val doc = asDocument(standardPageView(simplePage)(fakeRequest, messages))
+      
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
       h1s.first.text shouldBe title.english.head.toString
 
-      val secondPara = paras.eq(1)
+      val paras = doc.getElementsByTag("p")
+
+      paras.size shouldBe 4
+
+      val firstPara = paras.eq(2)
+      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+
+      val secondPara = paras.eq(3)
       secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
 
-      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
+      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList.dropRight(1)
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] = List(bulletPointOne.english.head.toString,
@@ -96,21 +98,23 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(page(simplePage)(fakeRequest, messages))
-
-      val paras = doc.getElementsByTag("p")
-
-      paras.size shouldBe 2
-      paras.first.text shouldBe openingPara.welsh.head.toString
+      val doc = asDocument(standardPageView(simplePage)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
       h1s.first.text shouldBe title.welsh.head.toString
 
-      val secondPara = paras.eq(1)
+      val paras = doc.getElementsByTag("p")
+
+      paras.size shouldBe 4
+
+      val firstPara = paras.eq(2)
+      firstPara.first.text shouldBe openingPara.welsh.head.toString
+
+      val secondPara = paras.eq(3)
       secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
 
-      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
+      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList.dropRight(1)
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString,

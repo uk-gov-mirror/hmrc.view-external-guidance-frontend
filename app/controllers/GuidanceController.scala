@@ -22,7 +22,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html._
+import models.ui.{Page, StandardPage, QuestionPage}
+import views.html.components.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.Future
@@ -31,7 +32,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
-    view: render_page,
+    view: standard_page,
+    questionView: question_page,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -42,10 +44,20 @@ class GuidanceController @Inject() (
     val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
     request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
       service.getPage(url, sessionId).map {
-        case Some(page) => Ok(view(page))
+        case Some(page: QuestionPage) => Ok(questionView(page))
+        case Some(page: StandardPage) => Ok(view(page))
         case _ => NotFound(errorHandler.notFoundTemplate)
       }
     )
+  }
+
+  def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
+    logger.info(s"Page submission on $path")
+    Future.successful(NotFound(errorHandler.notFoundTemplate))
+    // whoAreYouFormProvider().bindFromRequest().fold(
+    //   formWithErrors => Future.successful(BadRequest(renderedView(mode, formWithErrors))),
+    //   value => {
+    
   }
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>

@@ -19,7 +19,7 @@
 
 @(answers: Seq[Answer], horizontal: Boolean, name: String)(implicit request: Request[_], messages: Messages)
 
-@answerText(answer: Answer) = @{ answer.txt }
+@answerText(answer: Answer) = @{ answer.text }
 
 <div class="govuk-radios@{if(horizontal) " govuk-radios--inline" else ""}">
   @for((ans, index) <- answers.zipWithIndex) {
@@ -33,7 +33,7 @@
             aria-describedby="@name-item-@index">
 
       <label class="govuk-label govuk-radios__label govuk-label--s" for="@name-item-@index">
-        @components.render_text(ans.txt)
+        @components.render_text(ans.text)
       </label>
 
       @ans.hint.map{ hintText =>

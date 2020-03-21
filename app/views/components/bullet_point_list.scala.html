@@ -18,7 +18,7 @@
 
 @(bulletPointList: BulletPointList)( implicit messages: Messages )
 
-<p class="govuk-body">@components.render_text( bulletPointList.leadingText )</p>
+<p class="govuk-body">@components.render_text( bulletPointList.text )</p>
 <ul class="govuk-list govuk-list--bullet">@for( listItem <- bulletPointList.listItems ){
    <li>@components.render_text( listItem )</li>
  }

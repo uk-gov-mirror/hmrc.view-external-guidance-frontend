@@ -19,4 +19,4 @@
 
 @(p: Paragraph, id: String)(implicit request: Request[_], messages: Messages)
 
-<span id="@id" class="govuk-hint">@components.render_text(p.txt)</span>
+<span id="@id" class="govuk-hint">@components.render_text(p.text)</span>

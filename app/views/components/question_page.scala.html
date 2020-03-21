@@ -18,10 +18,12 @@
 
 @this(layout: main_layout)
 
-@(page: Page)(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage)(implicit request: Request[_], messages: Messages)
 
 @layout(page.heading.toWords(messages.lang).mkString(" ")) {
-  @components.page(page)
+
+  @components.question(page.question, request.path.split("/").last)
+
 }
 @{
      //$COVERAGE-OFF$
