@@ -47,5 +47,5 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
 
-  lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")  
+  lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 }

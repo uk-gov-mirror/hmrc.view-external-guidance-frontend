@@ -39,7 +39,7 @@ object GetScratchProcessHttpParser extends HttpParser {
     case (_, _, response) if response.status == BAD_REQUEST =>
       Left(InvalidProcessError)
     case unknown =>
-      logger.info(s"unexpected ${unknown} response received when requesting process")
+      logger.info(s"unexpected $unknown response received when requesting process")
       Left(InternalServerError)
   }
 
