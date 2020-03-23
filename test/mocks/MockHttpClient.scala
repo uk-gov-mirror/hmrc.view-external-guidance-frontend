@@ -16,28 +16,25 @@
 
 package mocks
 
-import repositories.SessionRepository
-import models.ocelot.Process
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import scala.concurrent.Future
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
-trait MockSessionRepository extends MockFactory {
+import scala.concurrent.{ExecutionContext, Future}
 
-  val mockSessionRepository: SessionRepository = mock[SessionRepository]
+trait MockHttpClient extends MockFactory {
 
-  object MockSessionRepository {
+  val mockHttpClient: HttpClient = mock[HttpClient]
 
-    def get(key: String): CallHandler[Future[Option[Process]]] =
-      (mockSessionRepository
-        .get(_: String))
-        .expects(key)
+  object MockedHttpClient {
 
-	def set(key: String, process: Process): CallHandler[Future[Option[Unit]]] =
-      (mockSessionRepository
-        .set(_: String, _: Process))
-        .expects(key, process)
-        
+    def get[O](url: String): CallHandler[Future[O]] = {
+      (mockHttpClient
+        .GET[O](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[O], _: HeaderCarrier, _: ExecutionContext))
+        .expects(url, *, *, *, *, *)
+    }
+
   }
 
 }

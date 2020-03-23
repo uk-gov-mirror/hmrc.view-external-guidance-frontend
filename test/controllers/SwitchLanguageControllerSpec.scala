@@ -27,7 +27,7 @@ import play.api.mvc.Cookies
 import play.api.i18n.{MessagesApi,DefaultLangsProvider}
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs._
-import config.AppConfig
+import config.AppConfigImpl
 import uk.gov.hmrc.play.language.LanguageUtils
 
 class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
@@ -35,7 +35,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
   private val env           = Environment.simple()
   private val configuration = Configuration.load(env)
   private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
-  private val appConfig     = new AppConfig(configuration, serviceConfig)
+  private val appConfig     = new AppConfigImpl(configuration, serviceConfig)
   val langsProvider = app.injector.instanceOf[DefaultLangsProvider]
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
   val langUtils = new LanguageUtils( langsProvider.get, configuration)(messagesApi)
