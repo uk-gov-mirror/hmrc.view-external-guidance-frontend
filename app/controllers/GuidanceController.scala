@@ -41,37 +41,30 @@ class GuidanceController @Inject() (
 ) extends FrontendController(mcc)
     with I18nSupport {
   val logger: Logger = Logger( getClass )
-  private def relativeUrl(path: String, questionPageUrl: Option[String] = None): String = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
 
-  def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
+  def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(relativeUrl(path, questionPageUrl), sessionId).map {
+      service.getPage(s"/$path", sessionId).map {
         case Some(page: StandardPage) => Ok(standardView(page))
         case Some(page: QuestionPage) =>
           formProvider().bindFromRequest.fold( 
-            formWithErrors => BadRequest(questionView(page, formWithErrors, routes.GuidanceController.submitPage(path))),
-            value => Ok(questionView(page, formProvider(), routes.GuidanceController.submitPage(path)))
+            formWithErrors => Ok(questionView(page, formWithErrors)),
+            value => Ok(questionView(page, formProvider()))
           )
-
         case None => NotFound(errorHandler.notFoundTemplate)
       }
     )
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(relativeUrl(path), sessionId).map {
-        case Some(page: QuestionPage) =>
-          formProvider().bindFromRequest.fold( 
-            formWithErrors => BadRequest(questionView(page, formWithErrors, routes.GuidanceController.submitPage(path))),
-            value => Ok(questionView(page, formProvider(), routes.GuidanceController.submitPage(path)))
-          )
-
-        case _ => NotFound(errorHandler.notFoundTemplate)
-      }
+    formProvider().bindFromRequest.fold( 
+      // TODO refactor out getting page from session 
+      // and then onError call view with page and errors
+      formWithErrors => 
+        Future.successful(Redirect(s"/guidance$path")),
+      value => Future.successful(Redirect(value))
     )
   }
-
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)

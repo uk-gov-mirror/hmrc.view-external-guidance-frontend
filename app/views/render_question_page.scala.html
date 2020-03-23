@@ -16,15 +16,39 @@
 
 @import models.ui.QuestionPage
 
-@this(layout: main_layout)
+@import controllers.routes._
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import uk.gov.hmrc.govukfrontend.views.html.components.implicits._
+@import uk.gov.hmrc.govukfrontend.views.html.helpers._
 
-@(page: QuestionPage, form: Form[_], postAction: Call)(implicit request: Request[_], messages: Messages)
+@this(
+  layout: main_layout, 
+  formWithCSRF: FormWithCSRF
+)
+
+@(page: QuestionPage, form: Form[_])(implicit request: Request[_], messages: Messages)
+
+@name = {request.path.split("/").last}
 
 @layout(page.heading.toWords(messages.lang).mkString(" ")) {
 
-  @components.question_page(page, form, postAction)
+  @formWithCSRF(action = routes.GuidanceController.submitPage(page.urlPath)) {
+
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
+
+        @components.question(page.question, request.path.split("/").last)
+
+      </fieldset>
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">
+      Continue
+    </button>
+  }
 
 }
+
 @{
      //$COVERAGE-OFF$
 }

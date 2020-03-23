@@ -16,40 +16,23 @@
 
 @import models.ui._
 @import controllers.routes._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@*
-TODO temporarily included form with action to Get of the first answer
-*@
 @(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
-<form action="/guidance/" method="get" novalidate>
+  <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+    <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
+  </legend>
 
-  <div class="govuk-form-group">
-    <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
-
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-        <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
-      </legend>
-
-      @for((cmp, index) <- q.body.zipWithIndex){
-        @{cmp match {
-              case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
-              case x =>
-            }
+  @for((cmp, index) <- q.body.zipWithIndex){
+    @{cmp match {
+          case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
+          case x =>
         }
-      }
+    }
+  }
 
-      @components.answers(q.answers, q.horizontal, name)
-
-    </fieldset>
-  </div>
-
-  <button class="govuk-button" data-module="govuk-button">
-    Continue
-  </button>
-
-</form>
-
+  @components.answers(q.answers, q.horizontal, name)
 
 @{
      //$COVERAGE-OFF$

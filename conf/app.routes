@@ -11,7 +11,9 @@ GET   /bye-world                         controllers.HelloWorldController.byeWor
 GET   /scratch/$uuid<[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>     controllers.GuidanceController.scratch(uuid: String)
 
 GET   /start/:processId                  controllers.GuidanceController.startJourney(processId)
-GET   /*path                             controllers.GuidanceController.getPage(path: String, questionPageUrl: Option[String])
+
+GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)
-GET   /                                  controllers.GuidanceController.getPage(path: String ?= "", questionPageUrl: Option[String])
-POST  /                                  controllers.GuidanceController.submitPage(path: String ?= "")
+
+GET   /                                  controllers.GuidanceController.getPage(path: String ?= "")
+POST  /                                  controllers.GuidanceController.submitPage(path: String)

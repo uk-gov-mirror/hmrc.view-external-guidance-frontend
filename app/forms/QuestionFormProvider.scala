@@ -27,6 +27,6 @@ class QuestionFormProvider @Inject() extends FormProvider {
 
   def apply()(implicit request: Request[_]): Form[String] =
     Form(
-      "value" -> text("error.required")
+      "questionPageUrl" -> text("error.required")
     )
 }
