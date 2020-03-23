@@ -16,6 +16,8 @@
 
 package services
 
+import javax.inject.Singleton
+
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process}
 
@@ -23,7 +25,8 @@ import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
-object PageBuilder extends ProcessPopulation {
+@Singleton
+class PageBuilder extends ProcessPopulation {
 
   private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
 
