@@ -23,7 +23,7 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.ui.{Page, StandardPage, QuestionPage}
-import views.html.components.{standard_page, question_page}
+import views.html.{render_standard_page, render_question_page}
 import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.Future
@@ -32,8 +32,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
-    view: standard_page,
-    questionView: question_page,
+    standardView: render_standard_page,
+    questionView: render_question_page,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -45,7 +45,7 @@ class GuidanceController @Inject() (
     request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
       service.getPage(url, sessionId).map {
         case Some(page: QuestionPage) => Ok(questionView(page))
-        case Some(page: StandardPage) => Ok(view(page))
+        case Some(page: StandardPage) => Ok(standardView(page))
         case _ => NotFound(errorHandler.notFoundTemplate)
       }
     )

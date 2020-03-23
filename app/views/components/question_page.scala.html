@@ -16,15 +16,10 @@
 
 @import models.ui._
 
-@this(layout: main_layout)
-
 @(page: QuestionPage)(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+@components.question(page.question, request.path.split("/").last)
 
-  @components.question(page.question, request.path.split("/").last)
-
-}
 @{
      //$COVERAGE-OFF$
 }

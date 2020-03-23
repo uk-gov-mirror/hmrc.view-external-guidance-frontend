@@ -14,23 +14,17 @@
  * limitations under the License.
  *@
 
-@import models.ui._
+@import models.ui.StandardPage
+
+@this(layout: main_layout)
 
 @(page: StandardPage)(implicit request: Request[_], messages: Messages)
 
-@for( cmp <- page.components) {
-  @{
-    cmp match {
-      case p: Paragraph => components.paragraph(p)
-      case h: H1 => components.h1_heading(h)
-      case h: H2 => components.h2_heading(h)
-      case h: H3 => components.h3_heading(h)
-      case b: BulletPointList => components.bullet_point_list(b)
-      case x => {x}
-    }
-  }
-}
+@layout(page.heading.toWords(messages.lang).mkString(" ")) {
 
+  @components.standard_page(page)
+
+}
 @{
      //$COVERAGE-OFF$
 }
