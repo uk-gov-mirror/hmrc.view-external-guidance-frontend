@@ -16,7 +16,7 @@
 
 @import models.ui._
 
-@(page: QuestionPage)(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, form: Form[_], postAction: Call)(implicit request: Request[_], messages: Messages)
 
 @components.question(page.question, request.path.split("/").last)
 

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.QuestionPage
+package forms
 
-@this(layout: main_layout)
+import forms.mappings.Mappings
+import javax.inject.Inject
+import play.api.data.Form
+import play.api.mvc.Request
 
-@(page: QuestionPage, form: Form[_], postAction: Call)(implicit request: Request[_], messages: Messages)
+trait FormProvider extends Mappings
 
-@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+class QuestionFormProvider @Inject() extends FormProvider {
 
-  @components.question_page(page, form, postAction)
-
-}
-@{
-     //$COVERAGE-OFF$
+  def apply()(implicit request: Request[_]): Form[String] =
+    Form(
+      "value" -> text("error.required")
+    )
 }

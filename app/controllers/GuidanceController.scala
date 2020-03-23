@@ -23,6 +23,7 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.ui.{Page, StandardPage, QuestionPage}
+import forms.QuestionFormProvider
 import views.html.{render_standard_page, render_question_page}
 import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
@@ -34,31 +35,43 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: render_standard_page,
     questionView: render_question_page,
+    formProvider: QuestionFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
   val logger: Logger = Logger( getClass )
+  private def relativeUrl(path: String, questionPageUrl: Option[String] = None): String = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
 
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
-    val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
     request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(url, sessionId).map {
-        case Some(page: QuestionPage) => Ok(questionView(page))
+      service.getPage(relativeUrl(path, questionPageUrl), sessionId).map {
         case Some(page: StandardPage) => Ok(standardView(page))
-        case _ => NotFound(errorHandler.notFoundTemplate)
+        case Some(page: QuestionPage) =>
+          formProvider().bindFromRequest.fold( 
+            formWithErrors => BadRequest(questionView(page, formWithErrors, routes.GuidanceController.submitPage(path))),
+            value => Ok(questionView(page, formProvider(), routes.GuidanceController.submitPage(path)))
+          )
+
+        case None => NotFound(errorHandler.notFoundTemplate)
       }
     )
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    logger.info(s"Page submission on $path")
-    Future.successful(NotFound(errorHandler.notFoundTemplate))
-    // whoAreYouFormProvider().bindFromRequest().fold(
-    //   formWithErrors => Future.successful(BadRequest(renderedView(mode, formWithErrors))),
-    //   value => {
-    
+    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
+      service.getPage(relativeUrl(path), sessionId).map {
+        case Some(page: QuestionPage) =>
+          formProvider().bindFromRequest.fold( 
+            formWithErrors => BadRequest(questionView(page, formWithErrors, routes.GuidanceController.submitPage(path))),
+            value => Ok(questionView(page, formProvider(), routes.GuidanceController.submitPage(path)))
+          )
+
+        case _ => NotFound(errorHandler.notFoundTemplate)
+      }
+    )
   }
+
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)

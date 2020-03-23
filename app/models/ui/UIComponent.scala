@@ -54,8 +54,8 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
 }
 
 object Text {
-  def apply(phrase: Vector[String]): Text = Text(Words(phrase(0)), Words(phrase(1)))
-  def apply(english: String, welsh: String): Text = Text(Seq(Words(english)), Seq(Words(welsh)))
   def apply(english: TextItem, welsh: TextItem): Text = Text(Seq(english), Seq(welsh))
+  def apply(english: String, welsh: String): Text = Text(Words(english), Words(welsh))
+  def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil, Nil)
 }
