@@ -24,6 +24,9 @@ import utils.StanzaHelper
 
 class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
+  // Define instance of class used in testing
+  val pageBuilder: PageBuilder = new PageBuilder()
+
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
 
   case object DummyStanza extends Stanza {
@@ -61,6 +64,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageId6 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this14")), Seq("15"), false),
       "15" -> InstructionStanza(0, Seq("end"), None, false),
       "end" -> EndStanza
+
     )
 
     private val phrases = Vector[Phrase](
@@ -72,7 +76,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     private val links = Vector(Link(0,pageId3, "", false),Link(1,pageId6, "", false))
 
     val processWithLinks = Process(metaSection, flow, phrases, links)
-
   }
 
   "PageBuilder error handling" must {
@@ -87,7 +90,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
 
-      PageBuilder.buildPage("start", process) match {
+      pageBuilder.buildPage("start", process) match {
         case Left(UnknownStanzaType(DummyStanza)) => succeed
         case Left(stanza) => fail(s"Unknown stanza not detected, found $stanza")
         case err => fail(s"Unknown stanza not detected $err")
@@ -98,7 +101,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "detect StanzaNotFound error" in {
       val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
 
-      PageBuilder.buildPage("4", process) match {
+      pageBuilder.buildPage("4", process) match {
         case Left(StanzaNotFound("4")) => succeed
         case _ => fail("Unknown stanza not detected")
       }
@@ -118,7 +121,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(MissingPageUrlValueStanza("4")) => succeed
         case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
         case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
@@ -139,7 +142,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(MissingPageUrlValueStanza("start")) => succeed
         case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
         case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
@@ -160,7 +163,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(MissingPageUrlValueStanza("start")) => succeed
         case Left(err) => fail(s"Missing PageUrl value within initial ValueStanza not found with error $err")
         case Right(_) => fail(s"Missing PageUrl value within initial ValueStanza missed")
@@ -181,7 +184,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(PhraseNotFound(four)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(4)")
@@ -202,7 +205,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(PhraseNotFound(four)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(4) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(4)")
@@ -217,7 +220,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       )
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(PhraseNotFound(2)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(2) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(2)")
@@ -232,7 +235,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       )
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(PhraseNotFound(2)) => succeed
         case Left(err) => fail(s"Missing PhraseNotFound(2) with error $err")
         case Right(_) => fail(s"Missing PhraseNotFound(2)")
@@ -253,7 +256,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         Vector[Phrase](Phrase(Vector("First English phrase", "First Welsh Phrase")), Phrase(Vector("Second English Phrase", "Second Welsh Phrase"))),
         Vector[Link](Link(0, "http://my.com/search", "MyCOM Search Engine", false)))
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(LinkNotFound(1)) => succeed
         case Left(err) => fail(s"Missing LinkNotFound error. Actual error raised is $err")
         case Right(_) => fail("Page building terminated successfully when LinkNotFound error expected")
@@ -274,7 +277,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                                               Phrase(Vector("Some Text2","Welsh, Some Text2")),
                                                               Phrase(Vector("Some Text3","Welsh, Some Text3"))), Vector[Link]())
 
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Left(DuplicatePageUrl("4", "/this")) => succeed
         case Left(err) => fail(s"DuplicatePageUrl error not detected, failed with $err")
         case _ => fail(s"DuplicatePageUrl not detected")
@@ -290,7 +293,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process: Process = prototypeJson.as[Process]
 
-      PageBuilder.buildPage("unknown", process) match {
+      pageBuilder.buildPage("unknown", process) match {
         case Right(_) => fail("Invalid key should not return a page")
         case Left(err) => succeed
       }
@@ -302,7 +305,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         val process: Process = prototypeJson.as[Process]
 
-        PageBuilder.pages(process, "unknown") match {
+        pageBuilder.pages(process, "unknown") match {
           case Right(_) => fail("""Should fail with StanzaNotFound("unknown")""")
           case Left(err) if err == StanzaNotFound("unknown") => succeed
           case Left(wrongErr) => fail("""Should fail with StanzaNotFound("unknown")""")
@@ -313,7 +316,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         val process: Process = prototypeJson.as[Process]
 
-        PageBuilder.pages(process) match {
+        pageBuilder.pages(process) match {
           case Right(pages) =>
             pages mustNot be(Nil)
 
@@ -328,7 +331,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         val process: Process = prototypeJson.as[Process]
 
-        PageBuilder.pages( process ) match {
+        pageBuilder.pages( process ) match {
           case Right(pages) => {
 
             testPagesInPrototypeJson( pages )
@@ -343,7 +346,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "consist of one page when only page exists" in {
         val process: Process = validOnePageJson.as[Process]
 
-        PageBuilder.pages(process, "1") match {
+        pageBuilder.pages(process, "1") match {
           case Right(pages) =>
             pages mustNot be(Nil)
 
@@ -359,7 +362,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         val process: Process = Process(meta, onePage, Vector[Phrase](Phrase(Vector("Some Text","Welsh, Some Text")),
                                                                      Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())
 
-        PageBuilder.pages(process) match {
+        pageBuilder.pages(process) match {
           case Right(pages) =>
             pages mustNot be(Nil)
 
@@ -371,7 +374,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       "follows links to pages idenitified by stanza id " in new Test {
 
-        PageBuilder.pages(processWithLinks) match {
+        pageBuilder.pages(processWithLinks) match {
           case Right(pages) =>
             pages.length mustBe 6
             val pageMap = pages.map(p => (p.id, p.linked)).toMap
@@ -395,7 +398,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process: Process = Process(meta, simpleQuestionPage, phrases, links )
 
-        PageBuilder.pages(process) match {
+        pageBuilder.pages(process) match {
 
           case Right(pages) =>
 
@@ -435,7 +438,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         )
         val process = Process(metaSection, flow, Vector[Phrase]( phrase1, phrase2 ), Vector[Link]())
 
-         PageBuilder.pages( process ) match {
+         pageBuilder.pages( process ) match {
            case Right(pages) => {
 
              assert( pages.head.stanzas.size == 4 )
@@ -467,7 +470,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process = Process(metaSection, flow, Vector[Phrase]( phrase1, phrase2, phrase3 ), Vector[Link]())
 
-      PageBuilder.pages( process ) match {
+      pageBuilder.pages( process ) match {
         case Right(pages) => {
 
           assert( pages.head.stanzas.size == 3 )
@@ -541,7 +544,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       Vector[Link]()
       )
 
-      PageBuilder.pages( process ) match {
+      pageBuilder.pages( process ) match {
         case Right(pages) => {
 
           assert( pages.head.stanzas.size == 10 )
@@ -573,7 +576,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val process: Process = Process(meta, twoPagesSeperatedByValueStanza, Vector(Phrase(Vector("Some Text","Welsh, Some Text")),
                                                                                 Phrase(Vector("Some Text1","Welsh, Some Text1"))), Vector[Link]())
     "result in 2 pages" in {
-      PageBuilder.pages(process) match {
+      pageBuilder.pages(process) match {
         case Right(pages) if pages.length == 2 => succeed
         case Right(pages) => fail(s"Page count is incorrect, found ${pages.length} pages")
         case Left(err) => fail(s"FAIL ${err.toString}")
