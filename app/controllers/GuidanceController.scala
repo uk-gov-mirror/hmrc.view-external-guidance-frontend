@@ -43,8 +43,8 @@ class GuidanceController @Inject() (
   val logger: Logger = Logger( getClass )
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(s"/$path", sessionId).map {
+    logger.info(s"getPage: $path")
+    sessionPage(path).map {
         case Some(page: StandardPage) => Ok(standardView(page))
         case Some(page: QuestionPage) =>
           formProvider().bindFromRequest.fold( 
@@ -52,16 +52,18 @@ class GuidanceController @Inject() (
             value => Ok(questionView(page, formProvider()))
           )
         case None => NotFound(errorHandler.notFoundTemplate)
-      }
-    )
+    }
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
+    logger.info(s"submitPage: $path")
     formProvider().bindFromRequest.fold( 
-      // TODO refactor out getting page from session 
-      // and then onError call view with page and errors
-      formWithErrors => 
-        Future.successful(Redirect(s"/guidance$path")),
+      formWithErrors => {
+        sessionPage(path.dropWhile(_ == '/')).map {
+            case Some(page: QuestionPage) => BadRequest(questionView(page, formWithErrors))
+            case _ => NotFound(errorHandler.notFoundTemplate)
+        }
+      },
       value => Future.successful(Redirect(value))
     )
   }
@@ -77,6 +79,12 @@ class GuidanceController @Inject() (
     logger.info(s"Starting scratch with sessionId = $sessionId")
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
+
+  private def sessionPage(path: String)(implicit request: Request[_]): Future[Option[Page]] =
+    request.session.get(SessionKeys.sessionId) match {
+      case Some(sessionId) => service.getPage(s"/$path", sessionId)
+      case None => Future.successful(None)
+    }
 
   private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
                           (implicit request: Request[_]): Future[Result] =

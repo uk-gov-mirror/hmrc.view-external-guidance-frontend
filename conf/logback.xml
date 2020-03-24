@@ -47,6 +47,8 @@
 
     <logger name="uk.gov" level="WARN"/>
 
+    <logger name="reactivemongo" level="WARN"/>
+
     <logger name="application" level="DEBUG"/>
 
     <logger name="connector" level="TRACE">
