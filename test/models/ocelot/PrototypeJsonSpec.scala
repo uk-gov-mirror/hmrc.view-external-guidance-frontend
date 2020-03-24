@@ -25,13 +25,14 @@ class PrototypeJsonSpec extends WordSpec with Matchers {
   trait Test {
     val jsObject: JsObject = Json.parse(PrototypeJson.json).as[JsObject]
     val process: Process = jsObject.as[Process]
+    val pageBuilder = new PageBuilder()
   }
 
   "Prototype Json" must {
 
     "Parse into a valid Process object" in new Test {
-      PageBuilder.pages(process) match {
-        case Right(pges) => succeed
+      pageBuilder.pages(process) match {
+        case Right(pages) => succeed
         case Left(err) => fail(s"Invalid json ${err}")
       }
     }

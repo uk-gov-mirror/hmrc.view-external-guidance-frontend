@@ -29,7 +29,10 @@ class GuidanceServiceSpec extends BaseSpec {
   private trait Test extends MockGuidanceConnector with MockSessionRepository with ProcessJson {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     val process: Process = prototypeJson.as[Process]
-    lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository)
+
+    val pageBuilder: PageBuilder = new PageBuilder()
+    val uiBuilder: UIBuilder = new UIBuilder()
+    lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, pageBuilder, uiBuilder)
   }
 
   "Calling getPage with a valid URL" should {

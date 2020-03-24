@@ -175,8 +175,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
                                          "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     // for multi page testing
-    val stanzaPages = PageBuilder.pages(prototypeJson.as[Process]).right.get
+    val pageBuilder: PageBuilder = new PageBuilder()
+    val stanzaPages = pageBuilder.pages(prototypeJson.as[Process]).right.get
     val prototypeUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
+
+    // Define instance of class to be used in tests
+    val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
     val five: Int = 5
@@ -186,62 +190,62 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert and Ocelot page into a UI page with the same url" in new Test{
 
-      UIBuilder.fromStanzaPage(page) match {
+      uiBuilder.fromStanzaPage(page) match {
         case p if p.urlPath == page.url => succeed
         case p => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
       }
     }
 
     "convert 1st Callout type Title to H1" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(1) mustBe models.ui.H1(Text(lang0))
     }
 
     "convert 2nd Callout type SubTitle to H2" in new Test{
 
-      val uiPage = UIBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(2) mustBe models.ui.H2(Text(lang1))
     }
 
     "convert Callout type Lede to lede Paragraph" in new Test{
 
-      val uiPage = UIBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(3) mustBe models.ui.Paragraph(Text(lang2), true)
     }
 
     "convert Simple instruction to Paragraph" in new Test{
 
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(4) mustBe models.ui.Paragraph(Text(lang3), false)
+      val uiPage = uiBuilder.fromStanzaPage(page)
+      uiPage.components(four) mustBe models.ui.Paragraph(Text(lang3), false)
     }
 
     "convert Link instruction to Paragraph" in new Test{
 
-      val uiPage = UIBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzaPage(page)
       val en = Link("dummy-path/blah",lang4(0))
       val cy = Link("dummy-path/blah",lang4(1))
-      uiPage.components(5) mustBe models.ui.Paragraph(Text(en,cy), false)
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(en,cy), false)
     }
 
     "convert page with instruction stanza containing a sequence of Text and Link items" in new Test{
 
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks)
-      uiPage.components(5) mustBe models.ui.Paragraph(textItems, false)
+      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks)
+      uiPage.components(five) mustBe models.ui.Paragraph(textItems, false)
     }
 
     "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddLinks2)
+      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks2)
       uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
     }
 
     "convert page with instruction stanza text containing PageLinks and Text" in new Test{
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
+      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
       uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
     "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
       implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
-      val pageMap = UIBuilder.pages(stanzaPages)
+      val pageMap = uiBuilder.pages(stanzaPages)
 
       pageMap.keys.toList.length mustBe stanzaPages.length
 
@@ -251,22 +255,22 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(pageWithEmbeddAllLinks)
-      uiPage.components(5) mustBe models.ui.Paragraph(allLinksTextItems, false)
+      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddAllLinks)
+      uiPage.components(five) mustBe models.ui.Paragraph(allLinksTextItems, false)
     }
 
     "convert page including a PageLink instruction stanza" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(page)
-      uiPage.components(5) mustBe models.ui.Paragraph(Text(link3En,link3Cy), false)
+      val uiPage = uiBuilder.fromStanzaPage(page)
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(link3En,link3Cy), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(hyperLinkPage)
-      uiPage.components(5) mustBe models.ui.Paragraph(Text(link4En,link4Cy), false)
+      val uiPage = uiBuilder.fromStanzaPage(hyperLinkPage)
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(link4En,link4Cy), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(questionPage)
+      val uiPage = uiBuilder.fromStanzaPage(questionPage)
 
       uiPage.components.length mustBe 1
 
@@ -276,7 +280,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length mustBe 2
 
-          q.answers(0) mustBe models.ui.Answer(Text(ans1), None, answerDestinationUrls(0))
+          q.answers.head mustBe models.ui.Answer(Text(ans1), None, answerDestinationUrls.head)
 
           q.answers(1) mustBe models.ui.Answer(Text(ans2), None, answerDestinationUrls(1))
 
@@ -287,7 +291,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a question page including answer hints into a Seq of a single Question UI object" in new Test {
-      val uiPage = UIBuilder.fromStanzaPage(questionPageWithHints)
+      val uiPage = uiBuilder.fromStanzaPage(questionPageWithHints)
 
       uiPage.components.length mustBe 1
 
@@ -297,7 +301,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length mustBe 2
 
-          q.answers(0) mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls(0))
+          q.answers.head mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls.head)
 
           q.answers(1) mustBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinationUrls(1))
 
@@ -324,7 +328,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
 
-      val uiPage = UIBuilder.fromStanzaPage( bulletPointListPage )
+      val uiPage = uiBuilder.fromStanzaPage( bulletPointListPage )
 
       uiPage.components.length mustBe 1
 
@@ -369,7 +373,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
 
-      val uiPage = UIBuilder.fromStanzaPage( bulletPointListPage )
+      val uiPage = uiBuilder.fromStanzaPage( bulletPointListPage )
 
       uiPage.components.length mustBe 1
 
@@ -435,7 +439,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val complexPage = Page( "start","/", stanzaSeq, Seq(""), Nil )
 
-      val complexUiPage = UIBuilder.fromStanzaPage( complexPage )
+      val complexUiPage = uiBuilder.fromStanzaPage( complexPage )
 
       complexUiPage.components.size mustBe 6
 
