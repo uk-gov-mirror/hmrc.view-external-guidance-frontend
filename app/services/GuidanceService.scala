@@ -26,19 +26,22 @@ import repositories.SessionRepository
 import models.ocelot.Process
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository) {
+class GuidanceService @Inject() (connector: GuidanceConnector,
+                                 sessionRepository: SessionRepository,
+                                 pageBuilder: PageBuilder,
+                                 uiBuilder: UIBuilder) {
   val logger: Logger = Logger(getClass)
 
   def getPage(url: String, sessionId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
     sessionRepository.get(sessionId).map{ processOption =>
       processOption.flatMap{ process =>
-        PageBuilder.pages(process).fold(err => {
+        pageBuilder.pages(process).fold(err => {
           logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
           None
           },
           pages => {
             val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-            pages.find(page => page.url == url).map( pge => UIBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
+            pages.find(page => page.url == url).map( pge => uiBuilder.fromStanzaPage(pge)(stanzaIdToUrlMap))
           }
         )
       }
@@ -55,7 +58,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
     processById(id).flatMap {
       case Some(process) =>
         sessionRepository.set(repositoryId, process).map { _ =>
-          PageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
+          pageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
         }
       case None => Future.successful(None)
     }

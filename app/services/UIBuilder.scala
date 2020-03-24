@@ -16,11 +16,14 @@
 
 package services
 
+import javax.inject.Singleton
+
 import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
 import models.ocelot.Phrase
 import models.ui._
 
-object UIBuilder {
+@Singleton
+class UIBuilder {
 
   def pages(stanzaPages: Seq[models.ocelot.Page])(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p)(stanzaIdToUrlMap))).toMap
