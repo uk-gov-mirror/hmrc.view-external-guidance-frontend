@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package config
+package models.errors
 
-import com.google.inject.AbstractModule
-import repositories.{DefaultSessionRepository, SessionRepository}
+import play.api.libs.json.{Json, OFormat}
 
-class Module extends AbstractModule {
+case class Error(code: String, message: String)
 
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).to(classOf[AppConfigImpl])
-    bind(classOf[SessionRepository]).to(classOf[DefaultSessionRepository]).asEagerSingleton()
-  }
+object Error {
+  implicit val formats: OFormat[Error] = Json.format[Error]
 }
+
+object InvalidProcessError extends Error("BAD_REQUEST", "The input process is invalid")
+object InternalServerError extends Error("INTERNAL_SERVER_ERROR", "An unexpected error has occurred")

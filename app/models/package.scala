@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package config
+import models.errors.Error
 
-import com.google.inject.AbstractModule
-import repositories.{DefaultSessionRepository, SessionRepository}
+package object models {
 
-class Module extends AbstractModule {
+  type RequestOutcome[T] = Either[Error, T]
 
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).to(classOf[AppConfigImpl])
-    bind(classOf[SessionRepository]).to(classOf[DefaultSessionRepository]).asEagerSingleton()
-  }
 }
