@@ -26,25 +26,27 @@
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@name = {request.path.split("/").last}
+@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+  
+  @formWithCSRF(action = routes.GuidanceController.submitPage(page.relativePath)) {
 
-@formWithCSRF(action = routes.GuidanceController.submitPage(page.urlPath)) {
+    <div class="govuk-form-group">
+      <fieldset class="govuk-fieldset" aria-describedby="@questionName-hint">
 
-  <div class="govuk-form-group">
-    <fieldset class="govuk-fieldset" aria-describedby="@name-hint">
+        @components.question(page.question, questionName)
 
-      @components.question(page.question, request.path.split("/").last)
+      </fieldset>
+    </div>
 
-    </fieldset>
-  </div>
+    <button class="govuk-button" data-module="govuk-button">
+      Continue
+    </button>
+  }
 
-  <button class="govuk-button" data-module="govuk-button">
-    Continue
-  </button>
 }
 
 @{
-  //$COVERAGE-OFF$
+     //$COVERAGE-OFF$
 }

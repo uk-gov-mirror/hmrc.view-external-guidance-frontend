@@ -16,4 +16,4 @@ GET   /*path                             controllers.GuidanceController.getPage(
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)
 
 GET   /                                  controllers.GuidanceController.getPage(path: String ?= "")
-POST  /                                  controllers.GuidanceController.submitPage(path: String)
+POST  /                                  controllers.GuidanceController.submitPage(path: String ?= "")

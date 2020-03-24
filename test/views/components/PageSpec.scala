@@ -23,8 +23,8 @@ import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
-import views.html.components.standard_page
-import models.ui.{BulletPointList,Page,H1,Paragraph,Text}
+import views.html.standard_page
+import models.ui.{BulletPointList,Page,H1,Paragraph,Text, StandardPage}
 import org.jsoup.nodes.Document
 import scala.collection.JavaConverters._
 
@@ -39,7 +39,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
-    val standardPageView = app.injector.instanceOf[views.html.components.standard_page]
+    val standardPageView = app.injector.instanceOf[views.html.standard_page]
     val title = Text("Telling HMRC about extra income",
                      "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 
@@ -59,7 +59,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val bulletPointList = BulletPointList(bulletPointLeadingText,
       Seq( bulletPointOne, bulletPointTwo, bulletPointThree ) )
 
-    val simplePage =  Page("root", Seq(para, H1(title), bulletPointList ) )
+    val simplePage =  StandardPage("root", Seq(para, H1(title), bulletPointList ) )
   }
 
   trait WelshTest extends Test {

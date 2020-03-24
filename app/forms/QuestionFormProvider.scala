@@ -16,17 +16,19 @@
 
 package forms
 
-import forms.mappings.Mappings
 import javax.inject.Inject
 import play.api.data.Form
-import play.api.mvc.Request
+import play.api.data.Forms._
+import models.ui.NextPageUrl
 
-trait FormProvider extends Mappings
+trait FormProvider
 
 class QuestionFormProvider @Inject() extends FormProvider {
 
-  def apply()(implicit request: Request[_]): Form[String] =
+  def apply(): Form[NextPageUrl] =
     Form(
-      "questionPageUrl" -> text("error.required")
+      mapping(
+        "url" -> nonEmptyText
+      )(NextPageUrl.apply)(NextPageUrl.unapply)
     )
 }

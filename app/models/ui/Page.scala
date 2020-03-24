@@ -20,6 +20,7 @@ sealed trait Page {
   val heading: Text
   val urlPath: String
   val components: Seq[UIComponent]
+  val relativePath = urlPath.dropWhile(_ == '/')
 }
 
 object Page {
