@@ -23,7 +23,7 @@ import models.ui.NextPageUrl
 
 trait FormProvider
 
-class QuestionFormProvider @Inject() extends FormProvider {
+class NextPageFormProvider @Inject() extends FormProvider {
 
   def apply(): Form[NextPageUrl] =
     Form(

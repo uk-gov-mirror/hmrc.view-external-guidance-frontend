@@ -23,7 +23,7 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.ui.{Page, StandardPage, QuestionPage}
-import forms.QuestionFormProvider
+import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
@@ -35,7 +35,7 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
-    formProvider: QuestionFormProvider,
+    formProvider: NextPageFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)

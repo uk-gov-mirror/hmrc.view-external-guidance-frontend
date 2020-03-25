@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
-import forms.QuestionFormProvider
+import forms.NextPageFormProvider
 import models.ui._
 import play.api.test.CSRFTokenHelper._
 
@@ -33,42 +33,44 @@ import scala.concurrent.Future
 
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
+  trait QuestionTest extends MockGuidanceService {
+    val path = "/some-path"
+    val relativePath = path.drop(1)
+    val processId = "ext90002"
+    val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+
+    val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("","")), "/hello")
+    val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("","")), "/world")
+    val expectedPage: Page = QuestionPage(
+      path,
+      Question(Text("QUESTION","QUESTION"), Seq(Paragraph(Text("QUESTION","QUESTION"))), Seq(ans1, ans2))
+    )
+
+    MockGuidanceService
+      .getPage(path, processId)
+      .returns(Future.successful(Some(expectedPage)))
+
+    val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+    val view = app.injector.instanceOf[views.html.standard_page]
+    val questionView = app.injector.instanceOf[views.html.question_page]
+    val target = new GuidanceController(errorHandler, 
+                                             view, 
+                                             questionView, 
+                                             new NextPageFormProvider(), 
+                                             mockGuidanceService, 
+                                             stubMessagesControllerComponents())
+  }
+
+
   "Calling a valid URL path to a Question page in a process" should {
 
-    trait Test extends MockGuidanceService {
-      val path = "/some-path"
-      val relativePath = path.drop(1)
-      val processId = "ext90002"
-      val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
-
-      val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("","")), "/hello")
-      val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("","")), "/world")
-      val expectedPage: Page = QuestionPage(
-        path,
-        Question(Text("QUESTION","QUESTION"), Seq(Paragraph(Text("QUESTION","QUESTION"))), Seq(ans1, ans2))
-      )
-
-      MockGuidanceService
-        .getPage(path, processId)
-        .returns(Future.successful(Some(expectedPage)))
-
-      val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      val view = app.injector.instanceOf[views.html.standard_page]
-      val questionView = app.injector.instanceOf[views.html.question_page]
-      val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
+    "return an OK response" in new QuestionTest {
       val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
-    }
-
-    "return an OK response" in new Test {
       status(result) mustBe Status.OK
     }
 
-    "be a HTML response" in new Test {
+    "be a HTML response" in new QuestionTest {
+      val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
       contentType(result) mustBe Some("text/html")
     }    
 
@@ -76,263 +78,153 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   "Submitting a blank Question page form" should {
 
-    trait Test extends MockGuidanceService {
-      val path = "/some-path"
-      val relativePath = path.drop(1)
-      val processId = "ext90002"
-      val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
-
-      val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("","")), "/hello")
-      val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("","")), "/world")
-      val expectedPage: Page = QuestionPage(
-        path,
-        Question(Text("QUESTION","QUESTION"), Seq(Paragraph(Text("QUESTION","QUESTION"))), Seq(ans1, ans2))
-      )
-
-      MockGuidanceService
-        .getPage(path, processId)
-        .returns(Future.successful(Some(expectedPage)))
-
-      val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      val view = app.injector.instanceOf[views.html.standard_page]
-      val questionView = app.injector.instanceOf[views.html.question_page]
-      val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
+    "return a BadRequest response" in new QuestionTest {
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
-    }
-
-    "return a BadRequest response" in new Test {
       status(result) mustBe Status.BAD_REQUEST
     }
   }
 
   "Submitting an answered Question page form" should {
 
-    trait Test extends MockGuidanceService {
-      val path = "/some-path"
-      val relativePath = path.drop(1)
-      val processId = "ext90002"
-      val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody(("url" -> "/hello")).withCSRFToken
-
-      val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("","")), "/hello")
-      val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("","")), "/world")
-      val expectedPage: Page = QuestionPage(
-        path,
-        Question(Text("QUESTION","QUESTION"), Seq(Paragraph(Text("QUESTION","QUESTION"))), Seq(ans1, ans2))
-      )
-
-      MockGuidanceService
-        .getPage(path, processId)
-        .returns(Future.successful(Some(expectedPage)))
-
-      val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      val view = app.injector.instanceOf[views.html.standard_page]
-      val questionView = app.injector.instanceOf[views.html.question_page]
-      val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
+    "return a SeeOther response" in new QuestionTest {
+      override val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody(("url" -> "/hello")).withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
-    }
-
-    "return a SeeOther response" in new Test {
       status(result) mustBe Status.SEE_OTHER
     }
+  }
+
+  trait ScratchTest extends MockGuidanceService {
+    lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
+    lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
+    val expectedUrl = "/start-url"
+
+    private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+    private lazy val view = app.injector.instanceOf[views.html.standard_page]
+    private lazy val questionView = app.injector.instanceOf[views.html.question_page]
+
+    lazy val target = new GuidanceController(errorHandler, 
+                                             view, 
+                                             questionView, 
+                                             new NextPageFormProvider(), 
+                                             mockGuidanceService, 
+                                             stubMessagesControllerComponents())
+    
   }
 
   "Calling the scratch process endpoint with a valid UUID" should {
 
-    trait ScratchTest extends MockGuidanceService {
-      lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-      val expectedUrl = "/start-url"
-
+    trait ScratchTestWithValidUUID extends ScratchTest {
       MockGuidanceService
         .scratchProcess(uuid, uuid)
         .returns(Future.successful(Some(expectedUrl)))
 
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler,
-                                               view,
-                                               questionView,
-                                               new QuestionFormProvider(),
-                                               mockGuidanceService,
-                                               stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.scratch(uuid)(fakeRequest)
     }
 
-    "redirect the caller to another page" in new ScratchTest {
+    "redirect the caller to another page" in new ScratchTestWithValidUUID {
       status(result) mustBe Status.SEE_OTHER
     }
 
-    "redirect the caller to the start page of the process" in new ScratchTest {
+    "redirect the caller to the start page of the process" in new ScratchTestWithValidUUID {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "create a session using the standard naming" in new ScratchTest {
+    "create a session using the standard naming" in new ScratchTestWithValidUUID {
       session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
 
+
   "Calling the scratch process endpoint with a valid UUID and existing sessionId" should {
 
-    trait ScratchTest extends MockGuidanceService {
-      lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(SessionKeys.sessionId -> "SESSIONID")
-      val expectedUrl = "/start-url"
-
+    "Use the existing session ID" in new ScratchTest {
       MockGuidanceService
         .scratchProcess(uuid, uuid)
         .returns(Future.successful(Some(expectedUrl)))
 
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.scratch(uuid)(fakeRequest)
-    }
-
-    "Use the existing session ID" in new ScratchTest {
+      val result: Future[Result] = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
       session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
   "Calling the scratch process endpoint with an invalid UUID" should {
 
-    trait ScratchTest extends MockGuidanceService {
-      lazy val unknownUuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-      val expectedUrl = "/start-url"
-
-      MockGuidanceService
-        .scratchProcess(unknownUuid, unknownUuid)
-        .returns(Future.successful(None))
-
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.scratch(unknownUuid)(fakeRequest)
-    }
-
     "return a NOT_FOUND error" in new ScratchTest {
+      MockGuidanceService
+        .scratchProcess(uuid, uuid)
+        .returns(Future.successful(None))
+      val result: Future[Result] = target.scratch(uuid)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND
     }
 
   }
 
+  trait StartJourneyTest extends MockGuidanceService {
+    lazy val processId = "ext90002"
+    lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
+    val expectedUrl = "/start-url"
+
+
+    private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
+    private lazy val view = app.injector.instanceOf[views.html.standard_page]
+    private lazy val questionView = app.injector.instanceOf[views.html.question_page]
+
+    lazy val target = new GuidanceController(errorHandler, 
+                                             view, 
+                                             questionView, 
+                                             new NextPageFormProvider(), 
+                                             mockGuidanceService, 
+                                             stubMessagesControllerComponents())
+    
+  }
+
   "Calling the start process endpoint with a valid process ID" should {
 
-    trait StartJourneyTest extends MockGuidanceService {
-      lazy val processId = "ext90002"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-      val expectedUrl = "/start-url"
-
+    "redirect the caller to another page" in new StartJourneyTest {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
 
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.startJourney(processId)(fakeRequest)
-    }
-
-    "redirect the caller to another page" in new StartJourneyTest {
+      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
     }
 
     "redirect the caller to the start page of the process" in new StartJourneyTest {
+      MockGuidanceService
+        .getStartPageUrl(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
     "add the process ID to the user's session" in new StartJourneyTest {
+      MockGuidanceService
+        .getStartPageUrl(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
       session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
 
   "Calling the start process endpoint with a valid process ID and existing sessionId" should {
 
-    trait StartJourneyTest extends MockGuidanceService {
-      lazy val processId = "ext90002"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(SessionKeys.sessionId -> "SESSIONID")
-      val expectedUrl = "/start-url"
-
+    "Use the existing session ID" in new StartJourneyTest {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
-
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.startJourney(processId)(fakeRequest)
-    }
-
-    "Use the existing session ID" in new StartJourneyTest {
+      val result: Future[Result] = target.startJourney(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
       session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
   "Calling start process endpoint with a invalid process ID" should {
 
-    trait StartJourneyTest extends MockGuidanceService {
-      lazy val unknownProcessId = "ext90077"
-      lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-      val expectedUrl = "/start-url"
-
+    "return a NOT_FOUND error" in new StartJourneyTest {
+      val unknownProcessId = "ext90077"
       MockGuidanceService
         .getStartPageUrl(unknownProcessId, unknownProcessId)
         .returns(Future.successful(None))
-
-      private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-      private lazy val view = app.injector.instanceOf[views.html.standard_page]
-      private lazy val questionView = app.injector.instanceOf[views.html.question_page]
-
-      lazy val target = new GuidanceController(errorHandler, 
-                                               view, 
-                                               questionView, 
-                                               new QuestionFormProvider(), 
-                                               mockGuidanceService, 
-                                               stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.startJourney(unknownProcessId)(fakeRequest)
-    }
-
-    "return a NOT_FOUND error" in new StartJourneyTest {
+      val result: Future[Result] = target.startJourney(unknownProcessId)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND
     }
 
@@ -363,7 +255,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val target = new GuidanceController(errorHandler, 
                                                view, 
                                                questionView, 
-                                               new QuestionFormProvider(), 
+                                               new NextPageFormProvider(), 
                                                mockGuidanceService, 
                                                stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
@@ -402,7 +294,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val target = new GuidanceController(errorHandler, 
                                                view, 
                                                questionView, 
-                                               new QuestionFormProvider(), 
+                                               new NextPageFormProvider(), 
                                                mockGuidanceService, 
                                                stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
@@ -444,7 +336,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val target = new GuidanceController(errorHandler, 
                                                view, 
                                                questionView, 
-                                               new QuestionFormProvider(), 
+                                               new NextPageFormProvider(), 
                                                mockGuidanceService, 
                                                stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
@@ -479,7 +371,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val target = new GuidanceController(errorHandler, 
                                                view, 
                                                questionView, 
-                                               new QuestionFormProvider(), 
+                                               new NextPageFormProvider(), 
                                                mockGuidanceService, 
                                                stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
