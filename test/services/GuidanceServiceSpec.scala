@@ -17,7 +17,7 @@
 package services
 
 import base.BaseSpec
-import mocks.{MockGuidanceConnector, MockPageBuilder, MockSessionRepository}
+import mocks.{MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
 import models.ocelot.{Link, Meta, Page, Phrase, Process, ProcessJson}
 import models.ocelot.stanzas._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,8 +28,10 @@ import scala.concurrent.Future
 
 class GuidanceServiceSpec extends BaseSpec {
 
-  private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with ProcessJson {
+  private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with MockUIBuilder with ProcessJson {
+
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
+    implicit val stanzaIdToUrl: Map[String,String] = Map[String,String]()
 
     // Define simple Ocelot process
     private val meta: Meta = Json.parse( prototypeMetaSection ).as[Meta]
@@ -50,7 +52,6 @@ class GuidanceServiceSpec extends BaseSpec {
     private val page2ValueStanza: ValueStanza = ValueStanza(List(Value(Scalar,"PageUrl",page2Url)),Seq("5"),stack = false)
     private val page3ValueStanza: ValueStanza = ValueStanza(List(Value(Scalar,"PageUrl",page3Url)),Seq( "10"), stack = false)
 
-
     private val flow = Map(
     page1Id -> page1ValueStanza,
       "1" -> InstructionStanza(0,Seq("2"),None,stack = false),
@@ -67,7 +68,7 @@ class GuidanceServiceSpec extends BaseSpec {
     )
 
     private val phrases = Vector[Phrase](
-      Phrase(Vector("Hello","Helo")),
+      Phrase(Vector( "Hello", "Helo" )),
       Phrase(Vector("Would you like a cup of tea?","Hoffech chi gael paned?")),
       Phrase(Vector("Yes please","os gwelwch yn dda")),
       Phrase(Vector("No thanks","Dim Diolch")),
@@ -108,16 +109,21 @@ class GuidanceServiceSpec extends BaseSpec {
 
     val pages: Seq[Page] = Seq( page1, page2, page3 )
 
+    // Define first page from UIBuilder
+    val uiPage: models.ui.Page = models.ui.Page( page1Url, Seq.empty )
+
     val pageBuilder: PageBuilder = new PageBuilder()
     val uiBuilder: UIBuilder = new UIBuilder()
-    //lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, pageBuilder, uiBuilder)
-    lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, uiBuilder)
+
+    val processId = "ext90001"
+
+    lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
 
   "Calling getPage with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
-      val processId = "ext90001"
+
       val url = "/"
 
       MockSessionRepository
@@ -127,6 +133,10 @@ class GuidanceServiceSpec extends BaseSpec {
       MockPageBuilder
         .pages(process)
         .returns(Right(pages))
+
+      MockUIBuilder
+        .fromStanzaPage(pages.head)
+        .returns(uiPage)
 
       private val result = target.getPage(url, processId)
 
@@ -141,7 +151,7 @@ class GuidanceServiceSpec extends BaseSpec {
   "Calling getPage with an invalid URL" should {
 
     "not retrieve a page from the process" in new Test {
-      val processId = "ext90001"
+
       val url = "scooby"
 
       MockSessionRepository
@@ -161,7 +171,6 @@ class GuidanceServiceSpec extends BaseSpec {
   "Calling getStartPageUrl" should {
 
     "retrieve the url of the start page for the process" in new Test {
-      val processId = "ext90001"
 
       MockGuidanceConnector
         .getProcess(processId)

@@ -50,7 +50,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
         .get(endPoint + "683d9aa0-2a0e-4e28-9ac8-65ce453d2730")
         .returns(Future.successful(Right(process)))
 
-      val response: Option[Process] = 
+      val response: Option[Process] =
         await(gc.scratchProcess("683d9aa0-2a0e-4e28-9ac8-65ce453d2730")(hc, implicitly))
 
       response mustBe Some(process)
