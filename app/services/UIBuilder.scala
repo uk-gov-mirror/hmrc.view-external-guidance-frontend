@@ -28,29 +28,27 @@ import models.ui._
 @Singleton
 class UIBuilder {
   val logger = Logger(getClass)
-  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
+
+  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)
+           (implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
-  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)
+                    (implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
       pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
-        stanza match {
-          case c: Callout => acc ++ fromCallout(c, formData)
-            
+        stanza match {            
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
-            acc ++ Seq(Paragraph(Text.linkText(stanzaIdToUrlMap(dest), txt.langs), window))
-
+            acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) =>
-            acc ++ Seq(Paragraph(Text.linkText(dest, txt.langs), window))
-
+            acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
           case Instruction(txt, _, _, _) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-
+          case c: Callout => acc ++ fromCallout(c, formData)
           case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
-
           case ValueStanza(_, _, _) => acc
           case EndStanza => acc
         }
@@ -67,7 +65,7 @@ class UIBuilder {
     // Split out an Error callouts from body components
     val (errorCallouts, uiElements) = components.partition{
                                         case msg: ErrorCallout => true
-                                        case _             => false
+                                        case _                 => false
                                       }
 
     // Build error messages if required

@@ -53,7 +53,6 @@ class GuidanceController @Inject() (
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
-        logger.warn(s"Errors in form $formWithErrors")
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
         sessionPage(s"/$path", Some(formData)).map {
           case Some(page: QuestionPage) => BadRequest(questionView(page, questionName(path), formWithErrors))
