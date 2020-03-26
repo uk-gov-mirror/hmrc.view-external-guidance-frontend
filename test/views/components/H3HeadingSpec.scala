@@ -38,18 +38,18 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 
-    val fakeRequest = FakeRequest( "GET", "/" )
+    val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val h3English: String = "Level 3 heading text"
     val h3Welsh: String = "Welsh Level 3 heading text"
 
-    val h3: H3 = H3( Text( h3English, h3Welsh ) )
+    val h3: H3 = H3(Text(h3English, h3Welsh))
   }
 
   private trait WelshTest extends Test {
 
-    implicit override def messages: Messages = messagesApi.preferred( Seq( Lang( "cy" ) ) )
+    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
 
   }
 
@@ -57,27 +57,27 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "Define the correct GDS class" in new Test {
 
-      val markUp: Html = h3_heading( h3 )
+      val markUp: Html = h3_heading(h3)
 
-      val h3Element: Element = getSingleElementByTag( markUp, "h3")
+      val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
       h3Element.hasClass("govuk-heading-m") mustBe true
     }
 
     "display text in English" in new Test {
 
-      val markUp: Html = h3_heading( h3 )
+      val markUp: Html = h3_heading(h3)
 
-      val h3Element: Element =  getSingleElementByTag( markUp, "h3" )
+      val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
       h3Element.text() mustBe h3English
     }
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h3_heading( h3 )
+      val markUp: Html = h3_heading(h3)
 
-      val h3Element: Element =  getSingleElementByTag( markUp, "h3" )
+      val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
       h3Element.text() mustBe h3Welsh
     }

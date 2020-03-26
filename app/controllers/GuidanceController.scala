@@ -36,16 +36,18 @@ class GuidanceController @Inject() (
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
-  val logger: Logger = Logger( getClass )
+  val logger: Logger = Logger(getClass)
 
   def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
     val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
-    request.session.get(SessionKeys.sessionId).fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))( sessionId =>
-      service.getPage(url, sessionId).map {
-        case Some(page) => Ok(view(page))
-        case _ => NotFound(errorHandler.notFoundTemplate)
-      }
-    )
+    request.session
+      .get(SessionKeys.sessionId)
+      .fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))(sessionId =>
+        service.getPage(url, sessionId).map {
+          case Some(page) => Ok(view(page))
+          case _ => NotFound(errorHandler.notFoundTemplate)
+        }
+      )
   }
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
@@ -60,13 +62,13 @@ class GuidanceController @Inject() (
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
-  private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
-                          (implicit request: Request[_]): Future[Result] =
+  private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])(
+      implicit request: Request[_]
+  ): Future[Result] =
     processStartUrl(id, sessionId).map { urlOption =>
       urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => {
-          val relativeUrl = s"/guidance$url"
-          Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
-        }
-      )
+        val relativeUrl = s"/guidance$url"
+        Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
+      })
     }
 }

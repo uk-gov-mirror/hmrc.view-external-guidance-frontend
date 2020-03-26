@@ -36,9 +36,9 @@ object InstructionStanza {
   implicit val owrites: OWrites[InstructionStanza] =
     (
       (JsPath \ "text").write[Int] and
-      (JsPath \ "next").write[Seq[String]] and
-      (JsPath \ "link").writeNullable[Int] and
-      (JsPath \ "stack").write[Boolean]
+        (JsPath \ "next").write[Seq[String]] and
+        (JsPath \ "link").writeNullable[Int] and
+        (JsPath \ "stack").write[Boolean]
     )(unlift(InstructionStanza.unapply))
 
 }

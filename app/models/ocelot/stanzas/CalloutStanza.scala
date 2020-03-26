@@ -33,10 +33,10 @@ object CalloutStanza {
 
   implicit val owrites: OWrites[CalloutStanza] =
     (
-    	(JsPath \ "noteType").write[CalloutType] and
-      (JsPath \ "text").write[Int] and
-      (JsPath \ "next").write[Seq[String]] and
-      (JsPath \ "stack").write[Boolean]
+      (JsPath \ "noteType").write[CalloutType] and
+        (JsPath \ "text").write[Int] and
+        (JsPath \ "next").write[Seq[String]] and
+        (JsPath \ "stack").write[Boolean]
     )(unlift(CalloutStanza.unapply))
 
 }

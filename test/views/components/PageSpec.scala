@@ -24,10 +24,9 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.page
-import models.ui.{BulletPointList,Page,H1,Paragraph,Text}
+import models.ui.{BulletPointList, Page, H1, Paragraph, Text}
 import org.jsoup.nodes.Document
 import scala.collection.JavaConverters._
-
 
 class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -39,27 +38,26 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
+    val title = Text("Telling HMRC about extra income", "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 
-    val title = Text("Telling HMRC about extra income",
-                     "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
+    val openingPara = Text(
+      "Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.",
+      "Gwiriwch a oes angen i chi ddweud wrth HMRC am arian ychwanegol rydych chi " +
+        "wedi'i wneud trwy werthu nwyddau neu wasanaethau, neu rentu tir neu eiddo."
+    )
 
-    val openingPara = Text("Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.",
-                           "Gwiriwch a oes angen i chi ddweud wrth HMRC am arian ychwanegol rydych chi " +
-                           "wedi'i wneud trwy werthu nwyddau neu wasanaethau, neu rentu tir neu eiddo.")
+    val bulletPointLeadingText = Text("For example:", "Er enghraifft:")
 
-    val bulletPointLeadingText = Text( "For example:", "Er enghraifft:")
+    val bulletPointOne = Text("selling items online or face to face", "gwerthu eitemau ar-lein neu wyneb yn wyneb")
 
-    val bulletPointOne = Text( "selling items online or face to face", "gwerthu eitemau ar-lein neu wyneb yn wyneb" )
-    val bulletPointTwo = Text( "selling freelance services (such as gardening or babysitting)",
-      "gwerthu gwasanaethau ar eu liwt eu hunain (fel garddio neu warchod plant)" )
-    val bulletPointThree = Text( "hiring out personal equipment (such as power tools)",
-      "llogi offer personol (fel offer pŵer)" )
+    val bulletPointTwo =
+      Text("selling freelance services (such as gardening or babysitting)", "gwerthu gwasanaethau ar eu liwt eu hunain (fel garddio neu warchod plant)")
+    val bulletPointThree = Text("hiring out personal equipment (such as power tools)", "llogi offer personol (fel offer pŵer)")
 
     val para = Paragraph(openingPara)
-    val bulletPointList = BulletPointList(bulletPointLeadingText,
-      Seq( bulletPointOne, bulletPointTwo, bulletPointThree ) )
+    val bulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
 
-    val simplePage =  Page("root", Seq(para, H1(title), bulletPointList ) )
+    val simplePage = Page("root", Seq(para, H1(title), bulletPointList))
   }
 
   trait WelshTest extends Test {
@@ -84,14 +82,13 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val secondPara = paras.eq(1)
       secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
 
-      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
+      val actualListItems = doc.getElementsByTag("li").asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List(bulletPointOne.english.head.toString,
-                                                 bulletPointTwo.english.head.toString,
-                                                 bulletPointThree.english.head.toString)
+      val expectedListItems: List[String] =
+        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
 
-      assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
@@ -110,14 +107,12 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val secondPara = paras.eq(1)
       secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
 
-      val actualListItems = doc.getElementsByTag( "li" ).asScala.toList
+      val actualListItems = doc.getElementsByTag("li").asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString,
-                                                 bulletPointTwo.welsh.head.toString,
-                                                 bulletPointThree.welsh.head.toString)
+      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
 
-      assert( actualListItems.map( _.text ) == expectedListItems, "\nActual bullet point list items do not match those expected" )
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
 
   }

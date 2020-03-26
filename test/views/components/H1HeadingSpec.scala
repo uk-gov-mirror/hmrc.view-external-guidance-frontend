@@ -31,7 +31,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import base.ViewSpec
 
-
 class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
@@ -39,19 +38,19 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 
-    val fakeRequest = FakeRequest( "GET", "/" )
+    val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
 
-    val h1: H1 = H1( Text( h1English, h1Welsh) )
+    val h1: H1 = H1(Text(h1English, h1Welsh))
 
   }
 
   private trait WelshTest extends Test {
 
-    implicit override def messages: Messages = messagesApi.preferred( Seq( Lang( "cy" ) ) )
+    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
 
   }
 
@@ -59,27 +58,26 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "Define the correct GDS class" in new Test {
 
-      val markUp: Html = h1_heading( h1 )
+      val markUp: Html = h1_heading(h1)
 
-      val h1Element: Element =  getSingleElementByTag( markUp, "h1" )
+      val h1Element: Element = getSingleElementByTag(markUp, "h1")
 
-      h1Element.hasClass( "govuk-heading-xl" ) mustBe true
+      h1Element.hasClass("govuk-heading-xl") mustBe true
     }
 
     "display text in English" in new Test {
 
-
-      val markUp: Html = h1_heading( h1 )
-      val h1Element: Element =  getSingleElementByTag( markUp, "h1" )
+      val markUp: Html = h1_heading(h1)
+      val h1Element: Element = getSingleElementByTag(markUp, "h1")
 
       h1Element.text() mustBe h1English
     }
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h1_heading( h1 )
+      val markUp: Html = h1_heading(h1)
 
-      val h1Element: Element =  getSingleElementByTag( markUp, "h1" )
+      val h1Element: Element = getSingleElementByTag(markUp, "h1")
 
       h1Element.text() mustBe h1Welsh
     }

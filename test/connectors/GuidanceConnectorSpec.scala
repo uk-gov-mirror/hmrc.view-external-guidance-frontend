@@ -35,7 +35,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
   }
 
   "Calling the getProcess with an existing process ID" should {
-    "return a model representing the Ocelot Process" in  new Test {
+    "return a model representing the Ocelot Process" in new Test {
       val result = gc.getProcess("ext90002")(hc, implicitly)
 
       whenReady(result) { _ mustBe Some(process) }

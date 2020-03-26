@@ -28,10 +28,10 @@ trait MockUIBuilder extends MockFactory {
 
   object MockUIBuilder {
 
-    def fromStanzaPage( page: Page ): CallHandler[models.ui.Page] = {
+    def fromStanzaPage(page: Page): CallHandler[models.ui.Page] = {
 
       (mockUIBuilder
-        .fromStanzaPage(_: Page)(_: Map[String,String]))
+        .fromStanzaPage(_: Page)(_: Map[String, String]))
         .expects(page, *)
     }
 
