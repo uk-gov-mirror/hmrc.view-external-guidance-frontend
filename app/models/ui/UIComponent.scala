@@ -58,4 +58,6 @@ object Text {
   def apply(english: String, welsh: String): Text = Text(Words(english), Words(welsh))
   def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil, Nil)
+
+  def linkText(dest: String, phrase: Vector[String]): Text = Text(Link(dest, phrase(0)), Link(dest, phrase(1)))
 }

@@ -204,9 +204,17 @@ object PrototypeJson {
             "value": "/rent/have-you-made-less-than-1000"
           }
         ],
+        "next": ["2777"],
+        "stack": false
+      },
+      "2777": {
+        "type": "CalloutStanza",
+        "text": 63,
+        "noteType": "Error",
         "next": ["27"],
         "stack": false
       },
+
       "27": {
         "type": "InstructionStanza",
         "text": 24,

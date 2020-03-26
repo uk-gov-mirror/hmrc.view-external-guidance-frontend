@@ -22,7 +22,7 @@
 @import uk.gov.hmrc.govukfrontend.views.html.helpers._
 
 @this(
-  layout: main_layout, 
+  layout: main_layout,
   formWithCSRF: FormWithCSRF
 )
 
@@ -30,6 +30,8 @@
 
 @layout(page.heading.toWords(messages.lang).mkString(" ")) {
   
+  @components.error_summary(page.question.text, page.question.errorMsgs)
+
   @formWithCSRF(action = routes.GuidanceController.submitPage(page.relativePath)) {
 
     <div class="govuk-form-group">

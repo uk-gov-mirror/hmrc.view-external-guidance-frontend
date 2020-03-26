@@ -22,7 +22,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.ui.{Page, StandardPage, QuestionPage}
+import models.ui.{Page, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
@@ -45,18 +45,21 @@ class GuidanceController @Inject() (
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     sessionPage(s"/$path").map {
         case Some(page: StandardPage) => Ok(standardView(page))
-        case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider()))
+        case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
         case None => NotFound(errorHandler.notFoundTemplate)
     }
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    formProvider().bindFromRequest.fold(
-      formWithErrors =>
-        sessionPage(s"/$path").map {
+    formProvider(questionName(path)).bindFromRequest.fold(
+      formWithErrors => {
+        logger.warn(s"Errors in form $formWithErrors")
+        val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
+        sessionPage(s"/$path", Some(formData)).map {
           case Some(page: QuestionPage) => BadRequest(questionView(page, questionName(path), formWithErrors))
           case _ => NotFound(errorHandler.notFoundTemplate)
-        },
+        }
+      },
       nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
     )
   }
@@ -73,9 +76,9 @@ class GuidanceController @Inject() (
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
-  private def sessionPage(path: String)(implicit request: Request[_]): Future[Option[Page]] =
+  private def sessionPage(path: String, formData: Option[FormData] = None)(implicit request: Request[_]): Future[Option[Page]] =
     request.session.get(SessionKeys.sessionId) match {
-      case Some(sessionId) => service.getPage(path, sessionId)
+      case Some(sessionId) => service.getPage(path, sessionId, formData)
       case None => Future.successful(None)
     }
 

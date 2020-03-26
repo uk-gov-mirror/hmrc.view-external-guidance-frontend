@@ -16,9 +16,7 @@
 
 package models.ui
 
-case class Answer(text: Text, hint: Option[Text], dest: String) extends UIComponent
+import play.api.data.{Form, FormError}
+import play.api.data.Forms._
 
-case class Question(text: Text, body: Seq[UIComponent], answers: Seq[Answer], errorMsgs: Seq[ErrorMsg] = Nil) extends UIComponent {
-  val horizontal: Boolean = answers.length == 2 &&
-    answers.forall(ans => ans.hint.isEmpty && ans.text.english.map(_.toWords.length).sum == 1)
-}
+case class FormData(url: String, data: Map[String, String], errors: Seq[FormError])
