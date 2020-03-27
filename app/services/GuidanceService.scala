@@ -26,10 +26,7 @@ import repositories.SessionRepository
 import models.ocelot.Process
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector,
-                                 sessionRepository: SessionRepository,
-                                 pageBuilder: PageBuilder,
-                                 uiBuilder: UIBuilder) {
+class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
   val logger: Logger = Logger(getClass)
 
   def getPage(url: String, sessionId: String, formData: Option[FormData] = None)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
@@ -53,8 +50,10 @@ class GuidanceService @Inject() (connector: GuidanceConnector,
   def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
     startProcessView(processId, repositoryId, connector.getProcess)
 
-  private def startProcessView( id: String, repositoryId: String, processById: String => Future[Option[Process]])
-                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+  private def startProcessView(id: String, repositoryId: String, processById: String => Future[Option[Process]])(
+      implicit hc: HeaderCarrier,
+      context: ExecutionContext
+  ): Future[Option[String]] =
     processById(id).flatMap {
       case Some(process) =>
         sessionRepository.set(repositoryId, process).map { _ =>

@@ -25,21 +25,21 @@ object Meta {
 
   implicit val metaReads: Reads[Meta] = (
     (__ \ "id").read[String] and
-    (__ \ "title").read[String] and
-    (__ \ "ocelot").read[Int] and
-    (__ \ "lastAuthor").read[String] and
-    (__ \ "lastUpdate").read[Long] and
-    (__ \ "version").read[Int] and
-    (__ \ "filename").read[String]
+      (__ \ "title").read[String] and
+      (__ \ "ocelot").read[Int] and
+      (__ \ "lastAuthor").read[String] and
+      (__ \ "lastUpdate").read[Long] and
+      (__ \ "version").read[Int] and
+      (__ \ "filename").read[String]
   )(Meta.apply _)
 
   implicit val writes: Writes[Meta] = (
     (__ \ "id").write[String] and
-    (__ \ "title").write[String] and
-    (__ \ "ocelot").write[Int] and
-    (__ \ "lastAuthor").write[String] and
-    (__ \ "lastUpdate").write[Long] and
-    (__ \ "version").write[Int] and
-    (__ \ "filename").write[String]
+      (__ \ "title").write[String] and
+      (__ \ "ocelot").write[Int] and
+      (__ \ "lastAuthor").write[String] and
+      (__ \ "lastUpdate").write[Long] and
+      (__ \ "version").write[Int] and
+      (__ \ "filename").write[String]
   )(unlift(Meta.unapply))
 }

@@ -24,6 +24,7 @@ sealed trait Page {
 }
 
 object Page {
+
   def apply(urlPath: String, components: Seq[UIComponent]): Page =
     components match {
       case (question: Question) :: _ => QuestionPage(urlPath, question)
@@ -32,10 +33,13 @@ object Page {
 }
 
 case class StandardPage(val urlPath: String, val components: Seq[UIComponent]) extends Page {
-  val heading: Text = components.find{
-                        case h:H1 => true
-                        case _ => false
-                      }.fold(Text())(_.text)
+
+  val heading: Text = components
+    .find {
+      case h: H1 => true
+      case _ => false
+    }
+    .fold(Text())(_.text)
 }
 
 case class QuestionPage(val urlPath: String, question: Question) extends Page {

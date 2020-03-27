@@ -28,9 +28,9 @@ class SwitchLanguageISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/language/cymraeg" )
+      val request: WSRequest = buildRequest("/guidance/language/cymraeg")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
       response.status shouldBe Status.SEE_OTHER
     }
@@ -39,11 +39,11 @@ class SwitchLanguageISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/language/cymraeg" )
+      val request: WSRequest = buildRequest("/guidance/language/cymraeg")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
-      response.cookies.find( _.name == "PLAY_LANG" ).map{ cookie =>
+      response.cookies.find(_.name == "PLAY_LANG").map { cookie =>
         cookie.value shouldBe "cy"
       } orElse fail(s"No PLAY_LANG cookie found")
 
@@ -59,9 +59,9 @@ class SwitchLanguageISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/language/english" )
+      val request: WSRequest = buildRequest("/guidance/language/english")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
       response.status shouldBe Status.SEE_OTHER
     }
@@ -70,11 +70,11 @@ class SwitchLanguageISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/language/en" )
+      val request: WSRequest = buildRequest("/guidance/language/en")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
-      response.cookies.find( _.name == "PLAY_LANG" ).map{ cookie =>
+      response.cookies.find(_.name == "PLAY_LANG").map { cookie =>
         cookie.value shouldBe "en"
       } orElse fail(s"No PLAY_LANG cookie found")
 

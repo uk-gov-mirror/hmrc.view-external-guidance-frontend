@@ -28,7 +28,8 @@ object GetScratchProcessHttpParser extends HttpParser {
   val logger: Logger = Logger(GetScratchProcessHttpParser.getClass)
 
   implicit val getScratchProcessHttpReads: HttpReads[RequestOutcome[Process]] = {
-    case (_, _, response) if response.status == OK => response.validateJson[Process] match {
+    case (_, _, response) if response.status == OK =>
+      response.validateJson[Process] match {
         case Some(result) => Right(result)
         case None =>
           logger.error("Unable to parse successful response when requesting process")

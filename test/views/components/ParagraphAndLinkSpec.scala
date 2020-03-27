@@ -24,10 +24,9 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.paragraph
-import models.ui.{Paragraph,Text, Link}
+import models.ui.{Paragraph, Text, Link}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
-
 
 class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -39,8 +38,8 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
-    val paraText1 = Text("Hello","Welsh Hello")
-    val paraText2 = Text("World","Welsh World")
+    val paraText1 = Text("Hello", "Welsh Hello")
+    val paraText2 = Text("World", "Welsh World")
 
     val ledePara = Paragraph(paraText1, lede = true)
     val para = Paragraph(paraText1, lede = false)
@@ -57,7 +56,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     val link2 = Text(link2En, link2Cy)
     val pageLink = Text(pageLinkEn, pageLinkCy)
 
-    val paraWithMultipleLinks =  Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink)
+    val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink)
   }
 
   trait WelshTest extends Test {

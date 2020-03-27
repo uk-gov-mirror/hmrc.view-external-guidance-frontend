@@ -32,7 +32,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
     val url: String = "/test"
     val validResponse: JsObject = Json.parse(models.ocelot.PrototypeJson.json).as[JsObject]
     val process: Process = validResponse.as[Process]
-  
+
     val invalidResponse: JsValue = Json.obj()
   }
 

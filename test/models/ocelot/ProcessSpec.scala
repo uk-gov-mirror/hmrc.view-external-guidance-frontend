@@ -25,12 +25,12 @@ class ProcesSpec extends BaseSpec with ProcessJson {
   val ten: Int = 10
   val oneHundred: Int = 100
 
-  val meta:Meta = Json.parse(prototypeMetaSection).as[Meta]
-  val flow:Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
-  val phrases:Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
+  val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
+  val flow: Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
+  val phrases: Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
   val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
 
-  val process:Process = prototypeJson.as[Process]
+  val process: Process = prototypeJson.as[Process]
 
   "Process" must {
 
@@ -51,13 +51,13 @@ class ProcesSpec extends BaseSpec with ProcessJson {
   "Process phrase fn" must {
     "Return phrase valid index" in {
 
-      val phrase = Phrase(Vector("Telling HMRC about extra income","Welsh: Telling HMRC about extra income"))
+      val phrase = Phrase(Vector("Telling HMRC about extra income", "Welsh: Telling HMRC about extra income"))
       process.phraseOption(0) mustBe Some(phrase)
     }
 
     "Return None for a invalid index" in {
 
-      process.phraseOption( oneHundred ) mustBe None
+      process.phraseOption(oneHundred) mustBe None
     }
   }
 
@@ -65,14 +65,14 @@ class ProcesSpec extends BaseSpec with ProcessJson {
 
     "Return link for valid index" in {
 
-      val link: Link = Link( 0, "http://www.bbc.co.uk/news", "BBC News", window = false )
+      val link: Link = Link(0, "http://www.bbc.co.uk/news", "BBC News", window = false)
 
       process.linkOption(0) mustBe Some(link)
     }
 
     "Return None for an invalid index" in {
 
-      process.linkOption( ten ) mustBe None
+      process.linkOption(ten) mustBe None
     }
   }
 }

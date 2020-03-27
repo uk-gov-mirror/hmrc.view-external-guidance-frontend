@@ -40,13 +40,15 @@ class GuidanceController @Inject() (
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
-  val logger: Logger = Logger( getClass )
+  val logger: Logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     sessionPage(s"/$path").map {
-        case Some(page: StandardPage) => Ok(standardView(page))
-        case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
-        case None => NotFound(errorHandler.notFoundTemplate)
+      case Some(page: StandardPage) => Ok(standardView(page))
+      case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+      case None =>
+        logger.warn(s"Request for page at $path returned nothing resulting in BadRequest")
+        BadRequest(errorHandler.notFoundTemplate)
     }
   }
 
@@ -78,15 +80,16 @@ class GuidanceController @Inject() (
   private def sessionPage(path: String, formData: Option[FormData] = None)(implicit request: Request[_]): Future[Option[Page]] =
     request.session.get(SessionKeys.sessionId) match {
       case Some(sessionId) => service.getPage(path, sessionId, formData)
-      case None => Future.successful(None)
+      case None =>
+        logger.warn(s"Session id missing from request when requesting page with url $path")
+        Future.successful(None)
     }
 
-  private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
-                          (implicit request: Request[_]): Future[Result] =
+  private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])(
+      implicit request: Request[_]
+  ): Future[Result] =
     processStartUrl(id, sessionId).map { urlOption =>
-      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url =>
-        Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId)
-      )
+      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId))
     }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package mocks
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
 
-case class Link(id: Int, dest: String, title: String, window: Boolean)
+import models.ocelot.Page
+import services.UIBuilder
 
-object Link {
+trait MockUIBuilder extends MockFactory {
 
-  implicit val reads: Reads[Link] = (
-    (__ \ "id").read[Int] and
-      (__ \ "dest").read[String] and
-      (__ \ "title").read[String] and
-      (__ \ "window").read[Boolean]
-  )(Link.apply _)
+  val mockUIBuilder: UIBuilder = mock[UIBuilder]
 
-  implicit val writes: Writes[Link] = (
-    (__ \ "id").write[Int] and
-      (__ \ "dest").write[String] and
-      (__ \ "title").write[String] and
-      (__ \ "window").write[Boolean]
-  )(unlift(Link.unapply))
+  object MockUIBuilder {
+
+    def fromStanzaPage(page: Page): CallHandler[models.ui.Page] = {
+
+      (mockUIBuilder
+        .fromStanzaPage(_: Page)(_: Map[String, String]))
+        .expects(page, *)
+    }
+
+  }
 
 }

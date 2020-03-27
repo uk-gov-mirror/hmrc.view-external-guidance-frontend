@@ -29,67 +29,63 @@ import org.scalatest.{MustMatchers, WordSpec}
 
 trait ViewSpec extends WordSpec with MustMatchers {
 
-  def getSingleElementByTag( markUp: Html, htmlTag: String ) : Element = {
+  def getSingleElementByTag(markUp: Html, htmlTag: String): Element = {
 
-    val document: Document = Jsoup.parse( markUp.toString() )
+    val document: Document = Jsoup.parse(markUp.toString())
 
-    getSingleElementByTag( document, htmlTag )
+    getSingleElementByTag(document, htmlTag)
   }
 
-  def getMultipleElementsByTag( markUp: Html, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
+  def getMultipleElementsByTag(markUp: Html, htmlTag: String, expectedNumberOfElements: Int): Elements = {
 
-    val document: Document = Jsoup.parse( markUp.toString() )
+    val document: Document = Jsoup.parse(markUp.toString())
 
-    getMultipleElementsByTag( document, htmlTag, expectedNumberOfElements )
+    getMultipleElementsByTag(document, htmlTag, expectedNumberOfElements)
   }
 
-  def getSingleElementByTag( document: Document, htmlTag: String ) : Element = {
+  def getSingleElementByTag(document: Document, htmlTag: String): Element = {
 
-    val elements: Elements = document.getElementsByTag( htmlTag )
+    val elements: Elements = document.getElementsByTag(htmlTag)
 
     elements.size() mustBe 1
 
     elements.first()
   }
 
-  def getMultipleElementsByTag( document: Document, htmlTag: String, expectedNumberOfElements: Int ) : Elements = {
+  def getMultipleElementsByTag(document: Document, htmlTag: String, expectedNumberOfElements: Int): Elements = {
 
-    val elements: Elements = document.getElementsByTag( htmlTag )
+    val elements: Elements = document.getElementsByTag(htmlTag)
 
     elements.size() mustBe expectedNumberOfElements
 
     elements
   }
 
-  def checkClassesForElement( element: Element, expectedClasses: List[String] ) : Unit = {
+  def checkClassesForElement(element: Element, expectedClasses: List[String]): Unit = {
 
-    for( expectedClass <- expectedClasses ) {
-      assert( element.hasClass( expectedClass ), "\n Class " + expectedClass + " not found on element" )
+    for (expectedClass <- expectedClasses) {
+      assert(element.hasClass(expectedClass), "\n Class " + expectedClass + " not found on element")
     }
 
   }
 
-  def checkHyperLink( link: Element, destination: String, text: String, targetBlank: Boolean ) : Unit = {
+  def checkHyperLink(link: Element, destination: String, text: String, targetBlank: Boolean): Unit = {
 
-    val linkAttrs: Map[String, String] = link.attributes.asScala.toList.map(
-      attr => ( attr.getKey, attr.getValue )
-    ).toMap
+    val linkAttrs: Map[String, String] = link.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 
-    linkAttrs.contains( "href" ) mustBe true
-    linkAttrs( "href" ) mustBe destination
+    linkAttrs.contains("href") mustBe true
+    linkAttrs("href") mustBe destination
 
-    linkAttrs.contains( "class" ) mustBe true
-    linkAttrs( "class" ) mustBe "govuk-link"
+    linkAttrs.contains("class") mustBe true
+    linkAttrs("class") mustBe "govuk-link"
 
-    if( targetBlank ) {
+    if (targetBlank) {
 
-      linkAttrs.contains( "target" ) mustBe true
-      linkAttrs( "target" ) mustBe """"_blank""""
+      linkAttrs.contains("target") mustBe true
+      linkAttrs("target") mustBe """"_blank""""
 
-    }
-    else
-    {
-       linkAttrs.contains( "target" ) mustBe false
+    } else {
+      linkAttrs.contains("target") mustBe false
     }
 
     val textNodes = link.textNodes().asScala

@@ -33,18 +33,18 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 
-    val fakeRequest = FakeRequest( "GET", "/" )
+    val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val h2English: String = "Level 2 heading text"
     val h2Welsh: String = "Welsh Level 2 heading text"
 
-    val h2: H2 = H2( Text( h2English, h2Welsh ) )
+    val h2: H2 = H2(Text(h2English, h2Welsh))
   }
 
   private trait WelshTest extends Test {
 
-    implicit override def messages: Messages = messagesApi.preferred( Seq( Lang( "cy" ) ) )
+    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
 
   }
 
@@ -61,18 +61,18 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "display text in English" in new Test {
 
-      val markUp: Html = h2_heading( h2 )
+      val markUp: Html = h2_heading(h2)
 
-      val h2Element: Element =  getSingleElementByTag( markUp, "h2" )
+      val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
       h2Element.text() mustBe h2English
     }
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h2_heading( h2 )
+      val markUp: Html = h2_heading(h2)
 
-      val h2Element: Element =  getSingleElementByTag( markUp, "h2" )
+      val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
       h2Element.text() mustBe h2Welsh
     }

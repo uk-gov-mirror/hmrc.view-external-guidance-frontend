@@ -30,71 +30,73 @@ trait StanzaHelper {
   val seven: Int = 7
   val eight: Int = 8
 
-  val phrases: Vector[Phrase] = Vector(Phrase(Vector("Text 0","Welsh, Text 0")),
-                                Phrase(Vector("Text 1","Welsh, Text 1")),
-                                Phrase(Vector("Text 2","Welsh, Text 2")),
-                                Phrase(Vector("Text 3","Welsh, Text 3")),
-                                Phrase(Vector("Text 4","Welsh, Text 4")),
-                                Phrase(Vector("Text 5","Welsh, Text 5")),
-                                Phrase(Vector("Text 6","Welsh, Text 6")))
+  val phrases: Vector[Phrase] = Vector(
+    Phrase(Vector("Text 0", "Welsh, Text 0")),
+    Phrase(Vector("Text 1", "Welsh, Text 1")),
+    Phrase(Vector("Text 2", "Welsh, Text 2")),
+    Phrase(Vector("Text 3", "Welsh, Text 3")),
+    Phrase(Vector("Text 4", "Welsh, Text 4")),
+    Phrase(Vector("Text 5", "Welsh, Text 5")),
+    Phrase(Vector("Text 6", "Welsh, Text 6"))
+  )
 
-  val links: Vector[Link] = Vector( Link( 0, "http://my.com/news", "MyCOM Daily News", true ) )
+  val links: Vector[Link] = Vector(Link(0, "http://my.com/news", "MyCOM Daily News", true))
 
   // Define stanzas used in simple question page test
-  val sqpQpValue = Value( Scalar, "PageUrl", "/page/1" )
-  val sqpFapValue = Value( Scalar, "PageUrl", "/page/2" )
-  val sqpSapValue = Value( Scalar, "PageUrl", "/page/3" )
+  val sqpQpValue = Value(Scalar, "PageUrl", "/page/1")
+  val sqpFapValue = Value(Scalar, "PageUrl", "/page/2")
+  val sqpSapValue = Value(Scalar, "PageUrl", "/page/3")
 
   // Question page - BEFORE
-  val sqpQpValueStanza = ValueStanza(List( sqpQpValue ), Seq( "1" ), false)
-  val sqpQpInstructionStanza = InstructionStanza(0, Seq( "2" ), None, false)
-  val sqpQpCalloutStanza = CalloutStanza(SubTitle, 1, Seq( "3" ), false)
-  val sqpQpQuestionStanza = QuestionStanza(two, Seq(three,four), Seq( "4", "6" ), false)
+  val sqpQpValueStanza = ValueStanza(List(sqpQpValue), Seq("1"), false)
+  val sqpQpInstructionStanza = InstructionStanza(0, Seq("2"), None, false)
+  val sqpQpCalloutStanza = CalloutStanza(SubTitle, 1, Seq("3"), false)
+  val sqpQpQuestionStanza = QuestionStanza(two, Seq(three, four), Seq("4", "6"), false)
   // Question page - After
-  val sqpQpInstruction = Instruction(phrases(0), Seq( "2" ), None, false)
-  val sqpQpCallout = Callout(SubTitle, phrases(1), Seq( "3" ), false)
-  val sqpQpQuestion = Question(phrases(two), Seq(phrases(three), phrases(four)), Seq( "4", "6" ), false)
+  val sqpQpInstruction = Instruction(phrases(0), Seq("2"), None, false)
+  val sqpQpCallout = Callout(SubTitle, phrases(1), Seq("3"), false)
+  val sqpQpQuestion = Question(phrases(two), Seq(phrases(three), phrases(four)), Seq("4", "6"), false)
 
   // First answer page BEFORE
-  val sqpFapValueStanza = ValueStanza( List( sqpFapValue ), Seq( "5" ), false )
-  val sqpFapInstructionStanza = InstructionStanza( 0, Seq( "end" ), None, false )
+  val sqpFapValueStanza = ValueStanza(List(sqpFapValue), Seq("5"), false)
+  val sqpFapInstructionStanza = InstructionStanza(0, Seq("end"), None, false)
   // First answer page AFTER
-  val sqpFapInstruction = Instruction( phrases(0), Seq( "end" ), None, false )
+  val sqpFapInstruction = Instruction(phrases(0), Seq("end"), None, false)
 
   // Second answer page BEFORE
-  val sqpSapValueStanza = ValueStanza( List( sqpSapValue ), Seq( "7" ), false )
-  val sqpSapInstructionStanza = InstructionStanza( five, Seq( "8" ), Some( 0 ), false  )
-  val sqpSapCalloutStanza = CalloutStanza( Lede, six, Seq( "end" ), false )
+  val sqpSapValueStanza = ValueStanza(List(sqpSapValue), Seq("7"), false)
+  val sqpSapInstructionStanza = InstructionStanza(five, Seq("8"), Some(0), false)
+  val sqpSapCalloutStanza = CalloutStanza(Lede, six, Seq("end"), false)
   // Second answer page AFTER
-  val sqpSapInstruction = Instruction( phrases(five), Seq( "8" ), Some( links(0) ), false  )
-  val sqpSapCallout = Callout( Lede, phrases(six), Seq( "end" ), false )
+  val sqpSapInstruction = Instruction(phrases(five), Seq("8"), Some(links(0)), false)
+  val sqpSapCallout = Callout(Lede, phrases(six), Seq("end"), false)
 
-  def onePage:Map[String,Stanza] = {
+  def onePage: Map[String, Stanza] = {
 
     val value1 = Value(Scalar, "PageUrl", "/")
     Map(
-      ("start" -> ValueStanza( List(value1), Seq("1"), false )),
-      ("1" -> InstructionStanza(0,Seq("2"),None, false)),
-      ("2" -> InstructionStanza(1,Seq("end"),None, false)),
+      ("start" -> ValueStanza(List(value1), Seq("1"), false)),
+      ("1" -> InstructionStanza(0, Seq("2"), None, false)),
+      ("2" -> InstructionStanza(1, Seq("end"), None, false)),
       ("end" -> EndStanza)
     )
   }
 
-  def twoPagesSeperatedByValueStanza:Map[String,Stanza] = {
+  def twoPagesSeperatedByValueStanza: Map[String, Stanza] = {
 
     val value1 = Value(Scalar, "PageUrl", "/")
     val value2 = Value(Scalar, "PageUrl", "/a")
     Map(
-      ("start" -> ValueStanza( List(value1), Seq("1"), false )),
-      ("1" -> InstructionStanza(0,Seq("2"),None, false)),
-      ("2" -> InstructionStanza(1,Seq("3"),None, false)),
-      ("3" -> ValueStanza( List(value2), Seq("4"), false )),
-      ("4" -> InstructionStanza(0,Seq("end"),None, false)),
+      ("start" -> ValueStanza(List(value1), Seq("1"), false)),
+      ("1" -> InstructionStanza(0, Seq("2"), None, false)),
+      ("2" -> InstructionStanza(1, Seq("3"), None, false)),
+      ("3" -> ValueStanza(List(value2), Seq("4"), false)),
+      ("4" -> InstructionStanza(0, Seq("end"), None, false)),
       ("end" -> EndStanza)
     )
   }
 
-  def simpleQuestionPage:Map[String,Stanza] = {
+  def simpleQuestionPage: Map[String, Stanza] = {
 
     // Define Map of Stanzas to be processed
     Map(

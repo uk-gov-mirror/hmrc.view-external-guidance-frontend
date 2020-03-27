@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- // $COVERAGE-OFF$Problem
+// $COVERAGE-OFF$Problem
 
 package repositories
 
@@ -44,17 +44,19 @@ trait SessionRepository {
 }
 
 @Singleton
-class DefaultSessionRepository @Inject()(config: AppConfig, component: ReactiveMongoComponent)
-                                 (implicit ec: ExecutionContext) extends ReactiveRepository[DefaultSessionRepository.Data, BSONObjectID](
-                                                                            collectionName = "view-external-guidance-session",
-                                                                            mongo = component.mongoConnector.db,
-                                                                            domainFormat = DefaultSessionRepository.Data.format
-                                                                         ) with SessionRepository {
+class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
+    extends ReactiveRepository[DefaultSessionRepository.Data, BSONObjectID](
+      collectionName = "view-external-guidance-session",
+      mongo = component.mongoConnector.db,
+      domainFormat = DefaultSessionRepository.Data.format
+    )
+    with SessionRepository {
 
   def get(key: String): Future[Option[Process]] =
-    collection.find(Json.obj("_id" -> key), None)
-              .one[DefaultSessionRepository.Data]
-              .map(_.map(_.process))
+    collection
+      .find(Json.obj("_id" -> key), None)
+      .one[DefaultSessionRepository.Data]
+      .map(_.map(_.process))
 
   def set(key: String, process: Process): Future[Option[Unit]] = {
     val selector = Json.obj("_id" -> key)

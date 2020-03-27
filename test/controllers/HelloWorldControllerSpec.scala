@@ -50,7 +50,7 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
     "return HTML" in new Test {
       val result = controller.helloWorld(fakeRequest)
       contentType(result) shouldBe Some("text/html")
-      charset(result)     shouldBe Some("utf-8")
+      charset(result) shouldBe Some("utf-8")
     }
 
   }
@@ -61,7 +61,7 @@ class HelloWorldControllerSpec extends WordSpec with Matchers with GuiceOneAppPe
 
         val result = controller.byeWorld(fakeRequest)
 
-        status( result ) shouldBe Status.OK
+        status(result) shouldBe Status.OK
       }
     }
   }
