@@ -16,4 +16,4 @@
 
 package models.ui
 
-case class BulletPointList(leadingText: Text, listItems: Seq[Text]) extends UIComponent
+case class BulletPointList(text: Text, listItems: Seq[Text]) extends UIComponent

@@ -16,6 +16,6 @@
 
 package models.ui
 
-case class H1(txt: Text) extends UIComponent
-case class H2(txt: Text) extends UIComponent
-case class H3(txt: Text) extends UIComponent
+case class H1(text: Text) extends UIComponent
+case class H2(text: Text) extends UIComponent
+case class H3(text: Text) extends UIComponent

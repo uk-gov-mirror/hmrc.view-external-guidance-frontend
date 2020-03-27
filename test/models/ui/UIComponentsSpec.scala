@@ -96,20 +96,20 @@ class UIComponentsSpec extends BaseSpec {
 
     "Support English and Welsh text in HTML h1 elements" in {
 
-      h1.txt.value(englishLang) mustBe Seq(Words(h1English))
-      h1.txt.value(welshLang) mustBe Seq(Words(h1Welsh))
+      h1.text.value(englishLang) mustBe Seq(Words(h1English))
+      h1.text.value(welshLang) mustBe Seq(Words(h1Welsh))
     }
 
     "Support English and Welsh text in HTML h2 elements" in {
 
-      h2.txt.value(englishLang) mustBe Seq(Words(h2English))
-      h2.txt.value(welshLang) mustBe Seq(Words(h2Welsh))
+      h2.text.value(englishLang) mustBe Seq(Words(h2English))
+      h2.text.value(welshLang) mustBe Seq(Words(h2Welsh))
     }
 
     "Support English and Welsh text in HTML h3 elements" in {
 
-      h3.txt.value(englishLang) mustBe Seq(Words(h3English))
-      h3.txt.value(welshLang) mustBe Seq(Words(h3Welsh))
+      h3.text.value(englishLang) mustBe Seq(Words(h3English))
+      h3.text.value(welshLang) mustBe Seq(Words(h3Welsh))
     }
 
     "Support the identification of heading components in a list of UIComponents" in {
@@ -135,16 +135,16 @@ class UIComponentsSpec extends BaseSpec {
 
     "return appropriate language text from bullet point list when lang is english" in {
 
-      val leadingText: Text = Text(engLeadingText, welLeadingText)
-      val bulletPointOne: Text = Text(engBulletPointOneText, welBulletPointOneText)
-      val bulletPointTwo: Text = Text(engBulletPointTwoText, welBulletPointTwoText)
-      val bulletPointList: BulletPointList = BulletPointList(leadingText, Seq(bulletPointOne, bulletPointTwo))
+      val text: Text = Text( engLeadingText, welLeadingText )
+      val bulletPointOne: Text = Text( engBulletPointOneText, welBulletPointOneText )
+      val bulletPointTwo: Text = Text( engBulletPointTwoText, welBulletPointTwoText )
+      val bulletPointList: BulletPointList = BulletPointList( text, Seq( bulletPointOne, bulletPointTwo ) )
 
       implicit val lang: Lang = Lang("en")
 
-      bulletPointList.leadingText match {
-        case text: Text => text.value mustBe leadingText.english
-        case _ => fail("The first text item in leading text is not an instance of the class Text")
+      bulletPointList.text match {
+        case text: Text => text.value mustBe text.english
+        case _ => fail( "The first text item in leading text is not an instance of the class Text")
       }
 
       bulletPointList.listItems.head match {
@@ -160,16 +160,16 @@ class UIComponentsSpec extends BaseSpec {
 
     "return appropriate language text from bullet point list when lang is welsh" in {
 
-      val leadingText: Text = Text(engLeadingText, welLeadingText)
-      val bulletPointOne: Text = Text(engBulletPointOneText, welBulletPointOneText)
-      val bulletPointTwo: Text = Text(engBulletPointTwoText, welBulletPointTwoText)
-      val bulletPointList: BulletPointList = BulletPointList(leadingText, Seq(bulletPointOne, bulletPointTwo))
+      val text: Text = Text( engLeadingText, welLeadingText )
+      val bulletPointOne: Text = Text( engBulletPointOneText, welBulletPointOneText )
+      val bulletPointTwo: Text = Text( engBulletPointTwoText, welBulletPointTwoText )
+      val bulletPointList: BulletPointList = BulletPointList( text, Seq( bulletPointOne, bulletPointTwo ) )
 
       implicit val lang: Lang = Lang("cy")
 
-      bulletPointList.leadingText match {
-        case text: Text => text.value mustBe leadingText.welsh
-        case _ => fail("The first text item in leading text is not an instance of the class Text")
+      bulletPointList.text match {
+        case text: Text => text.value mustBe text.welsh
+        case _ => fail( "The first text item in leading text is not an instance of the class Text")
       }
 
       bulletPointList.listItems.head match {
@@ -189,8 +189,8 @@ class UIComponentsSpec extends BaseSpec {
       val leadingTxt1En: Words = Words("Leading text 1")
       val leadingTxt1Cy: Words = Words("Welsh leading text 1")
 
-      val leadingLinkEn: Link = Link("http://leadingTextUrl", "Leading text link", false)
-      val leadingLinkCy: Link = Link("http://leadingTextUrl", "Welsh leading text link", false)
+      val leadingLinkEn: Link = Link("http://textUrl", "Leading text link",false )
+      val leadingLinkCy: Link = Link("http://textUrl", "Welsh leading text link",false )
 
       val leadingTxt2En: Words = Words("Leading text 2")
       val leadingTxt2Cy: Words = Words("Welsh leading text 2")
@@ -218,9 +218,9 @@ class UIComponentsSpec extends BaseSpec {
       val bulletPointList: BulletPointList = BulletPointList(bpListLeadingText, bulletPointListItems)
 
       // Test components of bullet point list
-      bulletPointList.leadingText.english(0).toString mustBe "Leading text 1"
-      bulletPointList.leadingText.english(1).toString mustBe "[link:Leading text link:http://leadingTextUrl:false]"
-      bulletPointList.leadingText.english(2).toString mustBe "Leading text 2"
+      bulletPointList.text.english(0).toString mustBe "Leading text 1"
+      bulletPointList.text.english(1).toString mustBe "[link:Leading text link:http://textUrl:false]"
+      bulletPointList.text.english(2).toString mustBe "Leading text 2"
 
       bulletPointList.listItems.head.english(0).toString mustBe "Bullet point 1 text"
       bulletPointList.listItems.head.english(1).toString mustBe "[link:Bullet point 1 link:http://bulletPointOneUrl:false]"
@@ -262,8 +262,8 @@ class UIComponentsSpec extends BaseSpec {
       val page = Page("/firstpage", components)
 
       page.components.length mustBe 1
-      page.components.foreach {
-        case p: Paragraph => p.txt.value(englishLang).length mustBe 3
+      page.components.foreach{
+        case p:Paragraph => p.text.value(englishLang).length mustBe 3
         case _ => fail("unknown ParagraphItem")
       }
     }
@@ -317,15 +317,21 @@ class UIComponentsSpec extends BaseSpec {
       val h3Page: H3 = H3(Text("Note", "Welsh note"))
 
       // Define bullet point list
-      val leadingText: Text = Text("Leading text for bullet point list", "Welsh leading text for bullet point list")
-      val bulletPointOne: Text = Text("Bullet point 1", "Welsh bullet point 1")
-      val bulletPointTwo: Text = Text("Bullet point 2", "Welsh bullet point 2")
-      val bulletPointThree: Text = Text("Bullet point 3", "Welsh bullet point 3")
-      val bp3LinkEn: Link = Link("http://thirdBulletPointUrl", "Third bullet point link", false)
-      val bp3LinkCy: Link = Link("http://thirdBulletPointUrl", "Welsh third bullet point link", false)
+      val text: Text = Text( "Leading text for bullet point list", "Welsh leading text for bullet point list" )
+      val bulletPointOne: Text = Text( "Bullet point 1", "Welsh bullet point 1" )
+      val bulletPointTwo: Text = Text( "Bullet point 2", "Welsh bullet point 2" )
+      val bulletPointThree: Text = Text( "Bullet point 3", "Welsh bullet point 3" )
+      val bp3LinkEn: Link = Link(
+        "http://thirdBulletPointUrl",
+        "Third bullet point link",
+        false )
+      val bp3LinkCy: Link = Link(
+        "http://thirdBulletPointUrl",
+        "Welsh third bullet point link",
+        false )
 
       val bulletPointList: BulletPointList = BulletPointList(
-        leadingText,
+        text,
         Seq(bulletPointOne, bulletPointTwo, bulletPointThree + Text(bp3LinkEn, bp3LinkCy))
       )
 

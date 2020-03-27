@@ -16,20 +16,33 @@
 
 package models.ui
 
-import scala.annotation.tailrec
+sealed trait Page {
+  val heading: Text
+  val urlPath: String
+  val components: Seq[UIComponent]
+  val relativePath = urlPath.dropWhile(_ == '/')
+}
 
-case class Page(urlPath: String, components: Seq[UIComponent]) {
+object Page {
 
-  @tailrec
-  private def findFirstH1Text(c: Seq[UIComponent]): Option[Text] =
-    c match {
-      case Nil => None
-      case x :: xs =>
-        x match {
-          case h: H1 => Some(h.txt)
-          case _ => findFirstH1Text(xs)
-        }
+  def apply(urlPath: String, components: Seq[UIComponent]): Page =
+    components match {
+      case (question: Question) :: _ => QuestionPage(urlPath, question)
+      case _ => StandardPage(urlPath, components)
     }
+}
 
-  val heading: Text = findFirstH1Text(components).getOrElse(Text())
+case class StandardPage(val urlPath: String, val components: Seq[UIComponent]) extends Page {
+
+  val heading: Text = components
+    .find {
+      case h: H1 => true
+      case _ => false
+    }
+    .fold(Text())(_.text)
+}
+
+case class QuestionPage(val urlPath: String, question: Question) extends Page {
+  val heading: Text = question.text
+  val components: Seq[UIComponent] = Seq(question)
 }

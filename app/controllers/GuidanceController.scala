@@ -22,7 +22,9 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html._
+import models.ui.{Page, StandardPage, QuestionPage}
+import forms.NextPageFormProvider
+import views.html.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.Future
@@ -31,23 +33,34 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
-    view: render_page,
+    standardView: standard_page,
+    questionView: question_page,
+    formProvider: NextPageFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
   val logger: Logger = Logger(getClass)
 
-  def getPage(path: String, questionPageUrl: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
-    val url = "/" + questionPageUrl.fold[String](path)(url => url.drop("/guidance/".length))
-    request.session
-      .get(SessionKeys.sessionId)
-      .fold(Future.successful(NotFound(errorHandler.notFoundTemplate)))(sessionId =>
-        service.getPage(url, sessionId).map {
-          case Some(page) => Ok(view(page))
+  def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
+    sessionPage(s"/$path").map {
+      case Some(page: StandardPage) => Ok(standardView(page))
+      case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+      case None =>
+        logger.warn(s"Request for page at $path returned nothing resulting in BadRequest")
+        BadRequest(errorHandler.notFoundTemplate)
+    }
+  }
+
+  def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
+    formProvider(questionName(path)).bindFromRequest.fold(
+      formWithErrors =>
+        sessionPage(s"/$path").map {
+          case Some(page: QuestionPage) => BadRequest(questionView(page, questionName(path), formWithErrors))
           case _ => NotFound(errorHandler.notFoundTemplate)
-        }
-      )
+        },
+      nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
+    )
   }
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
@@ -62,13 +75,20 @@ class GuidanceController @Inject() (
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
+  private def sessionPage(path: String)(implicit request: Request[_]): Future[Option[Page]] =
+    request.session.get(SessionKeys.sessionId) match {
+      case Some(sessionId) => service.getPage(path, sessionId)
+      case None =>
+        logger.warn(s"Session id missing from request when requesting page with url $path")
+        Future.successful(None)
+    }
+
   private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map { urlOption =>
-      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => {
-        val relativeUrl = s"/guidance$url"
-        Redirect(relativeUrl).withSession(SessionKeys.sessionId -> sessionId)
-      })
+      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId))
     }
+
+  private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
 }

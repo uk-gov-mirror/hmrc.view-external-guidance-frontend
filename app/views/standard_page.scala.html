@@ -14,26 +14,28 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
+@import models.ui.{StandardPage, Paragraph, H1, H2, H3, BulletPointList}
 
-@(q: Question, name: String)(implicit request: Request[_], messages: Messages)
+@this(layout: main_layout)
 
-  <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-    <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
-  </legend>
+@(page: StandardPage)(implicit request: Request[_], messages: Messages)
 
-  @for((cmp, index) <- q.body.zipWithIndex){
-    @{cmp match {
-          case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
-          case x =>
-        }
+@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+
+  @for( cmp <- page.components) {
+    @{
+      cmp match {
+        case p: Paragraph => components.paragraph(p)
+        case h: H1 => components.h1_heading(h)
+        case h: H2 => components.h2_heading(h)
+        case h: H3 => components.h3_heading(h)
+        case b: BulletPointList => components.bullet_point_list(b)
+        case x => {x}
+      }
     }
   }
 
-  @components.answers(q.answers, q.horizontal, name)
-
+}
 @{
      //$COVERAGE-OFF$
 }

@@ -18,7 +18,9 @@ package models.ui
 
 import play.api.i18n.Lang
 
-trait UIComponent
+trait UIComponent {
+  val text: Text
+}
 
 //
 // Monolingual
@@ -34,10 +36,10 @@ case class Words(s: String, bold: Boolean = false) extends TextItem {
   override def toString: String = s
 }
 
-case class Link(dest: String, txt: String, window: Boolean = false) extends TextItem {
-  override def toString: String = s"[link:$txt:$dest:$window]"
-  def isEmpty: Boolean = txt.isEmpty
-  def toWords: Seq[String] = txt.split(" +").toSeq
+case class Link(dest: String, text: String, window: Boolean = false) extends TextItem {
+  override def toString: String = s"[link:$text:$dest:$window]"
+  def isEmpty: Boolean = text.isEmpty
+  def toWords: Seq[String] = text.split(" +").toSeq
 }
 
 //
@@ -52,8 +54,8 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
 }
 
 object Text {
-  def apply(phrase: Vector[String]): Text = Text(Words(phrase(0)), Words(phrase(1)))
-  def apply(english: String, welsh: String): Text = Text(Seq(Words(english)), Seq(Words(welsh)))
   def apply(english: TextItem, welsh: TextItem): Text = Text(Seq(english), Seq(welsh))
+  def apply(english: String, welsh: String): Text = Text(Words(english), Words(welsh))
+  def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil, Nil)
 }

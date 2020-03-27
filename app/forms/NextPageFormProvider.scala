@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{Page, Paragraph, H1, H2, H3, BulletPointList, Question}
+package forms
 
-@(pge: Page)(implicit request: Request[_], messages: Messages)
+import javax.inject.Inject
+import play.api.data.Form
+import play.api.data.Forms._
+import models.ui.NextPageUrl
 
-@for( cmp <- pge.components) {
-  @{
-    cmp match {
-      case q: Question => components.question(q, request.path.split("/").last)
-      case p: Paragraph => components.paragraph(p)
-      case h: H1 => components.h1_heading(h)
-      case h: H2 => components.h2_heading(h)
-      case h: H3 => components.h3_heading(h)
-      case b: BulletPointList => components.bullet_point_list(b)
-      case x => {x}
-    }
-  }
-}
+trait FormProvider
 
+class NextPageFormProvider @Inject() extends FormProvider {
 
-@{
-     //$COVERAGE-OFF$
+  def apply(id: String): Form[NextPageUrl] =
+    Form(
+      mapping(
+        id -> nonEmptyText
+      )(NextPageUrl.apply)(NextPageUrl.unapply)
+    )
 }

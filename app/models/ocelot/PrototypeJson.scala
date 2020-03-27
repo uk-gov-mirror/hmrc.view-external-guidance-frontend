@@ -204,9 +204,17 @@ object PrototypeJson {
             "value": "/rent/have-you-made-less-than-1000"
           }
         ],
+        "next": ["2777"],
+        "stack": false
+      },
+      "2777": {
+        "type": "CalloutStanza",
+        "text": 63,
+        "noteType": "Error",
         "next": ["27"],
         "stack": false
       },
+
       "27": {
         "type": "InstructionStanza",
         "text": 24,
@@ -1235,7 +1243,7 @@ object PrototypeJson {
     "phrases": [
       ["Telling HMRC about extra income", "Dweud wrth Gyllid a Thollau EM am incwm ychwanegol"],
       [
-        "Check if you need to tell HMRC about extra money you'1ve made by selling goods or services, or renting land or property.",
+        "Check if you need to tell HMRC about extra money you've made by selling goods or services, or renting land or property.",
         "Gwiriwch a oes angen i chi ddweud wrth Gyllid a Thollau EM am arian ychwanegol rydych chi wedi'i wneud trwy werthu nwyddau neu wasanaethau, neu rentu tir neu eiddo."
       ],
       ["Overview", "Trosolwg"],
