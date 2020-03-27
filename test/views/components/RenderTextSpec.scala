@@ -24,10 +24,9 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.paragraph
-import models.ui.{Paragraph,Text, Words}
+import models.ui.{Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
-
 
 class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -39,8 +38,8 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
-    val boldText = Text(Words("Hello", true),Words("Welsh Hello", true))
-    val normalText = Text(Words("Hello", false),Words("Welsh Hello", false))
+    val boldText = Text(Words("Hello", true), Words("Welsh Hello", true))
+    val normalText = Text(Words("Hello", false), Words("Welsh Hello", false))
 
   }
 

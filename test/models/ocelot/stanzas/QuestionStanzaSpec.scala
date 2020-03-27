@@ -59,11 +59,11 @@ class QuestionStanzaSpec extends BaseSpec {
        | "stack": $stack
        |}""".stripMargin
 
-  val validQuestionStanzaJson: JsObject = Json.parse( twoAnswersQuestionStanzaJsonInput ).as[JsObject]
+  val validQuestionStanzaJson: JsObject = Json.parse(twoAnswersQuestionStanzaJsonInput).as[JsObject]
 
-  val expectedTwoQuestionsQuestionStanza = QuestionStanza( one, Seq( zero,  two ), Seq( twoStr, fiveStr ), stack )
+  val expectedTwoQuestionsQuestionStanza = QuestionStanza(one, Seq(zero, two), Seq(twoStr, fiveStr), stack)
 
-  val expectedThreeAnswersQuestionStanza = QuestionStanza( one, Seq( three, four, five ), Seq( fourStr, sevenStr, eightStr ), stack )
+  val expectedThreeAnswersQuestionStanza = QuestionStanza(one, Seq(three, four, five), Seq(fourStr, sevenStr, eightStr), stack)
 
   "Question stanza" must {
 
@@ -86,22 +86,22 @@ class QuestionStanzaSpec extends BaseSpec {
     }
 
     "serialise to json" in {
-      val stanza: QuestionStanza = QuestionStanza(0, Seq(1,2), Seq("4", "5"), true)
+      val stanza: QuestionStanza = QuestionStanza(0, Seq(1, 2), Seq("4", "5"), true)
       val expectedJson: String = """{"text":0,"answers":[1,2],"next":["4","5"],"stack":true}"""
       Json.toJson(stanza).toString mustBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
-      val stanza: Stanza = QuestionStanza(0, Seq(1,2), Seq("4", "5"), true)
+      val stanza: Stanza = QuestionStanza(0, Seq(1, 2), Seq("4", "5"), true)
       val expectedJson: String = """{"next":["4","5"],"stack":true,"answers":[1,2],"text":0,"type":"QuestionStanza"}"""
       Json.toJson(stanza).toString mustBe expectedJson
     }
 
     /** Test for missing properties in Json object */
-    missingJsObjectAttrTests[QuestionStanza]( validQuestionStanzaJson, List( "type" ) )
+    missingJsObjectAttrTests[QuestionStanza](validQuestionStanzaJson, List("type"))
 
     /** Test for properties of the wrong type in json object representing question stanza */
-    incorrectPropertyTypeJsObjectAttrTests[QuestionStanza]( validQuestionStanzaJson, List( "type" ) )
+    incorrectPropertyTypeJsObjectAttrTests[QuestionStanza](validQuestionStanzaJson, List("type"))
 
   }
 

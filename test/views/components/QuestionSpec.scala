@@ -24,10 +24,9 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html._
-import models.ui.{Paragraph,Text, Question, Answer}
+import models.ui.{Paragraph, Text, Question, Answer}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
-
 
 class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -53,7 +52,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), "/no")
     val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), "/dontknow")
     val answers = Seq(a1, a2, a3)
-    val horizontalAnswers = Seq(a1.copy(hint = None),a2.copy(hint = None))
+    val horizontalAnswers = Seq(a1.copy(hint = None), a2.copy(hint = None))
     val question = Question(Text(q1), Seq(para1), answers)
 
     val questionWithHorizontalAnswers = Question(Text(q1), Seq(para1), horizontalAnswers)
@@ -62,7 +61,6 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait WelshTest extends Test {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
-
 
   "English Question component" must {
 
@@ -112,11 +110,11 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
       hints shouldBe Nil
-      val divs = doc.getElementsByTag("div").asScala.toList.filter{ div =>
+      val divs = doc.getElementsByTag("div").asScala.toList.filter { div =>
         val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
         attrs("class").contains("govuk-radios")
       }
-      divs.headOption.map{ div =>
+      divs.headOption.map { div =>
         val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
         attrs("class").contains("govuk-radios--inline") shouldBe true
       } orElse {
@@ -174,11 +172,11 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
       hints shouldBe Nil
-      val divs = doc.getElementsByTag("div").asScala.toList.filter{ div =>
+      val divs = doc.getElementsByTag("div").asScala.toList.filter { div =>
         val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
         attrs("class").contains("govuk-radios")
       }
-      divs.headOption.map{ div =>
+      divs.headOption.map { div =>
         val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
         attrs("class").contains("govuk-radios--inline") shouldBe true
       } orElse {

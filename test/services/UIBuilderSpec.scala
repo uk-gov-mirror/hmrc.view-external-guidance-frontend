@@ -25,15 +25,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
   trait Test extends ProcessJson {
 
-    val lang0 = Vector("Some Text","Welsh, Some Text")
-    val lang1 = Vector("Some Text1","Welsh, Some Text1")
-    val lang2 = Vector("Some Text2","Welsh, Some Text2")
-    val lang3 = Vector("Some Text3","Welsh, Some Text3")
-    val lang4 = Vector("Some Text4","Welsh, Some Text4")
+    val lang0 = Vector("Some Text", "Welsh, Some Text")
+    val lang1 = Vector("Some Text1", "Welsh, Some Text1")
+    val lang2 = Vector("Some Text2", "Welsh, Some Text2")
+    val lang3 = Vector("Some Text3", "Welsh, Some Text3")
+    val lang4 = Vector("Some Text4", "Welsh, Some Text4")
 
     val ltxt1 = Text(Words("This is a ", true), Words("Welsh, This is a ", true))
-    val ltxt2 = Text(" followed by "," Welsh, followed by ")
-    val ltxt3 = Text(" and nothing"," Welsh, and nothing")
+    val ltxt2 = Text(" followed by ", " Welsh, followed by ")
+    val ltxt3 = Text(" and nothing", " Welsh, and nothing")
     val link1TxtEn = "A link"
     val link1TxtCy = "Welsh, A link"
     val link2TxtEn = "Another Link"
@@ -57,9 +57,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
     val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
 
-    val hint1 = Text("You agree with the assertion","Welsh, You agree with the assertion")
-    val hint2 = Text("You DONT agree with the assertion","Welsh, You DONT agree with the assertion")
-    val hint3 = Text("You dont know","Welsh, You dont know")
+    val hint1 = Text("You agree with the assertion", "Welsh, You agree with the assertion")
+    val hint2 = Text("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
+    val hint3 = Text("You dont know", "Welsh, You dont know")
 
     val link1En = Link("https://www.bbc.co.uk", link1TxtEn, false)
     val link2En = Link("https://www.gov.uk", link2TxtEn, false)
@@ -81,41 +81,49 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink1Cy = Link("dummy-path/next", pageLink1TextCy)
     val pageLink2Cy = Link("dummy-path", pageLink2TextCy)
 
-    implicit val urlMap: Map[String, String] = Map("3" -> "dummy-path",
-                                                   "4" -> "dummy-path/question",
-                                                   "5" -> "dummy-path/blah",
-                                                   "6" -> "dummy-path/anotherquestion",
-                                                   "34" -> "dummy-path/next")
-    val answerDestinations = Seq("4","5","6")
-    val answerDestinationUrls = Seq("dummy-path/question","dummy-path/blah","dummy-path/anotherquestion")
+    implicit val urlMap: Map[String, String] =
+      Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+    val answerDestinations = Seq("4", "5", "6")
+    val answerDestinationUrls = Seq("dummy-path/question", "dummy-path/blah", "dummy-path/anotherquestion")
 
     val txtWithLinks = Phrase(
-      Vector("[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
-      "[bold:Welsh, This is a ][link:Welsh, A link:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link:https://www.gov.uk] Welsh, and nothing")
-    )
-    val txtWithLinks2 = Phrase(
-      Vector("[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:Another Link at end of phrase:https://www.gov.uk]",
-      "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link at end of phrase:https://www.gov.uk]")
-    )
-    val txtWithPageLinks = Phrase(
-      Vector("[bold:This is a ][link:A page link:34] followed by [link:Another page link:3] and nothing",
-      "[bold:Welsh, This is a ][link:Welsh, A page link:34] Welsh, followed by [link:Welsh, Another page link:3] Welsh, and nothing")
-    )
-    val txtWithAllLinks = Phrase(
-      Vector("[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34]",
-      "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34]")
+      Vector(
+        "[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
+        "[bold:Welsh, This is a ][link:Welsh, A link:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link:https://www.gov.uk] Welsh, and nothing"
+      )
     )
 
-    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7,"5","",false)), false)
-    val hyperLinkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7,"https://www.bbc.co.uk","",false)), false)
+    val txtWithLinks2 = Phrase(
+      Vector(
+        "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:Another Link at end of phrase:https://www.gov.uk]",
+        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link at end of phrase:https://www.gov.uk]"
+      )
+    )
+
+    val txtWithPageLinks = Phrase(
+      Vector(
+        "[bold:This is a ][link:A page link:34] followed by [link:Another page link:3] and nothing",
+        "[bold:Welsh, This is a ][link:Welsh, A page link:34] Welsh, followed by [link:Welsh, Another page link:3] Welsh, and nothing"
+      )
+    )
+
+    val txtWithAllLinks = Phrase(
+      Vector(
+        "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34]",
+        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34]"
+      )
+    )
+
+    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7, "5", "", false)), false)
+    val hyperLinkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7, "https://www.bbc.co.uk", "", false)), false)
     val embeddedLinkInstructionStanza = Instruction(txtWithLinks, Seq("end"), None, false)
     val embeddedLinkInstructionStanza2 = Instruction(txtWithLinks2, Seq("end"), None, false)
     val embeddedPageLinkInstructionStanza = Instruction(txtWithPageLinks, Seq("end"), None, false)
     val embeddedAllLinkInstructionStanza = Instruction(txtWithAllLinks, Seq("end"), None, false)
 
     val questionPhrase: Phrase = Phrase(q1)
-    val answers = Seq(Phrase(ans1),Phrase(ans2),Phrase(ans3))
-    val answersWithHints = Seq(Phrase(ans1WithHint),Phrase(ans2WithHint),Phrase(ans3WithHint))
+    val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
+    val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
     val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
@@ -142,8 +150,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       questionWithAnswerHints
     )
 
-    val questionPage = Page("start","/",stanzasWithQuestion, Seq(""), Nil)
-    val questionPageWithHints = Page("start","/",stanzasWithQuestionAndHints, Seq(""), Nil)
+    val questionPage = Page("start", "/", stanzasWithQuestion, Seq(""), Nil)
+    val questionPageWithHints = Page("start", "/", stanzasWithQuestionAndHints, Seq(""), Nil)
 
     val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
     val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
@@ -155,25 +163,25 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val hyperLinkPage = Page("start", "/test-page", stanzasWithHyperLink, Seq(""), Nil)
 
     val textItems = ltxt1 +
-                    Text(link1En,link1Cy) +
-                    ltxt2 +
-                    Text(link2En,link2Cy) +
-                    ltxt3
-    val textItems2 = Text(link2_1En,link2_1Cy) + ltxt2 + Text(link2_2En,link2_2Cy)
+      Text(link1En, link1Cy) +
+      ltxt2 +
+      Text(link2En, link2Cy) +
+      ltxt3
+    val textItems2 = Text(link2_1En, link2_1Cy) + ltxt2 + Text(link2_2En, link2_2Cy)
+
     val pageLinkTextItems = ltxt1 +
-                            Text(pageLink1En,pageLink1Cy) +
-                            ltxt2 +
-                            Text(pageLink2En,pageLink2Cy) +
-                            ltxt3
-    val allLinksTextItems = Text(link2_1En,link2_1Cy) + ltxt2 + Text(pageLink1En,pageLink1Cy)
+      Text(pageLink1En, pageLink1Cy) +
+      ltxt2 +
+      Text(pageLink2En, pageLink2Cy) +
+      ltxt3
+    val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy)
 
     val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEmbeddedLinks)
     val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)
     val pageWithEmbeddPageLinks = page.copy(stanzas = stanzasWithEmbeddedPageLinks)
     val pageWithEmbeddAllLinks = page.copy(stanzas = stanzasWithEmbeddedAllLinks)
 
-    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
-                                         "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
+    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     // for multi page testing
     val pageBuilder: PageBuilder = new PageBuilder()
     val stanzaPages = pageBuilder.pages(prototypeJson.as[Process]).right.get
@@ -188,7 +196,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
   "UIBuilder" must {
 
-    "convert and Ocelot page into a UI page with the same url" in new Test{
+    "convert and Ocelot page into a UI page with the same url" in new Test {
 
       uiBuilder.fromStanzaPage(page) match {
         case p if p.urlPath == page.url => succeed
@@ -196,49 +204,49 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
-    "convert 1st Callout type Title to H1" in new Test{
+    "convert 1st Callout type Title to H1" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(1) mustBe models.ui.H1(Text(lang0))
     }
 
-    "convert 2nd Callout type SubTitle to H2" in new Test{
+    "convert 2nd Callout type SubTitle to H2" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(2) mustBe models.ui.H2(Text(lang1))
     }
 
-    "convert Callout type Lede to lede Paragraph" in new Test{
+    "convert Callout type Lede to lede Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(3) mustBe models.ui.Paragraph(Text(lang2), true)
     }
 
-    "convert Simple instruction to Paragraph" in new Test{
+    "convert Simple instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
       uiPage.components(four) mustBe models.ui.Paragraph(Text(lang3), false)
     }
 
-    "convert Link instruction to Paragraph" in new Test{
+    "convert Link instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
-      val en = Link("dummy-path/blah",lang4(0))
-      val cy = Link("dummy-path/blah",lang4(1))
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(en,cy), false)
+      val en = Link("dummy-path/blah", lang4(0))
+      val cy = Link("dummy-path/blah", lang4(1))
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(en, cy), false)
     }
 
-    "convert page with instruction stanza containing a sequence of Text and Link items" in new Test{
+    "convert page with instruction stanza containing a sequence of Text and Link items" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks)
       uiPage.components(five) mustBe models.ui.Paragraph(textItems, false)
     }
 
-    "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test{
+    "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks2)
       uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
     }
 
-    "convert page with instruction stanza text containing PageLinks and Text" in new Test{
+    "convert page with instruction stanza text containing PageLinks and Text" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
       uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
     }
@@ -249,7 +257,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       pageMap.keys.toList.length mustBe stanzaPages.length
 
-      stanzaPages.foreach{ p =>
+      stanzaPages.foreach { p =>
         pageMap.contains(p.url) mustBe true
       }
     }
@@ -261,12 +269,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert page including a PageLink instruction stanza" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(link3En,link3Cy), false)
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(link3En, link3Cy), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(hyperLinkPage)
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(link4En,link4Cy), false)
+      uiPage.components(five) mustBe models.ui.Paragraph(Text(link4En, link4Cy), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
@@ -275,7 +283,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.length mustBe 1
 
       uiPage.components.head match {
-        case q:models.ui.Question =>
+        case q: models.ui.Question =>
           q.answers.length mustBe 3
 
           q.body.length mustBe 2
@@ -296,7 +304,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.length mustBe 1
 
       uiPage.components.head match {
-        case q:models.ui.Question =>
+        case q: models.ui.Question =>
           q.answers.length mustBe 3
 
           q.body.length mustBe 2
@@ -313,22 +321,22 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process page with a simple instruction group" in new Test {
 
-      val phrase1: Phrase = Phrase( Vector( "My favourite sweets are wine gums", "Fy hoff losin yw deintgig gwin" ) )
-      val phrase2: Phrase = Phrase( Vector( "My favourite sweets are humbugs", "Fy hoff losin yw humbugs" ) )
+      val phrase1: Phrase = Phrase(Vector("My favourite sweets are wine gums", "Fy hoff losin yw deintgig gwin"))
+      val phrase2: Phrase = Phrase(Vector("My favourite sweets are humbugs", "Fy hoff losin yw humbugs"))
 
-      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, true )
-      val instruction2: Instruction = Instruction( phrase2, Seq( "end" ), None, false )
+      val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, true)
+      val instruction2: Instruction = Instruction(phrase2, Seq("end"), None, false)
 
-      val instructionGroup: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
+      val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
         ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
         instructionGroup
       )
 
-      val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page("start", "/", bulletPointListStanzas, Seq(""), Nil)
 
-      val uiPage = uiBuilder.fromStanzaPage( bulletPointListPage )
+      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
       uiPage.components.length mustBe 1
 
@@ -348,38 +356,46 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems.head mustBe bulletPointOne
           b.listItems.last mustBe bulletPointTwo
         }
-        case _ => fail( "Did not find bullet point list")
+        case _ => fail("Did not find bullet point list")
       }
     }
 
     "Process page with a simple instruction group from prototypeJson" in new Test {
 
       val phrase1: Phrase = Phrase(
-        Vector( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)",
-          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: gwerthu nwyddau neu wasanaethau (masnachu)" ) )
+        Vector(
+          "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: selling goods or services (trading)",
+          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: gwerthu nwyddau neu wasanaethau (masnachu)"
+        )
+      )
       val phrase2: Phrase = Phrase(
-        Vector( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property",
-          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: rhentu tir neu eiddo" ) )
+        Vector(
+          "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property",
+          "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi: rhentu tir neu eiddo"
+        )
+      )
 
-      val instruction1: Instruction = Instruction( phrase1, Seq( "2" ), None, true )
-      val instruction2: Instruction = Instruction( phrase2, Seq( "end" ), None, false )
+      val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, true)
+      val instruction2: Instruction = Instruction(phrase2, Seq("end"), None, false)
 
-      val instructionGroup: InstructionGroup = InstructionGroup( Seq( instruction1, instruction2 ) )
+      val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
         ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
         instructionGroup
       )
 
-      val bulletPointListPage = Page("start","/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page("start", "/", bulletPointListStanzas, Seq(""), Nil)
 
-      val uiPage = uiBuilder.fromStanzaPage( bulletPointListPage )
+      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
       uiPage.components.length mustBe 1
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text( "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:",
-        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi:")
+      val leadingTextItems: Text = Text(
+        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:",
+        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi:"
+      )
 
       val bulletPointOne: Text = Text("selling goods or services (trading)", "gwerthu nwyddau neu wasanaethau (masnachu)")
       val bulletPointTwo: Text = Text("renting land or property", "rhentu tir neu eiddo")
@@ -394,37 +410,33 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems.head mustBe bulletPointOne
           b.listItems.last mustBe bulletPointTwo
         }
-        case _ => fail( "Did not find bullet point list")
+        case _ => fail("Did not find bullet point list")
       }
     }
 
     "Process complex page with both instruction groups and single instructions" in new Test {
 
-      val phrase1: Phrase = Phrase( Vector( "Going to the market", "Mynd i'r farchnad" ) )
-      val phrase2: Phrase = Phrase( Vector( "Fruit and Vegetables", "Ffrwythau a llysiau" ) )
-      val phrase3: Phrase = Phrase( Vector( "Vegetables", "Llysiau" ) )
-      val phrase4: Phrase = Phrase( Vector( "What you can buy in our lovely vegetable market", "Beth allwch chi ei brynu yn ein marchnad llysiau hyfryd" ) )
-      val phrase5: Phrase = Phrase( Vector( "Today we have special parsnips for sale", "Heddiw mae gennym bananas arbennig ar werth" ) )
-      val phrase6: Phrase = Phrase( Vector( "Today we have special purple carrots for sale", "Heddiw mae gennym foron porffor arbennig ar werth") )
-      val phrase7: Phrase = Phrase( Vector( "Today we have special brussels sprouts for sale", "Heddiw mae gennym ysgewyll cregyn gleision arbennig ar werth" ) )
-      val phrase8: Phrase = Phrase( Vector( "Thank you", "Diolch" ) )
+      val phrase1: Phrase = Phrase(Vector("Going to the market", "Mynd i'r farchnad"))
+      val phrase2: Phrase = Phrase(Vector("Fruit and Vegetables", "Ffrwythau a llysiau"))
+      val phrase3: Phrase = Phrase(Vector("Vegetables", "Llysiau"))
+      val phrase4: Phrase = Phrase(Vector("What you can buy in our lovely vegetable market", "Beth allwch chi ei brynu yn ein marchnad llysiau hyfryd"))
+      val phrase5: Phrase = Phrase(Vector("Today we have special parsnips for sale", "Heddiw mae gennym bananas arbennig ar werth"))
+      val phrase6: Phrase = Phrase(Vector("Today we have special purple carrots for sale", "Heddiw mae gennym foron porffor arbennig ar werth"))
+      val phrase7: Phrase = Phrase(Vector("Today we have special brussels sprouts for sale", "Heddiw mae gennym ysgewyll cregyn gleision arbennig ar werth"))
+      val phrase8: Phrase = Phrase(Vector("Thank you", "Diolch"))
 
-      val titleCallout: Callout = Callout( Title, phrase1, Seq( "1" ), false )
-      val instruction1: Instruction = Instruction( phrase2, Seq( "2" ), None, false )
-      val subTitleCallout: Callout = Callout( SubTitle, phrase3, Seq( "3"), false )
-      val instruction2: Instruction = Instruction( phrase4, Seq( "4") , None, false )
+      val titleCallout: Callout = Callout(Title, phrase1, Seq("1"), false)
+      val instruction1: Instruction = Instruction(phrase2, Seq("2"), None, false)
+      val subTitleCallout: Callout = Callout(SubTitle, phrase3, Seq("3"), false)
+      val instruction2: Instruction = Instruction(phrase4, Seq("4"), None, false)
 
-      val instructionGroupInstruction1: Instruction = Instruction( phrase5, Seq( "5" ), None, true )
-      val instructionGroupInstruction2: Instruction = Instruction( phrase6, Seq( "6" ), None, false )
-      val instructionGroupInstruction3: Instruction = Instruction( phrase7, Seq( "7" ), None, false )
+      val instructionGroupInstruction1: Instruction = Instruction(phrase5, Seq("5"), None, true)
+      val instructionGroupInstruction2: Instruction = Instruction(phrase6, Seq("6"), None, false)
+      val instructionGroupInstruction3: Instruction = Instruction(phrase7, Seq("7"), None, false)
 
-      val instructionGroup: InstructionGroup = InstructionGroup( Seq(
-        instructionGroupInstruction1,
-        instructionGroupInstruction2,
-        instructionGroupInstruction3)
-        )
+      val instructionGroup: InstructionGroup = InstructionGroup(Seq(instructionGroupInstruction1, instructionGroupInstruction2, instructionGroupInstruction3))
 
-      val instruction3: Instruction = Instruction( phrase8, Seq( "8" ), None, false )
+      val instruction3: Instruction = Instruction(phrase8, Seq("8"), None, false)
 
       // Build sequence of stanzas
       val stanzaSeq = Seq(
@@ -437,20 +449,20 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         instruction3
       )
 
-      val complexPage = Page( "start","/", stanzaSeq, Seq(""), Nil )
+      val complexPage = Page("start", "/", stanzaSeq, Seq(""), Nil)
 
-      val complexUiPage = uiBuilder.fromStanzaPage( complexPage )
+      val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
 
       complexUiPage.components.size mustBe 6
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text( "Today we have special", "Heddiw mae gennym" )
+      val leadingTextItems: Text = Text("Today we have special", "Heddiw mae gennym")
 
-      val bulletPointOne: Text = Text( "parsnips for sale", "bananas arbennig ar werth")
-      val bulletPointTwo: Text = Text( "purple carrots for sale", "foron porffor arbennig ar werth")
-      val bulletPointThree: Text = Text( "brussels sprouts for sale", "ysgewyll cregyn gleision arbennig ar werth")
+      val bulletPointOne: Text = Text("parsnips for sale", "bananas arbennig ar werth")
+      val bulletPointTwo: Text = Text("purple carrots for sale", "foron porffor arbennig ar werth")
+      val bulletPointThree: Text = Text("brussels sprouts for sale", "ysgewyll cregyn gleision arbennig ar werth")
 
-      complexUiPage.components( four ) match {
+      complexUiPage.components(four) match {
         case b: BulletPointList => {
 
           b.text mustBe leadingTextItems
@@ -461,16 +473,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems(1) mustBe bulletPointTwo
           b.listItems.last mustBe bulletPointThree
         }
-        case _ => fail( "Did not find bullet point list")
+        case _ => fail("Did not find bullet point list")
       }
 
-      val finalParagraph: Paragraph = Paragraph(Text( "Thank you", "Diolch"))
+      val finalParagraph: Paragraph = Paragraph(Text("Thank you", "Diolch"))
 
-      complexUiPage.components( five ) match {
+      complexUiPage.components(five) match {
         case p: Paragraph => {
           p mustBe finalParagraph
         }
-        case _  => fail( "The last components is not an instruction" )
+        case _ => fail("The last components is not an instruction")
       }
     }
 

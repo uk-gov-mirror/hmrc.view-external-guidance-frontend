@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package mocks
 
-import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{Json, JsObject}
-import services.PageBuilder
+import models.ocelot.{Page, Process}
+import services.{FlowError, PageBuilder}
 
-class PrototypeJsonSpec extends WordSpec with Matchers {
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
 
-  trait Test {
-    val jsObject: JsObject = Json.parse(PrototypeJson.json).as[JsObject]
-    val process: Process = jsObject.as[Process]
-    val pageBuilder = new PageBuilder()
-  }
+trait MockPageBuilder extends MockFactory {
 
-  "Prototype Json" must {
+  val mockPageBuilder: PageBuilder = mock[PageBuilder]
 
-    "Parse into a valid Process object" in new Test {
-      pageBuilder.pages(process) match {
-        case Right(pages) => succeed
-        case Left(err) => fail(s"Invalid json ${err}")
-      }
+  object MockPageBuilder {
+
+    def pages(process: Process): CallHandler[Either[FlowError, Seq[Page]]] = {
+
+      (mockPageBuilder
+        .pages(_: Process, _: String))
+        .expects(process, *)
     }
   }
+
 }
