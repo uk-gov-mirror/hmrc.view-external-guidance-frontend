@@ -14,27 +14,17 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
+@import models.ui.{Text, ErrorMsg}
 
-@(q: Question, name: String)(implicit request: Request[_], messages: Messages)
+@(errors: Seq[ErrorMsg])(implicit messages: Messages)
 
-  <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-    <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
-  </legend>
+@for(err <- errors) {
 
-  @components.error_message(q.errorMsgs)
-
-  @for((cmp, index) <- q.body.zipWithIndex){
-    @{cmp match {
-          case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
-          case x =>
-        }
-    }
-  }
-
-  @components.answers(q.answers, q.horizontal, name)
+  <span id="@err.id-error" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span>@components.render_text(err.text)
+  </span>
+    
+}
 
 @{
      //$COVERAGE-OFF$
