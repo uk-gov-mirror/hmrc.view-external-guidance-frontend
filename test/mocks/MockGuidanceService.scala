@@ -21,7 +21,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
 import uk.gov.hmrc.http.HeaderCarrier
-
+import models.ui.FormData
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MockGuidanceService extends MockFactory {
@@ -42,10 +42,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
-    def getPage(url: String, processId: String): CallHandler[Future[Option[Page]]] = {
+    def getPage(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[Page]]] = {
       (mockGuidanceService
-        .getPage(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(url, processId, *, *)
+        .getPage(_: String, _: String, _: Option[FormData])(_: HeaderCarrier, _: ExecutionContext))
+        .expects(url, processId, formData, *, *)
     }
 
   }

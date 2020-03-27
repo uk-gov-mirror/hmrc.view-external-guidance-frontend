@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.SessionKeys
 import forms.NextPageFormProvider
 import models.ui._
 import play.api.test.CSRFTokenHelper._
+import play.api.data.FormError
 
 import scala.concurrent.Future
 
@@ -47,18 +48,18 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     )
 
     MockGuidanceService
-      .getPage(path, processId)
+      .getPage(path, processId, None)
       .returns(Future.successful(Some(expectedPage)))
 
     val errorHandler = app.injector.instanceOf[config.ErrorHandler]
     val view = app.injector.instanceOf[views.html.standard_page]
     val questionView = app.injector.instanceOf[views.html.question_page]
     val target = new GuidanceController(errorHandler,
-                                             view,
-                                             questionView,
-                                             new NextPageFormProvider(),
-                                             mockGuidanceService,
-                                             stubMessagesControllerComponents())
+                                        view,
+                                        questionView,
+                                        new NextPageFormProvider(),
+                                        mockGuidanceService,
+                                        stubMessagesControllerComponents())
   }
 
   "Calling a valid URL path to a Question page in a process" should {
@@ -77,9 +78,13 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   "Submitting a blank Question page form" should {
 
     "return a BadRequest response" in new QuestionTest {
+      val formError = new FormError(relativePath, List("error.required"))
+      MockGuidanceService
+        .getPage(path, processId, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(Future.successful(Some(expectedPage)))
+
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
-      println(status(result))
       status(result) mustBe Status.BAD_REQUEST
     }
   }
@@ -88,9 +93,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a SeeOther response" in new QuestionTest {
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
-                                                         .withFormUrlEncodedBody(("some-path" -> "/hello")).withCSRFToken
+                                                          .withFormUrlEncodedBody(("some-path" -> "/hello")).withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
-      println(status(result))
       status(result) mustBe Status.SEE_OTHER
     }
   }
@@ -248,7 +252,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       )
 
       MockGuidanceService
-        .getPage(pathUsedToFindPage, processId)
+        .getPage(pathUsedToFindPage, processId, None)
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
@@ -287,7 +291,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       )
 
       MockGuidanceService
-        .getPage(pathUsedToFindPage, processId)
+        .getPage(pathUsedToFindPage, processId, None)
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
@@ -329,7 +333,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       )
 
       MockGuidanceService
-        .getPage(pathUsedToFindPage, processId)
+        .getPage(pathUsedToFindPage, processId, None)
         .returns(Future.successful(Some(expectedPage)))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
@@ -364,7 +368,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         FakeRequest().withSession(SessionKeys.sessionId -> processId)
 
       MockGuidanceService
-        .getPage("/" + path, processId)
+        .getPage("/" + path, processId, None)
         .returns(Future.successful(None))
 
       private lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]

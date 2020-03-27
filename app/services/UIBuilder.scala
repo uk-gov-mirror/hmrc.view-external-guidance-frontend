@@ -38,7 +38,7 @@ class UIBuilder {
     Page(
       pge.url,
       pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
-        stanza match {            
+        stanza match {
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
             acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) =>

@@ -19,9 +19,57 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, Paragraph, Text, Words}
+import models.ui.{BulletPointList, Link, Paragraph, Text, Words, FormData, ErrorCallout, QuestionPage}
+import play.api.data.FormError
+
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
+
+  trait FromCalloutTest {
+    
+    implicit val urlMap: Map[String, String] =
+      Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+    val answerDestinations = Seq("4", "5", "6")
+    val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+    val answers = Seq(Phrase(Vector("Some Text", "Welsh, Some Text")),
+                      Phrase(Vector("Some Text", "Welsh, Some Text")),
+                      Phrase(Vector("Some Text", "Welsh, Some Text")))
+    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
+   
+    val stanzas = Seq(
+      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
+      Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false),
+      Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false),
+      Question(questionPhrase, answers, answerDestinations, false)
+    )
+
+    val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
+    val uiBuilder: UIBuilder = new UIBuilder()
+  }
+
+  "UIBulider Callout processing" must {
+
+    "Ignore Error Callouts when there are no errors" in new FromCalloutTest {
+      uiBuilder.fromStanzaPage(page, None)(urlMap) match {
+        case s: QuestionPage if s.question.errorMsgs.isEmpty => succeed
+        case s: QuestionPage => fail("No error messages should be included on page")
+        case _ => fail("Should return QuestionPage")
+      }
+    }
+
+    "Include Error messages when there are errors" in new FromCalloutTest {
+      val formError = new FormError("test-page", List("error.required"))
+      val formData = Some(FormData("test-page", Map(), List(formError)))
+
+      uiBuilder.fromStanzaPage(page, formData)(urlMap) match {
+        case s: QuestionPage if s.question.errorMsgs.isEmpty => fail("No error messages found on page")
+        case s: QuestionPage => succeed
+        case _ => fail("Should return QuestionPage")
+      }
+    }
+
+  }
 
   trait Test extends ProcessJson {
 
