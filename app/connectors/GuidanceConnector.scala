@@ -24,7 +24,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import config.AppConfig
 
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -39,7 +38,7 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
     import connectors.httpParsers.GetScratchProcessHttpParser.getScratchProcessHttpReads
     val endpoint: String = appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid"
 
-    httpClient.GET[RequestOutcome[Process]](endpoint, Seq.empty, Seq.empty).map{
+    httpClient.GET[RequestOutcome[Process]](endpoint, Seq.empty, Seq.empty).map {
       case Right(process) => Some(process)
       case Left(err) => None
     }

@@ -28,9 +28,9 @@ class HelloWorldISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/hello-world" )
+      val request: WSRequest = buildRequest("/guidance/hello-world")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
       response.status shouldBe Status.OK
     }
@@ -43,9 +43,9 @@ class HelloWorldISpec extends IntegrationSpec {
 
       AuditStub.audit()
 
-      val request: WSRequest = buildRequest( "/guidance/bye-world" )
+      val request: WSRequest = buildRequest("/guidance/bye-world")
 
-      val response: WSResponse = await( request.get() )
+      val response: WSResponse = await(request.get())
 
       response.status shouldBe Status.INTERNAL_SERVER_ERROR
     }

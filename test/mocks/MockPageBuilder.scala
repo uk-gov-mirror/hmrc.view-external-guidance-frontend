@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package mocks
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import models.ocelot.{Page, Process}
+import services.{FlowError, PageBuilder}
 
-case class Link(id: Int, dest: String, title: String, window: Boolean)
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
 
-object Link {
+trait MockPageBuilder extends MockFactory {
 
-  implicit val reads: Reads[Link] = (
-    (__ \ "id").read[Int] and
-      (__ \ "dest").read[String] and
-      (__ \ "title").read[String] and
-      (__ \ "window").read[Boolean]
-  )(Link.apply _)
+  val mockPageBuilder: PageBuilder = mock[PageBuilder]
 
-  implicit val writes: Writes[Link] = (
-    (__ \ "id").write[Int] and
-      (__ \ "dest").write[String] and
-      (__ \ "title").write[String] and
-      (__ \ "window").write[Boolean]
-  )(unlift(Link.unapply))
+  object MockPageBuilder {
+
+    def pages(process: Process): CallHandler[Either[FlowError, Seq[Page]]] = {
+
+      (mockPageBuilder
+        .pages(_: Process, _: String))
+        .expects(process, *)
+    }
+  }
 
 }

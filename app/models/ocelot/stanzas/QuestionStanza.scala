@@ -33,11 +33,11 @@ object QuestionStanza {
 
   implicit val owrites: OWrites[QuestionStanza] =
     (
-    	(JsPath \ "text").write[Int] and
-      (JsPath \ "answers").write[Seq[Int]] and
-      (JsPath \ "next").write[Seq[String]] and
-      (JsPath \ "stack").write[Boolean]
-  	)(unlift(QuestionStanza.unapply))
+      (JsPath \ "text").write[Int] and
+        (JsPath \ "answers").write[Seq[Int]] and
+        (JsPath \ "next").write[Seq[String]] and
+        (JsPath \ "stack").write[Boolean]
+    )(unlift(QuestionStanza.unapply))
 
 }
 

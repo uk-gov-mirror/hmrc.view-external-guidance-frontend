@@ -39,23 +39,23 @@ class TextBuilderSpec extends BaseSpec {
     val linkCy1 = Link("https://www.bbc.co.uk", link1CyWords, false)
     val linkEn2 = Link("https://www.gov.uk", link2EnWords, false)
     val linkCy2 = Link("https://www.gov.uk", link2CyWords, false)
-    val urlMap1: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah","34" -> "dummy-path/next")
-
+    val urlMap1: Map[String, String] = Map("3" -> "dummy-path", "5" -> "dummy-path/blah", "34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(
-      Vector(s"[bold:This is a ][link:${link1EnWords}:https://www.bbc.co.uk] followed by [link:${link2EnWords}:https://www.gov.uk] and nothing",
-      s"[bold:Welsh, This is a ][link:${link1CyWords}:https://www.bbc.co.uk] Welsh, followed by [link:${link2CyWords}:https://www.gov.uk] Welsh, and nothing")
+      Vector(
+        s"[bold:This is a ][link:${link1EnWords}:https://www.bbc.co.uk] followed by [link:${link2EnWords}:https://www.gov.uk] and nothing",
+        s"[bold:Welsh, This is a ][link:${link1CyWords}:https://www.bbc.co.uk] Welsh, followed by [link:${link2CyWords}:https://www.gov.uk] Welsh, and nothing"
+      )
     )
 
-    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]",
-                                         "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
+    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     implicit val stanzaIdToUrlMap: Map[String, String] = Map()
 
     val answerWithNoHint = Phrase("Yes", "Welsh, Yes")
     val answerWithHint = Phrase("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
 
-    val answer = Text("Yes","Welsh, Yes")
-    val hint = Text("You agree with the assertion","Welsh, You agree with the assertion")
+    val answer = Text("Yes", "Welsh, Yes")
+    val hint = Text("You agree with the assertion", "Welsh, You agree with the assertion")
   }
 
   "TextBuilder placeholder parsing" must {
@@ -67,14 +67,14 @@ class TextBuilderSpec extends BaseSpec {
       txt.english(0) mustBe lEnWords1
       txt.welsh(0) mustBe lCyWords1
 
-      txt.english(1).toWords mustBe Link("https://www.bbc.co.uk",link1EnWords).toWords
-      txt.welsh(1).toWords mustBe Link("https://www.bbc.co.uk",link1CyWords).toWords
+      txt.english(1).toWords mustBe Link("https://www.bbc.co.uk", link1EnWords).toWords
+      txt.welsh(1).toWords mustBe Link("https://www.bbc.co.uk", link1CyWords).toWords
 
       txt.english(2) mustBe lEnWords2
       txt.welsh(2) mustBe lCyWords2
 
-      txt.english(3).toWords mustBe Link("https://www.gov.uk",link2EnWords).toWords
-      txt.welsh(3).toWords mustBe Link("https://www.gov.uk",link2CyWords).toWords
+      txt.english(3).toWords mustBe Link("https://www.gov.uk", link2EnWords).toWords
+      txt.welsh(3).toWords mustBe Link("https://www.gov.uk", link2CyWords).toWords
 
       txt.english(4) mustBe lEnWords3
       txt.welsh(4) mustBe lCyWords3
@@ -91,8 +91,8 @@ class TextBuilderSpec extends BaseSpec {
     }
 
     "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
-      val linkPhrase = Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
-                              "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]")
+      val linkPhrase =
+        Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]", "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]")
 
       val txt: Text = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
 
@@ -102,14 +102,14 @@ class TextBuilderSpec extends BaseSpec {
       txt.english(0) mustBe Words("Hello ")
       txt.welsh(0) mustBe Words("Welsh, Hello ")
 
-      txt.english(1) mustBe Link("https://www.bbc.co.uk","Blah Blah")
-      txt.welsh(1) mustBe Link("https://www.bbc.co.uk","Blah Blah")
+      txt.english(1) mustBe Link("https://www.bbc.co.uk", "Blah Blah")
+      txt.welsh(1) mustBe Link("https://www.bbc.co.uk", "Blah Blah")
 
       txt.english(2) mustBe Words(" ")
       txt.welsh(2) mustBe Words(" ")
 
-      txt.english(3) mustBe Link("dummy-path/blah","Blah Blah")
-      txt.welsh(3) mustBe Link("dummy-path/blah","Blah Blah")
+      txt.english(3) mustBe Link("dummy-path/blah", "Blah Blah")
+      txt.welsh(3) mustBe Link("dummy-path/blah", "Blah Blah")
 
     }
 
@@ -117,13 +117,13 @@ class TextBuilderSpec extends BaseSpec {
 
   "TextBuilder answer processing" must {
     "return display answer text only when there is no hint" in new Test {
-      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithNoHint)
+      val (displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithNoHint)
       displayText mustBe Text(answerWithNoHint.langs)
       hintText mustBe None
     }
 
     "return display answer text with hint" in new Test {
-      val(displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithHint)
+      val (displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithHint)
       displayText mustBe answer
       hintText mustBe Some(hint)
     }
