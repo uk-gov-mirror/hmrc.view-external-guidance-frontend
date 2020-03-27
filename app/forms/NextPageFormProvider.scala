@@ -25,10 +25,10 @@ trait FormProvider
 
 class NextPageFormProvider @Inject() extends FormProvider {
 
-  def apply(): Form[NextPageUrl] =
+  def apply(id: String): Form[NextPageUrl] =
     Form(
       mapping(
-        "url" -> nonEmptyText
+        id -> nonEmptyText
       )(NextPageUrl.apply)(NextPageUrl.unapply)
     )
 }

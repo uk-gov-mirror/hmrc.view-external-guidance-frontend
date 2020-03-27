@@ -45,13 +45,15 @@ class GuidanceController @Inject() (
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     sessionPage(s"/$path").map {
         case Some(page: StandardPage) => Ok(standardView(page))
-        case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider()))
-        case None => NotFound(errorHandler.notFoundTemplate)
+        case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+        case None =>
+          logger.warn(s"Request for page at $path returned nothing resulting in BadRequest")
+          BadRequest(errorHandler.notFoundTemplate)
     }
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    formProvider().bindFromRequest.fold(
+    formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors =>
         sessionPage(s"/$path").map {
           case Some(page: QuestionPage) => BadRequest(questionView(page, questionName(path), formWithErrors))
@@ -76,7 +78,9 @@ class GuidanceController @Inject() (
   private def sessionPage(path: String)(implicit request: Request[_]): Future[Option[Page]] =
     request.session.get(SessionKeys.sessionId) match {
       case Some(sessionId) => service.getPage(path, sessionId)
-      case None => Future.successful(None)
+      case None =>
+        logger.warn(s"Session id missing from request when requesting page with url $path")
+        Future.successful(None)
     }
 
   private def startUrlById( id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])
