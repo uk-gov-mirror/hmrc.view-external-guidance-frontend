@@ -28,7 +28,7 @@ trait MockPageBuilder extends MockFactory {
 
   object MockPageBuilder {
 
-    def pages(process: Process, start: String = "start"): CallHandler[Either[FlowError, Seq[Page]]] = {
+    def pages(process: Process): CallHandler[Either[FlowError, Seq[Page]]] = {
 
       (mockPageBuilder
         .pages(_: Process, _: String))
