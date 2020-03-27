@@ -25,17 +25,16 @@ case class Value(valueType: ValueType, label: String, value: String)
 object Value {
 
   implicit val reads: Reads[Value] =
-    (
-    	(__ \ "type").read[ValueType] and
+    ((__ \ "type").read[ValueType] and
       (__ \ "label").read[String] and
       (__ \ "value").read[String])(Value.apply _)
 
   implicit val writes: Writes[Value] =
     (
-    	(__ \ "type").write[ValueType] and
-      (__ \ "label").write[String] and
-      (__ \ "value").write[String]
-  	)(unlift(Value.unapply))
+      (__ \ "type").write[ValueType] and
+        (__ \ "label").write[String] and
+        (__ \ "value").write[String]
+    )(unlift(Value.unapply))
 
 }
 
@@ -44,16 +43,15 @@ case class ValueStanza(values: List[Value], override val next: Seq[String], stac
 object ValueStanza {
 
   implicit val reads: Reads[ValueStanza] =
-    (
-    	(__ \ "values").read[List[Value]](Reads.minLength[List[Value]](1)) and
+    ((__ \ "values").read[List[Value]](Reads.minLength[List[Value]](1)) and
       (__ \ "next").read[Seq[String]](Reads.minLength[Seq[String]](1)) and
       (__ \ "stack").read[Boolean])(ValueStanza.apply _)
 
   implicit val owrites: OWrites[ValueStanza] =
     (
-    	(__ \ "values").write[List[Value]] and
-      (__ \ "next").write[Seq[String]] and
-      (__ \ "stack").write[Boolean]
+      (__ \ "values").write[List[Value]] and
+        (__ \ "next").write[Seq[String]] and
+        (__ \ "stack").write[Boolean]
     )(unlift(ValueStanza.unapply))
 
 }

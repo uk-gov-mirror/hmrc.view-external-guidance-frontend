@@ -42,19 +42,19 @@ object CalloutType {
       case JsString("Section") => JsSuccess(Section, __)
       case _ => JsError("Invalid Callout type")
     }
-    
+
   }
 
   implicit val writes: Writes[CalloutType] = new Writes[CalloutType] {
 
     override def writes(calloutType: CalloutType): JsValue =
       calloutType match {
-      case Title => Json.toJson("Title")
-      case SubTitle => Json.toJson("SubTitle")
-      case Error => Json.toJson("Error")
-      case Lede =>Json.toJson("Lede")
-      case Section => Json.toJson("Section")
-    }
+        case Title => Json.toJson("Title")
+        case SubTitle => Json.toJson("SubTitle")
+        case Error => Json.toJson("Error")
+        case Lede => Json.toJson("Lede")
+        case Section => Json.toJson("Section")
+      }
 
   }
 
