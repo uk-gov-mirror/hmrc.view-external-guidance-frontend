@@ -61,7 +61,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
                                              stubMessagesControllerComponents())
   }
 
-
   "Calling a valid URL path to a Question page in a process" should {
 
     "return an OK response" in new QuestionTest {
@@ -78,7 +77,9 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   "Submitting a blank Question page form" should {
 
     "return a BadRequest response" in new QuestionTest {
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
+      println(status(result))
       status(result) mustBe Status.BAD_REQUEST
     }
   }
@@ -86,9 +87,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   "Submitting an answered Question page form" should {
 
     "return a SeeOther response" in new QuestionTest {
-      override val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId)
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                          .withFormUrlEncodedBody(("some-path" -> "/hello")).withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
+      println(status(result))
       status(result) mustBe Status.SEE_OTHER
     }
   }
