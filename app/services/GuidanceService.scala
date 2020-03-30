@@ -18,7 +18,7 @@ package services
 
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.{FormData,Page}
+import models.ui.{FormData, Page}
 import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
@@ -30,17 +30,20 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
   val logger: Logger = Logger(getClass)
 
   def getPage(url: String, sessionId: String, formData: Option[FormData] = None)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
-    sessionRepository.get(sessionId).map{ processOption =>
-      processOption.flatMap{ process =>
-        pageBuilder.pages(process).fold(err => {
-          logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
-          None
-          },
-          pages => {
-            val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-            pages.find(page => page.url == url).map( pge => uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap))
-          }
-        )
+    sessionRepository.get(sessionId).map { processOption =>
+      processOption.flatMap { process =>
+        pageBuilder
+          .pages(process)
+          .fold(
+            err => {
+              logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
+              None
+            },
+            pages => {
+              val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
+              pages.find(page => page.url == url).map(pge => uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap))
+            }
+          )
       }
     }
 

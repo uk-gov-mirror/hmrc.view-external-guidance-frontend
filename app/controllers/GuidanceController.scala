@@ -22,7 +22,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.ui.{Page, StandardPage, QuestionPage, FormData}
+import models.ui.{StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
@@ -43,7 +43,7 @@ class GuidanceController @Inject() (
   val logger: Logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSessionId(service.getPage(s"/$path", _)).map {
+    withSession(service.getPage(s"/$path", _)).map {
       case Some(page: StandardPage) => Ok(standardView(page))
       case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
       case None =>
@@ -56,9 +56,9 @@ class GuidanceController @Inject() (
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withSessionId(service.getPage(s"/$path", _, Some(formData))).map {
+        withSession(service.getPage(s"/$path", _, Some(formData))).map {
           case Some(page: QuestionPage) => BadRequest(questionView(page, questionName(path), formWithErrors))
-          case _ => NotFound(errorHandler.notFoundTemplate)
+          case _ => BadRequest(errorHandler.notFoundTemplate)
         }
       },
       nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
@@ -77,7 +77,7 @@ class GuidanceController @Inject() (
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
-  private def withSessionId[T](block: String => Future[Option[T]])(implicit request: Request[_]): Future[Option[T]] =
+  private def withSession[T](block: String => Future[Option[T]])(implicit request: Request[_]): Future[Option[T]] =
     request.session.get(SessionKeys.sessionId) match {
       case Some(sessionId) => block(sessionId)
       case None =>

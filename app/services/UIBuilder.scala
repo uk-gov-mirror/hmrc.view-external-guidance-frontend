@@ -29,12 +29,10 @@ import models.ui._
 class UIBuilder {
   val logger = Logger(getClass)
 
-  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)
-           (implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
+  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
-  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)
-                    (implicit stanzaIdToUrlMap: Map[String, String]): Page =
+  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
       pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
@@ -55,23 +53,24 @@ class UIBuilder {
       }
     )
 
-  private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])
-                          (implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+  private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
+      implicit stanzaIdToUrlMap: Map[String, String]
+  ): UIComponent = {
     val answers = (q.answers zip q.next).map { t =>
       val (phrase, stanzaId) = t
       val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
       Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
     }
     // Split out an Error callouts from body components
-    val (errorCallouts, uiElements) = components.partition{
-                                        case msg: ErrorCallout => true
-                                        case _                 => false
-                                      }
+    val (errorCallouts, uiElements) = components.partition {
+      case msg: ErrorCallout => true
+      case _ => false
+    }
 
     // Build error messages if required
-    val errorMsgs = formData.fold(Seq.empty[ErrorMsg]){uiData =>
+    val errorMsgs = formData.fold(Seq.empty[ErrorMsg]) { uiData =>
       // TODO Currently radio button forms only => single error, no entry made
-      (uiData.errors zip errorCallouts).map{t =>
+      (uiData.errors zip errorCallouts).map { t =>
         val (formError, callout) = t
         ErrorMsg(formError.key, callout.text)
       }
