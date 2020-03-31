@@ -3,3 +3,5 @@ hello.world = Hello world!
 hello.world.currentLanguage = The current language setting is "{0}",
 
 site.continue = Continue
+
+error.browser.title.prefix = Error:

@@ -20,55 +20,82 @@ import javax.inject.Singleton
 
 import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
 import models.ocelot.Phrase
+import play.api.Logger
+import models.ocelot.stanzas.{Question => OcelotQuestion}
+import models.ocelot.{Page => OcelotPage, Link => OcelotLink}
 import models.ui._
+import scala.annotation.tailrec
 
 @Singleton
 class UIBuilder {
+  val logger = Logger(getClass)
 
-  def pages(stanzaPages: Seq[models.ocelot.Page])(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
-    stanzaPages.map(p => (p.url, fromStanzaPage(p)(stanzaIdToUrlMap))).toMap
+  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
+    stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
-  def fromStanzaPage(pge: models.ocelot.Page)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
       pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
         stanza match {
-          case c: Callout => acc ++ Seq(fromCallout(c))
-
-          case Instruction(txt, _, Some(models.ocelot.Link(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
-            val linkText = Text(Link(stanzaIdToUrlMap(dest), txt.langs(0)), Link(stanzaIdToUrlMap(dest), txt.langs(1)))
-            acc ++ Seq(Paragraph(linkText, window))
-
-          case Instruction(txt, _, Some(models.ocelot.Link(id, dest, _, window)), _) =>
-            val linkText = Text(Link(dest, txt.langs(0)), Link(dest, txt.langs(1)))
-            acc ++ Seq(Paragraph(linkText, window))
-
+          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if dest.forall(_.isDigit) =>
+            acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
+          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) =>
+            acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
           case Instruction(txt, _, _, _) =>
             acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-
-          case models.ocelot.stanzas.Question(txt, ans, next, stack) =>
-            val answers = (ans zip next).map { t =>
-              val (phrase, stanzaId) = t
-              val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
-              Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
-            }
-            Seq(Question(Text(txt.langs), acc, answers))
-
+          case c: Callout => acc ++ fromCallout(c, formData)
+          case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
           case ValueStanza(_, _, _) => acc
           case EndStanza => acc
         }
       }
     )
 
-  private def fromCallout(c: Callout)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+  private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
+      implicit stanzaIdToUrlMap: Map[String, String]
+  ): UIComponent = {
+    val answers = (q.answers zip q.next).map { t =>
+      val (phrase, stanzaId) = t
+      val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
+      Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
+    }
+    // Split out an Error callouts from body components
+    val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+
+    Question(Text(q.text.langs), uiElements, answers, errorMsgs)
+  }
+
+  @tailrec
+  private def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+    components match {
+      case Nil => (errors, others)
+      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+      case x :: xs => partitionComponents(xs, errors, x +: others)
+    }
+
+  private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
-      case Title => H1(TextBuilder.fromPhrase(c.text))
-      case SubTitle => H2(TextBuilder.fromPhrase(c.text))
-      case Section => H3(TextBuilder.fromPhrase(c.text))
-      case Lede => Paragraph(TextBuilder.fromPhrase(c.text), true)
-      case Error => H3(TextBuilder.fromPhrase(c.text)) // TODO
+      case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
+      case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))
+      case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
+      case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
+      // Ignore error messages if no errors exist within form data
+      case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
+      case Error =>
+        // TODO this should allocate the messages to errors found within the formData
+        // as this linking of messages to form ids has not been resolved, Currently
+        // this code will allocate all ErrorMsg elements to the only current error
+        // which is erro.required
+        formData
+          .map { data =>
+            data.errors.map { err =>
+              ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
+            }
+          }
+          .getOrElse(Seq.empty)
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {

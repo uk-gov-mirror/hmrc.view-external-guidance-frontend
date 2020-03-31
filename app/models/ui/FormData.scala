@@ -14,28 +14,8 @@
  * limitations under the License.
  */
 
-package mocks
+package models.ui
 
-import org.scalamock.handlers.CallHandler
-import org.scalamock.scalatest.MockFactory
+import play.api.data.FormError
 
-import models.ocelot.Page
-import models.ui.FormData
-import services.UIBuilder
-
-trait MockUIBuilder extends MockFactory {
-
-  val mockUIBuilder: UIBuilder = mock[UIBuilder]
-
-  object MockUIBuilder {
-
-    def fromStanzaPage(page: Page, formData: Option[FormData]): CallHandler[models.ui.Page] = {
-
-      (mockUIBuilder
-        .fromStanzaPage(_: Page, _: Option[FormData])(_: Map[String, String]))
-        .expects(page, *, *)
-    }
-
-  }
-
-}
+case class FormData(url: String, data: Map[String, String], errors: Seq[FormError])

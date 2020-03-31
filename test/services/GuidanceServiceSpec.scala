@@ -50,6 +50,7 @@ class GuidanceServiceSpec extends BaseSpec {
     )
 
     val processId = "ext90001"
+    val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
 
     lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
@@ -67,7 +68,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Right(pages))
 
       MockUIBuilder
-        .fromStanzaPage(pages.last)
+        .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
       private val result = target.getPage(lastPageUrl, processId)
@@ -119,6 +120,30 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Right(pages))
 
       private val result = target.getStartPageUrl(processId, processId)
+
+      whenReady(result) { url =>
+        url mustBe Some(firstPageUrl)
+      }
+    }
+  }
+
+  "Calling scratchProcess" should {
+
+    "retrieve the url of the start page for the scratch process" in new Test {
+
+      MockGuidanceConnector
+        .scratchProcess(uuid)
+        .returns(Future.successful(Some(process)))
+
+      MockSessionRepository
+        .set(uuid, process)
+        .returns(Future.successful(Some(())))
+
+      MockPageBuilder
+        .pages(process)
+        .returns(Right(pages))
+
+      private val result = target.scratchProcess(uuid, uuid)
 
       whenReady(result) { url =>
         url mustBe Some(firstPageUrl)
