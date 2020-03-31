@@ -24,8 +24,6 @@
     <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
   </legend>
 
-  @components.error_message(q.errorMsgs)
-
   @for((cmp, index) <- q.body.zipWithIndex){
     @{cmp match {
           case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
@@ -33,6 +31,8 @@
         }
     }
   }
+
+  @components.error_message(q.errorMsgs)
 
   @components.answers(q.answers, q.horizontal, name)
 

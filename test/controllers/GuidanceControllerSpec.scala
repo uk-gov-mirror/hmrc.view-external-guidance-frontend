@@ -117,7 +117,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) mustBe Status.SEE_OTHER
     }
 
-    "return a BadRequest response when page is not a question" in new QuestionTest {
+    "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
         .getPage(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
         .returns(Future.successful(Some(standardPage)))

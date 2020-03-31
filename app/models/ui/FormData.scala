@@ -16,7 +16,6 @@
 
 package models.ui
 
-import play.api.data.{Form, FormError}
-import play.api.data.Forms._
+import play.api.data.FormError
 
 case class FormData(url: String, data: Map[String, String], errors: Seq[FormError])

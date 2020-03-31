@@ -24,6 +24,7 @@ import play.api.Logger
 import models.ocelot.stanzas.{Question => OcelotQuestion}
 import models.ocelot.{Page => OcelotPage, Link => OcelotLink}
 import models.ui._
+import scala.annotation.tailrec
 
 @Singleton
 class UIBuilder {
@@ -62,22 +63,18 @@ class UIBuilder {
       Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
     }
     // Split out an Error callouts from body components
-    val (errorCallouts, uiElements) = components.partition {
-      case msg: ErrorCallout => true
-      case _ => false
-    }
-
-    // Build error messages if required
-    val errorMsgs = formData.fold(Seq.empty[ErrorMsg]) { uiData =>
-      // TODO Currently radio button forms only => single error, no entry made
-      (uiData.errors zip errorCallouts).map { t =>
-        val (formError, callout) = t
-        ErrorMsg(formError.key, callout.text)
-      }
-    }
+    val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
     Question(Text(q.text.langs), uiElements, answers, errorMsgs)
   }
+
+  @tailrec
+  private def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+    components match {
+      case Nil => (errors, others)
+      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+      case x :: xs => partitionComponents(xs, errors, x +: others)
+    }
 
   private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
@@ -87,7 +84,16 @@ class UIBuilder {
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
       // Ignore error messages if no errors exist within form data
       case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
-      case Error => Seq(ErrorCallout(TextBuilder.fromPhrase(c.text)))
+      case Error =>
+        // TODO this should allocate the messages to errors found within the formData
+        // as this linking of messages to form ids has not been resolved, Currently
+        // this code will allocate all ErrorMsg elements to the only current error
+        // which is erro.required
+        formData.map{ data =>
+          data.errors.map{ err =>
+            ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
+          }
+        }.getOrElse(Seq.empty)
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
