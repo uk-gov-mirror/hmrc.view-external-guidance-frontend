@@ -17,6 +17,7 @@
 @import models.ui._
 @import controllers.routes._
 
+
 @(answers: Seq[Answer], horizontal: Boolean, name: String)(implicit request: Request[_], messages: Messages)
 
 <div class="govuk-radios@{if(horizontal) " govuk-radios--inline" else ""}">
@@ -28,7 +29,7 @@
             name="@name"
             type="radio"
             value="@ans.dest"
-            aria-describedby="@name-item-@index">
+            @if(!ans.hint.isEmpty) { aria-describedby="@name-item-@index-hint" }>
 
       <label class="govuk-label govuk-radios__label govuk-label--s" for="@name-@index">
         @components.render_text(ans.text)

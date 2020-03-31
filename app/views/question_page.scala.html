@@ -35,7 +35,8 @@
   @formWithCSRF(action = routes.GuidanceController.submitPage(page.relativePath)) {
 
     <div class="govuk-form-group @if(!page.question.errorMsgs.isEmpty) {govuk-form-group--error}">
-      <fieldset class="govuk-fieldset" aria-describedby="@questionName-hint">
+      <fieldset class="govuk-fieldset" 
+      @if(!page.question.body.isEmpty) { aria-describedby="@questionName-hint-0" }>
 
         @components.question(page.question, questionName)
 

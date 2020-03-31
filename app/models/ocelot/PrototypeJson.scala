@@ -1334,8 +1334,8 @@ object PrototypeJson {
         "Was your income from land or property less than £11,000?",
         "A oedd eich incwm o dir neu eiddo yn llai na £ 11,000?"
       ],
-      ["Yes", "Ydw"],
-      ["No", "Na"],
+      ["Yes [hint:You agree]", "Ydw"],
+      ["No [hint:You disagree]", "Na"],
       [
         "This includes: a company you (or a relative) owns or controls",
         "Welsh: This includes: a company you (or a relative) owns or controls"
