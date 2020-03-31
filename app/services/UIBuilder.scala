@@ -89,11 +89,13 @@ class UIBuilder {
         // as this linking of messages to form ids has not been resolved, Currently
         // this code will allocate all ErrorMsg elements to the only current error
         // which is erro.required
-        formData.map{ data =>
-          data.errors.map{ err =>
-            ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
+        formData
+          .map { data =>
+            data.errors.map { err =>
+              ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
+            }
           }
-        }.getOrElse(Seq.empty)
+          .getOrElse(Seq.empty)
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
