@@ -71,7 +71,7 @@ class UIBuilder {
   @tailrec
   private def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
     components match {
-      case Nil => (errors, others)
+      case Nil => (errors.reverse, others.reverse)
       case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
