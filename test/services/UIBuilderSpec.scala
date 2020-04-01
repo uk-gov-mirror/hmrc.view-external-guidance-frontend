@@ -19,13 +19,13 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, Paragraph, Text, Words, FormData, QuestionPage}
+import models.ui.{BulletPointList, Link, H3, Paragraph, Text, Words, FormData, QuestionPage}
 import play.api.data.FormError
 
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
-  trait FromCalloutTest {
+  trait QuestionTest {
     
     implicit val urlMap: Map[String, String] =
       Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
@@ -48,9 +48,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val uiBuilder: UIBuilder = new UIBuilder()
   }
 
-  "UIBulider Callout processing" must {
+  "UIBulider Question processing" must {
 
-    "Ignore Error Callouts when there are no errors" in new FromCalloutTest {
+    "Ignore Error Callouts when there are no errors" in new QuestionTest {
       uiBuilder.fromStanzaPage(page, None)(urlMap) match {
         case s: QuestionPage if s.question.errorMsgs.isEmpty => succeed
         case s: QuestionPage => fail("No error messages should be included on page")
@@ -58,7 +58,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
-    "Include Error messages when there are errors" in new FromCalloutTest {
+    "Include Error messages when there are errors" in new QuestionTest {
       val formError = new FormError("test-page", List("error.required"))
       val formData = Some(FormData("test-page", Map(), List(formError)))
 
@@ -68,6 +68,24 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Should return QuestionPage")
       }
     }
+
+    "Maintain order of components within a Question" in new QuestionTest {
+      uiBuilder.fromStanzaPage(page, None) match {
+        case q: QuestionPage =>
+          q.question.body(0) match {
+            case h: H3 => succeed
+            case _ => fail("Ordering of question body components not maintained")
+          }
+          q.question.body(1) match {
+            case h: Paragraph => succeed
+            case _ => fail("Ordering of question body components not maintained")
+          }
+
+        case _ => fail("Page should be a Question page")
+      }
+      
+    }
+
 
   }
 
