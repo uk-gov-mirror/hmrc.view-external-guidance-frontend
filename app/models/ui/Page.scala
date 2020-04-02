@@ -36,7 +36,7 @@ case class StandardPage(val urlPath: String, val components: Seq[UIComponent]) e
 
   val heading: Text = components
     .find {
-      case h: H1 => true
+      case _: H1 => true
       case _ => false
     }
     .fold(Text())(_.text)
@@ -46,3 +46,5 @@ case class QuestionPage(val urlPath: String, question: Question) extends Page {
   val heading: Text = question.text
   val components: Seq[UIComponent] = Seq(question)
 }
+
+case class PageContext(page: Page, processStartUrl: String)
