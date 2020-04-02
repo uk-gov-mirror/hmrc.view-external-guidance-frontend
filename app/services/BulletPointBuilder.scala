@@ -54,42 +54,36 @@ object BulletPointBuilder {
         }
     }
 
-  def fragmentsToDisplay(str: String): String = fragmentsToDisplayAsList(str).mkString(" ")
-
   def fragmentsToDisplayAsList(str: String): List[String] = {
     val isEmpty: String => Boolean = _.isEmpty
 
     val (txts, matches) = TextBuilder.placeholderTxtsAndMatches(str)
     val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
-    TextBuilder.merge(txts, matchTexts, Nil, isEmpty).mkString.split(' ').toList
+
+    val mergedTexts: Seq[String] = TextBuilder.merge(txts, matchTexts, Nil, isEmpty)
+
+    val filteredMergedTexts: Seq[String] = mergedTexts.filter(_ != "")
+
+    filteredMergedTexts.toList
   }
 
   def determineMatchedLeadingText(text1: String, text2: String): String = {
 
-    val noOfMatchingWords: Int = matchedLeadingWordsToDisplayAsList(text1, text2)
+    val (text1NoOfWordsToDisplay, text2NoOfWordsToDisplay, matchedWords) = matchInstructionText( text1, text2 )
+
     val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(text2)
 
     val (wordsProcessed, outputTexts, outputMatches) = locateTextsAndMatchesContainingLeadingText(
-      noOfMatchingWords,
+      matchedWords.size,
       texts,
       matches,
       Nil,
       Nil,
-      true,
+      matchText = true,
       0
     )
 
-    constructLeadingText(noOfMatchingWords, outputTexts, outputMatches, Nil, true, 0).mkString
-  }
-
-  def matchedLeadingWordsToDisplayAsList(text1: String, text2: String): Int = {
-
-    val text1WordsToDisplayAsList: List[String] = fragmentsToDisplayAsList(text1)
-    val text2WordsToDisplayAsList: List[String] = fragmentsToDisplayAsList(text2)
-
-    val matchedWords: List[String] = (text1WordsToDisplayAsList zip text2WordsToDisplayAsList).takeWhile(t => t._1 == t._2).map(_._1).filter(_ != "")
-
-    matchedWords.size
+    constructLeadingText(matchedWords.size, outputTexts, outputMatches, Nil, matchText = true, wordsProcessed = 0).mkString
   }
 
   /**
@@ -128,15 +122,8 @@ object BulletPointBuilder {
         val text: String = inputTexts.head
         val noOfWords: Int = wordsInString(text)
         if (wordsProcessed + noOfWords < noOfWordsToMatch) {
-          locateTextsAndMatchesContainingLeadingText(
-            noOfWordsToMatch,
-            inputTexts.drop(1),
-            inputMatches,
-            outputTexts :+ text,
-            outputMatches,
-            !matchText,
-            wordsProcessed + noOfWords
-          )
+          locateTextsAndMatchesContainingLeadingText(noOfWordsToMatch, inputTexts.drop(1), inputMatches, outputTexts :+ text,
+            outputMatches, !matchText, wordsProcessed + noOfWords)
         } else {
           (wordsProcessed + noOfWords, (outputTexts :+ text).toList, outputMatches.toList)
         }
@@ -148,11 +135,7 @@ object BulletPointBuilder {
         val text: String = getMatchText(inputMatches.head)
         val noOfWords: Int = wordsInString(text)
         if (wordsProcessed + noOfWords < noOfWordsToMatch) {
-          locateTextsAndMatchesContainingLeadingText(
-            noOfWordsToMatch,
-            inputTexts,
-            inputMatches.drop(1),
-            outputTexts,
+          locateTextsAndMatchesContainingLeadingText(noOfWordsToMatch, inputTexts, inputMatches.drop(1), outputTexts,
             outputMatches :+ inputMatches.head,
             !matchText,
             wordsProcessed + noOfWords
@@ -231,13 +214,25 @@ object BulletPointBuilder {
 
   def matchInstructions(i1: Instruction, i2: Instruction): Boolean = {
     // Apply matching logic to English text as this is how Ocelot works currently
-    val i1TextList: List[String] = fragmentsToDisplayAsList(i1.text.langs(0))
-    val i2TextList: List[String] = fragmentsToDisplayAsList(i2.text.langs(0))
-
-    val matchedTextItems: List[String] = (i1TextList zip i2TextList).takeWhile(t => t._1 == t._2).map(_._1).filter(_ != "")
+    val ( i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText( i1.text.langs(0), i2.text.langs(0) )
 
     // Matching instructions must have matching leading text followed dissimilar trailing text
-    matchedTextItems.size >= matchLimit && (matchedTextItems.size < i1TextList.size) && (matchedTextItems.size < i2TextList.size)
+    matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)
+  }
+
+  def matchInstructionText(text1: String, text2: String) : ( Int, Int, List[String]) = {
+
+    // Break instruction text into fragments
+    val text1FragmentsToDisplay: List[String] = fragmentsToDisplayAsList(text1)
+    val text2FragmentsToDisplay: List[String] = fragmentsToDisplayAsList(text2)
+
+    // Break fragments into a list of non-whitespace components
+    val text1WordsToDisplay: List[String] = text1FragmentsToDisplay.flatMap(_.split(' '))
+    val text2WordsToDisplay: List[String] = text2FragmentsToDisplay.flatMap(_.split(' '))
+
+    val matchedTextItems: List[String] = (text1WordsToDisplay zip text2WordsToDisplay).takeWhile(t => t._1 == t._2).map(_._1).filter(_ != "")
+
+    (text1WordsToDisplay.size, text2WordsToDisplay.size, matchedTextItems)
   }
 
   def getMatchText(m: Match): String = Option(m.group(1)).getOrElse(m.group(2))
