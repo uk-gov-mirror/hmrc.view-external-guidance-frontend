@@ -123,6 +123,56 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
       }
+    
+      "Render simple bullet point list as hint in English" in new Test {
+
+        val markUp: Html = bullet_point_list(simpleBpList, true)
+
+        val document: Document = Jsoup.parse(markUp.toString())
+
+        // Test leading text
+        val paragraph: Element = getSingleElementByTag(document, "p")
+
+        paragraph.hasClass("govuk-body govuk-hint") mustBe true
+
+        paragraph.text() mustBe enLeadingText
+
+        // Test list items
+        val ul: Element = getSingleElementByTag(document, "ul")
+
+        checkClassesForElement(ul, List("govuk-list", "govuk-list--bullet", "govuk-hint"))
+
+        val expectedListItems = List(enBpOne, enBpTwo, enBpThree)
+
+        val actualListItems = getMultipleElementsByTag(document, "li", 3).asScala.toList
+
+        assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+      }
+
+      "Render simple bullet point list as hint in Welsh" in new WelshTest {
+
+        val markUp: Html = bullet_point_list(simpleBpList, true)
+
+        val document: Document = Jsoup.parse(markUp.toString())
+
+        // Test leading text
+        val paragraph: Element = getSingleElementByTag(document, "p")
+
+        paragraph.hasClass("govuk-body govuk-hint") mustBe true
+
+        paragraph.text() mustBe cyLeadingText
+
+        // Test list items
+        val ul: Element = getSingleElementByTag(document, "ul")
+
+        checkClassesForElement(ul, List("govuk-list", "govuk-list--bullet", "govuk-hint"))
+
+        val expectedListItems = List(cyBpOne, cyBpTwo, cyBpThree)
+
+        val actualListItems = getMultipleElementsByTag(markUp, "li", 3).asScala.toList
+
+        assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+      }
 
     }
 

@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{Paragraph, BulletPointList}
+package forms
 
-@(bulletPointList: BulletPointList, asHint: Boolean = false)( implicit messages: Messages )
+import org.scalatest.{Matchers, WordSpec}
+import play.api.data.Form
 
-@components.paragraph(Paragraph(bulletPointList.text), asHint)
+import models.ui.NextPageUrl
 
-@bpclass() = {govuk-list--bullet govuk-list @if(asHint){govuk-hint}}
+class NextPageFormProviderSpec extends WordSpec with Matchers {
 
-<ul class="@bpclass()">    
-  @for( listItem <- bulletPointList.listItems ){
-    <li>@components.render_text( listItem )</li>
+  private val url: String = "/somewhere"
+
+  val provider: NextPageFormProvider = new NextPageFormProvider()
+
+  "Forms created by NextPageFormProvider" should {
+
+    "Be able to execute the unapply method held in mapping" in {
+
+      val form: Form[NextPageUrl] = provider(url)
+      val map: Map[String,String] = form.mapping.unbind(NextPageUrl(""))
+      val keySet = map.keySet
+
+      keySet shouldBe Set( url )
+    }
+
   }
-</ul>
 
-@{
-//$COVERAGE-OFF$
 }
