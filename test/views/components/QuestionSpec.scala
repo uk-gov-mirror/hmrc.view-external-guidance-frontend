@@ -22,7 +22,7 @@ import play.api.inject.Injector
 import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import org.jsoup.Jsoup
+import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList}
 import org.jsoup.nodes.{Document, Element}
@@ -31,6 +31,8 @@ import scala.collection.JavaConverters._
 class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+
+  def elementAttrs(el: Element): Map[String, String] = el.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 
   trait Test {
     private def injector: Injector = app.injector
@@ -67,6 +69,50 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
+  "English Question hint component" must {
+    "render question body as a single hint span" in new Test {
+      val doc = asDocument(components.question_hint(question.body, "test")(fakeRequest, messages))
+
+      val hint = doc.getElementsByTag("span").first
+      val hintAttrs = elementAttrs(hint)
+      hintAttrs("class") shouldBe "govuk-hint"
+      val bpLeading = hint.child(0)
+      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
+      val bpLeadingAttrs = elementAttrs(bpLeading)
+      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
+
+      val bulletPoints = hint.child(1)
+      val bpAttrs = elementAttrs(bulletPoints)
+      bpAttrs("class").contains("govuk-hint") shouldBe true
+
+      val para = hint.child(2)
+      val paraAttrs = elementAttrs(para)
+      paraAttrs("class").contains("govuk-hint") shouldBe true
+    }
+  }
+
+  "Welsh Question hint component" must {
+    "render question body as a single hint span" in new WelshTest {
+      val doc = asDocument(components.question_hint(question.body, "test")(fakeRequest, messages))
+
+      val hint = doc.getElementsByTag("span").first
+      val hintAttrs = elementAttrs(hint)
+      hintAttrs("class") shouldBe "govuk-hint"
+      val bpLeading = hint.child(0)
+      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
+      val bpLeadingAttrs = elementAttrs(bpLeading)
+      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
+
+      val bulletPoints = hint.child(1)
+      val bpAttrs = elementAttrs(bulletPoints)
+      bpAttrs("class").contains("govuk-hint") shouldBe true
+
+      val para = hint.child(2)
+      val paraAttrs = elementAttrs(para)
+      paraAttrs("class").contains("govuk-hint") shouldBe true
+    }
+  }
+
   "English Question component" must {
 
     "render question text as a header" in new Test {
@@ -78,11 +124,22 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render contained paragraph as hints" in new Test {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+
       val hint = doc.getElementsByTag("span").first
-      val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hintAttrs = elementAttrs(hint)
       hintAttrs("class") shouldBe "govuk-hint"
+      val bpLeading = hint.child(0)
+      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
+      val bpLeadingAttrs = elementAttrs(bpLeading)
+      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
+
+      val bulletPoints = hint.child(1)
+      val bpAttrs = elementAttrs(bulletPoints)
+      bpAttrs("class").contains("govuk-hint") shouldBe true
+
       val para = hint.child(2)
-      para.text() shouldBe para1Text.value(messages.lang).head.toString
+      val paraAttrs = elementAttrs(para)
+      paraAttrs("class").contains("govuk-hint") shouldBe true
     }
 
     "render answers as radio buttons" in new Test {
@@ -141,11 +198,22 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render contained paragraph as hints" in new WelshTest {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+
       val hint = doc.getElementsByTag("span").first
-      val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hintAttrs = elementAttrs(hint)
       hintAttrs("class") shouldBe "govuk-hint"
+      val bpLeading = hint.child(0)
+      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
+      val bpLeadingAttrs = elementAttrs(bpLeading)
+      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
+
+      val bulletPoints = hint.child(1)
+      val bpAttrs = elementAttrs(bulletPoints)
+      bpAttrs("class").contains("govuk-hint") shouldBe true
+
       val para = hint.child(2)
-      para.text() shouldBe para1Text.value(messages.lang).head.toString
+      val paraAttrs = elementAttrs(para)
+      paraAttrs("class").contains("govuk-hint") shouldBe true
     }
 
     "render answers as radio buttons" in new WelshTest {
