@@ -73,9 +73,9 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPage(lastPageUrl, processId)
 
-      whenReady(result) { page =>
-        page.fold(fail("no page found")) {
-          _.urlPath mustBe lastPageUrl
+      whenReady(result) { pageContext =>
+        pageContext.fold(fail("no PageContext found")) {
+          _.page.urlPath mustBe lastPageUrl
         }
       }
     }

@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.ui.Page
+import models.ui.PageContext
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
@@ -42,7 +42,7 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
-    def getPage(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[Page]]] = {
+    def getPage(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[PageContext]]] = {
       (mockGuidanceService
         .getPage(_: String, _: String, _: Option[FormData])(_: HeaderCarrier, _: ExecutionContext))
         .expects(url, processId, formData, *, *)

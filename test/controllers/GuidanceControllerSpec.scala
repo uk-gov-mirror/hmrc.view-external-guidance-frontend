@@ -77,7 +77,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return an OK response" in new QuestionTest {
       MockGuidanceService
         .getPage(path, processId, None)
-        .returns(Future.successful(Some(expectedPage)))
+        .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
       status(result) mustBe Status.OK
@@ -86,7 +86,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "be a HTML response" in new QuestionTest {
       MockGuidanceService
         .getPage(path, processId, None)
-        .returns(Future.successful(Some(expectedPage)))
+        .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
       val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
       contentType(result) mustBe Some("text/html")
     }
@@ -97,7 +97,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return a BadRequest response" in new QuestionTest {
       MockGuidanceService
         .getPage(path, processId, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(Future.successful(Some(expectedPage)))
+        .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
@@ -110,7 +110,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return a SeeOther response" in new QuestionTest {
       MockGuidanceService
         .getPage(path, processId, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(Future.successful(Some(expectedPage)))
+        .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
       val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
@@ -120,7 +120,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
         .getPage(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
-        .returns(Future.successful(Some(standardPage)))
+        .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", standardPagePath).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody().withCSRFToken
@@ -262,7 +262,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .getPage(path, processId, None)
-        .returns(Future.successful(Some(standardPage)))
+        .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
       lazy val target = new GuidanceController(errorHandler,
                                                view,
@@ -290,7 +290,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .getPage(path, processId, None)
-        .returns(Future.successful(Some(expectedPage)))
+        .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       lazy val target = new GuidanceController(errorHandler,
                                                view,

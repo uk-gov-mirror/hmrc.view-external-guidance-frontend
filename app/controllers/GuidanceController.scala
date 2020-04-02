@@ -43,9 +43,11 @@ class GuidanceController @Inject() (
   val logger: Logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSession(service.getPage(s"/$path", _)).map {
-      case Some(page: StandardPage) => Ok(standardView(page))
-      case Some(page: QuestionPage) => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+    withSession(service.getPage(s"/$path", _)).map{
+      case Some(pageContext) => pageContext.page match {
+          case page: StandardPage => Ok(standardView(page))
+          case page: QuestionPage => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+        }
       case None =>
         logger.warn(s"Request for page at $path returned nothing resulting in BadRequest")
         BadRequest(errorHandler.notFoundTemplate)
