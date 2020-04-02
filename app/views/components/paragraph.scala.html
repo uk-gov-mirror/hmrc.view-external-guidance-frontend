@@ -16,9 +16,11 @@
 
 @import models.ui.Paragraph
 
-@(para: Paragraph)(implicit messages: Messages)
+@(para: Paragraph, asHint: Boolean = false)(implicit messages: Messages)
 
-<p class="@{if(para.lede) "govuk-body-l" else "govuk-body"}">@components.render_text(para.text)</p>
+@pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body} @if(asHint){govuk-hint}}
+
+<p class="@pclass(para)">@components.render_text(para.text)</p>
 
 @{
      //$COVERAGE-OFF$

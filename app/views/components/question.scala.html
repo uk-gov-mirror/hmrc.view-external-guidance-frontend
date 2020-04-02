@@ -21,15 +21,13 @@
 @(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
 <div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
-  <fieldset class="govuk-fieldset" @if(!q.body.isEmpty) { aria-describedby="@name-hint-0" }>
+  <fieldset class="govuk-fieldset" @if(!q.body.isEmpty) { aria-describedby="@name-hint" }>
 
     <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
       <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
     </legend>
 
-    @for((cmp, index) <- q.body.zipWithIndex){
-      @components.question_hint(cmp, name+"-hint-"+index)
-    }
+    @components.question_hint(q.body, name)
 
     @components.error_message(q.errorMsgs)
 

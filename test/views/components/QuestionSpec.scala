@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html._
-import models.ui.{Paragraph, Text, Question, Answer}
+import models.ui.{Paragraph, Text, Question, Answer, BulletPointList}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -51,9 +51,15 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), "/yes")
     val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), "/no")
     val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), "/dontknow")
+    val leading = Text("You can buy", "Gwallwch brynu")
+    val bp1 = Text("apples", "afalau")
+    val bp2 = Text("oranges", "orennau")
+    val bp3 = Text("pears", "gellyg")
+    val bpList: BulletPointList = BulletPointList(leading, Seq(bp1, bp2, bp3))
+
     val answers = Seq(a1, a2, a3)
     val horizontalAnswers = Seq(a1.copy(hint = None), a2.copy(hint = None))
-    val question = Question(Text(q1), Seq(para1), answers)
+    val question = Question(Text(q1), Seq(bpList,para1), answers)
     val questionWithHorizontalAnswers = Question(Text(q1), Seq(para1), horizontalAnswers)
   }
 
@@ -75,7 +81,8 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint = doc.getElementsByTag("span").first
       val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hintAttrs("class") shouldBe "govuk-hint"
-      hint.text() shouldBe para1Text.value(messages.lang).head.toString
+      val para = hint.child(2)
+      para.text() shouldBe para1Text.value(messages.lang).head.toString
     }
 
     "render answers as radio buttons" in new Test {
@@ -137,7 +144,8 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val hint = doc.getElementsByTag("span").first
       val hintAttrs = hint.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       hintAttrs("class") shouldBe "govuk-hint"
-      hint.text() shouldBe para1Text.value(messages.lang).head.toString
+      val para = hint.child(2)
+      para.text() shouldBe para1Text.value(messages.lang).head.toString
     }
 
     "render answers as radio buttons" in new WelshTest {
