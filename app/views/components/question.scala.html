@@ -20,21 +20,24 @@
 
 @(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
-  <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-    <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
-  </legend>
+<div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
+  <fieldset class="govuk-fieldset" @if(!q.body.isEmpty) { aria-describedby="@name-hint-0" }>
 
-  @for((cmp, index) <- q.body.zipWithIndex){
-    @{cmp match {
-          case p: Paragraph => components.question_hint(p, name+"-hint-"+index)
-          case x =>
-        }
+    <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+      <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
+    </legend>
+
+    @for((cmp, index) <- q.body.zipWithIndex){
+      @components.question_hint(cmp, name+"-hint-"+index)
     }
-  }
 
-  @components.error_message(q.errorMsgs)
+    @components.error_message(q.errorMsgs)
 
-  @components.answers(q.answers, q.horizontal, name)
+    @components.answers(q.answers, q.horizontal, name)
+
+  </fieldset>
+</div>
+
 
 @{
      //$COVERAGE-OFF$

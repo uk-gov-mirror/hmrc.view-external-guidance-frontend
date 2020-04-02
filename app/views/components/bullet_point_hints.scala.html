@@ -14,17 +14,18 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
+@import models.ui.BulletPointList
 
-@(uic: UIComponent, id: String)(implicit request: Request[_], messages: Messages)
+@(bulletPointList: BulletPointList)( implicit messages: Messages )
 
-<span id="@id" class="govuk-hint">
-  @{uic match {
-        case p: Paragraph => components.render_text(p.text)
-        case bp: BulletPointList => components.bullet_point_hints(bp)
-        case _ => 
-      }
-  }
+@components.render_text( bulletPointList.text )
 
-</span>
+<ul class="govuk-list--bullet">
+  @for( listItem <- bulletPointList.listItems ){
+     <li>@components.render_text( listItem )</li>
+   }
+</ul>
+
+@{
+//$COVERAGE-OFF$
+}
