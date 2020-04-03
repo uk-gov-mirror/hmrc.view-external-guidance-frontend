@@ -33,7 +33,8 @@ import play.api.data.FormError
 import scala.concurrent.Future
 
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
-
+ 
+ 
   trait TestData {
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
