@@ -83,6 +83,15 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       paras.first.classNames.toString shouldBe "[govuk-body]"
     }
 
+    "generate English html containing paragraph as hint" in new Test {
+
+      val doc = asDocument(paragraph(para, true))
+      val paras = doc.getElementsByTag("p")
+      paras.size shouldBe 1
+      paras.first.text shouldBe paraText1.english.head.toString
+      paras.first.classNames.asScala.toList shouldBe List("govuk-body", "govuk-hint")
+    }
+
     "generate English html containing Text and links" in new Test {
 
       val doc = asDocument(paragraph(paraWithMultipleLinks))
@@ -136,6 +145,15 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       paras.size shouldBe 1
       paras.first.text shouldBe paraText1.welsh.head.toString
       paras.first.classNames.toString shouldBe "[govuk-body]"
+    }
+
+    "generate Welsh html containing paragraph as hint" in new WelshTest {
+
+      val doc = asDocument(paragraph(para, true))
+      val paras = doc.getElementsByTag("p")
+      paras.size shouldBe 1
+      paras.first.text shouldBe paraText1.welsh.head.toString
+      paras.first.classNames.asScala.toList shouldBe List("govuk-body", "govuk-hint")
     }
 
     "generate Welsh html containing Text and links" in new WelshTest {
