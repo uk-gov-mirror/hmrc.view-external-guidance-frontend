@@ -71,7 +71,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPage(lastPageUrl, processId)
+      private val result = target.getPageContext(lastPageUrl, processId)
 
       whenReady(result) { pageContext =>
         pageContext.fold(fail("no PageContext found")) {
@@ -95,7 +95,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPage(url, processId)
+      private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
         _ mustBe None

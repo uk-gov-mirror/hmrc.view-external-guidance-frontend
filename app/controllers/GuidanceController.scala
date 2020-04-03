@@ -43,8 +43,8 @@ class GuidanceController @Inject() (
   val logger: Logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSession(service.getPage(s"/$path", _)).map{
-      case Some(pageContext) => 
+    withSession(service.getPageContext(s"/$path", _)).map {
+      case Some(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page))
@@ -60,11 +60,12 @@ class GuidanceController @Inject() (
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withSession(service.getPage(s"/$path", _, Some(formData))).map {
-          case Some(pageContext) => pageContext.page match {
-            case page: QuestionPage => BadRequest(questionView(page, questionName(path), formWithErrors))
-            case _ => BadRequest(errorHandler.notFoundTemplate)
-          }
+        withSession(service.getPageContext(s"/$path", _, Some(formData))).map {
+          case Some(pageContext) =>
+            pageContext.page match {
+              case page: QuestionPage => BadRequest(questionView(page, questionName(path), formWithErrors))
+              case _ => BadRequest(errorHandler.notFoundTemplate)
+            }
           case _ => BadRequest(errorHandler.notFoundTemplate)
         }
       },

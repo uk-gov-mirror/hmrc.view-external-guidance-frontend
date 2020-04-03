@@ -42,10 +42,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
-    def getPage(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[PageContext]]] = {
+    def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[PageContext]]] = {
       (mockGuidanceService
-        .getPage(_: String, _: String, _: Option[FormData])(_: HeaderCarrier, _: ExecutionContext))
-        .expects(url, processId, formData, *, *)
+        .getPageContext(_: String, _: String, _: Option[FormData])(_: ExecutionContext))
+        .expects(url, processId, formData, *)
     }
 
   }

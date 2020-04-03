@@ -76,7 +76,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return an OK response" in new QuestionTest {
       MockGuidanceService
-        .getPage(path, processId, None)
+        .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
@@ -85,7 +85,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "be a HTML response" in new QuestionTest {
       MockGuidanceService
-        .getPage(path, processId, None)
+        .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
       val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
       contentType(result) mustBe Some("text/html")
@@ -96,7 +96,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a BadRequest response" in new QuestionTest {
       MockGuidanceService
-        .getPage(path, processId, Some(FormData(relativePath, Map(), List(formError))))
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
@@ -109,7 +109,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a SeeOther response" in new QuestionTest {
       MockGuidanceService
-        .getPage(path, processId, Some(FormData(relativePath, Map(), List(formError))))
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
@@ -119,7 +119,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
-        .getPage(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
+        .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
         .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", standardPagePath).withSession(SessionKeys.sessionId -> processId)
@@ -261,7 +261,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val fakeRequest = FakeRequest(GET, path).withSession(SessionKeys.sessionId -> processId).withCSRFToken
 
       MockGuidanceService
-        .getPage(path, processId, None)
+        .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
       lazy val target = new GuidanceController(errorHandler,
@@ -289,7 +289,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       MockGuidanceService
-        .getPage(path, processId, None)
+        .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       lazy val target = new GuidanceController(errorHandler,
@@ -319,7 +319,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         FakeRequest().withSession(SessionKeys.sessionId -> processId)
 
       MockGuidanceService
-        .getPage("/" + unknownPath, processId, None)
+        .getPageContext("/" + unknownPath, processId, None)
         .returns(Future.successful(None))
 
       lazy val target = new GuidanceController(errorHandler,
