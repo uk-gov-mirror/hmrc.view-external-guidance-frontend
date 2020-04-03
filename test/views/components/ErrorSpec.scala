@@ -64,17 +64,17 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "render error message" in new Test {
       val doc = asDocument(components.error_message(errorMsgs)(messages))
       val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "id-error")
-      
+
       span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorStrings(0)
     }
 
-   "render hidden text with error message" in new Test {
+    "render hidden text with error message" in new Test {
 
       val doc = asDocument(components.error_message(errorMsgs)(messages))
       val hidden = doc.getElementsByClass("govuk-visually-hidden").asScala.toList
-      
+
       hidden(0).text() shouldBe messages("error.browser.title.prefix")
-   }
+    }
 
   }
 

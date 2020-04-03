@@ -23,7 +23,7 @@ import scala.util.matching.Regex.Match
 
 class BulletPointBuilderSpec extends BaseSpec {
 
-  def asString( elements: List[String]) : String = elements.mkString
+  def asString(elements: List[String]): String = elements.mkString
 
   "BulletPointBuilder bold text annotation removal processing" must {
 

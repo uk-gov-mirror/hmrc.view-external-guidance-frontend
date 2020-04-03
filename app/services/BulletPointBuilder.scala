@@ -69,7 +69,7 @@ object BulletPointBuilder {
 
   def determineMatchedLeadingText(text1: String, text2: String): String = {
 
-    val (text1NoOfWordsToDisplay, text2NoOfWordsToDisplay, matchedWords) = matchInstructionText( text1, text2 )
+    val (text1NoOfWordsToDisplay, text2NoOfWordsToDisplay, matchedWords) = matchInstructionText(text1, text2)
 
     val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(text2)
 
@@ -122,8 +122,15 @@ object BulletPointBuilder {
         val text: String = inputTexts.head
         val noOfWords: Int = wordsInString(text)
         if (wordsProcessed + noOfWords < noOfWordsToMatch) {
-          locateTextsAndMatchesContainingLeadingText(noOfWordsToMatch, inputTexts.drop(1), inputMatches, outputTexts :+ text,
-            outputMatches, !matchText, wordsProcessed + noOfWords)
+          locateTextsAndMatchesContainingLeadingText(
+            noOfWordsToMatch,
+            inputTexts.drop(1),
+            inputMatches,
+            outputTexts :+ text,
+            outputMatches,
+            !matchText,
+            wordsProcessed + noOfWords
+          )
         } else {
           (wordsProcessed + noOfWords, (outputTexts :+ text).toList, outputMatches.toList)
         }
@@ -135,7 +142,11 @@ object BulletPointBuilder {
         val text: String = getMatchText(inputMatches.head)
         val noOfWords: Int = wordsInString(text)
         if (wordsProcessed + noOfWords < noOfWordsToMatch) {
-          locateTextsAndMatchesContainingLeadingText(noOfWordsToMatch, inputTexts, inputMatches.drop(1), outputTexts,
+          locateTextsAndMatchesContainingLeadingText(
+            noOfWordsToMatch,
+            inputTexts,
+            inputMatches.drop(1),
+            outputTexts,
             outputMatches :+ inputMatches.head,
             !matchText,
             wordsProcessed + noOfWords
@@ -214,13 +225,13 @@ object BulletPointBuilder {
 
   def matchInstructions(i1: Instruction, i2: Instruction): Boolean = {
     // Apply matching logic to English text as this is how Ocelot works currently
-    val ( i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText( i1.text.langs(0), i2.text.langs(0) )
+    val (i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText(i1.text.langs(0), i2.text.langs(0))
 
     // Matching instructions must have matching leading text followed dissimilar trailing text
     matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)
   }
 
-  def matchInstructionText(text1: String, text2: String) : ( Int, Int, List[String]) = {
+  def matchInstructionText(text1: String, text2: String): (Int, Int, List[String]) = {
 
     // Break instruction text into fragments
     val text1FragmentsToDisplay: List[String] = fragmentsToDisplayAsList(text1)

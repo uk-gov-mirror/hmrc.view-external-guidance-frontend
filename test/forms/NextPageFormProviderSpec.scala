@@ -32,10 +32,10 @@ class NextPageFormProviderSpec extends WordSpec with Matchers {
     "Be able to execute the unapply method held in mapping" in {
 
       val form: Form[NextPageUrl] = provider(url)
-      val map: Map[String,String] = form.mapping.unbind(NextPageUrl(""))
+      val map: Map[String, String] = form.mapping.unbind(NextPageUrl(""))
       val keySet = map.keySet
 
-      keySet shouldBe Set( url )
+      keySet shouldBe Set(url)
     }
 
   }
