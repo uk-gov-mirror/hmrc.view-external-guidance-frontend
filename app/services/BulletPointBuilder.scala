@@ -54,7 +54,7 @@ object BulletPointBuilder {
         }
     }
 
-  def fragmentsToDisplayAsList(str: String): List[String] = {
+  def fragmentsToDisplayAsList(str: String): Seq[String] = {
     val isEmpty: String => Boolean = _.isEmpty
 
     val (txts, matches) = TextBuilder.placeholderTxtsAndMatches(str)
@@ -62,9 +62,7 @@ object BulletPointBuilder {
 
     val mergedTexts: Seq[String] = TextBuilder.merge(txts, matchTexts, Nil, isEmpty)
 
-    val filteredMergedTexts: Seq[String] = mergedTexts.filter(_ != "")
-
-    filteredMergedTexts.toList
+    mergedTexts.filter(_ != "")
   }
 
   def determineMatchedLeadingText(text1: String, text2: String): String = {
@@ -231,17 +229,17 @@ object BulletPointBuilder {
     matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)
   }
 
-  def matchInstructionText(text1: String, text2: String): (Int, Int, List[String]) = {
+  def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
 
     // Break instruction text into fragments
-    val text1FragmentsToDisplay: List[String] = fragmentsToDisplayAsList(text1)
-    val text2FragmentsToDisplay: List[String] = fragmentsToDisplayAsList(text2)
+    val text1FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsList(text1)
+    val text2FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsList(text2)
 
     // Break fragments into a list of non-whitespace components
-    val text1WordsToDisplay: List[String] = text1FragmentsToDisplay.flatMap(_.split(' '))
-    val text2WordsToDisplay: List[String] = text2FragmentsToDisplay.flatMap(_.split(' '))
+    val text1WordsToDisplay: Seq[String] = text1FragmentsToDisplay.flatMap(_.split(' '))
+    val text2WordsToDisplay: Seq[String] = text2FragmentsToDisplay.flatMap(_.split(' '))
 
-    val matchedTextItems: List[String] = (text1WordsToDisplay zip text2WordsToDisplay).takeWhile(t => t._1 == t._2).map(_._1).filter(_ != "")
+    val matchedTextItems: Seq[String] = (text1WordsToDisplay zip text2WordsToDisplay).takeWhile(t => t._1 == t._2).map(_._1).filter(_ != "")
 
     (text1WordsToDisplay.size, text2WordsToDisplay.size, matchedTextItems)
   }
