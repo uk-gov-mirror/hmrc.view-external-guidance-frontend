@@ -54,7 +54,7 @@ object BulletPointBuilder {
         }
     }
 
-  def fragmentsToDisplayAsList(str: String): Seq[String] = {
+  def fragmentsToDisplayAsSeq(str: String): Seq[String] = {
     val isEmpty: String => Boolean = _.isEmpty
 
     val (txts, matches) = TextBuilder.placeholderTxtsAndMatches(str)
@@ -232,8 +232,8 @@ object BulletPointBuilder {
   def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
 
     // Break instruction text into fragments
-    val text1FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsList(text1)
-    val text2FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsList(text2)
+    val text1FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsSeq(text1)
+    val text2FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsSeq(text2)
 
     // Break fragments into a list of non-whitespace components
     val text1WordsToDisplay: Seq[String] = text1FragmentsToDisplay.flatMap(_.split(' '))
