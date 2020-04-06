@@ -41,15 +41,17 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val relativePath = path.drop(1)
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
-    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("","")), "/hello")
-    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("","")), "/world")
+    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), "/hello")
+    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), "/world")
+
     lazy val expectedPage: Page = QuestionPage(
       path,
-      Question(Text("QUESTION","QUESTION"), Seq(Paragraph(Text("QUESTION","QUESTION"))), Seq(ans1, ans2))
+      Question(Text("QUESTION", "QUESTION"), Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
     )
 
     val standardPagePath = "/std-page"
     val relativeStdPath = standardPagePath.drop(1)
+
     val standardPage: Page = Page(
       standardPagePath,
       Seq(H1(Text("hello", "Welsh: hello")))
@@ -65,12 +67,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
 
     val formError = new FormError(relativePath, List("error.required"))
-    val target = new GuidanceController(errorHandler,
-                                        view,
-                                        questionView,
-                                        new NextPageFormProvider(),
-                                        mockGuidanceService,
-                                        stubMessagesControllerComponents())
+    val target = new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
   }
 
   "Calling a valid URL path to a Question page in a process" should {
@@ -123,8 +120,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
         .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
-      override val fakeRequest = FakeRequest("POST", standardPagePath).withSession(SessionKeys.sessionId -> processId)
-                                                          .withFormUrlEncodedBody().withCSRFToken
+      override val fakeRequest = FakeRequest("POST", standardPagePath)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
       val result: Future[Result] = target.submitPage(relativeStdPath)(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
     }
@@ -133,14 +132,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   trait ScratchTest extends MockGuidanceService with TestData {
     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-    
-    lazy val target = new GuidanceController(errorHandler,
-                                             view,
-                                             questionView,
-                                             new NextPageFormProvider(),
-                                             mockGuidanceService,
-                                             stubMessagesControllerComponents())
-    
+
+    lazy val target =
+      new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+
   }
 
   "Calling the scratch process endpoint with a valid UUID" should {
@@ -166,7 +161,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
-
 
   "Calling the scratch process endpoint with a valid UUID and existing sessionId" should {
 
@@ -195,13 +189,9 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   trait StartJourneyTest extends MockGuidanceService with TestData {
     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
-    lazy val target = new GuidanceController(errorHandler,
-                                             view,
-                                             questionView,
-                                             new NextPageFormProvider(),
-                                             mockGuidanceService,
-                                             stubMessagesControllerComponents())
-    
+    lazy val target =
+      new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+
   }
 
   "Calling the start process endpoint with a valid process ID" should {
@@ -265,12 +255,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
-      lazy val target = new GuidanceController(errorHandler,
-                                               view,
-                                               questionView,
-                                               new NextPageFormProvider(),
-                                               mockGuidanceService,
-                                               stubMessagesControllerComponents())
+      lazy val target =
+        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
     }
 
@@ -293,12 +279,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
-      lazy val target = new GuidanceController(errorHandler,
-                                               view,
-                                               questionView,
-                                               new NextPageFormProvider(),
-                                               mockGuidanceService,
-                                               stubMessagesControllerComponents())
+      lazy val target =
+        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
     }
 
@@ -323,12 +305,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext("/" + unknownPath, processId, None)
         .returns(Future.successful(None))
 
-      lazy val target = new GuidanceController(errorHandler,
-                                               view,
-                                               questionView,
-                                               new NextPageFormProvider(),
-                                               mockGuidanceService,
-                                               stubMessagesControllerComponents())
+      lazy val target =
+        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result: Future[Result] = target.getPage(unknownPath)(fakeRequest)
     }
 
