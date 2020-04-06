@@ -22,14 +22,23 @@
 
 <div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
 
-  @components.h1_heading(H1(q.text))
+  @if(q.body.isEmpty) {
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
+        @components.render_text(q.text)
+      </legend>
 
-  @components.question_body(q.body, name)
+  } else {
+    @components.h1_heading(H1(q.text))
 
-  <fieldset class="govuk-fieldset">
-    <legend class="govuk-fieldset__legend govuk-visually-hidden">
-      @components.render_text(q.text)
-    </legend>
+    @components.question_body(q.body, name)
+
+    <fieldset class="govuk-fieldset">
+      <legend class="govuk-fieldset__legend govuk-visually-hidden">
+        @components.render_text(q.text)
+      </legend>
+
+  }
 
     @components.error_message(q.errorMsgs)
 
