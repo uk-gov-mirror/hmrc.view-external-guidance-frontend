@@ -61,7 +61,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val answers = Seq(a1, a2, a3)
     val horizontalAnswers = Seq(a1.copy(hint = None), a2.copy(hint = None))
-    val question = Question(Text(q1), Seq(bpList,para1), answers)
+    val question = Question(Text(q1), Seq(bpList, para1), answers)
     val questionWithHorizontalAnswers = Question(Text(q1), Seq(para1), horizontalAnswers)
   }
 

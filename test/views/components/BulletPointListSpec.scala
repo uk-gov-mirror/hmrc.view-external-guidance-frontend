@@ -123,7 +123,7 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
       }
-    
+
       "Render simple bullet point list as hint in English" in new Test {
 
         val markUp: Html = bullet_point_list(simpleBpList, true)

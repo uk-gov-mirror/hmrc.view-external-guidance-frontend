@@ -22,20 +22,19 @@ import models.ocelot._
 import models.ui.{BulletPointList, Link, H3, Paragraph, Text, Words, FormData, QuestionPage}
 import play.api.data.FormError
 
-
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
   trait QuestionTest {
-    
+
     implicit val urlMap: Map[String, String] =
       Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
     val answerDestinations = Seq("4", "5", "6")
     val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-    val answers = Seq(Phrase(Vector("Some Text", "Welsh, Some Text")),
-                      Phrase(Vector("Some Text", "Welsh, Some Text")),
-                      Phrase(Vector("Some Text", "Welsh, Some Text")))
+
+    val answers =
+      Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
-   
+
     val stanzas = Seq(
       ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
       Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
@@ -83,9 +82,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
         case _ => fail("Page should be a Question page")
       }
-      
-    }
 
+    }
 
   }
 
