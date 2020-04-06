@@ -128,6 +128,21 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) mustBe Status.BAD_REQUEST
     }
 
+    "return a BAD_REQUEST response if trying to submit to a non-existent page" in new QuestionTest {
+      val unknownPath = "/non-existent"
+      val unkwownRelativePath = unknownPath.drop(1)
+      MockGuidanceService
+        .getPageContext(unknownPath, processId, Some(FormData(unkwownRelativePath, Map(), List( new FormError(unkwownRelativePath, List("error.required"))))))
+        .returns(Future.successful(None))
+
+      override val fakeRequest = FakeRequest("POST", unknownPath)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result: Future[Result] = target.submitPage(unkwownRelativePath)(fakeRequest)
+      status(result) mustBe Status.BAD_REQUEST
+    }
+
   }
 
   trait ScratchTest extends MockGuidanceService with TestData {
