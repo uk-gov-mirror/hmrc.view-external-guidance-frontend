@@ -46,8 +46,8 @@ class GuidanceController @Inject() (
       case Some(pageContext) =>
         Logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
         pageContext.page match {
-          case page: StandardPage => Ok(standardView(page))
-          case page: QuestionPage => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
+          case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
+          case page: QuestionPage => Ok(questionView(page, pageContext.processStartUrl, questionName(path), formProvider(questionName(path))))
         }
       case None =>
         Logger.warn(s"Request for PageContext at $path returned nothing resulting in BadRequest")
@@ -62,10 +62,10 @@ class GuidanceController @Inject() (
         withSession(service.getPageContext(s"/$path", _, Some(formData))).map {
           case Some(pageContext) =>
             pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page, questionName(path), formWithErrors))
+              case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.notFoundTemplate)
             }
-          case _ => 
+          case _ =>
             Logger.warn(s"Request for PageContext at $path during form submission, returned nothing resulting in BadRequest")
             BadRequest(errorHandler.notFoundTemplate)
         }
