@@ -51,7 +51,7 @@ class GuidanceController @Inject() (
           case page: QuestionPage => Ok(questionView(page, questionName(path), formProvider(questionName(path))))
         }
       case None =>
-        logger.warn(s"Request for page at $path returned nothing resulting in BadRequest")
+        logger.warn(s"Request for PageContext at $path returned nothing resulting in BadRequest")
         BadRequest(errorHandler.notFoundTemplate)
     }
   }
@@ -66,7 +66,9 @@ class GuidanceController @Inject() (
               case page: QuestionPage => BadRequest(questionView(page, questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.notFoundTemplate)
             }
-          case _ => BadRequest(errorHandler.notFoundTemplate)
+          case _ => 
+            logger.warn(s"Request for PageContext at $path during form submission, returned nothing resulting in BadRequest")
+            BadRequest(errorHandler.notFoundTemplate)
         }
       },
       nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
