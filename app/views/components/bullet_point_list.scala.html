@@ -16,13 +16,10 @@
 
 @import models.ui.{Paragraph, BulletPointList}
 
-@(bulletPointList: BulletPointList, asHint: Boolean = false)( implicit messages: Messages )
+@(bulletPointList: BulletPointList)( implicit messages: Messages )
 
-@components.paragraph(Paragraph(bulletPointList.text), asHint)
-
-@bpclass() = {govuk-list--bullet govuk-list @if(asHint){govuk-hint}}
-
-<ul class="@bpclass()">    
+@components.paragraph(Paragraph(bulletPointList.text))
+<ul class="govuk-list--bullet govuk-list">    
   @for( listItem <- bulletPointList.listItems ){
     <li>@components.render_text( listItem )</li>
   }

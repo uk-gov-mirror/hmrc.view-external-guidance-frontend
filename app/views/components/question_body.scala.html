@@ -19,15 +19,11 @@
 
 @(questionBody: Seq[UIComponent], name: String)(implicit request: Request[_], messages: Messages)
 
-@if(!questionBody.isEmpty) { 
-  <span id="@name-hint" class="govuk-hint">
-    @for(cmp <- questionBody) {
-      @{cmp match {
-          case p: Paragraph => components.paragraph(p, true)
-          case bp: BulletPointList => components.bullet_point_list(bp, true)
-          case _ => 
-        }
-      }
+@for(cmp <- questionBody) {
+  @{cmp match {
+      case p: Paragraph => components.paragraph(p)
+      case bp: BulletPointList => components.bullet_point_list(bp)
+      case _ => 
     }
-  </span>
+  }
 }

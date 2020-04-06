@@ -69,50 +69,6 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
-  "English Question hint component" must {
-    "render question body as a single hint span" in new Test {
-      val doc = asDocument(components.question_hint(question.body, "test")(fakeRequest, messages))
-
-      val hint = doc.getElementsByTag("span").first
-      val hintAttrs = elementAttrs(hint)
-      hintAttrs("class") shouldBe "govuk-hint"
-      val bpLeading = hint.child(0)
-      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
-      val bpLeadingAttrs = elementAttrs(bpLeading)
-      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
-
-      val bulletPoints = hint.child(1)
-      val bpAttrs = elementAttrs(bulletPoints)
-      bpAttrs("class").contains("govuk-hint") shouldBe true
-
-      val para = hint.child(2)
-      val paraAttrs = elementAttrs(para)
-      paraAttrs("class").contains("govuk-hint") shouldBe true
-    }
-  }
-
-  "Welsh Question hint component" must {
-    "render question body as a single hint span" in new WelshTest {
-      val doc = asDocument(components.question_hint(question.body, "test")(fakeRequest, messages))
-
-      val hint = doc.getElementsByTag("span").first
-      val hintAttrs = elementAttrs(hint)
-      hintAttrs("class") shouldBe "govuk-hint"
-      val bpLeading = hint.child(0)
-      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
-      val bpLeadingAttrs = elementAttrs(bpLeading)
-      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
-
-      val bulletPoints = hint.child(1)
-      val bpAttrs = elementAttrs(bulletPoints)
-      bpAttrs("class").contains("govuk-hint") shouldBe true
-
-      val para = hint.child(2)
-      val paraAttrs = elementAttrs(para)
-      paraAttrs("class").contains("govuk-hint") shouldBe true
-    }
-  }
-
   "English Question component" must {
 
     "render question text as a header" in new Test {
@@ -122,24 +78,12 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       heading.first.text() shouldBe q1(0)
     }
 
-    "render contained paragraph as hints" in new Test {
+    "render contained paragraphs" in new Test {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
 
-      val hint = doc.getElementsByTag("span").first
-      val hintAttrs = elementAttrs(hint)
-      hintAttrs("class") shouldBe "govuk-hint"
-      val bpLeading = hint.child(0)
-      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
-      val bpLeadingAttrs = elementAttrs(bpLeading)
-      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
-
-      val bulletPoints = hint.child(1)
-      val bpAttrs = elementAttrs(bulletPoints)
-      bpAttrs("class").contains("govuk-hint") shouldBe true
-
-      val para = hint.child(2)
-      val paraAttrs = elementAttrs(para)
-      paraAttrs("class").contains("govuk-hint") shouldBe true
+      doc.getElementsByTag("p").asScala.toList.foreach{ p =>
+        elementAttrs(p)("class").contains("govuk-body") shouldBe true
+      }
     }
 
     "render answers as radio buttons" in new Test {
@@ -155,15 +99,15 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render answers with hints vertically" in new Test {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
-      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+      val hints = doc.getElementsByTag("span").asScala.toList
 
-      val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint1Attrs = elementAttrs(hints(0))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(0).text() shouldBe Text(ans1Hint).value(messages.lang).head.toString
-      val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint2Attrs = elementAttrs(hints(1))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(1).text() shouldBe Text(ans2Hint).value(messages.lang).head.toString
-      val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint3Attrs = elementAttrs(hints(2))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(2).text() shouldBe Text(ans3Hint).value(messages.lang).head.toString
     }
@@ -174,11 +118,11 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       hints shouldBe Nil
       val divs = doc.getElementsByTag("div").asScala.toList.filter { div =>
-        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        val attrs = elementAttrs(div)
         attrs("class").contains("govuk-radios")
       }
       divs.headOption.map { div =>
-        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        val attrs = elementAttrs(div)
         attrs("class").contains("govuk-radios--inline") shouldBe true
       } orElse {
         fail("Missing govuk-radios--inline, answers not horizontal")
@@ -196,24 +140,12 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       heading.first.text() shouldBe q1(1)
     }
 
-    "render contained paragraph as hints" in new WelshTest {
+    "render contained paragraphs" in new WelshTest {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
 
-      val hint = doc.getElementsByTag("span").first
-      val hintAttrs = elementAttrs(hint)
-      hintAttrs("class") shouldBe "govuk-hint"
-      val bpLeading = hint.child(0)
-      bpLeading.text() shouldBe leading.value(messages.lang).head.toString
-      val bpLeadingAttrs = elementAttrs(bpLeading)
-      bpLeadingAttrs("class").contains("govuk-hint") shouldBe true
-
-      val bulletPoints = hint.child(1)
-      val bpAttrs = elementAttrs(bulletPoints)
-      bpAttrs("class").contains("govuk-hint") shouldBe true
-
-      val para = hint.child(2)
-      val paraAttrs = elementAttrs(para)
-      paraAttrs("class").contains("govuk-hint") shouldBe true
+      doc.getElementsByTag("p").asScala.toList.foreach{ p =>
+        elementAttrs(p)("class").contains("govuk-body") shouldBe true
+      }
     }
 
     "render answers as radio buttons" in new WelshTest {
@@ -229,15 +161,15 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render answers with hints" in new WelshTest {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
-      val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
+      val hints = doc.getElementsByTag("span").asScala.toList
 
-      val hint1Attrs = hints(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint1Attrs = elementAttrs(hints(0))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(0).text() shouldBe Text(ans1Hint).value(messages.lang).head.toString
-      val hint2Attrs = hints(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint2Attrs = elementAttrs(hints(1))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(1).text() shouldBe Text(ans2Hint).value(messages.lang).head.toString
-      val hint3Attrs = hints(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      val hint3Attrs = elementAttrs(hints(2))
       hint1Attrs("class") shouldBe "govuk-hint govuk-radios__hint"
       hints(2).text() shouldBe Text(ans3Hint).value(messages.lang).head.toString
     }
@@ -248,11 +180,11 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       hints shouldBe Nil
       val divs = doc.getElementsByTag("div").asScala.toList.filter { div =>
-        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        val attrs = elementAttrs(div)
         attrs("class").contains("govuk-radios")
       }
       divs.headOption.map { div =>
-        val attrs = div.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        val attrs = elementAttrs(div)
         attrs("class").contains("govuk-radios--inline") shouldBe true
       } orElse {
         fail("Missing govuk-radios--inline, answers not horizontal")

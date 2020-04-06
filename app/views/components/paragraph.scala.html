@@ -16,9 +16,9 @@
 
 @import models.ui.Paragraph
 
-@(para: Paragraph, asHint: Boolean = false)(implicit messages: Messages)
+@(para: Paragraph)(implicit messages: Messages)
 
-@pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body} @if(asHint){govuk-hint}}
+@pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body}}
 
 <p class="@pclass(para)">@components.render_text(para.text)</p>
 

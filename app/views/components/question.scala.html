@@ -21,19 +21,22 @@
 @(q: Question, name: String)(implicit request: Request[_], messages: Messages)
 
 <div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
-  <fieldset class="govuk-fieldset" @if(!q.body.isEmpty) { aria-describedby="@name-hint" }>
 
-    <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">
-      <h1 class="govuk-fieldset__heading">@components.render_text(q.text)</h1>
+  @components.h1_heading(H1(q.text))
+
+  @components.question_body(q.body, name)
+
+  <fieldset class="govuk-fieldset">
+    <legend class="govuk-fieldset__legend govuk-visually-hidden">
+      @components.render_text(q.text)
     </legend>
-
-    @components.question_hint(q.body, name)
 
     @components.error_message(q.errorMsgs)
 
     @components.answers(q.answers, q.horizontal, name)
 
   </fieldset>
+  
 </div>
 
 
