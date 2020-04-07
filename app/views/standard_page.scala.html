@@ -18,9 +18,9 @@
 
 @this(layout: main_layout)
 
-@(page: StandardPage)(implicit request: Request[_], messages: Messages)
+@(page: StandardPage, startUrl: String)(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+@layout(page.heading.toWords(messages.lang).mkString(" "), Some(startUrl)) {
 
   @components.render_components(page.components)
 
