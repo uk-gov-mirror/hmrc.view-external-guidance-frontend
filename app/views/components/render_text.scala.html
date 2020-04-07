@@ -14,19 +14,20 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Text, Link, Words}
+@import models.ui.{Text => OcelotText, Link, Words, TextItem}
+@import play.twirl.api.StringInterpolation
 
-@(text: Text)(implicit messages: Messages)
+@(txt: OcelotText)(implicit messages: Messages)
 
-@for(item <- text.value(messages.lang)) {
-  @{
-    item match {
-      case w: Words if w.bold => <strong>{w.toString}</strong>
-      case w: Words => w.toString
-      case l: Link => components.link(l)
-    }
-  }
-}
+@Html(
+  txt.value(messages.lang).map{
+    case w: Words if w.bold => s"<strong>${w.toString}</strong>"
+    case w: Words => w.toString 
+    case l: Link => components.link(l).toString
+  }.mkString
+)
+
 @{
      //$COVERAGE-OFF$
 }
+
