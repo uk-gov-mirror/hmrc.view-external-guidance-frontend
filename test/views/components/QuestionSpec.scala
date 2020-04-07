@@ -63,6 +63,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val horizontalAnswers = Seq(a1.copy(hint = None), a2.copy(hint = None))
     val question = Question(Text(q1), Seq(bpList, para1), answers)
     val questionWithHorizontalAnswers = Question(Text(q1), Seq(para1), horizontalAnswers)
+    val questionWithoutBody = Question(Text(q1), Seq.empty, answers)
   }
 
   trait WelshTest extends Test {
@@ -129,6 +130,15 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
     }
 
+    "question with no body should hide the legend heading" in new Test {
+      val doc = asDocument(components.question(questionWithoutBody, "test")(fakeRequest, messages))
+      val legend = doc.getElementsByTag("legend").first
+      val attrs = elementAttrs(legend)
+
+      attrs("class").contains("govuk-fieldset__legend") shouldBe true
+      attrs("class").contains("govuk-visually-hidden") shouldBe false
+    }
+
   }
 
   "Welsh Question component" must {
@@ -174,7 +184,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       hints(2).text() shouldBe Text(ans3Hint).value(messages.lang).head.toString
     }
 
-    "render answers with hints horizontally" in new Test {
+    "render answers with hints horizontally" in new WelshTest {
       val doc = asDocument(components.question(questionWithHorizontalAnswers, "test")(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
@@ -189,6 +199,15 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       } orElse {
         fail("Missing govuk-radios--inline, answers not horizontal")
       }
+    }
+
+    "question with no body should hide the legend heading" in new WelshTest {
+      val doc = asDocument(components.question(questionWithoutBody, "test")(fakeRequest, messages))
+      val legend = doc.getElementsByTag("legend").first
+      val attrs = elementAttrs(legend)
+
+      attrs("class").contains("govuk-fieldset__legend") shouldBe true
+      attrs("class").contains("govuk-visually-hidden") shouldBe false
     }
 
   }
