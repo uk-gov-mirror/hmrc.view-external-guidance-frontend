@@ -77,7 +77,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
-      val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
+      val result = target.getPage(relativePath)(fakeRequest)
       status(result) mustBe Status.OK
     }
 
@@ -85,7 +85,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getPageContext(path, processId, None)
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
-      val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
+      val result = target.getPage(relativePath)(fakeRequest)
       contentType(result) mustBe Some("text/html")
     }
   }
@@ -98,7 +98,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
-      val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
+      val result = target.submitPage(relativePath)(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
     }
   }
@@ -111,7 +111,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
-      val result: Future[Result] = target.submitPage(relativePath)(fakeRequest)
+      val result = target.submitPage(relativePath)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
     }
 
@@ -124,7 +124,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withSession(SessionKeys.sessionId -> processId)
         .withFormUrlEncodedBody()
         .withCSRFToken
-      val result: Future[Result] = target.submitPage(relativeStdPath)(fakeRequest)
+      val result = target.submitPage(relativeStdPath)(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
     }
 
@@ -139,7 +139,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withSession(SessionKeys.sessionId -> processId)
         .withFormUrlEncodedBody()
         .withCSRFToken
-      val result: Future[Result] = target.submitPage(unkwownRelativePath)(fakeRequest)
+      val result = target.submitPage(unkwownRelativePath)(fakeRequest)
       status(result) mustBe Status.BAD_REQUEST
     }
 
@@ -161,7 +161,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .scratchProcess(uuid, repositoryId)
         .returns(Future.successful(Some(expectedUrl)))
 
-      lazy val result: Future[Result] = target.scratch(uuid)(fakeRequest)
+      lazy val result = target.scratch(uuid)(fakeRequest)
     }
 
     "redirect the caller to another page" in new ScratchTestWithValidUUID {
@@ -184,7 +184,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .scratchProcess(uuid, uuid)
         .returns(Future.successful(Some(expectedUrl)))
 
-      val result: Future[Result] = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
+      val result = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
       session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
@@ -195,7 +195,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .scratchProcess(uuid, uuid)
         .returns(Future.successful(None))
-      val result: Future[Result] = target.scratch(uuid)(fakeRequest)
+      val result = target.scratch(uuid)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND
     }
 
@@ -216,7 +216,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
 
-      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
+      val result = target.startJourney(processId)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
     }
 
@@ -224,7 +224,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
-      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
+      val result = target.startJourney(processId)(fakeRequest)
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
@@ -232,7 +232,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
-      val result: Future[Result] = target.startJourney(processId)(fakeRequest)
+      val result = target.startJourney(processId)(fakeRequest)
       session(result).data.keys must contain(SessionKeys.sessionId)
     }
   }
@@ -243,7 +243,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
         .returns(Future.successful(Some(expectedUrl)))
-      val result: Future[Result] = target.startJourney(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
+      val result = target.startJourney(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
       session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
@@ -255,7 +255,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getStartPageUrl(unknownProcessId, unknownProcessId)
         .returns(Future.successful(None))
-      val result: Future[Result] = target.startJourney(unknownProcessId)(fakeRequest)
+      val result = target.startJourney(unknownProcessId)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND
     }
 
@@ -272,7 +272,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       lazy val target =
         new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(relativePath)(fakeRequest)
+      lazy val result = target.getPage(relativePath)(fakeRequest)
     }
 
     "return a success response" in new Test {
@@ -296,7 +296,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       lazy val target =
         new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(path)(fakeRequest)
+      lazy val result = target.getPage(path)(fakeRequest)
     }
 
     "return a not found response" in new Test {
@@ -322,7 +322,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       lazy val target =
         new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
-      lazy val result: Future[Result] = target.getPage(unknownPath)(fakeRequest)
+      lazy val result = target.getPage(unknownPath)(fakeRequest)
     }
 
     "return a not found response" in new Test {
