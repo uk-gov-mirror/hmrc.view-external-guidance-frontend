@@ -24,7 +24,7 @@
         govUkHeader: GovukHeader,
         hmrcLanguageSelect: HmrcLanguageSelect)
 
-@(pageTitle: String)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @beforeContentBlock = {
     @phaseBanner(PhaseBanner(
@@ -48,7 +48,7 @@
 
 @headerBlock = {
     @govUkHeader(Header(
-        homepageUrl = Some("/guidance/hello-world"),
+        serviceUrl = startUrl,
         serviceName = Some(messages("service.name"))
     ))
 }

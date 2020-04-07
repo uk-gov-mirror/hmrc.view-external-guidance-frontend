@@ -43,7 +43,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
               pages
                 .find(page => page.url == url)
-                .map(pge => PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), pages.head.url))
+                .map(pge => PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
             }
           )
       }
