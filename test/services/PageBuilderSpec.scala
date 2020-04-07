@@ -367,6 +367,37 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       }
 
+      "return pages in order beginning with 'start' page" in {
+
+        val process: Process = prototypeJson.as[Process]
+
+        pageBuilder.pages(process) match {
+          case Right(pages) =>
+            pages mustNot be(Nil)
+
+            pages.head.id mustBe "start"
+
+          case Left(err) => fail(s"First page must be the requested start page")
+        }
+
+      }
+
+      "return pages in order beginning with nominated start page" in {
+
+        val process: Process = prototypeJson.as[Process]
+
+        pageBuilder.pages(process, "120") match {
+          case Right(pages) =>
+            pages mustNot be(Nil)
+
+            pages.head.id mustBe "120"
+
+          case Left(err) => fail(s"FlowError $err")
+        }
+
+      }
+
+
       "correctly identify the pages in a Process accounting fro every stanza" in {
 
         val process: Process = prototypeJson.as[Process]
