@@ -17,13 +17,17 @@
 @import models.ui._
 @import controllers.routes._
 
-@(questionBody: Seq[UIComponent], name: String)(implicit request: Request[_], messages: Messages)
+@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages)
 
-@for(cmp <- questionBody) {
+@for(cmp <- elements) {
   @{cmp match {
-      case p: Paragraph => components.paragraph(p)
-      case bp: BulletPointList => components.bullet_point_list(bp)
-      case _ => 
-    }
+        case p: Paragraph => components.paragraph(p)
+        case h: H1 => components.h1_heading(h)
+        case h: H2 => components.h2_heading(h)
+        case h: H3 => components.h3_heading(h)
+        case b: BulletPointList => components.bullet_point_list(b)
+        case _ =>
+      }
+
   }
 }

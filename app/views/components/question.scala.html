@@ -31,7 +31,7 @@
   } else {
     @components.h1_heading(H1(q.text))
 
-    @components.question_body(q.body, name)
+    @components.render_components(q.body)
 
     <fieldset class="govuk-fieldset">
       <legend class="govuk-fieldset__legend govuk-visually-hidden">
