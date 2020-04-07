@@ -34,10 +34,10 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     Future.successful(Some(stubbedProcess))
 
-  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = 
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid")
 
-  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = 
+  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/published/$processId")
 
   private def retrieveProcess(endPoint: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {

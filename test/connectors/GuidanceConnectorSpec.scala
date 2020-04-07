@@ -31,7 +31,8 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     val process: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val gc: GuidanceConnector = new GuidanceConnector(mockHttpClient, MockAppConfig)
-    val endPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"
+    val scratchEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"
+    val publishedEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/published/"
   }
 
   "Calling the getProcess with an existing process ID" should {
@@ -47,11 +48,26 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     "return a model representing the Ocelot Scatch Process" in new Test {
 
       MockedHttpClient
-        .get(endPoint + "683d9aa0-2a0e-4e28-9ac8-65ce453d2730")
+        .get(scratchEndPoint + "683d9aa0-2a0e-4e28-9ac8-65ce453d2730")
         .returns(Future.successful(Right(process)))
 
       val response: Option[Process] =
         await(gc.scratchProcess("683d9aa0-2a0e-4e28-9ac8-65ce453d2730")(hc, implicitly))
+
+      response mustBe Some(process)
+    }
+  }
+
+  "Calling the publishedProcess with an existing published process ID" should {
+
+    "return a model representing the Ocelot Scatch Process" in new Test {
+
+      MockedHttpClient
+        .get(publishedEndPoint + "ext90002")
+        .returns(Future.successful(Right(process)))
+
+      val response: Option[Process] =
+        await(gc.publishedProcess("ext90002")(hc, implicitly))
 
       response mustBe Some(process)
     }
