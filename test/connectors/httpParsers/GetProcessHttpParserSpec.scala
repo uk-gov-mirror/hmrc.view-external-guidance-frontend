@@ -16,7 +16,7 @@
 
 package connectors.httpParsers
 
-import connectors.httpParsers.GetScratchProcessHttpParser.getScratchProcessHttpReads
+import connectors.httpParsers.GetProcessHttpParser.getProcessHttpReads
 import play.api.http.{HttpVerbs, Status}
 import play.api.libs.json.{Json, JsValue, JsObject}
 import uk.gov.hmrc.http.HttpResponse
@@ -25,7 +25,7 @@ import models.errors.{InvalidProcessError, InternalServerError}
 import models.ocelot.Process
 import base.BaseSpec
 
-class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
+class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
 
   private trait Test {
 
@@ -41,7 +41,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
     "return a valid scratch process" in new Test {
 
       private val httpResponse = HttpResponse(OK, Some(validResponse))
-      private val result = getScratchProcessHttpReads.read(GET, url, httpResponse)
+      private val result = getProcessHttpReads.read(GET, url, httpResponse)
       result mustBe Right(process)
     }
   }
@@ -51,7 +51,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
     "returns OK but no process" in new Test {
 
       private val httpResponse = HttpResponse(OK, None)
-      private val result = getScratchProcessHttpReads.read(GET, url, httpResponse)
+      private val result = getProcessHttpReads.read(GET, url, httpResponse)
       result mustBe Left(InternalServerError)
     }
 
@@ -60,7 +60,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
       val httpResponse: HttpResponse = HttpResponse(NOT_FOUND)
 
       val result: RequestOutcome[Process] =
-        getScratchProcessHttpReads.read(GET, url, httpResponse)
+        getProcessHttpReads.read(GET, url, httpResponse)
 
       result mustBe Left(InvalidProcessError)
     }
@@ -70,7 +70,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
       val httpResponse: HttpResponse = HttpResponse(BAD_REQUEST)
 
       val result: RequestOutcome[Process] =
-        getScratchProcessHttpReads.read(GET, url, httpResponse)
+        getProcessHttpReads.read(GET, url, httpResponse)
 
       result mustBe Left(InvalidProcessError)
     }
@@ -80,7 +80,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
       val httpResponse: HttpResponse = HttpResponse(CREATED, Some(invalidResponse))
 
       val result: RequestOutcome[Process] =
-        getScratchProcessHttpReads.read(GET, url, httpResponse)
+        getProcessHttpReads.read(GET, url, httpResponse)
 
       result mustBe Left(InternalServerError)
     }
@@ -90,7 +90,7 @@ class GetScratchProcessHttpParserSpec extends BaseSpec with HttpVerbs with Statu
       val httpResponse: HttpResponse = HttpResponse(SERVICE_UNAVAILABLE)
 
       val result: RequestOutcome[Process] =
-        getScratchProcessHttpReads.read(GET, url, httpResponse)
+        getProcessHttpReads.read(GET, url, httpResponse)
 
       result mustBe Left(InternalServerError)
     }

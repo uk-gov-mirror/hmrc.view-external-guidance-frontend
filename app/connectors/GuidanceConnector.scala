@@ -34,13 +34,19 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
   def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
     Future.successful(Some(stubbedProcess))
 
-  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {
-    import connectors.httpParsers.GetScratchProcessHttpParser.getScratchProcessHttpReads
-    val endpoint: String = appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid"
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+    retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid")
 
-    httpClient.GET[RequestOutcome[Process]](endpoint, Seq.empty, Seq.empty).map {
+  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+    retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/published/$processId")
+
+  private def retrieveProcess(endPoint: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {
+    import connectors.httpParsers.GetProcessHttpParser.getProcessHttpReads
+
+    httpClient.GET[RequestOutcome[Process]](endPoint, Seq.empty, Seq.empty).map {
       case Right(process) => Some(process)
       case Left(err) => None
     }
   }
+
 }
