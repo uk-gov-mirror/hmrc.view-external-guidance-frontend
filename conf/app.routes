@@ -12,6 +12,8 @@ GET   /scratch/$uuid<[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}
 
 GET   /start/:processId                  controllers.GuidanceController.startJourney(processId)
 
+GET   /published/:processId              controllers.GuidanceController.published(processId)
+
 GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)
 

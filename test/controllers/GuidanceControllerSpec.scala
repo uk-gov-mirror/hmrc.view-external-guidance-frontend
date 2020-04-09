@@ -20,7 +20,7 @@ import base.BaseSpec
 import mocks.MockGuidanceService
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
@@ -260,6 +260,67 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
   }
+
+  trait PublishedTest extends MockGuidanceService with TestData {
+    lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
+
+    lazy val target =
+      new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+
+  }
+
+  "Calling the published endpoint with a valid process ID" should {
+
+    "redirect the caller to another page" in new PublishedTest {
+      MockGuidanceService
+        .publishedProcess(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+
+      val result = target.published(processId)(fakeRequest)
+      status(result) mustBe Status.SEE_OTHER
+    }
+
+    "redirect the caller to the start page of the process" in new PublishedTest {
+      MockGuidanceService
+        .publishedProcess(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+      val result = target.published(processId)(fakeRequest)
+      redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
+    }
+
+    "add the process ID to the user's session" in new PublishedTest {
+      MockGuidanceService
+        .publishedProcess(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+      val result = target.published(processId)(fakeRequest)
+      session(result).data.keys must contain(SessionKeys.sessionId)
+    }
+  }
+
+  "Calling the published endpoint with a valid process ID and existing sessionId" should {
+
+    "Use the existing session ID" in new PublishedTest {
+      MockGuidanceService
+        .publishedProcess(processId, processId)
+        .returns(Future.successful(Some(expectedUrl)))
+      val result = target.published(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
+      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
+    }
+  }
+
+  "Calling published endpoint with a invalid process ID" should {
+
+    "return a NOT_FOUND error" in new PublishedTest {
+      val unknownProcessId = "ext90077"
+      MockGuidanceService
+        .publishedProcess(unknownProcessId, unknownProcessId)
+        .returns(Future.successful(None))
+      val result = target.published(unknownProcessId)(fakeRequest)
+      status(result) mustBe Status.NOT_FOUND
+    }
+
+  }
+
 
   "Calling a valid URL path for a page in a process" should {
 

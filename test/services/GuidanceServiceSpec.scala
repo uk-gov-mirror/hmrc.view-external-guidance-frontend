@@ -51,6 +51,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
     val processId = "ext90001"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
+    val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
     lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
@@ -150,4 +151,30 @@ class GuidanceServiceSpec extends BaseSpec {
       }
     }
   }
+
+  "Calling publishedProcess" should {
+
+    "retrieve the url of the start page for the nominated published process" in new Test {
+
+      MockGuidanceConnector
+        .publishedProcess(processId)
+        .returns(Future.successful(Some(process)))
+
+      MockSessionRepository
+        .set(sessionRepoId, process)
+        .returns(Future.successful(Some(())))
+
+      MockPageBuilder
+        .pages(process)
+        .returns(Right(pages))
+
+      private val result = target.publishedProcess(processId, sessionRepoId)
+
+      whenReady(result) { url =>
+        url mustBe Some(firstPageUrl)
+      }
+    }
+  }
+
+
 }
