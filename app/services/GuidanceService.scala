@@ -52,6 +52,9 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
   def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
     startProcessView(uuid, repositoryId, connector.scratchProcess)
 
+  def publishedProcess(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+    startProcessView(processId, repositoryId, connector.publishedProcess)
+
   def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
     startProcessView(processId, repositoryId, connector.getProcess)
 

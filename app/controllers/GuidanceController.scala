@@ -50,7 +50,7 @@ class GuidanceController @Inject() (
           case page: QuestionPage => Ok(questionView(page, pageContext.processStartUrl, questionName(path), formProvider(questionName(path))))
         }
       case None =>
-        Logger.warn(s"Request for PageContext at $path returned nothing resulting in BadRequest")
+        Logger.warn(s"Request for PageContext at /$path returned nothing resulting in BadRequest")
         BadRequest(errorHandler.notFoundTemplate)
     }
   }
@@ -66,7 +66,7 @@ class GuidanceController @Inject() (
               case _ => BadRequest(errorHandler.notFoundTemplate)
             }
           case _ =>
-            Logger.warn(s"Request for PageContext at $path during form submission, returned nothing resulting in BadRequest")
+            Logger.warn(s"Request for PageContext at /$path during form submission, returned nothing resulting in BadRequest")
             BadRequest(errorHandler.notFoundTemplate)
         }
       },
@@ -84,6 +84,12 @@ class GuidanceController @Inject() (
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     Logger.info(s"Starting scratch with sessionId = $sessionId")
     startUrlById(uuid, sessionId, service.scratchProcess)
+  }
+
+  def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
+    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    Logger.info(s"Starting publish with sessionId = $sessionId")
+    startUrlById(processId, sessionId, service.publishedProcess)
   }
 
   private def withSession[T](block: String => Future[Option[T]])(implicit request: Request[_]): Future[Option[T]] =

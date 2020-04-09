@@ -42,6 +42,12 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
+    def publishedProcess(processId: String, sessionRepoId: String): CallHandler[Future[Option[String]]] = {
+      (mockGuidanceService
+        .publishedProcess(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(processId, *, *, *)
+    }
+
     def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[PageContext]]] = {
       (mockGuidanceService
         .getPageContext(_: String, _: String, _: Option[FormData])(_: ExecutionContext))
