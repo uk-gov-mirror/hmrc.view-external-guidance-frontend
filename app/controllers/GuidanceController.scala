@@ -104,7 +104,10 @@ class GuidanceController @Inject() (
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map { urlOption =>
-      urlOption.fold(NotFound(errorHandler.notFoundTemplate))(url => Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId))
+      urlOption.fold({
+        Logger.warn(s"Unable to find start page with id $id")
+        NotFound(errorHandler.notFoundTemplate)
+      })(url => Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId))
     }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

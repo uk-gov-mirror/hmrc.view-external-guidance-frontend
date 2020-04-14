@@ -36,7 +36,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
           .pages(process)
           .fold(
             err => {
-              logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
+              logger.warn(s"PageBuilder error $err for url $url on process ${process.meta.id}")
               None
             },
             pages => {
@@ -66,6 +66,8 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
         sessionRepository.set(repositoryId, process).map { _ =>
           pageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
         }
-      case None => Future.successful(None)
+      case None =>
+        Logger.warn(s"Unable to find process using id $id")
+        Future.successful(None)
     }
 }
