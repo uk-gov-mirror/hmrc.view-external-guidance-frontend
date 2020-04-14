@@ -55,21 +55,27 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
     with SessionRepository {
 
-  override def indexes: Seq[Index] = Seq(
-    Index(
-      Seq("lastAccessed" -> IndexType.Ascending),
-      name = Some("lastAccessedIndex"),
-      options = BSONDocument("expireAfterSeconds" -> config.sessionProcessTTLMinutes * 60)
+  override def indexes: Seq[Index] = {
+    val ttlSeconds = config.sessionProcessTTLMinutes * 60
+    logger.info(s"SessionRepository TTL set to ${ttlSeconds} seconds")
+    Seq(
+      Index(
+        Seq("lastAccessed" -> IndexType.Ascending),
+        name = Some("lastAccessedIndex"),
+        options = BSONDocument("expireAfterSeconds" -> ttlSeconds)
+      )
     )
-  )
+  }
 
   def get(key: String): Future[Option[Process]] = {
-    val result = collection
-      .find(Json.obj("_id" -> key), None)
-      .one[DefaultSessionRepository.SessionProcess]
-      .map(_.map(_.process))
-    updateAccessTime(key)
-    result
+    val updateModifier = Json.obj("$set" -> Json.obj("lastAccessed" -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
+    findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
+      .map(_.result[DefaultSessionRepository.SessionProcess].map(_.process))
+      .recover {
+        case lastError =>
+          logger.error(s"Unable to retrieve process associated with key=$key")
+          None
+      }
   }
 
   def set(key: String, process: Process): Future[Option[Unit]] = {
@@ -84,13 +90,4 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     }
   }
 
-  def updateAccessTime(key: String): Future[Option[Unit]] = {
-    val selector = Json.obj("_id" -> key)
-    val modifier = Json.obj("$set" -> Json.obj("lastAccessed" -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
-    collection.update(false).one(selector, modifier) map (_ => Some(())) recover {
-      case lastError =>
-        logger.error(s"Unable to update lastAccessed time associated with key=$key")
-        None
-    }
-  }
 }
