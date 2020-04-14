@@ -64,11 +64,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   )
 
   def get(key: String): Future[Option[Process]] = {
-    updateAccessTime(key)
-    collection
+    val result = collection
       .find(Json.obj("_id" -> key), None)
       .one[DefaultSessionRepository.SessionProcess]
       .map(_.map(_.process))
+    updateAccessTime(key)
+    result
   }
 
   def set(key: String, process: Process): Future[Option[Unit]] = {
