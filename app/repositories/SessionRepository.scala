@@ -56,10 +56,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     with SessionRepository {
 
   override def indexes: Seq[Index] = Seq(
-    Index(Seq("lastAccessed" -> IndexType.Ascending), 
-          name = Some("lastAccessedIndex"), 
-          options = BSONDocument("expireAfterSeconds" -> config.sessionProcessTTLMinutes * 60))
-  )      
+    Index(
+      Seq("lastAccessed" -> IndexType.Ascending),
+      name = Some("lastAccessedIndex"),
+      options = BSONDocument("expireAfterSeconds" -> config.sessionProcessTTLMinutes * 60)
+    )
+  )
 
   def get(key: String): Future[Option[Process]] = {
     updateAccessTime(key)
