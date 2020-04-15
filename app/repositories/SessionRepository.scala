@@ -78,16 +78,11 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def set(key: String, process: Process): Future[Option[Unit]] = {
-    val selector = Json.obj("_id" -> key)
-    val document = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))
-    val modifier = Json.obj("$set" -> document)
-
-    collection.update(false).one(selector, modifier, upsert = true) map (_ => Some(())) recover {
+  def set(key: String, process: Process): Future[Option[Unit]] =
+    insert(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC))) map (_ => Some(())) recover {
       case lastError =>
         logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
         None
     }
-  }
 
 }
