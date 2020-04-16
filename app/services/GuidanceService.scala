@@ -18,7 +18,7 @@ package services
 
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.{FormData, Page}
+import models.ui.{FormData, PageContext}
 import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,19 +29,21 @@ import models.ocelot.Process
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
   val logger: Logger = Logger(getClass)
 
-  def getPage(url: String, sessionId: String, formData: Option[FormData] = None)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Page]] =
+  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(implicit context: ExecutionContext): Future[Option[PageContext]] =
     sessionRepository.get(sessionId).map { processOption =>
       processOption.flatMap { process =>
         pageBuilder
           .pages(process)
           .fold(
             err => {
-              logger.info(s"PageBuilder error $err for url $url on process ${process.meta.id}")
+              logger.warn(s"PageBuilder error $err for url $url on process ${process.meta.id}")
               None
             },
             pages => {
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-              pages.find(page => page.url == url).map(pge => uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap))
+              pages
+                .find(page => page.url == url)
+                .map(pge => PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
             }
           )
       }
@@ -50,18 +52,22 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
   def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
     startProcessView(uuid, repositoryId, connector.scratchProcess)
 
+  def publishedProcess(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+    startProcessView(processId, repositoryId, connector.publishedProcess)
+
   def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
     startProcessView(processId, repositoryId, connector.getProcess)
 
   private def startProcessView(id: String, repositoryId: String, processById: String => Future[Option[Process]])(
-      implicit hc: HeaderCarrier,
-      context: ExecutionContext
+      implicit context: ExecutionContext
   ): Future[Option[String]] =
     processById(id).flatMap {
       case Some(process) =>
         sessionRepository.set(repositoryId, process).map { _ =>
           pageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
         }
-      case None => Future.successful(None)
+      case None =>
+        Logger.warn(s"Unable to find process using id $id")
+        Future.successful(None)
     }
 }

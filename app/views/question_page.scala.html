@@ -26,9 +26,9 @@
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, startUrl: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.toWords(messages.lang).mkString(" ")) {
+@layout(page.heading.toWords(messages.lang).mkString(" "), Some(startUrl)) {
   
   @components.error_summary(page.question.text, page.question.errorMsgs)
 

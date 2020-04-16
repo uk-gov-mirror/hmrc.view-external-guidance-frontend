@@ -51,6 +51,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
     val processId = "ext90001"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
+    val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
     lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
@@ -71,11 +72,11 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPage(lastPageUrl, processId)
+      private val result = target.getPageContext(lastPageUrl, processId)
 
-      whenReady(result) { page =>
-        page.fold(fail("no page found")) {
-          _.urlPath mustBe lastPageUrl
+      whenReady(result) { pageContext =>
+        pageContext.fold(fail("no PageContext found")) {
+          _.page.urlPath mustBe lastPageUrl
         }
       }
     }
@@ -95,7 +96,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPage(url, processId)
+      private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
         _ mustBe None
@@ -150,4 +151,30 @@ class GuidanceServiceSpec extends BaseSpec {
       }
     }
   }
+
+  "Calling publishedProcess" should {
+
+    "retrieve the url of the start page for the nominated published process" in new Test {
+
+      MockGuidanceConnector
+        .publishedProcess(processId)
+        .returns(Future.successful(Some(process)))
+
+      MockSessionRepository
+        .set(sessionRepoId, process)
+        .returns(Future.successful(Some(())))
+
+      MockPageBuilder
+        .pages(process)
+        .returns(Right(pages))
+
+      private val result = target.publishedProcess(processId, sessionRepoId)
+
+      whenReady(result) { url =>
+        url mustBe Some(firstPageUrl)
+      }
+    }
+  }
+
+
 }

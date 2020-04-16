@@ -23,16 +23,14 @@ import play.api.Logger
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpReads
 
-object GetScratchProcessHttpParser extends HttpParser {
+object GetProcessHttpParser extends HttpParser {
 
-  val logger: Logger = Logger(GetScratchProcessHttpParser.getClass)
-
-  implicit val getScratchProcessHttpReads: HttpReads[RequestOutcome[Process]] = {
+  implicit val getProcessHttpReads: HttpReads[RequestOutcome[Process]] = {
     case (_, _, response) if response.status == OK =>
       response.validateJson[Process] match {
         case Some(result) => Right(result)
         case None =>
-          logger.error("Unable to parse successful response when requesting process")
+          Logger.error("Unable to parse successful response when requesting process")
           Left(InternalServerError)
       }
     case (_, _, response) if response.status == NOT_FOUND =>
@@ -40,7 +38,7 @@ object GetScratchProcessHttpParser extends HttpParser {
     case (_, _, response) if response.status == BAD_REQUEST =>
       Left(InvalidProcessError)
     case unknown =>
-      logger.info(s"unexpected $unknown response received when requesting process")
+      Logger.info(s"unexpected $unknown response received when requesting process")
       Left(InternalServerError)
   }
 
