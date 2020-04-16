@@ -313,6 +313,75 @@ class BulletPointBuilderSpec extends BaseSpec {
       BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "You can buy the [bold:following]:"
     }
 
+    "Identify leading text where text includes a bold section followed immediately by a non-white space character and then further texts" in {
+
+      val text1: String = "You can [bold:buy], things such as, various antiques"
+      val text2: String = "You can [bold:buy], things such as, various trinkets"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "You can [bold:buy], things such as, various"
+    }
+
+    "Identify leading text where text includes both bold and link placeholders immediately followed by non-whitespace characters" in {
+
+      val text1: String = "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your friends"
+      val text2: String = "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your acquaintances"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
+        "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your"
+    }
+
+    "Identify leading text where text includes a placeholder immediately following none-whitespace text" in {
+
+      val text1: String = "You can buy[bold:-categories] fruit"
+      val text2: String = "You can buy[bold:-categories] vegetables"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "You can buy[bold:-categories]"
+    }
+
+    "Identify leading text where text includes a placeholder immediately following none-whitespace text followed by further matching text" in {
+
+      val text1: String = "You can buy[bold:-categories] fruit and veg: potato"
+      val text2: String = "You can buy[bold:-categories] fruit and veg: parsnip"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe "You can buy[bold:-categories] fruit and veg:"
+    }
+
+    "Identify leading text where text includes both bold and link placeholders with leading text" in {
+
+      val text1: String = "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] : potato"
+      val text2: String = "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] : parsnip"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
+        "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] :"
+    }
+
+    "Identify leading text containing both leading and trailing text with respect to place holders" in {
+
+      val text1: String = "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as pears and apples"
+      val text2: String = "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as carrots and turnips"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
+        "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as"
+    }
+
+    "Identify leading text where text includes both leading and trailing text for a placeholder" in {
+
+      val text1: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]: potato"
+      val text2: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]: parsnip"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
+        "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]:"
+    }
+
+    "Identify leading text where text includes both leading and trailing text for a placeholder and following text" in {
+
+      val text1: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as, potatoes"
+      val text2: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as, oranges"
+
+      BulletPointBuilder.determineMatchedLeadingText(text1, text2) mustBe
+        "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as,"
+    }
+
     "Method locateTextsAndMatchesContainingLeadingText" must {
 
       "Handle so far theoretical case when no text or match components are present" in {
@@ -324,7 +393,7 @@ class BulletPointBuilderSpec extends BaseSpec {
 
         // Test invocation with "matchText" set to true
         val (wordsProcessed1, outputTexts1, outputMatches1) =
-          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, true, 0)
+          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, true, 0)
 
         wordsProcessed1 mustBe 0
 
@@ -333,7 +402,7 @@ class BulletPointBuilderSpec extends BaseSpec {
 
         // Test invocation with "matchText" set to false
         val (wordsProcessed2, outputTexts2, outputMatches2) =
-          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, false, 2)
+          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, false, 2)
 
         wordsProcessed2 mustBe 2
 
@@ -355,7 +424,7 @@ class BulletPointBuilderSpec extends BaseSpec {
 
       // Test invocation with "matchText" set to true
       val (wordsProcessed1, outputTexts1, outputMatches1) =
-        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, true, 0)
+        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, true, 0)
 
       wordsProcessed1 mustBe 0
 
@@ -364,7 +433,7 @@ class BulletPointBuilderSpec extends BaseSpec {
 
       // Test invocation with "matchText" set to false
       val (wordsProcessed2, outputTexts2, outputMatches2) =
-        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), List(), texts, matches, false, 2)
+        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, false, 2)
 
       wordsProcessed2 mustBe 2
 
