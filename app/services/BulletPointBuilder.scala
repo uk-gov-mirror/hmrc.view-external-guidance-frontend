@@ -133,12 +133,7 @@ object BulletPointBuilder {
       } else {
         val text: String = inputTexts(textsProcessed)
         val noOfWords: Int = wordsInText(text, textsProcessed, inputMatches, matchesProcessed)
-        if (wordsProcessed + noOfWords < noOfWordsToMatch ||
-          ((wordsProcessed + noOfWords == noOfWordsToMatch) && (matchesProcessed < inputMatches.size) && (textLeadingMatchText(
-            textsProcessed,
-            inputTexts,
-            inputMatches(matchesProcessed)
-          )))) {
+        if (processNextMatch(noOfWordsToMatch, wordsProcessed, noOfWords, inputTexts, textsProcessed, inputMatches, matchesProcessed)) {
           locateTextsAndMatchesContainingLeadingText(
             noOfWordsToMatch,
             inputTexts,
@@ -160,8 +155,7 @@ object BulletPointBuilder {
       } else {
         val text: String = getMatchText(inputMatches(matchesProcessed))
         val noOfWords: Int = wordsInMatchText(text, inputTexts, textsProcessed)
-        if ((wordsProcessed + noOfWords < noOfWordsToMatch) ||
-          (wordsProcessed + noOfWords == noOfWordsToMatch && textTrailingMatchText(textsProcessed, inputTexts, text))) {
+        if (processNextText(noOfWordsToMatch, wordsProcessed, noOfWords, inputTexts, textsProcessed, text)) {
           locateTextsAndMatchesContainingLeadingText(
             noOfWordsToMatch,
             inputTexts,
@@ -340,6 +334,42 @@ object BulletPointBuilder {
         }
       }
     }
+  }
+
+  def processNextMatch(
+      noOfWordsToMatch: Int,
+      wordsProcessed: Int,
+      noOfWordsInCurrentText: Int,
+      texts: List[String],
+      textsProcessed: Int,
+      matches: List[Match],
+      matchesProcessed: Int
+  ): Boolean = {
+
+    val notAllWordsProcessed = wordsProcessed + noOfWordsInCurrentText < noOfWordsToMatch
+
+    val textLeadsNextMatch: Boolean = (wordsProcessed + noOfWordsInCurrentText == noOfWordsToMatch) &&
+      (matchesProcessed < matches.size) &&
+      textLeadingMatchText(textsProcessed, texts, matches(matchesProcessed))
+
+    notAllWordsProcessed || textLeadsNextMatch
+  }
+
+  def processNextText(
+      noOfWordsToMatch: Int,
+      wordsProcessed: Int,
+      noOfWordsInCurrentText: Int,
+      texts: List[String],
+      textsProcessed: Int,
+      matchText: String
+  ): Boolean = {
+
+    val notAllWordsProcessed: Boolean = wordsProcessed + noOfWordsInCurrentText < noOfWordsToMatch
+
+    val textFollowingPreviousMatch: Boolean = (wordsProcessed + noOfWordsInCurrentText == noOfWordsToMatch) &&
+      textTrailingMatchText(textsProcessed, texts, matchText)
+
+    notAllWordsProcessed || textFollowingPreviousMatch
   }
 
   def textLeadingMatchText(textsProcessed: Int, texts: List[String], m: Match): Boolean = {
