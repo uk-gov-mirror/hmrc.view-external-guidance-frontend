@@ -92,7 +92,9 @@ object BulletPointBuilder {
     *
     * @param noOfWordsToMatch - The number of words to be located
     * @param inputTexts - The text components for the whole string being searched
+    * @param textsProcessed - The number of text elements processed so far
     * @param inputMatches - The match components for the whole string being searched
+    * @param matchesProcessed - The number of match elements processed so far
     * @param outputTexts - The texts components containing the matched words
     * @param outputMatches - The match components containing the matched words
     * @param matchText - Boolean flag indicating whether text or match elements are being tested for the method call
@@ -114,7 +116,7 @@ object BulletPointBuilder {
   ): (Int, List[String], List[Match]) = {
 
     if (matchText) {
-      if ((textsProcessed == inputTexts.size) && (matchesProcessed <= inputMatches.size)) {
+      if (textsProcessed == inputTexts.size) {
         if (matchesProcessed == inputMatches.size) {
           (wordsProcessed, outputTexts.toList, outputMatches.toList)
         } else {
@@ -305,12 +307,9 @@ object BulletPointBuilder {
     if (textsProcessed == 0) {
       wordsInText
     } else {
-      if (matchesProcessed > 0) {
-        if (!gapBetweenTextElements(getMatchText(matches(matchesProcessed - 1)), text)) {
-          wordsInText - 1
-        } else {
-          wordsInText
-        }
+      // For text following after placeholder check if there is a gap between the placeholder text and the following text
+      if (!gapBetweenTextElements(getMatchText(matches(matchesProcessed - 1)), text)) {
+        wordsInText - 1
       } else {
         wordsInText
       }
@@ -374,11 +373,7 @@ object BulletPointBuilder {
 
   def textLeadingMatchText(textsProcessed: Int, texts: List[String], m: Match): Boolean = {
 
-    if (texts.size - 1 >= textsProcessed) {
-      if (gapBetweenTextElements(texts(textsProcessed), getMatchText(m))) false else true
-    } else {
-      false
-    }
+    if (gapBetweenTextElements(texts(textsProcessed), getMatchText(m))) false else true
   }
 
   def textTrailingMatchText(textsProcessed: Int, texts: List[String], matchText: String): Boolean = {
