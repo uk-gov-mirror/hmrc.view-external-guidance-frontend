@@ -109,12 +109,10 @@ class GuidanceController @Inject() (
   }
 
   private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
-    request.session.get(SessionKeys.sessionId) match {
-      case Some(sessionId) => block(sessionId)
-      case None =>
-        logger.error(s"Session Id missing from request when required ${hc.sessionId}")
-        Future.successful(Left(BadRequestError))
-    }
+    hc.sessionId.fold{
+      logger.error(s"Session Id missing from request when required")
+      Future.successful(Left(BadRequestError): RequestOutcome[T])
+    }(sessionId => block(sessionId.value))
 
   private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
