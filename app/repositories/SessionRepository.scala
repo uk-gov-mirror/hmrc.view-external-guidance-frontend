@@ -22,6 +22,8 @@ import config.AppConfig
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, Json}
 import models.ocelot._
+import models.errors._
+import models.RequestOutcome
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
@@ -42,9 +44,11 @@ object DefaultSessionRepository {
 }
 
 trait SessionRepository {
-  def get(key: String): Future[Option[Process]]
-  def set(key: String, process: Process): Future[Option[Unit]]
+  def get(key: String): Future[RequestOutcome[Process]]
+  def set(key: String, process: Process): Future[RequestOutcome[Unit]]
+  type SessionProcess = DefaultSessionRepository.SessionProcess  
 }
+
 
 @Singleton
 class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
@@ -54,7 +58,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       domainFormat = DefaultSessionRepository.SessionProcess.format
     )
     with SessionRepository {
-
+  
   override def indexes: Seq[Index] = {
     val ttlSeconds = config.sessionProcessTTLMinutes * 60
     logger.info(s"SessionRepository TTL set to ${ttlSeconds} seconds")
@@ -67,22 +71,26 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String): Future[Option[Process]] = {
+  def get(key: String): Future[RequestOutcome[Process]] = {
     val updateModifier = Json.obj("$set" -> Json.obj("lastAccessed" -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
     findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
-      .map(_.result[DefaultSessionRepository.SessionProcess].map(_.process))
+      .map( wr => wr.result[SessionProcess].fold(Left(DatabaseError): RequestOutcome[Process])(r => Right(r.process)))
       .recover {
         case lastError =>
           logger.error(s"Unable to retrieve process associated with key=$key")
-          None
+          Left(DatabaseError)
       }
   }
 
-  def set(key: String, process: Process): Future[Option[Unit]] =
-    insert(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC))) map (_ => Some(())) recover {
-      case lastError =>
-        logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
-        None
-    }
+  def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))
 
+    collection.update(false).one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
+      .map(_ => Right(()))
+      .recover {
+        case lastError =>
+          logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
+          Left(DatabaseError)
+      }
+  }
 }

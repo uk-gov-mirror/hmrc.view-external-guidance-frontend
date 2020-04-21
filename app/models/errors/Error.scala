@@ -24,5 +24,9 @@ object Error {
   implicit val formats: OFormat[Error] = Json.format[Error]
 }
 
+object NotFoundError extends Error("NOT_FOUND", "The resource requested could not be found.")
+object BadRequestError extends Error("BAD_REQUEST", "The request is invalid.")
 object InvalidProcessError extends Error("BAD_REQUEST", "The input process is invalid")
 object InternalServerError extends Error("INTERNAL_SERVER_ERROR", "An unexpected error has occurred")
+object DatabaseError extends Error("DATABASE_ERROR", "An error occurred whilst accessing the database.")
+object ValidationError extends Error("VALIDATION_ERROR", "Input data failed validation test.")

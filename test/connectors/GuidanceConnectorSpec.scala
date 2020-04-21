@@ -24,6 +24,7 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.libs.json.Json
 import models.ocelot.Process
 import scala.concurrent.Future
+import models.RequestOutcome
 
 class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
@@ -37,9 +38,9 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
   "Calling the getProcess with an existing process ID" should {
     "return a model representing the Ocelot Process" in new Test {
-      val result = gc.getProcess("ext90002")(hc, implicitly)
+      val result = gc.getProcess("ext90002")
 
-      whenReady(result) { _ mustBe Some(process) }
+      whenReady(result) { _ mustBe Right(process) }
     }
   }
 
@@ -51,10 +52,10 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
         .get(scratchEndPoint + "683d9aa0-2a0e-4e28-9ac8-65ce453d2730")
         .returns(Future.successful(Right(process)))
 
-      val response: Option[Process] =
+      val response: RequestOutcome[Process] =
         await(gc.scratchProcess("683d9aa0-2a0e-4e28-9ac8-65ce453d2730")(hc, implicitly))
 
-      response mustBe Some(process)
+      response mustBe Right(process)
     }
   }
 
@@ -66,10 +67,10 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
         .get(publishedEndPoint + "ext90002")
         .returns(Future.successful(Right(process)))
 
-      val response: Option[Process] =
+      val response: RequestOutcome[Process] =
         await(gc.publishedProcess("ext90002")(hc, implicitly))
 
-      response mustBe Some(process)
+      response mustBe Right(process)
     }
   }
 

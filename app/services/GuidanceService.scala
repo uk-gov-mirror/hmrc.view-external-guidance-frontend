@@ -20,6 +20,8 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.{FormData, PageContext}
 import play.api.Logger
+import models.errors._
+import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.SessionRepository
@@ -27,47 +29,59 @@ import models.ocelot.Process
 
 @Singleton
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
-  val logger: Logger = Logger(getClass)
+  val logger = Logger(getClass)
 
-  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(implicit context: ExecutionContext): Future[Option[PageContext]] =
-    sessionRepository.get(sessionId).map { processOption =>
-      processOption.flatMap { process =>
+  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+    sessionRepository.get(sessionId).map {
+      case Right(process) =>
         pageBuilder
           .pages(process)
           .fold(
             err => {
               logger.warn(s"PageBuilder error $err for url $url on process ${process.meta.id}")
-              None
+              Left(NotFoundError)
             },
             pages => {
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-              pages
-                .find(page => page.url == url)
-                .map(pge => PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
+              pages.find(page => page.url == url)
+                   .fold(Left(NotFoundError): RequestOutcome[PageContext]){pge =>
+                      Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
+                    }
             }
           )
-      }
+      case Left(err) =>
+        logger.warn(s"Repository returned $err, when attempting retrive process using id $sessionId")
+        Left(err)
     }
 
-  def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+  def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     startProcessView(uuid, repositoryId, connector.scratchProcess)
 
-  def publishedProcess(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+  def publishedProcess(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     startProcessView(processId, repositoryId, connector.publishedProcess)
 
-  def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[String]] =
+  def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     startProcessView(processId, repositoryId, connector.getProcess)
 
-  private def startProcessView(id: String, repositoryId: String, processById: String => Future[Option[Process]])(
+  private def startProcessView(id: String, repositoryId: String, processById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
-  ): Future[Option[String]] =
+  ): Future[RequestOutcome[String]] =
     processById(id).flatMap {
-      case Some(process) =>
-        sessionRepository.set(repositoryId, process).map { _ =>
-          pageBuilder.pages(process).fold(_ => None, pages => Some(pages.head.url))
+      case Right(process) =>
+        sessionRepository.set(repositoryId, process).map{
+          case Right(_) =>
+            pageBuilder.pages(process).fold(err => {
+              logger.warn(s"Failed to parse process with error $err")
+              Left(InvalidProcessError)
+            }, pages => Right(pages.head.url))
+
+          case Left(err) => 
+            logger.warn(s"Failed to store new parsed process in session respository, $err")
+            Left(err)
         }
-      case None =>
-        Logger.warn(s"Unable to find process using id $id")
-        Future.successful(None)
+        
+      case Left(err) => 
+        logger.warn(s"Unable to find process using id $id, error")
+        Future.successful(Left(err))
     }
 }

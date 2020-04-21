@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import models.errors.NotFoundError
 
 class GuidanceServiceSpec extends BaseSpec {
 
@@ -62,7 +63,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockPageBuilder
         .pages(process)
@@ -75,8 +76,9 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(lastPageUrl, processId)
 
       whenReady(result) { pageContext =>
-        pageContext.fold(fail("no PageContext found")) {
-          _.page.urlPath mustBe lastPageUrl
+        pageContext match {
+          case Right(pc) => pc.page.urlPath mustBe lastPageUrl
+          case Left(err) => fail(s"no PageContext found with error $err")
         }
       }
     }
@@ -90,7 +92,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockPageBuilder
         .pages(process)
@@ -99,7 +101,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
-        _ mustBe None
+        _ mustBe Left(NotFoundError)
       }
     }
   }
@@ -110,11 +112,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .getProcess(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(processId, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -123,7 +125,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getStartPageUrl(processId, processId)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }
@@ -134,11 +136,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .scratchProcess(uuid)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(uuid, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -147,7 +149,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.scratchProcess(uuid, uuid)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }
@@ -158,11 +160,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .publishedProcess(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(sessionRepoId, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -171,7 +173,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.publishedProcess(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }
