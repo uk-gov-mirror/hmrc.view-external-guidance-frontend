@@ -39,7 +39,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
           .fold(
             err => {
               logger.warn(s"PageBuilder error $err for url $url on process ${process.meta.id}")
-              Left(NotFoundError)
+              Left(InvalidProcessError)
             },
             pages => {
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
