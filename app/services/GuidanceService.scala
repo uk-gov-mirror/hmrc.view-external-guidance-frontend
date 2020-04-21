@@ -31,7 +31,9 @@ import models.ocelot.Process
 class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
   val logger = Logger(getClass)
 
-  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(
+      implicit context: ExecutionContext
+  ): Future[RequestOutcome[PageContext]] =
     sessionRepository.get(sessionId).map {
       case Right(process) =>
         pageBuilder
@@ -43,10 +45,11 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
             },
             pages => {
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
-              pages.find(page => page.url == url)
-                   .fold(Left(NotFoundError): RequestOutcome[PageContext]){pge =>
-                      Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
-                    }
+              pages
+                .find(page => page.url == url)
+                .fold(Left(NotFoundError): RequestOutcome[PageContext]) { pge =>
+                  Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
+                }
             }
           )
       case Left(err) =>
@@ -68,19 +71,21 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
   ): Future[RequestOutcome[String]] =
     processById(id).flatMap {
       case Right(process) =>
-        sessionRepository.set(repositoryId, process).map{
+        sessionRepository.set(repositoryId, process).map {
           case Right(_) =>
-            pageBuilder.pages(process).fold(err => {
-              logger.warn(s"Failed to parse process with error $err")
-              Left(InvalidProcessError)
-            }, pages => Right(pages.head.url))
+            pageBuilder
+              .pages(process)
+              .fold(err => {
+                logger.warn(s"Failed to parse process with error $err")
+                Left(InvalidProcessError)
+              }, pages => Right(pages.head.url))
 
-          case Left(err) => 
+          case Left(err) =>
             logger.warn(s"Failed to store new parsed process in session respository, $err")
             Left(err)
         }
-        
-      case Left(err) => 
+
+      case Left(err) =>
         logger.warn(s"Unable to find process using id $id, error")
         Future.successful(Left(err))
     }

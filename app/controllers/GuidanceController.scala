@@ -46,7 +46,7 @@ class GuidanceController @Inject() (
   val logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSession[PageContext](service.getPageContext(s"/$path", _)).map{
+    withSession[PageContext](service.getPageContext(s"/$path", _)).map {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
         pageContext.page match {
@@ -119,7 +119,7 @@ class GuidanceController @Inject() (
   private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
-    processStartUrl(id, sessionId).map{
+    processStartUrl(id, sessionId).map {
       case Right(url) =>
         Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
       case Left(NotFoundError) =>

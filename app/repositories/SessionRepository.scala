@@ -46,9 +46,8 @@ object DefaultSessionRepository {
 trait SessionRepository {
   def get(key: String): Future[RequestOutcome[Process]]
   def set(key: String, process: Process): Future[RequestOutcome[Unit]]
-  type SessionProcess = DefaultSessionRepository.SessionProcess  
+  type SessionProcess = DefaultSessionRepository.SessionProcess
 }
-
 
 @Singleton
 class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
@@ -58,7 +57,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       domainFormat = DefaultSessionRepository.SessionProcess.format
     )
     with SessionRepository {
-  
+
   override def indexes: Seq[Index] = {
     val ttlSeconds = config.sessionProcessTTLMinutes * 60
     logger.info(s"SessionRepository TTL set to ${ttlSeconds} seconds")
@@ -74,7 +73,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def get(key: String): Future[RequestOutcome[Process]] = {
     val updateModifier = Json.obj("$set" -> Json.obj("lastAccessed" -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
     findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
-      .map( wr => wr.result[SessionProcess].fold(Left(DatabaseError): RequestOutcome[Process])(r => Right(r.process)))
+      .map(wr => wr.result[SessionProcess].fold(Left(DatabaseError): RequestOutcome[Process])(r => Right(r.process)))
       .recover {
         case lastError =>
           logger.error(s"Unable to retrieve process associated with key=$key")
@@ -85,7 +84,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))
 
-    collection.update(false).one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
+    collection
+      .update(false)
+      .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
       .map(_ => Right(()))
       .recover {
         case lastError =>
