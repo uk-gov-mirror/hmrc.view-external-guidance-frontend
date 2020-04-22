@@ -22,7 +22,7 @@ import javax.inject.Inject
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
 
-class FooterLinks @Inject()(implicit appConfig: AppConfig) {
+class FooterLinks @Inject() (implicit appConfig: AppConfig) {
 
   def cookieLink(implicit messages: Messages): FooterItem = FooterItem(
     Some(messages("footer.cookies")),
@@ -44,7 +44,7 @@ class FooterLinks @Inject()(implicit appConfig: AppConfig) {
     Some(appConfig.govukHelp)
   )
 
-  def defaultLink(implicit messages: Messages): FooterItem = FooterItem (
+  def defaultLink(implicit messages: Messages): FooterItem = FooterItem(
     Some("GOV.UK Prototype Kit v9.1.0"),
     Some("https://govuk-prototype-kit.herokuapp.com/")
   )

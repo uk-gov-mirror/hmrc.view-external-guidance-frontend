@@ -23,9 +23,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.Future
+
 @Singleton
 class AccessibilityStatementController @Inject() (appConfig: AppConfig, mcc: MessagesControllerComponents, view: views.html.accessibility_statement)
-  extends FrontendController(mcc)
+    extends FrontendController(mcc)
     with I18nSupport {
 
   implicit val config: AppConfig = appConfig

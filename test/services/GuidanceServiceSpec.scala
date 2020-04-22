@@ -178,5 +178,4 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-
 }
