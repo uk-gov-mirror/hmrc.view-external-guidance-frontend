@@ -18,11 +18,13 @@
 @import uk.gov.hmrc.govukfrontend.views.viewmodels.header.Header
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
+@import views.components.FooterLinks
 
 @this(layout: GovukLayout,
         phaseBanner : GovukPhaseBanner,
         govUkHeader: GovukHeader,
-        hmrcLanguageSelect: HmrcLanguageSelect)
+        hmrcLanguageSelect: HmrcLanguageSelect,
+        footerLinks: FooterLinks)
 
 @(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
@@ -63,9 +65,7 @@
     headBlock = Some(head),
     headerBlock = Some(headerBlock),
     beforeContentBlock = Some(beforeContentBlock),
-    footerItems = Seq(FooterItem(
-        href = Some("https://govuk-prototype-kit.herokuapp.com/"),
-        text = Some("GOV.UK Prototype Kit v9.1.0"))),
+    footerItems = footerLinks.items,
     bodyEndBlock = Some(scripts))(contentBlock)
 
 @{
