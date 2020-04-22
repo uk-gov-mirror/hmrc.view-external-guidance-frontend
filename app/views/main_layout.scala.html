@@ -19,11 +19,13 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
 @import views.components.FooterLinks
+@import config.AppConfig
 
 @this(layout: GovukLayout,
         phaseBanner : GovukPhaseBanner,
         govUkHeader: GovukHeader,
         hmrcLanguageSelect: HmrcLanguageSelect,
+        appConfig: AppConfig,
         footerLinks: FooterLinks)
 
 @(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)

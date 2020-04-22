@@ -16,15 +16,13 @@
 
 package controllers
 
-import config.AppConfigImpl
+import mocks.MockAppConfig
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
-import play.api.mvc.{AnyContentAsEmpty, Result}
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.{Configuration, Environment, _}
-import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 
 import scala.concurrent.Future
@@ -34,14 +32,8 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with G
   private trait Test {
     val fakeRequest = FakeRequest("GET", "/")
 
-    private val env = Environment.simple()
-    private val configuration = Configuration.load(env)
-
-    private val serviceConfig = new ServicesConfig(configuration, new RunMode(configuration, Mode.Dev))
-    private val appConfig = new AppConfigImpl(configuration, serviceConfig)
-
     private val view = app.injector.instanceOf[views.html.accessibility_statement]
-    val controller = new AccessibilityStatementController(appConfig, stubMessagesControllerComponents(), view)
+    val controller = new AccessibilityStatementController(MockAppConfig, stubMessagesControllerComponents(), view)
   }
 
   "GET /accessibility" should {
