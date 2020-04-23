@@ -391,18 +391,18 @@ class BulletPointBuilderSpec extends BaseSpec {
         val texts: List[String] = TextBuilder.placeholdersPattern.split(text1).toList
         val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
 
-        // Test invocation with "matchText" set to true
+        // Test invocation
         val (wordsProcessed1, outputTexts1, outputMatches1) =
-          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, true, 0)
+          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, 0)
 
         wordsProcessed1 mustBe 0
 
         outputTexts1 mustBe texts
         outputMatches1 mustBe matches
 
-        // Test invocation with "matchText" set to false
+        // Test invocation
         val (wordsProcessed2, outputTexts2, outputMatches2) =
-          BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, false, 2)
+          BulletPointBuilder.locateMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, 2)
 
         wordsProcessed2 mustBe 2
 
@@ -422,18 +422,18 @@ class BulletPointBuilderSpec extends BaseSpec {
       val texts: List[String] = TextBuilder.placeholdersPattern.split(text1).toList
       val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
 
-      // Test invocation with "matchText" set to true
+      // Test invocation
       val (wordsProcessed1, outputTexts1, outputMatches1) =
-        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, true, 0)
+        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, 0)
 
       wordsProcessed1 mustBe 0
 
       outputTexts1 mustBe texts
       outputMatches1 mustBe matches
 
-      // Test invocation with "matchText" set to false
+      // Test invocation
       val (wordsProcessed2, outputTexts2, outputMatches2) =
-        BulletPointBuilder.locateTextsAndMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, false, 2)
+        BulletPointBuilder.locateMatchesContainingLeadingText(2, List(), 0, List(), 0, texts, matches, 2)
 
       wordsProcessed2 mustBe 2
 
