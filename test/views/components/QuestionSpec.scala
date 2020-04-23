@@ -82,7 +82,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "render contained paragraphs" in new Test {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
 
-      doc.getElementsByTag("p").asScala.toList.foreach{ p =>
+      doc.getElementsByTag("p").asScala.toList.foreach { p =>
         elementAttrs(p)("class").contains("govuk-body") shouldBe true
       }
     }
@@ -153,7 +153,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "render contained paragraphs" in new WelshTest {
       val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
 
-      doc.getElementsByTag("p").asScala.toList.foreach{ p =>
+      doc.getElementsByTag("p").asScala.toList.foreach { p =>
         elementAttrs(p)("class").contains("govuk-body") shouldBe true
       }
     }

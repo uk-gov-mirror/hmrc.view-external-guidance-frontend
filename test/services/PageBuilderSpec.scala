@@ -397,7 +397,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       }
 
-
       "correctly identify the pages in a Process accounting fro every stanza" in {
 
         val process: Process = prototypeJson.as[Process]

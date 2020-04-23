@@ -33,8 +33,7 @@ import play.api.data.FormError
 import scala.concurrent.Future
 
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
- 
- 
+
   trait TestData {
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
@@ -109,15 +108,17 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
         .returns(Future.successful(Some(PageContext(expectedPage, "/"))))
-      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
-                                                          .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody((relativePath -> "/hello"))
+        .withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
     }
 
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
-        .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
+        .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List(new FormError(relativeStdPath, List("error.required"))))))
         .returns(Future.successful(Some(PageContext(standardPage, "/"))))
 
       override val fakeRequest = FakeRequest("POST", standardPagePath)
@@ -132,7 +133,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val unknownPath = "/non-existent"
       val unkwownRelativePath = unknownPath.drop(1)
       MockGuidanceService
-        .getPageContext(unknownPath, processId, Some(FormData(unkwownRelativePath, Map(), List( new FormError(unkwownRelativePath, List("error.required"))))))
+        .getPageContext(unknownPath, processId, Some(FormData(unkwownRelativePath, Map(), List(new FormError(unkwownRelativePath, List("error.required"))))))
         .returns(Future.successful(None))
 
       override val fakeRequest = FakeRequest("POST", unknownPath)
@@ -320,7 +321,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
   }
-
 
   "Calling a valid URL path for a page in a process" should {
 
