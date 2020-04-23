@@ -56,12 +56,12 @@ class GuidanceController @Inject() (
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
         NotFound(errorHandler.notFoundTemplate)
-      case badRequesterr @ Left(BadRequestError | InvalidProcessError) =>
-        logger.warn(s"Request for PageContext at /$path returned ${badRequesterr.toString} returning BadRequest")
-        BadRequest(errorHandler.notFoundTemplate)
+      case Left(BadRequestError) =>
+        logger.warn(s"Request for PageContext at /$path returned BadRequest")
+        BadRequest(errorHandler.badRequestTemplate)
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
-        InternalServerError(errorHandler.notFoundTemplate)
+        InternalServerError(errorHandler.internalServerErrorTemplate)
     }
   }
 
@@ -73,17 +73,17 @@ class GuidanceController @Inject() (
           case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, questionName(path), formWithErrors))
-              case _ => BadRequest(errorHandler.notFoundTemplate)
+              case _ => BadRequest(errorHandler.badRequestTemplate)
             }
           case Left(NotFoundError) =>
             logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
             NotFound(errorHandler.notFoundTemplate)
-          case badRequesterr @ Left(BadRequestError | InvalidProcessError) =>
-            logger.warn(s"Request for PageContext at /$path returned ${badRequesterr.toString} during form submission, returning BadRequest")
-            BadRequest(errorHandler.notFoundTemplate)
+          case Left(BadRequestError) =>
+            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
+            BadRequest(errorHandler.badRequestTemplate)
           case Left(err) =>
             logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
-            InternalServerError(errorHandler.notFoundTemplate)
+            InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
       nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
@@ -109,7 +109,7 @@ class GuidanceController @Inject() (
   }
 
   private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
-    hc.sessionId.fold{
+    hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
     }(sessionId => block(sessionId.value))
@@ -123,12 +123,9 @@ class GuidanceController @Inject() (
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find start page with id $id")
         NotFound(errorHandler.notFoundTemplate)
-      case badRequesterr @ Left(BadRequestError | InvalidProcessError) =>
-        logger.warn(s"BadRequest error ${badRequesterr.toString} when trying to find start page with id $id")
-        BadRequest(errorHandler.notFoundTemplate)
       case Left(err) =>
         logger.error(s"Error $err when trying to find start page with id $id")
-        InternalServerError(errorHandler.notFoundTemplate)
+        InternalServerError(errorHandler.internalServerErrorTemplate)
     }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

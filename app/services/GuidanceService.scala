@@ -53,7 +53,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
             }
           )
       case Left(err) =>
-        logger.warn(s"Repository returned $err, when attempting retrive process using id $sessionId")
+        logger.warn(s"Repository returned $err, when attempting retrieve process using id $sessionId")
         Left(err)
     }
 
