@@ -88,7 +88,7 @@ class UIBuilder {
         // TODO this should allocate the messages to errors found within the formData
         // as this linking of messages to form ids has not been resolved, Currently
         // this code will allocate all ErrorMsg elements to the only current error
-        // which is erro.required
+        // which is error.required
         formData
           .map { data =>
             data.errors.map { err =>
@@ -100,7 +100,7 @@ class UIBuilder {
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
 
-    def createRemainingItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
+    def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
       remainder.map { instruction =>
         val bulletPointEnglish: String = instruction.text
           .langs(0)
@@ -125,21 +125,10 @@ class UIBuilder {
       insGroup.group(1).text.langs(1)
     )
 
-    // Determine first bullet point
-    val firstBpEn: String =
-      insGroup.group.head.text.langs(0).substring(leadingEn.length, insGroup.group.head.text.langs(0).length).trim
+    // Process bullet points
+    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, insGroup.group)
 
-    val firstBpCy: String = insGroup.group.head.text
-      .langs(1)
-      .substring(leadingCy.length, insGroup.group.head.text.langs(1).length)
-      .trim
-
-    val firstBulletPointItems: Text = TextBuilder.fromPhrase(Phrase(firstBpEn, firstBpCy))
-
-    // Process remaining bullet points
-    val remainder: Seq[Text] = createRemainingItems(leadingEn, leadingCy, insGroup.group.drop(1))
-
-    BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), firstBulletPointItems +: remainder)
+    BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
 }
