@@ -18,6 +18,7 @@ package mocks
 
 import repositories.SessionRepository
 import models.ocelot.Process
+import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import scala.concurrent.Future
@@ -28,12 +29,12 @@ trait MockSessionRepository extends MockFactory {
 
   object MockSessionRepository {
 
-    def get(key: String): CallHandler[Future[Option[Process]]] =
+    def get(key: String): CallHandler[Future[RequestOutcome[Process]]] =
       (mockSessionRepository
         .get(_: String))
         .expects(key)
 
-    def set(key: String, process: Process): CallHandler[Future[Option[Unit]]] =
+    def set(key: String, process: Process): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
         .set(_: String, _: Process))
         .expects(key, process)

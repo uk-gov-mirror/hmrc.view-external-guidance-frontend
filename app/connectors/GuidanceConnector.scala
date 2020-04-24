@@ -17,13 +17,12 @@
 package connectors
 
 import javax.inject.{Inject, Singleton}
-import models.RequestOutcome
 import models.ocelot._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import config.AppConfig
-
+import models.RequestOutcome
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -31,22 +30,19 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
 
   private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
 
-  def getProcess(id: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
-    Future.successful(Some(stubbedProcess))
+  def getProcess(id: String): Future[RequestOutcome[Process]] =
+    Future.successful(Right(stubbedProcess))
 
-  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+  def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid")
 
-  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] =
+  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/published/$processId")
 
-  private def retrieveProcess(endPoint: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[Option[Process]] = {
+  private def retrieveProcess(endPoint: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] = {
     import connectors.httpParsers.GetProcessHttpParser.getProcessHttpReads
 
-    httpClient.GET[RequestOutcome[Process]](endPoint, Seq.empty, Seq.empty).map {
-      case Right(process) => Some(process)
-      case Left(err) => None
-    }
+    httpClient.GET[RequestOutcome[Process]](endPoint, Seq.empty, Seq.empty)
   }
 
 }

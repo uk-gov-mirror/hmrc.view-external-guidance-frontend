@@ -21,6 +21,7 @@ import models.ocelot.Process
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
+import models.RequestOutcome
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -30,20 +31,18 @@ trait MockGuidanceConnector extends MockFactory {
 
   object MockGuidanceConnector {
 
-    def getProcess(id: String): CallHandler[Future[Option[Process]]] = {
-      (mockGuidanceConnector
-        .getProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(id, *, *)
+    def getProcess(id: String): CallHandler[Future[RequestOutcome[Process]]] = {
+      (mockGuidanceConnector.getProcess(_: String)).expects(id)
     }
 
-    def scratchProcess(uuid: String): CallHandler[Future[Option[Process]]] = {
+    def scratchProcess(uuid: String): CallHandler[Future[RequestOutcome[Process]]] = {
       (mockGuidanceConnector
         .scratchProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(uuid, *, *)
 
     }
 
-    def publishedProcess(processId: String): CallHandler[Future[Option[Process]]] = {
+    def publishedProcess(processId: String): CallHandler[Future[RequestOutcome[Process]]] = {
       (mockGuidanceConnector
         .publishedProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *)

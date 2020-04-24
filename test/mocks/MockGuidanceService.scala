@@ -17,6 +17,7 @@
 package mocks
 
 import models.ui.PageContext
+import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
@@ -30,25 +31,25 @@ trait MockGuidanceService extends MockFactory {
 
   object MockGuidanceService {
 
-    def scratchProcess(uuid: String, sessionRepoId: String): CallHandler[Future[Option[String]]] = {
+    def scratchProcess(uuid: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
         .scratchProcess(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(uuid, *, *, *)
     }
 
-    def getStartPageUrl(processId: String, sessionRepoId: String): CallHandler[Future[Option[String]]] = {
+    def getStartPageUrl(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
         .getStartPageUrl(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)
     }
 
-    def publishedProcess(processId: String, sessionRepoId: String): CallHandler[Future[Option[String]]] = {
+    def publishedProcess(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
         .publishedProcess(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)
     }
 
-    def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[Option[PageContext]]] = {
+    def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
       (mockGuidanceService
         .getPageContext(_: String, _: String, _: Option[FormData])(_: ExecutionContext))
         .expects(url, processId, formData, *)
