@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.errors.NotFoundError
+import models.errors.BadRequestError
 
 class GuidanceServiceSpec extends BaseSpec {
 
@@ -57,7 +57,7 @@ class GuidanceServiceSpec extends BaseSpec {
     lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
 
-  "Calling getPage with a valid URL" should {
+  "Calling getPageContext with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
 
@@ -84,7 +84,7 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-  "Calling getPage with an invalid URL" should {
+  "Calling getPageContext with an invalid URL" should {
 
     "not retrieve a page from the process" in new Test {
 
@@ -101,7 +101,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
-        _ mustBe Left(NotFoundError)
+        _ mustBe Left(BadRequestError)
       }
     }
   }

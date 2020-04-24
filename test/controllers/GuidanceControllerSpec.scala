@@ -143,14 +143,14 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) mustBe Status.NOT_FOUND
     }
 
-    "return a BAD_REQUEST response if submitting to a Process containing errors is referenced" in new QuestionTest {
+    "return a INTERNAL_SERVER_ERROR response if submitting to a Process containing errors is referenced" in new QuestionTest {
       MockGuidanceService
         .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
         .returns(Future.successful(Left(InvalidProcessError)))
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody().withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.BAD_REQUEST
+      status(result) mustBe Status.INTERNAL_SERVER_ERROR
     }
 
     "return a INTERNAL_SERVER_ERROR response if encountering a database error when submitting a page" in new QuestionTest {
