@@ -25,6 +25,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import models.errors.BadRequestError
 
 class GuidanceServiceSpec extends BaseSpec {
 
@@ -56,13 +57,13 @@ class GuidanceServiceSpec extends BaseSpec {
     lazy val target = new GuidanceService(mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
   }
 
-  "Calling getPage with a valid URL" should {
+  "Calling getPageContext with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockPageBuilder
         .pages(process)
@@ -75,14 +76,15 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(lastPageUrl, processId)
 
       whenReady(result) { pageContext =>
-        pageContext.fold(fail("no PageContext found")) {
-          _.page.urlPath mustBe lastPageUrl
+        pageContext match {
+          case Right(pc) => pc.page.urlPath mustBe lastPageUrl
+          case Left(err) => fail(s"no PageContext found with error $err")
         }
       }
     }
   }
 
-  "Calling getPage with an invalid URL" should {
+  "Calling getPageContext with an invalid URL" should {
 
     "not retrieve a page from the process" in new Test {
 
@@ -90,7 +92,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockPageBuilder
         .pages(process)
@@ -99,7 +101,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
-        _ mustBe None
+        _ mustBe Left(BadRequestError)
       }
     }
   }
@@ -110,11 +112,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .getProcess(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(processId, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -123,7 +125,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getStartPageUrl(processId, processId)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }
@@ -134,11 +136,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .scratchProcess(uuid)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(uuid, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -147,7 +149,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.scratchProcess(uuid, uuid)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }
@@ -158,11 +160,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .publishedProcess(processId)
-        .returns(Future.successful(Some(process)))
+        .returns(Future.successful(Right(process)))
 
       MockSessionRepository
         .set(sessionRepoId, process)
-        .returns(Future.successful(Some(())))
+        .returns(Future.successful(Right(())))
 
       MockPageBuilder
         .pages(process)
@@ -171,7 +173,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.publishedProcess(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url mustBe Some(firstPageUrl)
+        url mustBe Right(firstPageUrl)
       }
     }
   }

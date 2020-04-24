@@ -12,6 +12,7 @@ eclipse
 *.eml
 .history
 .idea
+.metals
 /.idea_modules
 *.iml
 lib
@@ -22,6 +23,7 @@ modules
 /out
 precompiled
 /.project
+project/metals.sbt
 project/project
 project/target
 /RUNNING_PID

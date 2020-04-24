@@ -22,7 +22,9 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.ui.{StandardPage, QuestionPage, FormData}
+import models.errors._
+import models.RequestOutcome
+import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import uk.gov.hmrc.http.SessionKeys
@@ -41,17 +43,25 @@ class GuidanceController @Inject() (
 ) extends FrontendController(mcc)
     with I18nSupport {
 
+  val logger = Logger(getClass)
+
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSession(service.getPageContext(s"/$path", _)).map {
-      case Some(pageContext) =>
-        Logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
+    withSession[PageContext](service.getPageContext(s"/$path", _)).map {
+      case Right(pageContext) =>
+        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
           case page: QuestionPage => Ok(questionView(page, pageContext.processStartUrl, questionName(path), formProvider(questionName(path))))
         }
-      case None =>
-        Logger.warn(s"Request for PageContext at /$path returned nothing resulting in BadRequest")
-        BadRequest(errorHandler.notFoundTemplate)
+      case Left(NotFoundError) =>
+        logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
+        NotFound(errorHandler.notFoundTemplate)
+      case Left(BadRequestError) =>
+        logger.warn(s"Request for PageContext at /$path returned BadRequest")
+        BadRequest(errorHandler.badRequestTemplate)
+      case Left(err) =>
+        logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
+        InternalServerError(errorHandler.internalServerErrorTemplate)
     }
   }
 
@@ -59,15 +69,21 @@ class GuidanceController @Inject() (
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withSession(service.getPageContext(s"/$path", _, Some(formData))).map {
-          case Some(pageContext) =>
+        withSession[PageContext](service.getPageContext(s"/$path", _, Some(formData))).map {
+          case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, questionName(path), formWithErrors))
-              case _ => BadRequest(errorHandler.notFoundTemplate)
+              case _ => BadRequest(errorHandler.badRequestTemplate)
             }
-          case _ =>
-            Logger.warn(s"Request for PageContext at /$path during form submission, returned nothing resulting in BadRequest")
-            BadRequest(errorHandler.notFoundTemplate)
+          case Left(NotFoundError) =>
+            logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
+            NotFound(errorHandler.notFoundTemplate)
+          case Left(BadRequestError) =>
+            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
+            BadRequest(errorHandler.badRequestTemplate)
+          case Left(err) =>
+            logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
+            InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
       nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
@@ -76,38 +92,40 @@ class GuidanceController @Inject() (
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    Logger.info(s"Starting journey with sessionId = $sessionId")
+    logger.info(s"Starting journey with sessionId = $sessionId")
     startUrlById(processId, sessionId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    Logger.info(s"Starting scratch with sessionId = $sessionId")
+    logger.info(s"Starting scratch with sessionId = $sessionId")
     startUrlById(uuid, sessionId, service.scratchProcess)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    Logger.info(s"Starting publish with sessionId = $sessionId")
+    logger.info(s"Starting publish with sessionId = $sessionId")
     startUrlById(processId, sessionId, service.publishedProcess)
   }
 
-  private def withSession[T](block: String => Future[Option[T]])(implicit request: Request[_]): Future[Option[T]] =
-    request.session.get(SessionKeys.sessionId) match {
-      case Some(sessionId) => block(sessionId)
-      case None =>
-        Logger.warn(s"Session Id missing from request when required")
-        Future.successful(None)
-    }
+  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
+    hc.sessionId.fold {
+      logger.error(s"Session Id missing from request when required")
+      Future.successful(Left(BadRequestError): RequestOutcome[T])
+    }(sessionId => block(sessionId.value))
 
-  private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[Option[String]])(
+  private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
-    processStartUrl(id, sessionId).map { urlOption =>
-      urlOption.fold({
-        Logger.warn(s"Unable to find start page with id $id")
+    processStartUrl(id, sessionId).map {
+      case Right(url) =>
+        Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
+      case Left(NotFoundError) =>
+        logger.warn(s"Unable to find start page with id $id")
         NotFound(errorHandler.notFoundTemplate)
-      })(url => Redirect(s"/guidance$url").withSession(SessionKeys.sessionId -> sessionId))
+      case Left(err) =>
+        logger.error(s"Error $err when trying to find start page with id $id")
+        InternalServerError(errorHandler.internalServerErrorTemplate)
     }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

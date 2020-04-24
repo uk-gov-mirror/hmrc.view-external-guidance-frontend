@@ -17,8 +17,9 @@
 package connectors.httpParsers
 
 import models.errors.{InternalServerError, InvalidProcessError}
-import models.RequestOutcome
 import models.ocelot._
+import models.errors._
+import models.RequestOutcome
 import play.api.Logger
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpReads
