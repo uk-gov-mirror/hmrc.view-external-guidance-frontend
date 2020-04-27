@@ -24,40 +24,34 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
 
 class FooterLinks @Inject() (implicit appConfig: AppConfig) {
 
-  def cookieLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some(messages("footer.cookies")),
+  def cookieLink()(implicit messages: Messages): FooterItem = FooterItem(
+    Some(messages("footer.links.cookies.text")),
     Some(appConfig.cookies)
   )
 
-  def privacyLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some(messages("footer.privacy")),
+  def privacyLink()(implicit messages: Messages): FooterItem = FooterItem(
+    Some(messages("footer.links.privacy_policy.text")),
     Some(appConfig.privacy)
   )
 
-  def termsConditionsLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some(messages("footer.termsConditions")),
+  def termsConditionsLink()(implicit messages: Messages): FooterItem = FooterItem(
+    Some(messages("footer.links.terms_and_conditions.text")),
     Some(appConfig.termsConditions)
   )
 
-  def govukHelpLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some(messages("footer.govukHelp")),
+  def govukHelpLink()(implicit messages: Messages): FooterItem = FooterItem(
+    Some(messages("footer.links.help_page.text")),
     Some(appConfig.govukHelp)
   )
 
-  def defaultLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some("GOV.UK Prototype Kit v9.1.0"),
-    Some("https://govuk-prototype-kit.herokuapp.com/")
-  )
-
-  def accecssibilityLink(implicit messages: Messages): FooterItem = FooterItem(
-    Some(messages("footer.accessibility")),
+  def accecssibilityLink()(implicit messages: Messages): FooterItem = FooterItem(
+    Some(messages("footer.links.accessibility.text")),
     Some(routes.AccessibilityStatementController.getPage().url)
   )
 
   def items(implicit messages: Messages): Seq[FooterItem] = Seq(
-    defaultLink,
-    accecssibilityLink,
     cookieLink,
+    accecssibilityLink,
     privacyLink,
     termsConditionsLink,
     govukHelpLink
