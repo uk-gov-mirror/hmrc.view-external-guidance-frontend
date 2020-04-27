@@ -32,6 +32,10 @@ trait AppConfig {
   val externalGuidanceBaseUrl: String
   val config: Configuration
   val sessionProcessTTLMinutes: Int
+  val cookies: String
+  val privacy: String
+  val termsConditions: String
+  val govukHelp: String
 }
 
 @Singleton
@@ -50,4 +54,9 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val sessionProcessTTLMinutes: Int = servicesConfig.getInt("mongodb.sessionProcessTTLMinutes")
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
+
+  lazy val cookies: String = config.get[String]("urls.footer.cookies")
+  lazy val privacy: String = config.get[String]("urls.footer.privacy")
+  lazy val termsConditions: String = config.get[String]("urls.footer.termsConditions")
+  lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
 }

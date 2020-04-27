@@ -19,12 +19,12 @@ package views.components
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
-import play.api.i18n.{Messages, MessagesApi, Lang}
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
-import models.ui.{BulletPointList, Page, H1, Paragraph, Text, StandardPage}
+import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text}
 import org.jsoup.nodes.Document
 import scala.collection.JavaConverters._
 
@@ -84,8 +84,8 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       val secondPara = paras.eq(3)
       secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
-
-      val actualListItems = doc.getElementsByTag("li").asScala.toList.dropRight(1)
+      // Need to ignore the footer <li> elements
+      val actualListItems = doc.select("ul.govuk-list--bullet > li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] =
@@ -112,7 +112,8 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val secondPara = paras.eq(3)
       secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
 
-      val actualListItems = doc.getElementsByTag("li").asScala.toList.dropRight(1)
+      // Need to ignore the footer <li> elements
+      val actualListItems = doc.select("ul.govuk-list--bullet > li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
