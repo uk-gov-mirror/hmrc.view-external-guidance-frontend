@@ -26,7 +26,8 @@
         govUkHeader: GovukHeader,
         hmrcLanguageSelect: HmrcLanguageSelect,
         appConfig: AppConfig,
-        footerLinks: FooterLinks)
+        footerLinks: FooterLinks,
+        timeoutDialog: HmrcTimeoutDialog)
 
 @(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
@@ -59,7 +60,21 @@
 
 @scripts = {
     <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
+    <script src='@controllers.routes.Assets.versioned("lib/hmrc-frontend/hmrc/all.js")'></script>
+    @timeoutDialog(
+        TimeoutDialog(
+        timeout = Some(appConfig.timeoutInSeconds),
+        countdown = Some(appConfig.timeoutWarningInSeconds),
+        keepAliveUrl = Some("#"),
+        keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
+        signOutUrl = Some(appConfig.signOutUrl),
+        signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
+        title = Some(messages("timeout.dialog.title.text")),
+        message = Some(messages("timeout.dialog.message.text"))
+        )
+    )
     <script>window.GOVUKFrontend.initAll();</script>
+    <script>window.HMRCFrontend.initAll();</script>
 }
 
 @layout(
