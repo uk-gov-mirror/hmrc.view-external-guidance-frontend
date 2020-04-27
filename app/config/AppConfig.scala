@@ -36,6 +36,9 @@ trait AppConfig {
   val privacy: String
   val termsConditions: String
   val govukHelp: String
+  val signOutUrl: String
+  val timeoutInSeconds: Int
+  val timeoutWarningInSeconds: Int
 }
 
 @Singleton
@@ -59,4 +62,9 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val privacy: String = config.get[String]("urls.footer.privacy")
   lazy val termsConditions: String = config.get[String]("urls.footer.termsConditions")
   lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
+
+  lazy val signOutUrl: String = config.get[String]("session-timeout.signOutUrl")
+  lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")
+  lazy val timeoutWarningInSeconds: Int = config.get[Int]("session-timeout.warning")
+
 }

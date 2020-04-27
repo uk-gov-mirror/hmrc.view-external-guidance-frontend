@@ -75,17 +75,17 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       h1s.size shouldBe 1
       h1s.first.text shouldBe title.english.head.toString
 
-      val paras = doc.getElementsByTag("p")
+      val paras = doc.select("main.govuk-main-wrapper p")
 
-      paras.size shouldBe 4
+      paras.size shouldBe 2
 
-      val firstPara = paras.eq(2)
+      val firstPara = paras.eq(0)
       firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
 
-      val secondPara = paras.eq(3)
+      val secondPara = paras.eq(1)
       secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
-      // Need to ignore the footer <li> elements
-      val actualListItems = doc.select("ul.govuk-list--bullet > li").asScala.toList
+
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] =
@@ -102,18 +102,17 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       h1s.size shouldBe 1
       h1s.first.text shouldBe title.welsh.head.toString
 
-      val paras = doc.getElementsByTag("p")
+      val paras = doc.select("main.govuk-main-wrapper p")
 
-      paras.size shouldBe 4
+      paras.size shouldBe 2
 
-      val firstPara = paras.eq(2)
+      val firstPara = paras.eq(0)
       firstPara.first.text shouldBe openingPara.welsh.head.toString
 
-      val secondPara = paras.eq(3)
+      val secondPara = paras.eq(1)
       secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
 
-      // Need to ignore the footer <li> elements
-      val actualListItems = doc.select("ul.govuk-list--bullet > li").asScala.toList
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
