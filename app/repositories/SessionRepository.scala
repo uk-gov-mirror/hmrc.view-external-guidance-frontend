@@ -64,12 +64,16 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] =
     // If current configuration includes an update to the expiry period of the TTL index, drop the current index to its re-creation
-    collection.indexesManager.list().flatMap{ indexes =>
-      indexes.filter(idx => idx.name == Some(lastAccessedIndexName) &&
-                            idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.sessionProcessTTLSeconds)).map{_ =>
-        logger.info(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
-        collection.indexesManager.drop(lastAccessedIndexName)
-      }
+    collection.indexesManager.list().flatMap { indexes =>
+      indexes
+        .filter(idx =>
+          idx.name == Some(lastAccessedIndexName) &&
+          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.sessionProcessTTLSeconds)
+        )
+        .map { _ =>
+          logger.warn(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
+          collection.indexesManager.drop(lastAccessedIndexName).map(ret => logger.info(s"Drop of $lastAccessedIndexName index returned $ret"))
+        }
 
       super.ensureIndexes
     }
@@ -109,5 +113,5 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
   }
-    
+
 }
