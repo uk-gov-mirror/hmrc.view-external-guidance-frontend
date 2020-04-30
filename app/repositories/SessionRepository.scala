@@ -63,7 +63,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   val ttlExpiryFieldName = "lastAccessed"
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] =
-    // If current configuration includes an update to the expiry period of the TTL index, drop the current index to its re-creation
+    // If current configuration includes an update to the expiry period of the TTL index, drop the current index to allow its re-creation
     collection.indexesManager.list().flatMap { indexes =>
       indexes
         .filter(idx =>
