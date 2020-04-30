@@ -58,13 +58,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     with SessionRepository {
 
   override def indexes: Seq[Index] = {
-    val ttlSeconds = config.sessionProcessTTLMinutes * 60
-    logger.info(s"SessionRepository TTL set to ${ttlSeconds} seconds")
+    logger.info(s"SessionRepository TTL set to ${config.sessionProcessTTLSeconds} seconds")
     Seq(
       Index(
         Seq("lastAccessed" -> IndexType.Ascending),
         name = Some("lastAccessedIndex"),
-        options = BSONDocument("expireAfterSeconds" -> ttlSeconds)
+        options = BSONDocument("expireAfterSeconds" -> config.sessionProcessTTLSeconds)
       )
     )
   }

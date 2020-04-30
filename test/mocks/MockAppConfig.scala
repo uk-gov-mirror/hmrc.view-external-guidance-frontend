@@ -30,7 +30,7 @@ object MockAppConfig extends AppConfig {
   override val reportAProblemPartialUrl: String = "someUrl"
   override val reportAProblemNonJSUrl: String = "someJsUrl"
   override val externalGuidanceBaseUrl: String = "http://external-guidance-base-url"
-  override val sessionProcessTTLMinutes: Int = 20
+  override val sessionProcessTTLSeconds: Int = 1200
   override val cookies: String = "someUrl"
   override val privacy: String = "someUrl"
   override val termsConditions: String = "someUrl"
