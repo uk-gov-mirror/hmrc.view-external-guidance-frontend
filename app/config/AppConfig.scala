@@ -49,7 +49,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   private val contactBaseUrl = servicesConfig.baseUrl("contact-frontend")
 
   private val assetsUrl = config.get[String]("assets.url")
-  private val serviceIdentifier = "vefg"
+  private val serviceIdentifier = "vegf"
   lazy val host: String = servicesConfig.getString("host")
 
 
