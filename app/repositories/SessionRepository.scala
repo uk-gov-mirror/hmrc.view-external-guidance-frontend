@@ -68,7 +68,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       indexes
         .filter(idx =>
           idx.name == Some(lastAccessedIndexName) &&
-          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.sessionProcessTTLSeconds)
+          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
         )
         .map { _ =>
           logger.warn(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
@@ -79,12 +79,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     }
 
   override def indexes: Seq[Index] = {
-    logger.info(s"SessionRepository TTL set to ${config.sessionProcessTTLSeconds} seconds")
+    logger.info(s"SessionRepository TTL set to ${config.timeoutInSeconds} seconds")
     Seq(
       Index(
         Seq(ttlExpiryFieldName -> IndexType.Ascending),
         name = Some(lastAccessedIndexName),
-        options = BSONDocument(expiryAfterOptionName -> config.sessionProcessTTLSeconds)
+        options = BSONDocument(expiryAfterOptionName -> config.timeoutInSeconds)
       )
     )
   }

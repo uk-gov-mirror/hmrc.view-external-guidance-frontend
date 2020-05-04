@@ -31,7 +31,6 @@ trait AppConfig {
   val languageMap: Map[String, Lang]
   val externalGuidanceBaseUrl: String
   val config: Configuration
-  val sessionProcessTTLSeconds: Int
   val cookies: String
   val privacy: String
   val termsConditions: String
@@ -54,7 +53,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val reportAProblemPartialUrl: String = s"$contactBaseUrl/contact/problem_reports_ajax?service=$serviceIdentifier"
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
-  lazy val sessionProcessTTLSeconds: Int = servicesConfig.getInt("mongodb.sessionProcessTTLSeconds")
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 
