@@ -33,6 +33,7 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import scala.concurrent.{ExecutionContext, Future}
 import reactivemongo.api.indexes.IndexType
 import reactivemongo.api.indexes.Index
+import reactivemongo.bson.BSONInteger
 
 object DefaultSessionRepository {
   final case class SessionProcess(id: String, processId: String, process: Process, lastAccessed: DateTime)
@@ -57,20 +58,39 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
     with SessionRepository {
 
+  val lastAccessedIndexName = "lastAccessedIndex"
+  val expiryAfterOptionName = "expireAfterSeconds"
+  val ttlExpiryFieldName = "lastAccessed"
+
+  override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] =
+    // If current configuration includes an update to the expiry period of the TTL index, drop the current index to allow its re-creation
+    collection.indexesManager.list().flatMap { indexes =>
+      indexes
+        .filter(idx =>
+          idx.name == Some(lastAccessedIndexName) &&
+          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
+        )
+        .map { _ =>
+          logger.warn(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
+          collection.indexesManager.drop(lastAccessedIndexName).map(ret => logger.info(s"Drop of $lastAccessedIndexName index returned $ret"))
+        }
+
+      super.ensureIndexes
+    }
+
   override def indexes: Seq[Index] = {
-    val ttlSeconds = config.sessionProcessTTLMinutes * 60
-    logger.info(s"SessionRepository TTL set to ${ttlSeconds} seconds")
+    logger.info(s"SessionRepository TTL set to ${config.timeoutInSeconds} seconds")
     Seq(
       Index(
-        Seq("lastAccessed" -> IndexType.Ascending),
-        name = Some("lastAccessedIndex"),
-        options = BSONDocument("expireAfterSeconds" -> ttlSeconds)
+        Seq(ttlExpiryFieldName -> IndexType.Ascending),
+        name = Some(lastAccessedIndexName),
+        options = BSONDocument(expiryAfterOptionName -> config.timeoutInSeconds)
       )
     )
   }
 
   def get(key: String): Future[RequestOutcome[Process]] = {
-    val updateModifier = Json.obj("$set" -> Json.obj("lastAccessed" -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
+    val updateModifier = Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
     findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
       .map(wr => wr.result[DefaultSessionRepository.SessionProcess].fold(Left(DatabaseError): RequestOutcome[Process])(r => Right(r.process)))
       .recover {
@@ -93,4 +113,5 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
   }
+
 }
