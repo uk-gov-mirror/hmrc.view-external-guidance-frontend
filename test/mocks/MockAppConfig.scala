@@ -19,6 +19,8 @@ package mocks
 import config.AppConfig
 import play.api.Configuration
 import play.api.i18n.Lang
+import play.api.mvc.RequestHeader
+
 import scala.collection.immutable.ListMap
 
 object MockAppConfig extends AppConfig {
@@ -38,4 +40,5 @@ object MockAppConfig extends AppConfig {
   override val signOutUrl: String = "https://www.gov.uk"
   override val timeoutInSeconds: Int = 1200
   override val timeoutWarningInSeconds: Int = 300
+  override def feedbackUrl(implicit request: RequestHeader): String = "somefeedbackUrl"
 }
