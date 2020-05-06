@@ -66,7 +66,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=$requestUri"
 
-
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 
   lazy val cookies: String = config.get[String]("urls.footer.cookies")
