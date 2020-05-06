@@ -42,6 +42,7 @@ trait AppConfig {
   val timeoutInSeconds: Int
   val timeoutWarningInSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
+  val serviceIdentifier:String
 }
 
 @Singleton
@@ -52,7 +53,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val serviceIdentifier = "vegf"
   lazy val host: String = servicesConfig.getString("host")
   lazy val betaFeedback:String = servicesConfig.getString("betafeedback")
-
 
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
   val analyticsToken: String = config.get[String](s"google-analytics.token")
