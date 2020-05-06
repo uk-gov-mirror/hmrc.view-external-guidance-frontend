@@ -51,6 +51,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   private val assetsUrl = config.get[String]("assets.url")
   val serviceIdentifier = "vegf"
   lazy val host: String = servicesConfig.getString("host")
+  lazy val betaFeedback:String = servicesConfig.getString("betafeedback")
 
 
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
@@ -62,7 +63,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
 
   private def requestUri(implicit request: RequestHeader) = ContinueUrl(host + request.uri).encodedUrl
   def feedbackUrl(implicit request: RequestHeader): String =
-    s"$contactBaseUrl/contact/beta-feedback-unauthenticated?service=$serviceIdentifier&backUrl=$requestUri"
+    s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=$requestUri"
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 
