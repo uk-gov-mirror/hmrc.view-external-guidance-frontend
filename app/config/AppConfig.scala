@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.i18n.Lang
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
 import scala.collection.immutable.ListMap
 
 trait AppConfig {
@@ -45,7 +46,9 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   private val contactBaseUrl = servicesConfig.baseUrl("contact-frontend")
 
   private val assetsUrl = config.get[String]("assets.url")
-  private val serviceIdentifier = "MyService"
+  val serviceIdentifier = "vegf"
+  lazy val host: String = servicesConfig.getString("host")
+
 
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
   val analyticsToken: String = config.get[String](s"google-analytics.token")
