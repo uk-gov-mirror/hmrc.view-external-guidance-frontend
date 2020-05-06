@@ -27,7 +27,8 @@
         hmrcLanguageSelect: HmrcLanguageSelect,
         appConfig: AppConfig,
         footerLinks: FooterLinks,
-        timeoutDialog: HmrcTimeoutDialog)
+        timeoutDialog: HmrcTimeoutDialog,
+hmrcReportTechnicalIssue: hmrcReportTechnicalIssue)
 
 @(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
@@ -58,6 +59,15 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
     ))
 }
 
+@content = {
+@contentBlock
+
+<div class="govuk-!-margin-top-6">
+    @hmrcReportTechnicalIssue(ReportTechnicalIssue(appConfig.serviceIdentifier, Some(messages.lang.language))
+    )
+</div>
+}
+
 @scripts = {
     <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
     <script src='@controllers.routes.Assets.versioned("lib/hmrc-frontend/hmrc/all.js")'></script>
@@ -83,7 +93,7 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
     headerBlock = Some(headerBlock),
     beforeContentBlock = Some(beforeContentBlock),
     footerItems = footerLinks.items,
-    bodyEndBlock = Some(scripts))(contentBlock)
+    bodyEndBlock = Some(scripts))(content)
 
 @{
     //$COVERAGE-OFF$
