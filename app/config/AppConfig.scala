@@ -21,6 +21,7 @@ import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
 import uk.gov.hmrc.play.binders.ContinueUrl
+import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.collection.immutable.ListMap
@@ -61,10 +62,8 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
 
-
-  private def requestUri(implicit request: RequestHeader) = ContinueUrl(host + request.uri).encodedUrl
   def feedbackUrl(implicit request: RequestHeader): String =
-    s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=$requestUri"
+    s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 
