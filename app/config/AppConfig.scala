@@ -61,9 +61,11 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
 
+
   private def requestUri(implicit request: RequestHeader) = ContinueUrl(host + request.uri).encodedUrl
   def feedbackUrl(implicit request: RequestHeader): String =
     s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=$requestUri"
+
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
 
