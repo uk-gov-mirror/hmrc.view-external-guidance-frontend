@@ -39,6 +39,9 @@ compliant.two.p3=We have also made the text in the service as simple as possible
 compliant.two.p4.0=
 compliant.two.p4.1=AbilityNet
 compliant.two.p4.2=has advice on making your device easier to use if you have a disability.
+feedback.before = This is a new service - your
+feedback.link = feedback
+feedback.after = will help us to improve it.
 
 ## section three
 compliant.three.heading=How accessible this service is

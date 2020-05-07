@@ -36,7 +36,7 @@
         tag = Some(Tag(
             content = Text("alpha")
         )),
-        content = HtmlContent("""This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.""")
+content = HtmlContent("This is a new service – your <a class='govuk-link' href=" + appConfig.feedbackUrl + ">feedback</a> will help us to improve it.")
     ))
     @hmrcLanguageSelect(
         LanguageSelect(if (messages.lang.language == "en") En else Cy,
