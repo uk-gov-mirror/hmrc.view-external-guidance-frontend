@@ -42,7 +42,6 @@ trait AppConfig {
   val timeoutInSeconds: Int
   val timeoutWarningInSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
-  val serviceIdentifier:String
 }
 
 @Singleton
