@@ -27,8 +27,7 @@
         hmrcLanguageSelect: HmrcLanguageSelect,
         appConfig: AppConfig,
         footerLinks: FooterLinks,
-        timeoutDialog: HmrcTimeoutDialog,
-hmrcReportTechnicalIssue: hmrcReportTechnicalIssue)
+        timeoutDialog: HmrcTimeoutDialog)
 
 @(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
@@ -60,9 +59,11 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
 }
 
 @content = {
-     @contentBlock
- <div class="govuk-!-margin-top-6">
+ <div class="govuk-!-margin-bottom-6">
+    @contentBlock
+ </div>
 
+ <div class="govuk-body">
     <a lang="en" hreflang="en" class="govuk-link " target="_blank" href="@{appConfig.reportAProblemNonJSUrl}">
         @messages("feedback.reportlink")
     </a>
