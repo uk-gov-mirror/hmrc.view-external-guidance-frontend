@@ -42,6 +42,7 @@ compliant.two.p4.2=has advice on making your device easier to use if you have a 
 feedback.before = This is a new service - your
 feedback.link = feedback
 feedback.after = will help us to improve it.
+feedback.reportlink = Get help with this page (opens in a new window or tab)
 
 ## section three
 compliant.three.heading=How accessible this service is
