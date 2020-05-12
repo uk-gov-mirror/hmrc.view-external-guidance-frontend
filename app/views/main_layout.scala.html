@@ -58,6 +58,18 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
     ))
 }
 
+@content = {
+ <div class="govuk-!-margin-bottom-6">
+    @contentBlock
+ </div>
+
+ <div class="govuk-body">
+    <a lang="en" hreflang="en" class="govuk-link " target="_blank" href="@{appConfig.reportAProblemNonJSUrl}">
+        @messages("feedback.reportlink")
+    </a>
+ </div>
+}
+
 @scripts = {
     <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
     <script src='@controllers.routes.Assets.versioned("lib/hmrc-frontend/hmrc/all.js")'></script>
@@ -83,7 +95,7 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
     headerBlock = Some(headerBlock),
     beforeContentBlock = Some(beforeContentBlock),
     footerItems = footerLinks.items,
-    bodyEndBlock = Some(scripts))(contentBlock)
+    bodyEndBlock = Some(scripts))(content)
 
 @{
     //$COVERAGE-OFF$

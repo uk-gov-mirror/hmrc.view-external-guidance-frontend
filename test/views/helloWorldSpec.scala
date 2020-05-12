@@ -47,14 +47,18 @@ class helloWorldSpec extends WordSpec with Matchers with GuiceOneAppPerSuite  {
     implicit def appconfig: AppConfig = injector.instanceOf[AppConfig]
   }
 
-    "feedback component" should {
-      "generate English html containing Text and links" in new Test {
+    "hello world page" should {
+      "generate feedback and report a problem links and attributes" in new Test {
 
         val doc = asDocument(helloWorld())
         val links = doc.getElementsByTag("a").asScala
-        val link1Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-        link1Attrs.contains("href") shouldBe true
-        link1Attrs("href") shouldBe appconfig.feedbackUrl
+        val feedbackLink = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        feedbackLink.contains("href") shouldBe true
+        feedbackLink("href") shouldBe appconfig.feedbackUrl
+
+        val reportaProblemLink = links(5).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+        reportaProblemLink.contains("href") shouldBe true
+        reportaProblemLink("href") shouldBe appconfig.reportAProblemNonJSUrl
       }
     }
 
