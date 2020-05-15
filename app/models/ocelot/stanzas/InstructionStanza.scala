@@ -19,9 +19,7 @@ package models.ocelot.stanzas
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads, OWrites}
 import play.api.libs.json.Reads._
-import models.ocelot.Phrase
-
-import models.ocelot.Link
+import models.ocelot.{Link, Phrase}
 
 case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza
 
@@ -47,7 +45,7 @@ case class Instruction(text: Phrase, override val next: Seq[String], link: Optio
 
   val linkIds: Seq[String] = link
     .map(lnk => Seq(lnk.dest.trim))
-    .filter(l => l.head.forall(c => c.isDigit))
+    .filter(id => Link.isLinkableStanzaId(id.head))
     .getOrElse(Nil)
 }
 

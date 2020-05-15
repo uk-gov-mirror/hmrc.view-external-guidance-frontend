@@ -34,20 +34,21 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   }
 
   trait Test {
-    val pageId1 = "start"
+    val pageId1 = Process.StartStanzaId
     val pageId2 = "4"
     val pageId3 = "6"
     val pageId4 = "9"
     val pageId5 = "11"
     val pageId6 = "14"
-    val pageIds = Seq(pageId1, pageId2, pageId3, pageId4, pageId5, pageId6)
+    val pageId7 = "17"
+    val pageIds = Seq(pageId1, pageId2, pageId3, pageId4, pageId5, pageId6, pageId7)
 
     private val flow = Map(
       pageId1 -> ValueStanza(List(Value(Scalar, "PageUrl", "/start")), Seq("1"), false),
       "1" -> InstructionStanza(3, Seq("2"), None, false),
       "2" -> QuestionStanza(1, Seq(2, 1), Seq(pageId2, pageId4), false),
       pageId2 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this4")), Seq("5"), false),
-      "5" -> InstructionStanza(1, Seq("end"), Some(0), false),
+      "5" -> InstructionStanza(1, Seq("end"), Some(2), false),
       pageId3 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this6")), Seq("7"), false),
       "7" -> InstructionStanza(2, Seq("8"), None, false),
       "8" -> QuestionStanza(1, Seq(2, 3), Seq(pageId4, pageId6), false),
@@ -59,17 +60,20 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "13" -> QuestionStanza(1, Seq(2, 3), Seq(pageId6, pageId2), false),
       pageId6 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this14")), Seq("15"), false),
       "15" -> InstructionStanza(0, Seq("end"), None, false),
+      pageId7 -> ValueStanza(List(Value(Scalar, "PageUrl", "/this15")), Seq("18"), false),
+      "18" -> InstructionStanza(0, Seq("end"), None, false),
+
       "end" -> EndStanza
     )
 
     private val phrases = Vector[Phrase](
       Phrase(Vector("Some Text", "Welsh, Some Text")),
-      Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-      Phrase(Vector("Some Text2", "Welsh, Some Text2")),
+      Phrase(Vector(s"Some Text1 [link:Link to stanza 17:${pageId7}]", s"Welsh, Some Text1 [link:Link to stanza 17:${pageId7}]")),
+      Phrase(Vector(s"Some [link:PageId3:${pageId3}] Text2", s"Welsh, Some [link:PageId3:${pageId3}] Text2")),
       Phrase(Vector(s"Some [link:Link to stanza 11:${pageId5}] Text3", s"Welsh, Some [link:Link to stanza 11:${pageId5}] Text3"))
     )
 
-    private val links = Vector(Link(0, pageId3, "", false), Link(1, pageId6, "", false))
+    private val links = Vector(Link(0, pageId3, "", false), Link(1, pageId6, "", false), Link(2, Process.StartStanzaId, "Back to the start", false))
 
     val processWithLinks = Process(metaSection, flow, phrases, links)
   }
@@ -77,7 +81,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   "PageBuilder error handling" must {
 
     val flow = Map(
-      "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
       "1" -> InstructionStanza(0, Seq("2"), None, false),
       "2" -> DummyStanza
     )
@@ -86,7 +90,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val process = Process(metaSection, flow, Vector[Phrase](Phrase(Vector("Some Text", "Welsh, Some Text"))), Vector[Link]())
 
-      pageBuilder.buildPage("start", process) match {
+      pageBuilder.buildPage(Process.StartStanzaId, process) match {
         case Left(UnknownStanzaType(DummyStanza)) => succeed
         case Left(stanza) => fail(s"Unknown stanza not detected, found $stanza")
         case err => fail(s"Unknown stanza not detected $err")
@@ -105,7 +109,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect MissingPageUrlValueStanza error when stanza routes to page not starting with PageUrl ValueStanza" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -133,7 +137,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect MissingPageUrlValueStanza error when PageValue is present but url is blank" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -153,7 +157,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       )
 
       pageBuilder.pages(process) match {
-        case Left(MissingPageUrlValueStanza("start")) => succeed
+        case Left(MissingPageUrlValueStanza(Process.StartStanzaId)) => succeed
         case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
         case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
       }
@@ -161,7 +165,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect MissingPageUrlWithinValueStanza error when no PageUrl named value" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "SomeValue", "Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "SomeValue", "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -181,7 +185,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       )
 
       pageBuilder.pages(process) match {
-        case Left(MissingPageUrlValueStanza("start")) => succeed
+        case Left(MissingPageUrlValueStanza(Process.StartStanzaId)) => succeed
         case Left(err) => fail(s"Missing PageUrl value within initial ValueStanza not found with error $err")
         case Right(_) => fail(s"Missing PageUrl value within initial ValueStanza missed")
       }
@@ -189,7 +193,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect PhraseNotFound in QuestionStanza text" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(four, Seq(two, three), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -217,7 +221,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect PhraseNotFound in QuestionStanza answers" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(four, three), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -245,7 +249,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect PhraseNotFound in InstructionStanza" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> InstructionStanza(2, Seq("end"), None, false),
         "end" -> EndStanza
       )
@@ -260,7 +264,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect PhraseNotFound in CalloutStanza" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah")), Seq("1"), false),
         "1" -> CalloutStanza(Title, 2, Seq("end"), false),
         "end" -> EndStanza
       )
@@ -276,7 +280,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "detect LinkNotFound(1) in InstructionStanza" in {
 
       val flow: Map[String, Stanza] = Map(
-        "start" -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah Blah")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "Blah Blah")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> InstructionStanza(1, Seq("end"), Some(1), false),
         "end" -> EndStanza
@@ -299,7 +303,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect DuplicatePageUrl" in {
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
         "4" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("5"), false),
@@ -375,7 +379,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
           case Right(pages) =>
             pages mustNot be(Nil)
 
-            pages.head.id mustBe "start"
+            pages.head.id mustBe Process.StartStanzaId
 
           case Left(err) => fail(s"First page must be the requested start page")
         }
@@ -449,15 +453,16 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
         pageBuilder.pages(processWithLinks) match {
           case Right(pages) =>
-            pages.length mustBe 6
+            pages.length mustBe 7
+            
             val pageMap = pages.map(p => (p.id, p.linked)).toMap
 
             pageIds.forall(pageMap.contains) mustBe true
 
             pageMap(pageId1) mustBe List(pageId5)
-            pageMap(pageId2) mustBe List(pageId3)
-            pageMap(pageId3) mustBe Nil
-            pageMap(pageId4) mustBe List(pageId5)
+            pageMap(pageId2) mustBe List(pageId7,pageId1)
+            pageMap(pageId3) mustBe List(pageId3)
+            pageMap(pageId4) mustBe List(pageId5, pageId3)
             pageMap(pageId5) mustBe Nil
             pageMap(pageId6) mustBe Nil
 
@@ -503,7 +508,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val phrase2: Phrase = Phrase(Vector("Some Text1", "Welsh, Some Text1"))
 
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
         "1" -> instructionStanza1,
         "2" -> instructionStanza2,
         "end" -> EndStanza
@@ -533,7 +538,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", ""))
 
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
         "1" -> instructionStanza1,
         "2" -> instructionStanza2,
         "3" -> instructionStanza3,
@@ -585,7 +590,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", ""))
 
       val flow = Map(
-        "start" -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
+        Process.StartStanzaId -> ValueStanza(List(Value(Scalar, "PageUrl", "/this")), Seq("1"), false),
         "1" -> calloutStanza1,
         "2" -> instructionStanza1,
         "3" -> instructionStanza2,
@@ -648,7 +653,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   def testPagesInPrototypeJson(pages: Seq[Page]): Unit = {
 
     val expectedPageIds: List[String] = List(
-      "start",
+      Process.StartStanzaId,
       "26",
       "36",
       "37",
@@ -695,7 +700,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Define the question page correctly" in {
 
-      firstPage.id mustBe "start"
+      firstPage.id mustBe Process.StartStanzaId
       firstPage.stanzas.size mustBe 4
 
       firstPage.stanzas mustBe Seq(sqpQpValueStanza, sqpQpInstruction, sqpQpCallout, sqpQpQuestion)

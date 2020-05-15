@@ -17,7 +17,7 @@
 package utils
 
 import models.ocelot.stanzas._
-import models.ocelot.{Link, Phrase}
+import models.ocelot.{Link, Phrase, Process}
 
 trait StanzaHelper {
 
@@ -75,7 +75,7 @@ trait StanzaHelper {
 
     val value1 = Value(Scalar, "PageUrl", "/")
     Map(
-      ("start" -> ValueStanza(List(value1), Seq("1"), false)),
+      (Process.StartStanzaId -> ValueStanza(List(value1), Seq("1"), false)),
       ("1" -> InstructionStanza(0, Seq("2"), None, false)),
       ("2" -> InstructionStanza(1, Seq("end"), None, false)),
       ("end" -> EndStanza)
@@ -87,7 +87,7 @@ trait StanzaHelper {
     val value1 = Value(Scalar, "PageUrl", "/")
     val value2 = Value(Scalar, "PageUrl", "/a")
     Map(
-      ("start" -> ValueStanza(List(value1), Seq("1"), false)),
+      (Process.StartStanzaId -> ValueStanza(List(value1), Seq("1"), false)),
       ("1" -> InstructionStanza(0, Seq("2"), None, false)),
       ("2" -> InstructionStanza(1, Seq("3"), None, false)),
       ("3" -> ValueStanza(List(value2), Seq("4"), false)),
@@ -100,7 +100,7 @@ trait StanzaHelper {
 
     // Define Map of Stanzas to be processed
     Map(
-      "start" -> sqpQpValueStanza,
+      Process.StartStanzaId -> sqpQpValueStanza,
       "1" -> sqpQpInstructionStanza,
       "2" -> sqpQpCalloutStanza,
       "3" -> sqpQpQuestionStanza,

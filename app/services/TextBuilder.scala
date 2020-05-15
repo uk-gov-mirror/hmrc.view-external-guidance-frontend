@@ -16,7 +16,7 @@
 
 package services
 
-import models.ocelot.Phrase
+import models.ocelot.{Link => OcelotLink, Phrase, Process}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -48,7 +48,7 @@ object TextBuilder {
   private def placeholdersToItems(matches: List[Match])(implicit urlMap: Map[String, String]): List[TextItem] =
     matches.map { m =>
       Option(m.group(1)).fold[TextItem](
-        if (m.group(3).forall(_.isDigit)) {
+        if (OcelotLink.isLinkableStanzaId(m.group(3))) {
           Link(urlMap(m.group(3)), m.group(2))
         } else {
           Link(m.group(3), m.group(2))
@@ -72,5 +72,5 @@ object TextBuilder {
     }
 
   val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
-  val placeholdersPattern: Regex = """\[bold:([^\]]+)\]|\[link:([^\]]+?):(\d+|https?:[a-zA-Z0-9\/\.\-\?_\.=&]+)\]""".r
+  val placeholdersPattern: Regex = s"\\[bold:([^\\]]+)\\]|\\[link:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
 }
