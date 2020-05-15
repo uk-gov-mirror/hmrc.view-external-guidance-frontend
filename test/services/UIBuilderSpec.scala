@@ -27,7 +27,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   trait QuestionTest {
 
     implicit val urlMap: Map[String, String] =
-      Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+      Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
     val answerDestinations = Seq("4", "5", "6")
     val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
 
@@ -43,7 +43,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       Question(questionPhrase, answers, answerDestinations, false)
     )
 
-    val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq(""), Nil)
     val uiBuilder: UIBuilder = new UIBuilder()
   }
 
@@ -102,7 +102,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val link1TxtCy = "Welsh, A link"
     val link2TxtEn = "Another Link"
     val link2TxtCy = "Welsh, Another Link"
-
+    val link2StartEn = "Back to beginning"
+    val link2StartCy = "Back to beginning"
     val link1Txt2En = "A link at start of phrase"
     val link1Txt2Cy = "Welsh, A link at start of phrase"
     val link2Txt2En = "Another Link at end of phrase"
@@ -135,6 +136,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink1En = Link("dummy-path/next", pageLink1TextEn)
     val pageLink2En = Link("dummy-path", pageLink2TextEn)
 
+    val startLinkEn = Link("/", link2StartEn)
+    val startLinkCy = Link("/", link2StartCy)
+
     val link1Cy = Link("https://www.bbc.co.uk", link1TxtCy, false)
     val link2Cy = Link("https://www.gov.uk", link2TxtCy, false)
     val link2_1Cy = Link("https://www.bbc.co.uk", link1Txt2Cy, false)
@@ -146,7 +150,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink2Cy = Link("dummy-path", pageLink2TextCy)
 
     implicit val urlMap: Map[String, String] =
-      Map("3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+      Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
     val answerDestinations = Seq("4", "5", "6")
     val answerDestinationUrls = Seq("dummy-path/question", "dummy-path/blah", "dummy-path/anotherquestion")
 
@@ -173,8 +177,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val txtWithAllLinks = Phrase(
       Vector(
-        "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34]",
-        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34]"
+        "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34][link:Back to beginning:start]",
+        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34][link:Back to beginning:start]"
       )
     )
 
@@ -214,8 +218,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       questionWithAnswerHints
     )
 
-    val questionPage = Page("start", "/", stanzasWithQuestion, Seq(""), Nil)
-    val questionPageWithHints = Page("start", "/", stanzasWithQuestionAndHints, Seq(""), Nil)
+    val questionPage = Page(Process.StartStanzaId, "/", stanzasWithQuestion, Seq(""), Nil)
+    val questionPageWithHints = Page(Process.StartStanzaId, "/", stanzasWithQuestionAndHints, Seq(""), Nil)
 
     val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
     val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
@@ -223,8 +227,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzasWithEmbeddedLinks2 = initialStanza ++ Seq(embeddedLinkInstructionStanza2, EndStanza)
     val stanzasWithEmbeddedPageLinks = initialStanza ++ Seq(embeddedPageLinkInstructionStanza, EndStanza)
     val stanzasWithEmbeddedAllLinks = initialStanza ++ Seq(embeddedAllLinkInstructionStanza, EndStanza)
-    val page = Page("start", "/test-page", stanzas, Seq(""), Nil)
-    val hyperLinkPage = Page("start", "/test-page", stanzasWithHyperLink, Seq(""), Nil)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq(""), Nil)
+    val hyperLinkPage = Page(Process.StartStanzaId, "/test-page", stanzasWithHyperLink, Seq(""), Nil)
 
     val textItems = ltxt1 +
       Text(link1En, link1Cy) +
@@ -238,7 +242,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       ltxt2 +
       Text(pageLink2En, pageLink2Cy) +
       ltxt3
-    val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy)
+    val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy) + Text(startLinkEn, startLinkCy)
 
     val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEmbeddedLinks)
     val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)
@@ -398,7 +402,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         instructionGroup
       )
 
-      val bulletPointListPage = Page("start", "/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/", bulletPointListStanzas, Seq(""), Nil)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -449,7 +453,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         instructionGroup
       )
 
-      val bulletPointListPage = Page("start", "/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/", bulletPointListStanzas, Seq(""), Nil)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -513,7 +517,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         instruction3
       )
 
-      val complexPage = Page("start", "/", stanzaSeq, Seq(""), Nil)
+      val complexPage = Page(Process.StartStanzaId, "/", stanzaSeq, Seq(""), Nil)
 
       val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
 

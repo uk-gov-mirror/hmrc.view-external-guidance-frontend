@@ -51,8 +51,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   private val assetsUrl = config.get[String]("assets.url")
   val serviceIdentifier = "vegf"
   lazy val host: String = servicesConfig.getString("host")
-  lazy val betaFeedback:String = servicesConfig.getString("betafeedback")
-
+  lazy val betaFeedback: String = servicesConfig.getString("betafeedback")
 
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
   val analyticsToken: String = config.get[String](s"google-analytics.token")

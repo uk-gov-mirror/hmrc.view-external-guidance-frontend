@@ -45,7 +45,7 @@ class GuidanceServiceSpec extends BaseSpec {
     val lastUiPage: ui.Page = ui.Page(lastPageUrl, Seq())
 
     val pages: Seq[Page] = Seq(
-      pageWithUrl("start", firstPageUrl),
+      pageWithUrl(Process.StartStanzaId, firstPageUrl),
       pageWithUrl("1", "/page-1"),
       pageWithUrl("2", lastPageUrl)
     )

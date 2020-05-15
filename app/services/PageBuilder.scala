@@ -28,7 +28,7 @@ case class KeyedStanza(key: String, stanza: Stanza)
 @Singleton
 class PageBuilder extends ProcessPopulation {
 
-  private val pageLinkRegex = """\[link:.+?:(\d+)\]""".r
+  private val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
 
   private def isNewPageStanza(existingStanzas: Seq[KeyedStanza], stanza: ValueStanza): Boolean =
     existingStanzas.nonEmpty && pageUrl(stanza.values).isDefined
@@ -72,7 +72,7 @@ class PageBuilder extends ProcessPopulation {
     }
   }
 
-  def pages(process: Process, start: String = "start"): Either[FlowError, Seq[Page]] = {
+  def pages(process: Process, start: String = Process.StartStanzaId): Either[FlowError, Seq[Page]] = {
 
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[FlowError, Seq[Page]] =
