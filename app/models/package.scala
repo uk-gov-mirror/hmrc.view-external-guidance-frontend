@@ -15,9 +15,22 @@
  */
 
 import models.errors.Error
+import models.ocelot.Process
+import models.ocelot.stanzas.{ValueStanza, PageStanza, PageUrlValueName}
 
 package object models {
 
   type RequestOutcome[T] = Either[Error, T]
+
+  def migrateValueStanzaProcess( p: Process ): Process =
+    p.copy(flow = p.flow.keys.map{ k =>
+                    val s = p.flow(k) match {
+                      case v: ValueStanza => // Expects valid Process json
+                        PageStanza(v.values.find(_.label.equals(PageUrlValueName.toString)).get.value, v.next, v.stack)
+                      case s => s
+                    }
+                    (k, s)
+                  }.toMap
+          )
 
 }
