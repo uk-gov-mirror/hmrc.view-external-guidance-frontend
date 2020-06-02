@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Singleton
 
-import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
+import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, PageStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
 import models.ocelot.Phrase
 import play.api.Logger
 import models.ocelot.stanzas.{Question => OcelotQuestion}
@@ -40,14 +40,13 @@ class UIBuilder {
         stanza match {
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if OcelotLink.isLinkableStanzaId(dest) =>
             acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
-          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) =>
-            acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
-          case Instruction(txt, _, _, _) =>
-            acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
+          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) => acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
+          case Instruction(txt, _, _, _) => acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
 
           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
           case c: Callout => acc ++ fromCallout(c, formData)
           case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+          case PageStanza(_, _, _) => acc
           case ValueStanza(_, _, _) => acc
           case EndStanza => acc
         }

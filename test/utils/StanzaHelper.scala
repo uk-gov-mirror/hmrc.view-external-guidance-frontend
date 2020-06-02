@@ -43,12 +43,12 @@ trait StanzaHelper {
   val links: Vector[Link] = Vector(Link(0, "http://my.com/news", "MyCOM Daily News", true))
 
   // Define stanzas used in simple question page test
-  val sqpQpValue = Value(Scalar, "PageUrl", "/page/1")
-  val sqpFapValue = Value(Scalar, "PageUrl", "/page/2")
-  val sqpSapValue = Value(Scalar, "PageUrl", "/page/3")
+  val sqpQpValue = "/page/1"
+  val sqpFapValue = "/page/2"
+  val sqpSapValue = "/page/3"
 
   // Question page - BEFORE
-  val sqpQpValueStanza = ValueStanza(List(sqpQpValue), Seq("1"), false)
+  val sqpQpPageStanza = PageStanza(sqpQpValue, Seq("1"), false)
   val sqpQpInstructionStanza = InstructionStanza(0, Seq("2"), None, false)
   val sqpQpCalloutStanza = CalloutStanza(SubTitle, 1, Seq("3"), false)
   val sqpQpQuestionStanza = QuestionStanza(two, Seq(three, four), Seq("4", "6"), false)
@@ -58,13 +58,13 @@ trait StanzaHelper {
   val sqpQpQuestion = Question(phrases(two), Seq(phrases(three), phrases(four)), Seq("4", "6"), false)
 
   // First answer page BEFORE
-  val sqpFapValueStanza = ValueStanza(List(sqpFapValue), Seq("5"), false)
+  val sqpFapPageStanza = PageStanza(sqpFapValue, Seq("5"), false)
   val sqpFapInstructionStanza = InstructionStanza(0, Seq("end"), None, false)
   // First answer page AFTER
   val sqpFapInstruction = Instruction(phrases(0), Seq("end"), None, false)
 
   // Second answer page BEFORE
-  val sqpSapValueStanza = ValueStanza(List(sqpSapValue), Seq("7"), false)
+  val sqpSapPageStanza = PageStanza(sqpSapValue, Seq("7"), false)
   val sqpSapInstructionStanza = InstructionStanza(five, Seq("8"), Some(0), false)
   val sqpSapCalloutStanza = CalloutStanza(Lede, six, Seq("end"), false)
   // Second answer page AFTER
@@ -73,9 +73,9 @@ trait StanzaHelper {
 
   def onePage: Map[String, Stanza] = {
 
-    val value1 = Value(Scalar, "PageUrl", "/")
+    val value1 = "/"
     Map(
-      (Process.StartStanzaId -> ValueStanza(List(value1), Seq("1"), false)),
+      (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),
       ("1" -> InstructionStanza(0, Seq("2"), None, false)),
       ("2" -> InstructionStanza(1, Seq("end"), None, false)),
       ("end" -> EndStanza)
@@ -84,13 +84,13 @@ trait StanzaHelper {
 
   def twoPagesSeperatedByValueStanza: Map[String, Stanza] = {
 
-    val value1 = Value(Scalar, "PageUrl", "/")
-    val value2 = Value(Scalar, "PageUrl", "/a")
+    val value1 = "/"
+    val value2 = "/a"
     Map(
-      (Process.StartStanzaId -> ValueStanza(List(value1), Seq("1"), false)),
+      (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),
       ("1" -> InstructionStanza(0, Seq("2"), None, false)),
       ("2" -> InstructionStanza(1, Seq("3"), None, false)),
-      ("3" -> ValueStanza(List(value2), Seq("4"), false)),
+      ("3" -> PageStanza(value2, Seq("4"), false)),
       ("4" -> InstructionStanza(0, Seq("end"), None, false)),
       ("end" -> EndStanza)
     )
@@ -100,13 +100,13 @@ trait StanzaHelper {
 
     // Define Map of Stanzas to be processed
     Map(
-      Process.StartStanzaId -> sqpQpValueStanza,
+      Process.StartStanzaId -> sqpQpPageStanza,
       "1" -> sqpQpInstructionStanza,
       "2" -> sqpQpCalloutStanza,
       "3" -> sqpQpQuestionStanza,
-      "4" -> sqpFapValueStanza,
+      "4" -> sqpFapPageStanza,
       "5" -> sqpFapInstructionStanza,
-      "6" -> sqpSapValueStanza,
+      "6" -> sqpSapPageStanza,
       "7" -> sqpSapInstructionStanza,
       "8" -> sqpSapCalloutStanza,
       "end" -> EndStanza
