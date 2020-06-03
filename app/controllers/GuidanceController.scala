@@ -114,7 +114,7 @@ class GuidanceController @Inject() (
     startProcessView(processId, sessionId, service.retrieveAndCacheApproval)
   }
 
-  def approvalPageView(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
+  def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
     def routeTotUrl(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[String]] =
       service.retrieveAndCacheApproval(processId, repositoryId).map{
         case Right(_) => Right(startUrl)
