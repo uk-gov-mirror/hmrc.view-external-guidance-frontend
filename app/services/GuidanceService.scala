@@ -57,19 +57,22 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
         Left(err)
     }
 
-  def scratchProcess(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    startProcessView(uuid, repositoryId, connector.scratchProcess)
+  def retrieveAndCacheScratch(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(uuid, repositoryId, connector.scratchProcess)
 
-  def publishedProcess(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    startProcessView(processId, repositoryId, connector.publishedProcess)
+  def retrieveAndCachePublished(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, repositoryId, connector.publishedProcess)
+
+  def retrieveAndCacheApproval(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, repositoryId, connector.approvalProcess)
 
   def getStartPageUrl(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    startProcessView(processId, repositoryId, connector.getProcess)
+    retrieveAndCache(processId, repositoryId, connector.getProcess)
 
-  private def startProcessView(id: String, repositoryId: String, processById: String => Future[RequestOutcome[Process]])(
+  private def retrieveAndCache(id: String, repositoryId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[String]] =
-    processById(id).flatMap {
+    retrieveProcessById(id).flatMap {
       case Right(process) =>
         sessionRepository.set(repositoryId, process).map {
           case Right(_) =>

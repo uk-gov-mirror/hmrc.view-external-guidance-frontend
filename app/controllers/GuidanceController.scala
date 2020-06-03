@@ -93,19 +93,37 @@ class GuidanceController @Inject() (
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting journey with sessionId = $sessionId")
-    startUrlById(processId, sessionId, service.getStartPageUrl)
+    startProcessView(processId, sessionId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting scratch with sessionId = $sessionId")
-    startUrlById(uuid, sessionId, service.scratchProcess)
+    startProcessView(uuid, sessionId, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting publish with sessionId = $sessionId")
-    startUrlById(processId, sessionId, service.publishedProcess)
+    startProcessView(processId, sessionId, service.retrieveAndCachePublished)
+  }
+
+  def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
+    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    logger.info(s"Starting approval direct view with sessionId = $sessionId")
+    startProcessView(processId, sessionId, service.retrieveAndCacheApproval)
+  }
+
+  def approvalPageView(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
+    def routeTotUrl(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[String]] =
+      service.retrieveAndCacheApproval(processId, repositoryId).map{
+        case Right(_) => Right(startUrl)
+        case err @ Left(_) => err
+    }
+
+    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
+    logger.info(s"Starting approval direct view with sessionId = $sessionId")
+    startProcessView(processId, sessionId, routeTotUrl(s"/$url"))
   }
 
   private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
@@ -114,7 +132,7 @@ class GuidanceController @Inject() (
       Future.successful(Left(BadRequestError): RequestOutcome[T])
     }(sessionId => block(sessionId.value))
 
-  private def startUrlById(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
+  private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {

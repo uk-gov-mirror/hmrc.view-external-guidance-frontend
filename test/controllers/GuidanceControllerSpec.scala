@@ -177,7 +177,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     trait ScratchTestWithValidUUID extends ScratchTest {
       val repositoryId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
       MockGuidanceService
-        .scratchProcess(uuid, repositoryId)
+        .retrieveAndCacheScratch(uuid, repositoryId)
         .returns(Future.successful(Right(expectedUrl)))
 
       lazy val result = target.scratch(uuid)(fakeRequest)
@@ -200,7 +200,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "Use the existing session ID" in new ScratchTest {
       MockGuidanceService
-        .scratchProcess(uuid, uuid)
+        .retrieveAndCacheScratch(uuid, uuid)
         .returns(Future.successful(Right(expectedUrl)))
 
       val result = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
@@ -212,7 +212,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a NOT_FOUND error" in new ScratchTest {
       MockGuidanceService
-        .scratchProcess(uuid, uuid)
+        .retrieveAndCacheScratch(uuid, uuid)
         .returns(Future.successful(Left(NotFoundError)))
       val result = target.scratch(uuid)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND
@@ -224,7 +224,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return an INTERNAL_SERVER_ERROR error" in new ScratchTest {
       MockGuidanceService
-        .scratchProcess(uuid, uuid)
+        .retrieveAndCacheScratch(uuid, uuid)
         .returns(Future.successful(Left(DatabaseError)))
 
       val result = target.scratch(uuid)(fakeRequest)
@@ -315,7 +315,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "redirect the caller to another page" in new PublishedTest {
       MockGuidanceService
-        .publishedProcess(processId, processId)
+        .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
 
       val result = target.published(processId)(fakeRequest)
@@ -324,7 +324,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "redirect the caller to the start page of the process" in new PublishedTest {
       MockGuidanceService
-        .publishedProcess(processId, processId)
+        .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.published(processId)(fakeRequest)
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
@@ -332,7 +332,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "add the process ID to the user's session" in new PublishedTest {
       MockGuidanceService
-        .publishedProcess(processId, processId)
+        .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.published(processId)(fakeRequest)
       session(result).data.keys must contain(SessionKeys.sessionId)
@@ -343,7 +343,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "Use the existing session ID" in new PublishedTest {
       MockGuidanceService
-        .publishedProcess(processId, processId)
+        .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.published(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
       session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
@@ -355,7 +355,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return a NOT_FOUND error" in new PublishedTest {
       val unknownProcessId = "ext90077"
       MockGuidanceService
-        .publishedProcess(unknownProcessId, unknownProcessId)
+        .retrieveAndCachePublished(unknownProcessId, unknownProcessId)
         .returns(Future.successful(Left(NotFoundError)))
       val result = target.published(unknownProcessId)(fakeRequest)
       status(result) mustBe Status.NOT_FOUND

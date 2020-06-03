@@ -146,7 +146,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.scratchProcess(uuid, uuid)
+      private val result = target.retrieveAndCacheScratch(uuid, uuid)
 
       whenReady(result) { url =>
         url mustBe Right(firstPageUrl)
@@ -170,7 +170,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.publishedProcess(processId, sessionRepoId)
+      private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
 
       whenReady(result) { url =>
         url mustBe Right(firstPageUrl)
