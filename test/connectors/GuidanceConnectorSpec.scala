@@ -75,7 +75,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     }
   }
 
-  "Calling approvalProcess with an existing published process ID" should {
+  "Calling approvalProcess with an existing approval process ID" should {
 
     "return a model representing an approval Process" in new Test {
 
