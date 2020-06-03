@@ -14,6 +14,9 @@ GET   /start/:processId                  controllers.GuidanceController.startJou
 
 GET   /published/:processId              controllers.GuidanceController.published(processId)
 
+GET   /approval/:processId/*url          controllers.GuidanceController.approvalPage(processId: String, url: String)
+GET   /approval/:processId               controllers.GuidanceController.approval(processId: String)
+
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
 
 GET   /*path                             controllers.GuidanceController.getPage(path: String)

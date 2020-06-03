@@ -34,6 +34,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     val gc: GuidanceConnector = new GuidanceConnector(mockHttpClient, MockAppConfig)
     val scratchEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"
     val publishedEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/published/"
+    val approvalEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/approval/"
   }
 
   "Calling the getProcess with an existing process ID" should {
@@ -46,7 +47,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
   "Calling the scratchProcess with an existing scratch process UUID" should {
 
-    "return a model representing the Ocelot Scatch Process" in new Test {
+    "return a model representing a Scatch Process" in new Test {
 
       MockedHttpClient
         .get(scratchEndPoint + "683d9aa0-2a0e-4e28-9ac8-65ce453d2730")
@@ -61,7 +62,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
   "Calling the publishedProcess with an existing published process ID" should {
 
-    "return a model representing the Ocelot Scatch Process" in new Test {
+    "return a model representing a published Process" in new Test {
 
       MockedHttpClient
         .get(publishedEndPoint + "ext90002")
@@ -69,6 +70,21 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
       val response: RequestOutcome[Process] =
         await(gc.publishedProcess("ext90002")(hc, implicitly))
+
+      response mustBe Right(process)
+    }
+  }
+
+  "Calling approvalProcess with an existing approval process ID" should {
+
+    "return a model representing an approval Process" in new Test {
+
+      MockedHttpClient
+        .get(approvalEndPoint + "ext90002")
+        .returns(Future.successful(Right(process)))
+
+      val response: RequestOutcome[Process] =
+        await(gc.approvalProcess("ext90002")(hc, implicitly))
 
       response mustBe Right(process)
     }

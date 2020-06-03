@@ -31,9 +31,9 @@ trait MockGuidanceService extends MockFactory {
 
   object MockGuidanceService {
 
-    def scratchProcess(uuid: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+    def retrieveAndCacheScratch(uuid: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
-        .scratchProcess(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .retrieveAndCacheScratch(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(uuid, *, *, *)
     }
 
@@ -43,9 +43,15 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
-    def publishedProcess(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+    def retrieveAndCachePublished(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
-        .publishedProcess(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .retrieveAndCachePublished(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(processId, *, *, *)
+    }
+
+    def retrieveAndCacheApproval(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+      (mockGuidanceService
+        .retrieveAndCacheApproval(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)
     }
 

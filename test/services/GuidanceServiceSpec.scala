@@ -130,7 +130,7 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-  "Calling scratchProcess" should {
+  "Calling retrieveAndCacheScratch" should {
 
     "retrieve the url of the start page for the scratch process" in new Test {
 
@@ -146,7 +146,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.scratchProcess(uuid, uuid)
+      private val result = target.retrieveAndCacheScratch(uuid, uuid)
 
       whenReady(result) { url =>
         url mustBe Right(firstPageUrl)
@@ -154,7 +154,7 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-  "Calling publishedProcess" should {
+  "Calling retrieveAndCachePublished" should {
 
     "retrieve the url of the start page for the nominated published process" in new Test {
 
@@ -170,7 +170,31 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.publishedProcess(processId, sessionRepoId)
+      private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
+
+      whenReady(result) { url =>
+        url mustBe Right(firstPageUrl)
+      }
+    }
+  }
+
+  "Calling retrieveAndCacheApproval" should {
+
+    "retrieve the url of the start page for the nominated published process" in new Test {
+
+      MockGuidanceConnector
+        .publishedProcess(processId)
+        .returns(Future.successful(Right(process)))
+
+      MockSessionRepository
+        .set(sessionRepoId, process)
+        .returns(Future.successful(Right(())))
+
+      MockPageBuilder
+        .pages(process)
+        .returns(Right(pages))
+
+      private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
 
       whenReady(result) { url =>
         url mustBe Right(firstPageUrl)

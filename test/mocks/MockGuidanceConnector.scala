@@ -49,6 +49,13 @@ trait MockGuidanceConnector extends MockFactory {
 
     }
 
+    def approvalProcess(processId: String): CallHandler[Future[RequestOutcome[Process]]] = {
+      (mockGuidanceConnector
+        .approvalProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(processId, *, *)
+
+    }
+
   }
 
 }
