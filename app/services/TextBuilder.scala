@@ -36,7 +36,7 @@ object TextBuilder {
   }
 
   // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
-  // The text before the first hint (if any) and if so the first hint will be 
+  // The text before the first hint (if any) and if so the first hint will be
   // returned. All subsequent text and hints will be ignored and lost
   def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
     val (enTexts, enMatches) = fromPattern(answerHintPattern, txt.langs(0))

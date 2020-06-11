@@ -23,7 +23,8 @@ package models.ocelot
 //
 object PrototypeJson {
 
-  val trn = """
+  val trn =
+    """
   {
   "meta": {
     "id": "trn90087",
@@ -2284,7 +2285,8 @@ object PrototypeJson {
     }
   """
 
-  val jsonV5 = """
+  val jsonV5 =
+    """
   {
     "meta": {
       "id": "ext90003",
