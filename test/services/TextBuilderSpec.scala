@@ -117,13 +117,13 @@ class TextBuilderSpec extends BaseSpec {
 
   "TextBuilder answer processing" must {
     "return display answer text only when there is no hint" in new Test {
-      val (displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithNoHint)
+      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithNoHint)
       displayText mustBe Text(answerWithNoHint.langs)
       hintText mustBe None
     }
 
     "return display answer text with hint" in new Test {
-      val (displayText, hintText) = TextBuilder.answerTextWithOptionalHint(answerWithHint)
+      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithHint)
       displayText mustBe answer
       hintText mustBe Some(hint)
     }

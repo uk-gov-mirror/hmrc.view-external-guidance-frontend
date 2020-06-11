@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$
+
 package filters
 
 import java.util.UUID
@@ -66,3 +68,4 @@ class SessionIdFilter(
     }
   }
 }
+// $COVERAGE-ON$
