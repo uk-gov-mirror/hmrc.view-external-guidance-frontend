@@ -45,7 +45,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     lazy val expectedPage: Page = QuestionPage(
       path,
-      Question(Text("QUESTION", "QUESTION"), Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
+      Question(Text("QUESTION", "QUESTION"), None, Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
     )
 
     val standardPagePath = "/std-page"

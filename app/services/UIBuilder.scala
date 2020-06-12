@@ -58,13 +58,13 @@ class UIBuilder {
   ): UIComponent = {
     val answers = (q.answers zip q.next).map { t =>
       val (phrase, stanzaId) = t
-      val (answer, hint) = TextBuilder.answerTextWithOptionalHint(phrase)
+      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
       Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
     }
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-
-    Question(Text(q.text.langs), uiElements, answers, errorMsgs)
+    val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
+    Question(question, hint, uiElements, answers, errorMsgs)
   }
 
   @tailrec

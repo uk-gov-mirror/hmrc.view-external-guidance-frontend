@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig) {
 
-  private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
+  private[connectors] val stubbedProcess: Process = Json.parse(models.ocelot.PrototypeJson.jsonV5).as[Process]
 
   def getProcess(id: String): Future[RequestOutcome[Process]] =
     Future.successful(Right(stubbedProcess))

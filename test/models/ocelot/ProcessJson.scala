@@ -1551,7 +1551,7 @@ trait ProcessJson {
     |     ["The property allowance lets you earn up to £1,000 in rental income, tax free, in each tax year. For example: short term holiday lets","Welsh: The property allowance lets you earn up to £1,000 in rental income, tax free, in each tax year. For example: short term holiday lets"],
     |     ["The property allowance lets you earn up to £1,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage","Welsh: The property allowance lets you earn up to £1,000 in rental income, tax free, in each tax year. For example: renting out a parking space or garage"],
     |     ["Check if you need to tell HMRC about income you've made by renting land or property","Welsh: Check if you need to tell HMRC about income you've made by renting land or property"],
-    |     ["Was your income from land or property less than £1,000?","Welsh: Was your income from land or property less than £1,000?"],
+    |     ["Was your income from land or property less than £1,000?[hint:Answer Yes or No!]","Welsh: Was your income from land or property less than £1,000?[hint:Welsh, Answer Yes or No!]"],
     |     ["To work this out, add up all the income you've received from your land or property. Include money received from tenants for rent, utility bills and food. Do not deduct any expenses.","Welsh: To work this out, add up all the income you've received from your land or property. Include money received from tenants for rent, utility bills and food. Do not deduct any expenses."],
     |     ["If you share the income with someone else, only include your share of the earnings.","Welsh: If you share the income with someone else, only include your share of the earnings."],
     |     ["Yes","Welsh: Yes"],
