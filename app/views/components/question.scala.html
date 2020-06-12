@@ -24,7 +24,7 @@
 
   @if(q.body.isEmpty) {
     <fieldset class="govuk-fieldset">
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">@components.render_text(q.text)</legend>
+      <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">@components.h1_heading(H1(q.text))</legend>
       @{q.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
 
   } else {
