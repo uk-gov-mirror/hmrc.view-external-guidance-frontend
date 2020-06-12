@@ -40,20 +40,23 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
           .pages(process)
           .fold(
             err => {
-              logger.warn(s"PageBuilder error $err for url $url on process ${process.meta.id}")
+              logger.error(s"PageBuilder error $err for url $url on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
             pages => {
               val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
               pages
                 .find(page => page.url == url)
-                .fold(Left(BadRequestError): RequestOutcome[PageContext]) { pge =>
+                .fold{
+                  logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
+                  Left(BadRequestError): RequestOutcome[PageContext]
+                } { pge =>
                   Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
                 }
             }
           )
       case Left(err) =>
-        logger.warn(s"Repository returned $err, when attempting retrieve process using id $sessionId")
+        logger.error(s"Repository returned $err, when attempting retrieve process using id $sessionId")
         Left(err)
     }
 
