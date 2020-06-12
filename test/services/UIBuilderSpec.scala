@@ -30,7 +30,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
     val answerDestinations = Seq("4", "5", "6")
     val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-    val questionWithHintPhrase: Phrase = Phrase(Vector("Some Text[hint:A hint!!]", "Welsh, Some Text[hint:A hint!!]"))
+    val questionHintString = "A hint!!"
+    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
 
     val answers =
       Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
@@ -88,7 +89,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Include a question hint appended to the question text" in new QuestionTest {
       uiBuilder.fromStanzaPage(pageWithQuestionHint)(urlMap) match {
-        case s: QuestionPage if s.question.hint.isDefined => succeed
+        case s: QuestionPage if s.question.hint == Some(Text(questionHintString, questionHintString)) => succeed
         case s: QuestionPage => fail("No hint found within Question")
         case _ => fail("Should return QuestionPage")
       }

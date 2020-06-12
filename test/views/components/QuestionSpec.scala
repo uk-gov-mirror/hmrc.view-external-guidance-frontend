@@ -149,6 +149,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe questionHint(0)
       }
     }
 
@@ -159,6 +160,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe questionHint(0)
       }
     }
 
@@ -240,6 +242,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe questionHint(1)
       }
     }
 
@@ -250,6 +253,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe questionHint(1)
       }
     }
 
