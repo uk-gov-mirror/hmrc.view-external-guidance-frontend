@@ -115,12 +115,11 @@ class GuidanceController @Inject() (
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
-    
     def retrieveCacheAndRedirect(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[String]] =
-      service.retrieveAndCacheApproval(processId, repositoryId).map{
+      service.retrieveAndCacheApproval(processId, repositoryId).map {
         case Right(_) => Right(startUrl)
         case err @ Left(_) => err
-    }
+      }
 
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting approval direct view with sessionId = $sessionId")

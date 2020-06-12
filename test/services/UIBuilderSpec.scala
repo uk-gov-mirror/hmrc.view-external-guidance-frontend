@@ -30,6 +30,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
     val answerDestinations = Seq("4", "5", "6")
     val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+    val questionHintString = "A hint!!"
+    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
 
     val answers =
       Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
@@ -39,11 +41,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
       Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
       Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false),
-      Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false),
-      Question(questionPhrase, answers, answerDestinations, false)
+      Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false)
     )
 
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq(""), Nil)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionPhrase, answers, answerDestinations, false), Seq(""), Nil)
+    val pageWithQuestionHint = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionWithHintPhrase, answers, answerDestinations, false), Seq(""), Nil)
     val uiBuilder: UIBuilder = new UIBuilder()
   }
 
@@ -83,6 +85,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Page should be a Question page")
       }
 
+    }
+
+    "Include a question hint appended to the question text" in new QuestionTest {
+      uiBuilder.fromStanzaPage(pageWithQuestionHint)(urlMap) match {
+        case s: QuestionPage if s.question.hint == Some(Text(questionHintString, questionHintString)) => succeed
+        case s: QuestionPage => fail("No hint found within Question")
+        case _ => fail("Should return QuestionPage")
+      }
     }
 
   }
