@@ -139,10 +139,10 @@ class GuidanceController @Inject() (
       case Right(url) =>
         Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
       case Left(NotFoundError) =>
-        logger.warn(s"Unable to find start page with id $id")
+        logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
       case Left(err) =>
-        logger.error(s"Error $err when trying to find start page with id $id")
+        logger.error(s"Error $err returned from Guidance service when trying to access process $id using sessionId $sessionId")
         InternalServerError(errorHandler.internalServerErrorTemplate)
     }
 
