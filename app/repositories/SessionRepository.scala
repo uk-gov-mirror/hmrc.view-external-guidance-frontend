@@ -94,13 +94,13 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       .map {
         _.result[DefaultSessionRepository.SessionProcess]
           .fold {
-            logger.warn(s"Attempt to retrieve the cached process from session repo with key $key returned no result")
+            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result")
             Left(NotFoundError): RequestOutcome[Process]
           }(r => Right(r.process))
       }
       .recover {
         case lastError =>
-          logger.error(s"Unable to retrieve process associated with key=$key")
+          logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
 
@@ -113,7 +113,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       .map(_ => Right(()))
       .recover {
         case lastError =>
-          logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
+          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
           Left(DatabaseError)
       }
   }
