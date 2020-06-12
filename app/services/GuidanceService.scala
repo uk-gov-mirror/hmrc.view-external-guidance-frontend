@@ -87,7 +87,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
               }, pages => Right(pages.head.url))
 
           case Left(err) =>
-            logger.warn(s"Failed to store new parsed process in session respository, $err")
+            logger.error(s"Failed to store new parsed process in session respository, $err")
             Left(err)
         }
 

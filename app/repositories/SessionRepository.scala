@@ -89,21 +89,21 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String): Future[RequestOutcome[Process]] = {
-    val updateModifier = Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
-    findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
-      .map(wr => wr.result[DefaultSessionRepository.SessionProcess]
-                   .fold{
-                     logger.warn(s"Attempt to retrieve the cached process from session repo with key $key returned no result")
-                     Left(NotFoundError): RequestOutcome[Process]
-                   }(r => Right(r.process))
-      )
+  def get(key: String): Future[RequestOutcome[Process]] =
+    findAndUpdate(Json.obj("_id" -> key), 
+                  Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis))))
+      .map{_.result[DefaultSessionRepository.SessionProcess]
+            .fold{
+              logger.warn(s"Attempt to retrieve the cached process from session repo with key $key returned no result")
+              Left(NotFoundError): RequestOutcome[Process]
+            }(r => Right(r.process))
+      }
       .recover {
         case lastError =>
           logger.error(s"Unable to retrieve process associated with key=$key")
           Left(DatabaseError)
       }
-  }
+
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))

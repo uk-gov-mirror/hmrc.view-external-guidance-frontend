@@ -27,6 +27,7 @@ import models.RequestOutcome
 import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
+import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -136,7 +137,8 @@ class GuidanceController @Inject() (
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
-      case Right(url) => Redirect(s"/guidance$url")
+      case Right(url) =>
+        Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find start page with id $id")
         NotFound(errorHandler.notFoundTemplate)
