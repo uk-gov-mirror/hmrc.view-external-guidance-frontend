@@ -29,7 +29,7 @@ import models.RequestOutcome
 class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
   private trait Test extends MockHttpClient with FutureAwaits with DefaultAwaitTimeout {
-    val process: Process = Json.parse(models.ocelot.PrototypeJson.jsonV5).as[Process]
+    val process: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val gc: GuidanceConnector = new GuidanceConnector(mockHttpClient, MockAppConfig)
     val scratchEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"

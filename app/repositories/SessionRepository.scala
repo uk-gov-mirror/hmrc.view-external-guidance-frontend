@@ -89,16 +89,20 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String): Future[RequestOutcome[Process]] = {
-    val updateModifier = Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis)))
-    findAndUpdate(Json.obj("_id" -> key), updateModifier, fetchNewObject = false)
-      .map(wr => wr.result[DefaultSessionRepository.SessionProcess].fold(Left(DatabaseError): RequestOutcome[Process])(r => Right(r.process)))
+  def get(key: String): Future[RequestOutcome[Process]] =
+    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis))))
+      .map { result =>
+        result.result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
+            Left(NotFoundError): RequestOutcome[Process]
+          }(r => Right(r.process))
+      }
       .recover {
         case lastError =>
-          logger.error(s"Unable to retrieve process associated with key=$key")
+          logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
-  }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))
@@ -109,7 +113,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       .map(_ => Right(()))
       .recover {
         case lastError =>
-          logger.error(s"Unable to persist process=${process.meta.id} against id=$key")
+          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
           Left(DatabaseError)
       }
   }
