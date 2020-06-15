@@ -86,7 +86,13 @@ class GuidanceController @Inject() (
             InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
-      nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
+      nextPageUrl =>
+        withSession[Unit](service.saveAnswerToQuestion(_, path, nextPageUrl.url.drop("/guidance".length))).map {
+          case Right(_) => Redirect(nextPageUrl.url)
+          case Left(err) =>
+            logger.error(s"Failed to save form answers with error $err")
+            InternalServerError(errorHandler.internalServerErrorTemplate)
+        }
     )
   }
 

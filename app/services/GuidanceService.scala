@@ -60,24 +60,27 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
         Left(err)
     }
 
-  def retrieveAndCacheScratch(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(uuid, repositoryId, connector.scratchProcess)
+  def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
+    sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
-  def retrieveAndCachePublished(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.publishedProcess)
+  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(uuid, docId, connector.scratchProcess)
 
-  def retrieveAndCacheApproval(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.approvalProcess)
+  def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.publishedProcess)
 
-  def getStartPageUrl(processId: String, repositoryId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.getProcess)
+  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.approvalProcess)
 
-  private def retrieveAndCache(id: String, repositoryId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
+  def getStartPageUrl(processId: String, docId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.getProcess)
+
+  private def retrieveAndCache(id: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[String]] =
     retrieveProcessById(id).flatMap {
       case Right(process) =>
-        sessionRepository.set(repositoryId, process).map {
+        sessionRepository.set(docId, process).map {
           case Right(_) =>
             pageBuilder
               .pages(process)
@@ -95,4 +98,5 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
         logger.warn(s"Unable to find process using id $id, error")
         Future.successful(Left(err))
     }
+
 }

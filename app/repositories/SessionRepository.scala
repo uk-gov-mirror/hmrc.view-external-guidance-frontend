@@ -49,6 +49,7 @@ case class ProcessContext(process: Process, answers: Map[String, String])
 trait SessionRepository {
   def get(key: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process): Future[RequestOutcome[Unit]]
+  def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -94,7 +95,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def get(key: String): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis))))
       .map { result =>
-        result.result[DefaultSessionRepository.SessionProcess]
+        result
+          .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
             Left(NotFoundError): RequestOutcome[ProcessContext]
@@ -107,7 +109,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), DateTime.now(DateTimeZone.UTC)))
+    val sessionDocument =
+      Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map("blah" -> "yes", "other" -> "NO"), DateTime.now(DateTimeZone.UTC)))
 
     collection
       .update(false)
@@ -119,5 +122,23 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
   }
+
+  def saveAnswerToQuestion(key: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis), s"answers.$url" -> answer))
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(s"Attempt to update question answer within session repo using _id=$key returned no result, lastError ${result.lastError}")
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update answers within session repo with _id=$key")
+          Left(DatabaseError)
+      }
 
 }
