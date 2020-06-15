@@ -22,7 +22,7 @@ import models.ocelot.stanzas._
 import models.ocelot.{Page, Process, ProcessJson}
 import models.ui
 import uk.gov.hmrc.http.HeaderCarrier
-
+import repositories.ProcessContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.errors.BadRequestError
@@ -63,7 +63,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Right(process)))
+        .returns(Future.successful(Right(ProcessContext(process, Map()))))
 
       MockPageBuilder
         .pages(process)
@@ -92,7 +92,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId)
-        .returns(Future.successful(Right(process)))
+        .returns(Future.successful(Right(ProcessContext(process, Map()))))
 
       MockPageBuilder
         .pages(process)

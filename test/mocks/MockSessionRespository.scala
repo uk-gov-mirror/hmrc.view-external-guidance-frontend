@@ -16,7 +16,7 @@
 
 package mocks
 
-import repositories.SessionRepository
+import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.Process
 import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
@@ -29,7 +29,7 @@ trait MockSessionRepository extends MockFactory {
 
   object MockSessionRepository {
 
-    def get(key: String): CallHandler[Future[RequestOutcome[Process]]] =
+    def get(key: String): CallHandler[Future[RequestOutcome[ProcessContext]]] =
       (mockSessionRepository
         .get(_: String))
         .expects(key)

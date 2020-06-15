@@ -24,7 +24,7 @@ import models.errors._
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
-import repositories.SessionRepository
+import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.Process
 
 @Singleton
@@ -35,7 +35,7 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     sessionRepository.get(sessionId).map {
-      case Right(process) =>
+      case Right(ProcessContext(process, answers)) =>
         pageBuilder
           .pages(process)
           .fold(
