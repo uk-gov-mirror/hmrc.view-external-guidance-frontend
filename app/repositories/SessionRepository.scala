@@ -91,10 +91,10 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   def get(key: String): Future[RequestOutcome[Process]] =
     findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis))))
-      .map {
-        _.result[DefaultSessionRepository.SessionProcess]
+      .map { result =>
+        result.result[DefaultSessionRepository.SessionProcess]
           .fold {
-            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result")
+            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
             Left(NotFoundError): RequestOutcome[Process]
           }(r => Right(r.process))
       }
