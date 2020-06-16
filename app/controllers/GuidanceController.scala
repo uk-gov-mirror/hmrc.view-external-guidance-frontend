@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.ErrorHandler
+import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -34,6 +34,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
 class GuidanceController @Inject() (
+    appConfig: AppConfig,
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
@@ -87,11 +88,11 @@ class GuidanceController @Inject() (
         }
       },
       nextPageUrl =>
-        withSession[Unit](service.saveAnswerToQuestion(_, path, nextPageUrl.url.drop("/guidance".length))).map {
-          case Right(_) => Redirect(nextPageUrl.url)
-          case Left(err) =>
-            logger.error(s"Failed to save form answers with error $err")
-            InternalServerError(errorHandler.internalServerErrorTemplate)
+        withSession[Unit](service.saveAnswerToQuestion(_, path, nextPageUrl.url.drop(appConfig.baseUrl.length))).map{
+            case Left(err) =>
+              logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
+              Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
+            case Right(_) => Redirect(nextPageUrl.url)
         }
     )
   }
