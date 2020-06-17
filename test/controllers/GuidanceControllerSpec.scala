@@ -179,7 +179,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .retrieveAndCacheScratch(uuid, repositoryId)
         .returns(Future.successful(Right(expectedUrl)))
-
       lazy val result = target.scratch(uuid)(fakeRequest)
     }
 
@@ -191,21 +190,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "create a session using the standard naming" in new ScratchTestWithValidUUID {
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the scratch process endpoint with a valid UUID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheScratch(uuid, uuid)
-        .returns(Future.successful(Right(expectedUrl)))
-
-      val result = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling the scratch process endpoint with an invalid UUID" should {
@@ -252,14 +236,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.startJourney(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-
     "return an internal server error if unable to persist the into the session repo" in new ProcessTest {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
@@ -268,17 +244,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val result = target.startJourney(processId)(fakeRequest)
 
       status(result) mustBe Status.INTERNAL_SERVER_ERROR
-    }
-  }
-
-  "Calling the start process endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.startJourney(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
@@ -314,24 +279,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.published(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the published endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.published(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling published endpoint with a invalid process ID" should {
@@ -364,25 +311,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approval(processId)(fakeRequest)
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
-    }
-
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approval(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the approval endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approval(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
@@ -420,24 +348,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance/$url")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approvalPage(processId, url)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the approvalPage endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approvalPage(processId, "/")(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling approvalPage endpoint with a invalid process ID" should {
