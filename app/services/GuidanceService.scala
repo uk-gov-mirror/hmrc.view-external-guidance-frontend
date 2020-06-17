@@ -59,7 +59,7 @@ class GuidanceService @Inject() (
                 } { pge =>
                   Right(
                     PageContext(
-                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p =>(p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
+                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
                       s"${appConfig.baseUrl}${pages.head.url}",
                       answers.get(url)
                     )

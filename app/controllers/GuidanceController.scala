@@ -90,7 +90,7 @@ class GuidanceController @Inject() (
         }
       },
       nextPageUrl =>
-        withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map{
+        withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
             Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
