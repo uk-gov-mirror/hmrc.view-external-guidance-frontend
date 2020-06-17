@@ -53,7 +53,9 @@ class GuidanceController @Inject() (
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
           case page: QuestionPage =>
-            val form = formProvider(questionName(path)).bind(Map(questionName(path) -> pageContext.answer.getOrElse("")))
+            val form = pageContext.answer.fold(formProvider(questionName(path))){ answer =>
+              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            }
             Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
         }
       case Left(NotFoundError) =>
