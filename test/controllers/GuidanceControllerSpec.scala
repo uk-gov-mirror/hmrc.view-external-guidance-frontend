@@ -35,13 +35,16 @@ import scala.concurrent.Future
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   trait TestData {
+    val answerUrl1 = "/hello"
+    val answerUrl2 = "/world"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
     lazy val relativePath = path.drop(1)
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
-    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), "/hello")
-    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), "/world")
+
+    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), answerUrl1)
+    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), answerUrl2)
 
     lazy val expectedPage: Page = QuestionPage(
       path,
@@ -89,6 +92,21 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
   }
 
+  "Returning to a previously answered Question page in a process" should {
+
+    "Show the original answer selected" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext(path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, "/", Some(answerUrl1)))))
+
+      val result = target.getPage(relativePath)(fakeRequest)
+      
+      status(result) mustBe Status.OK
+      contentType(result) mustBe Some("text/html")
+      contentAsString(result).contains("checked") mustBe true
+    }
+  }
+
   "Submitting a blank Question page form" should {
 
     "return a BadRequest response" in new QuestionTest {
@@ -106,10 +124,15 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a SeeOther response" in new QuestionTest {
       MockGuidanceService
-        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(Future.successful(Right(PageContext(expectedPage, "/"))))
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, "/hello"))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Right({})))
+        
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
-                                                          .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
+                                                          .withFormUrlEncodedBody((relativePath -> "/guidance/hello")).withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
     }

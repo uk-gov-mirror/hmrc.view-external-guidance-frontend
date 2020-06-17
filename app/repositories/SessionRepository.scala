@@ -110,7 +110,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
     val sessionDocument =
-      Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map("blah" -> "yes", "other" -> "NO"), DateTime.now(DateTimeZone.UTC)))
+      Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), DateTime.now(DateTimeZone.UTC)))
 
     collection
       .update(false)
@@ -131,13 +131,15 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
         result
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
-            logger.warn(s"Attempt to update question answer within session repo using _id=$key returned no result, lastError ${result.lastError}")
+            logger.warn(
+              s"Attempt to findAndUpdate session question answers using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+            )
             Left(NotFoundError): RequestOutcome[Unit]
           }(_ => Right({}))
       }
       .recover {
         case lastError =>
-          logger.error(s"Error $lastError while trying to update answers within session repo with _id=$key")
+          logger.error(s"Error $lastError while trying to update question answers within session repo with _id=$key, url: $url, answer: $answer")
           Left(DatabaseError)
       }
 

@@ -16,6 +16,7 @@
 
 package services
 
+import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.{FormData, PageContext}
@@ -28,7 +29,13 @@ import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.Process
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
+class GuidanceService @Inject() (
+    appConfig: AppConfig,
+    connector: GuidanceConnector,
+    sessionRepository: SessionRepository,
+    pageBuilder: PageBuilder,
+    uiBuilder: UIBuilder
+) {
   val logger = Logger(getClass)
 
   def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(
@@ -43,17 +50,21 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
-            pages => {
-              val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
+            pages =>
               pages
-                .find(page => page.url == url)
+                .find(_.url == url)
                 .fold {
                   logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
                   Left(BadRequestError): RequestOutcome[PageContext]
                 } { pge =>
-                  Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
+                  Right(
+                    PageContext(
+                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p =>(p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
+                      s"${appConfig.baseUrl}${pages.head.url}",
+                      answers.get(url)
+                    )
+                  )
                 }
-            }
           )
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")

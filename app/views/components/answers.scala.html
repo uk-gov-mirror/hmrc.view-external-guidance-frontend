@@ -18,7 +18,7 @@
 @import controllers.routes._
 
 
-@(answers: Seq[Answer], horizontal: Boolean, name: String)(implicit request: Request[_], messages: Messages)
+@(answers: Seq[Answer], horizontal: Boolean, name: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 <div class="govuk-radios@{if(horizontal) " govuk-radios--inline" else ""}">
   @for((ans, index) <- answers.zipWithIndex) {
@@ -29,6 +29,7 @@
             name="@name"
             type="radio"
             value="@ans.dest"
+            @if(form(name).value.contains(ans.dest)) {checked}
             @if(!ans.hint.isEmpty) { aria-describedby="@name-item-@index-hint" }>
 
       <label class="govuk-label govuk-radios__label govuk-label--s" for="@name-@index">

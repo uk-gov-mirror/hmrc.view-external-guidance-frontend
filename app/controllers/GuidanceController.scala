@@ -49,10 +49,12 @@ class GuidanceController @Inject() (
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     withSession[PageContext](service.getPageContext(s"/$path", _)).map {
       case Right(pageContext) =>
-        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
+        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
-          case page: QuestionPage => Ok(questionView(page, pageContext.processStartUrl, questionName(path), formProvider(questionName(path))))
+          case page: QuestionPage =>
+            val form = formProvider(questionName(path)).bind(Map(questionName(path) -> pageContext.answer.getOrElse("")))
+            Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -88,11 +90,11 @@ class GuidanceController @Inject() (
         }
       },
       nextPageUrl =>
-        withSession[Unit](service.saveAnswerToQuestion(_, path, nextPageUrl.url.drop(appConfig.baseUrl.length))).map{
-            case Left(err) =>
-              logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-              Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
-            case Right(_) => Redirect(nextPageUrl.url)
+        withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map{
+          case Left(err) =>
+            logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
+            Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
+          case Right(_) => Redirect(nextPageUrl.url)
         }
     )
   }
@@ -144,7 +146,7 @@ class GuidanceController @Inject() (
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
-        Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
+        Redirect(s"${appConfig.baseUrl}${url}").addingToSession(SessionKeys.sessionId -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
