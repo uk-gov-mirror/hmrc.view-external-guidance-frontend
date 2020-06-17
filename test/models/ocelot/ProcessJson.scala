@@ -39,9 +39,9 @@ trait ProcessJson {
       |  "contacts": [],
       |  "links": [],
       |  "flow": {
-      |    "1": {
+      |    "start": {
       |      "type": "PageStanza",
-      |      "url": "/feeling-bad",
+      |      "url": "feeling-bad",
       |      "next": ["3"],
       |      "stack": true
       |    },
@@ -54,6 +54,85 @@ trait ProcessJson {
       |      "stack": true
       |    },
       |    "2": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "end"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "end": {
+      |      "type": "EndStanza"
+      |    }
+      |  },
+      |  "phrases": [
+      |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
+      |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
+      |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
+      |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
+      |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
+      |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+      |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
+      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"]
+      |  ]
+      |}
+    """.stripMargin
+  )
+
+  // Includes a url without leading / and a url which is just /
+  val invalidOnePageJson: JsValue = Json.parse(
+    """
+      |{
+      |  "meta": {
+      |    "title": "Customer wants to make a cup of tea",
+      |    "id": "oct90001",
+      |    "ocelot": 1,
+      |    "lastAuthor": "000000",
+      |    "lastUpdate": 1500298931016,
+      |    "version": 4,
+      |    "filename": "oct90001.js"
+      |  },
+      |  "howto": [],
+      |  "contacts": [],
+      |  "links": [],
+      |  "flow": {
+      |    "start": {
+      |      "type": "PageStanza",
+      |      "url": "feeling-bad",
+      |      "next": ["3"],
+      |      "stack": true
+      |    },
+      |    "3": {
+      |      "type": "InstructionStanza",
+      |      "text": 1,
+      |      "next": [
+      |        "2"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "2": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "4"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "4": {
+      |      "type": "PageStanza",
+      |      "url": "/",
+      |      "next": ["5"],
+      |      "stack": true
+      |    },
+      |    "5": {
+      |      "type": "InstructionStanza",
+      |      "text": 1,
+      |      "next": [
+      |        "6"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "6": {
       |      "type": "InstructionStanza",
       |      "text": 0,
       |      "next": [
@@ -1370,7 +1449,7 @@ trait ProcessJson {
         ],
         "stack": false,
         "type": "PageStanza",
-        "url": "/"
+        "url": "/start"
       },
       "129": {
         "next": [
