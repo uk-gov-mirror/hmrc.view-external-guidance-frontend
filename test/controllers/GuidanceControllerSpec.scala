@@ -103,6 +103,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       
       status(result) mustBe Status.OK
       contentType(result) mustBe Some("text/html")
+      // Probably not the right place to test this
       contentAsString(result).contains("checked") mustBe true
     }
   }

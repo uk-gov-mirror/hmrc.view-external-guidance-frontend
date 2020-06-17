@@ -208,6 +208,14 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radioLabels(2) shouldBe Text(ans3).value(messages.lang).head.toString
     }
 
+    "render answers as radio buttons with previous answer selected" in new Test {
+      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages))
+      val radios = doc.getElementsByTag("input").asScala.toList
+      radios.size shouldBe answers.length
+      elementAttrs(radios.head).contains("checked") shouldBe true
+    }    
+
     "render answers with hints" in new WelshTest {
       val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList
