@@ -94,8 +94,8 @@ class GuidanceController @Inject() (
         withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-            Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
-          case Right(_) => Redirect(nextPageUrl.url)
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1))) // Treat as non-fatal, allow guidance to continue
+          case Right(_) => Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
         }
     )
   }
@@ -147,7 +147,7 @@ class GuidanceController @Inject() (
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
-        Redirect(s"${appConfig.baseUrl}$url")
+        Redirect(routes.GuidanceController.getPage(url.drop(1)))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
