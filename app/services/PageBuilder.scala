@@ -56,7 +56,6 @@ class PageBuilder extends ProcessPopulation {
         ks.head.stanza match {
           case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
           case p: PageStanza =>
-            ks.foreach(k => println(s"\tstanza ${k.key}"))
             val stanzas = BulletPointBuilder.groupBulletPointInstructions(ks.map(_.stanza), Nil)
             Right(Page(ks.head.key, p.url, stanzas, next, linked))
           case _ => Left(PageStanzaMissing(ks.head.key))
@@ -74,7 +73,6 @@ class PageBuilder extends ProcessPopulation {
         case key :: xs if !acc.exists(_.id == key) =>
           buildPage(key, process) match {
             case Right(page) if pageUrlUnique(page.url, acc) =>
-              println(s"PAGE ${page.url}, id: ${page.id}")
               pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
             case Right(page) => Left(DuplicatePageUrl(page.id, page.url))
             case Left(err) => Left(err)
