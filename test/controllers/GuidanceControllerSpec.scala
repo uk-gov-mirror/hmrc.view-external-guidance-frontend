@@ -138,6 +138,21 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) mustBe Status.SEE_OTHER
     }
 
+    "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, "/hello"))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Left(DatabaseError)))
+        
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
+                                                          .withFormUrlEncodedBody((relativePath -> "/guidance/hello")).withCSRFToken
+      val result = target.submitPage(relativePath)(fakeRequest)
+      status(result) mustBe Status.SEE_OTHER
+    }
+
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
         .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))

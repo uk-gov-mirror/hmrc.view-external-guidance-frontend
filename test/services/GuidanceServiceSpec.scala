@@ -213,7 +213,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve the url of the start page for the nominated published process" in new Test {
 
       MockGuidanceConnector
-        .publishedProcess(processId)
+        .approvalProcess(processId)
         .returns(Future.successful(Right(process)))
 
       MockSessionRepository
@@ -224,10 +224,30 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
+      private val result = target.retrieveAndCacheApproval(processId, sessionRepoId)
 
       whenReady(result) { url =>
         url mustBe Right(firstPageUrl)
+      }
+    }
+  }
+
+  "Calling saveAnswerToQuestion" should {
+
+    "store the answer in the local repo" in new Test {
+
+      MockSessionRepository
+        .saveAnswerToQuestion(sessionRepoId, firstPageUrl, lastPageUrl)
+        .returns(Future.successful(Right(())))
+
+      MockPageBuilder
+        .pages(process)
+        .returns(Right(pages))
+
+      private val result = target.saveAnswerToQuestion(sessionRepoId, firstPageUrl, lastPageUrl)
+
+      whenReady(result) { ret =>
+        ret mustBe Right({})
       }
     }
   }
