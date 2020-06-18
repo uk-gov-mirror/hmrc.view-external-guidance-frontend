@@ -18,7 +18,7 @@
 @import controllers.routes._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(q: Question, name: String)(implicit request: Request[_], messages: Messages)
+@(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 <div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
 
@@ -39,7 +39,7 @@
 
     @components.error_message(q.errorMsgs)
 
-    @components.answers(q.answers, q.horizontal, name)
+    @components.answers(q.answers, q.horizontal, name, form)
 
   </fieldset>
   

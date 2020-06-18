@@ -40,8 +40,8 @@ content = HtmlContent("This is a new service – your <a class='govuk-link' href
     ))
     @hmrcLanguageSelect(
         LanguageSelect(if (messages.lang.language == "en") En else Cy,
-            En -> "/guidance/language/english",
-            Cy -> "/guidance/language/cymraeg")
+            En -> s"${appConfig.baseUrl}/language/english",
+            Cy -> s"${appConfig.baseUrl}/language/cymraeg")
     )
 }
 
