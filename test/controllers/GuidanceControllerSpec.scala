@@ -153,6 +153,19 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) mustBe Status.SEE_OTHER
     }
 
+    "return a BAD_REQUEST response if trying to submit a page where url not found in process" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext("/unknown", processId, Some(FormData("unknown", Map(), List( new FormError("unknown", List("error.required"))))))
+        .returns(Future.successful(Left(BadRequestError)))
+
+      override val fakeRequest = FakeRequest("POST", "/unknown")
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result = target.submitPage("unknown")(fakeRequest)
+      status(result) mustBe Status.BAD_REQUEST
+    }
+
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       MockGuidanceService
         .getPageContext(standardPagePath, processId, Some(FormData(relativeStdPath, Map(), List( new FormError(relativeStdPath, List("error.required"))))))
