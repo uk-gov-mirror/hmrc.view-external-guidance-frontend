@@ -145,7 +145,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       )
 
       pageBuilder.pages(process) match {
-        case Left(PageUrlEmptyOrInvalid(Process.StartStanzaId, "")) => succeed
+        case Left(PageUrlEmptyOrInvalid(Process.StartStanzaId)) => succeed
         case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
         case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
       }
@@ -155,7 +155,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val invalidProcess = invalidOnePageJson.as[Process]
 
       pageBuilder.pages(invalidProcess) match {
-        case Left(PageUrlEmptyOrInvalid("4", "/")) => succeed
+        case Left(PageUrlEmptyOrInvalid("4")) => succeed
         case Left(err) => fail(s"PageStanza url equal to / not detected, failed with $err")
         case _ => fail(s"PageStanza url equal to / not detected")
       }
