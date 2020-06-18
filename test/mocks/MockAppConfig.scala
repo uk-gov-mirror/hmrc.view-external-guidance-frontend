@@ -41,4 +41,5 @@ object MockAppConfig extends AppConfig {
   override val timeoutWarningInSeconds: Int = 300
   override def feedbackUrl(implicit request: RequestHeader): String = "somefeedbackUrl"
   override val gtmContainer: String = "someContainer"
+  override val baseUrl: String = "/guidance"
 }

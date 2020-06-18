@@ -61,6 +61,12 @@ trait MockGuidanceService extends MockFactory {
         .expects(url, processId, formData, *)
     }
 
+    def saveAnswerToQuestion(docId: String, url: String, answer: String): CallHandler[Future[RequestOutcome[Unit]]] = {
+      (mockGuidanceService
+        .saveAnswerToQuestion(_: String, _: String, _: String))
+        .expects(docId, url, answer)
+    }
+
   }
 
 }
