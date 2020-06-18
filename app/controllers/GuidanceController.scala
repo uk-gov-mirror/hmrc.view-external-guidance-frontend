@@ -140,14 +140,17 @@ class GuidanceController @Inject() (
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }(sessionId => block(sessionId.value))
+    }{sessionId => 
+      logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
+      block(sessionId.value)
+    }
 
   private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
-        Redirect(routes.GuidanceController.getPage(url.drop(1)))
+        Redirect(routes.GuidanceController.getPage(url.drop(1))).addingToSession("EG_SESSION" -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)

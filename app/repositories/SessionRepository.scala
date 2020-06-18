@@ -109,6 +109,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
+    logger.info(s"Saving process ${process.meta.id} using key $key to session repo")
     val sessionDocument =
       Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), DateTime.now(DateTimeZone.UTC)))
 
