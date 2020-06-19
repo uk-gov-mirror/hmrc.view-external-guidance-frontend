@@ -25,15 +25,15 @@ class BulletPointBuilderSpec extends BaseSpec {
 
   def asString(elements: Seq[String]): String = elements.mkString
 
-  def createInstructionGroup(text1: String, text2: String ) : InstructionGroup = {
+  def createInstructionGroup(text1: String, text2: String): InstructionGroup = {
 
-    val phrase1: Phrase = Phrase(Vector( text1, s"$welshPrefix $text1"))
-    val phrase2: Phrase = Phrase(Vector( text2, s"$welshPrefix $text2"))
+    val phrase1: Phrase = Phrase(Vector(text1, s"$welshPrefix $text1"))
+    val phrase2: Phrase = Phrase(Vector(text2, s"$welshPrefix $text2"))
 
     val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, stack = true)
     val instruction2: Instruction = Instruction(phrase2, Seq("3"), None, stack = true)
 
-    InstructionGroup( Seq( instruction1, instruction2))
+    InstructionGroup(Seq(instruction1, instruction2))
   }
 
   val welshPrefix: String = "Welsh - "
@@ -270,7 +270,6 @@ class BulletPointBuilderSpec extends BaseSpec {
       BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) mustBe s"$welshPrefix Types of  fruit you  can buy:"
     }
 
-
     "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
 
       val text1: String = "[bold:Types of  automobile] you can buy saloon"
@@ -353,7 +352,6 @@ class BulletPointBuilderSpec extends BaseSpec {
       BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) mustBe s"$welshPrefix [link:Types of  automobile:5] you  can buy"
     }
 
-
     "Identify leading text in sentences starting with leading text with both links and bold text" in {
 
       val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
@@ -380,7 +378,6 @@ class BulletPointBuilderSpec extends BaseSpec {
       BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) mustBe s"$welshPrefix [bold:Today is the first day in ]"
     }
 
-
     "Identify leading text in sentences where leading text and trailing text are both in links" in {
 
       val text1: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:May:https://nydomain/calendar/may]"
@@ -406,7 +403,6 @@ class BulletPointBuilderSpec extends BaseSpec {
 
       BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) mustBe s"$welshPrefix You can buy the [bold:following]:"
     }
-
 
     "Identify leading text where text includes a bold section followed immediately by a non-white space character and then further texts" in {
 

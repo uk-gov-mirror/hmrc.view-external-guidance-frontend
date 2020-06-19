@@ -53,7 +53,7 @@ class GuidanceController @Inject() (
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
           case page: QuestionPage =>
-            val form = pageContext.answer.fold(formProvider(questionName(path))){ answer =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
             Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
@@ -95,11 +95,11 @@ class GuidanceController @Inject() (
         withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
-              .withHeaders(request.headers.toSimpleMap.toSeq: _*)   // Treat as non-fatal, allow guidance to continue
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
+              .withHeaders(request.headers.toSimpleMap.toSeq: _*) // Treat as non-fatal, allow guidance to continue
 
-          case Right(_) => 
-            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
+          case Right(_) =>
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
               .withHeaders(request.headers.toSimpleMap.toSeq: _*)
 
         }
@@ -146,7 +146,7 @@ class GuidanceController @Inject() (
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }{sessionId => 
+    } { sessionId =>
       logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
       block(sessionId.value)
     }

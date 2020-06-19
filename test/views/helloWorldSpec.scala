@@ -28,8 +28,7 @@ import play.twirl.api.Html
 import views.html.hello_world
 import scala.collection.JavaConverters._
 
-
-class helloWorldSpec extends WordSpec with Matchers with GuiceOneAppPerSuite  {
+class helloWorldSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
@@ -47,19 +46,19 @@ class helloWorldSpec extends WordSpec with Matchers with GuiceOneAppPerSuite  {
     implicit def appconfig: AppConfig = injector.instanceOf[AppConfig]
   }
 
-    "hello world page" should {
-      "generate feedback and report a problem links and attributes" in new Test {
+  "hello world page" should {
+    "generate feedback and report a problem links and attributes" in new Test {
 
-        val doc = asDocument(helloWorld())
-        val links = doc.getElementsByTag("a").asScala
-        val feedbackLink = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-        feedbackLink.contains("href") shouldBe true
-        feedbackLink("href") shouldBe appconfig.feedbackUrl
+      val doc = asDocument(helloWorld())
+      val links = doc.getElementsByTag("a").asScala
+      val feedbackLink = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      feedbackLink.contains("href") shouldBe true
+      feedbackLink("href") shouldBe appconfig.feedbackUrl
 
-        val reportaProblemLink = links(5).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-        reportaProblemLink.contains("href") shouldBe true
-        reportaProblemLink("href") shouldBe appconfig.reportAProblemNonJSUrl
-      }
+      val reportaProblemLink = links(5).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      reportaProblemLink.contains("href") shouldBe true
+      reportaProblemLink("href") shouldBe appconfig.reportAProblemNonJSUrl
     }
+  }
 
 }

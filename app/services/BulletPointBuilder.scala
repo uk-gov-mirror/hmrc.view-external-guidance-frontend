@@ -85,7 +85,7 @@ object BulletPointBuilder {
     constructLeadingText(noOfMatchedWords, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
   }
 
-  def noOfMatchedLeadingWordsForInstructionGroup( instructionGroup: InstructionGroup, langIndex: Int ) : Int = {
+  def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int): Int = {
 
     val firstInstruction = instructionGroup.group.head
 

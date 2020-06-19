@@ -27,7 +27,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   trait QuestionTest {
 
     implicit val urlMap: Map[String, String] =
-      Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+      Map(
+        Process.StartStanzaId -> "/",
+        "3" -> "dummy-path",
+        "4" -> "dummy-path/question",
+        "5" -> "dummy-path/blah",
+        "6" -> "dummy-path/anotherquestion",
+        "34" -> "dummy-path/next"
+      )
     val answerDestinations = Seq("4", "5", "6")
     val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
     val questionHintString = "A hint!!"
@@ -45,7 +52,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     )
 
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionPhrase, answers, answerDestinations, false), Seq(""), Nil)
-    val pageWithQuestionHint = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionWithHintPhrase, answers, answerDestinations, false), Seq(""), Nil)
+
+    val pageWithQuestionHint =
+      Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionWithHintPhrase, answers, answerDestinations, false), Seq(""), Nil)
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
@@ -162,7 +171,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink2Cy = Link("dummy-path", pageLink2TextCy)
 
     implicit val urlMap: Map[String, String] =
-      Map(Process.StartStanzaId -> "/", "3" -> "dummy-path", "4" -> "dummy-path/question", "5" -> "dummy-path/blah", "6" -> "dummy-path/anotherquestion", "34" -> "dummy-path/next")
+      Map(
+        Process.StartStanzaId -> "/",
+        "3" -> "dummy-path",
+        "4" -> "dummy-path/question",
+        "5" -> "dummy-path/blah",
+        "6" -> "dummy-path/anotherquestion",
+        "34" -> "dummy-path/next"
+      )
     val answerDestinations = Seq("4", "5", "6")
     val answerDestinationUrls = Seq("dummy-path/question", "dummy-path/blah", "dummy-path/anotherquestion")
 
@@ -582,14 +598,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instruction5: Instruction = Instruction(phrase5, Seq("6"), None, stack = true)
       val instruction6: Instruction = Instruction(phrase6, Seq("end"), None, stack = true)
 
-      val instructionGroup: InstructionGroup = InstructionGroup( Seq(
-        instruction1,
-        instruction2,
-        instruction3,
-        instruction4,
-        instruction5,
-        instruction6
-      ))
+      val instructionGroup: InstructionGroup = InstructionGroup(
+        Seq(
+          instruction1,
+          instruction2,
+          instruction3,
+          instruction4,
+          instruction5,
+          instruction6
+        )
+      )
 
       val bulletPointStanzas = Seq(PageStanza("/page-1", Seq("1"), false), instructionGroup)
 
@@ -599,7 +617,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       uiPage.components.length mustBe 1
 
-      val leadingTextItems: Text = Text( "You must have", "Rhaid")
+      val leadingTextItems: Text = Text("You must have", "Rhaid")
 
       val bulletPointOne: Text = Text("a tea bag", "i chi gael bag te")
       val bulletPointTwo: Text = Text("a cup", "i chi gael cwpan")
@@ -623,7 +641,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems(four) mustBe bulletPointFive
           b.listItems.last mustBe bulletPointSix
         }
-        case _ => fail( "Did not find bullet point list")
+        case _ => fail("Did not find bullet point list")
       }
 
     }

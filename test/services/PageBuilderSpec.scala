@@ -52,7 +52,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageId3 -> PageStanza("/this6", Seq("7"), false),
       "7" -> InstructionStanza(2, Seq("8"), None, false),
       "8" -> QuestionStanza(1, Seq(2, 3), Seq(pageId4, pageId6), false),
-      pageId4 -> PageStanza( "/this9", Seq("16"), false),
+      pageId4 -> PageStanza("/this9", Seq("16"), false),
       "16" -> InstructionStanza(3, Seq("10"), None, false),
       "10" -> InstructionStanza(2, Seq("end"), None, false),
       pageId5 -> PageStanza("/this11", Seq("12"), false),
@@ -62,7 +62,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "15" -> InstructionStanza(0, Seq("end"), None, false),
       pageId7 -> PageStanza("/this15", Seq("18"), false),
       "18" -> InstructionStanza(0, Seq("end"), None, false),
-
       "end" -> EndStanza
     )
 
@@ -97,7 +96,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect PageStanzaMissingOrUrlEmpty error when stanza routes to page not starting with PageUrl ValueStanza" in {
       val flow = Map(
-        Process.StartStanzaId -> PageStanza( "/", Seq("1"), false),
+        Process.StartStanzaId -> PageStanza("/", Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
         "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
         "4" -> InstructionStanza(0, Seq("end"), None, false),
@@ -413,13 +412,13 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         pageBuilder.pages(processWithLinks) match {
           case Right(pages) =>
             pages.length mustBe 7
-            
+
             val pageMap = pages.map(p => (p.id, p.linked)).toMap
 
             pageIds.forall(pageMap.contains) mustBe true
 
             pageMap(pageId1) mustBe List(pageId5)
-            pageMap(pageId2) mustBe List(pageId7,pageId1)
+            pageMap(pageId2) mustBe List(pageId7, pageId1)
             pageMap(pageId3) mustBe List(pageId3)
             pageMap(pageId4) mustBe List(pageId5, pageId3)
             pageMap(pageId5) mustBe Nil
