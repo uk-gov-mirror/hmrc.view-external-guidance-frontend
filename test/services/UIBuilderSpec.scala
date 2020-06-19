@@ -38,7 +38,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
 
     val stanzas = Seq(
-      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      PageStanza("/", Seq("1"), false),
       Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
       Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false),
       Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false)
@@ -47,6 +47,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionPhrase, answers, answerDestinations, false), Seq(""), Nil)
     val pageWithQuestionHint = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionWithHintPhrase, answers, answerDestinations, false), Seq(""), Nil)
     val uiBuilder: UIBuilder = new UIBuilder()
+
+    val four: Int = 4
   }
 
   "UIBulider Question processing" must {
@@ -206,7 +208,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
     val initialStanza = Seq(
-      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      PageStanza("/", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Callout(Title, Phrase(lang0), Seq("3"), false),
       Callout(SubTitle, Phrase(lang1), Seq("4"), false),
@@ -215,14 +217,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     )
 
     val stanzasWithQuestion = Seq(
-      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      PageStanza("/", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Instruction(Phrase(lang3), Seq("3"), None, false),
       question
     )
 
     val stanzasWithQuestionAndHints = Seq(
-      ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+      PageStanza("/", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Instruction(Phrase(lang3), Seq("3"), None, false),
       questionWithAnswerHints
@@ -408,7 +410,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        PageStanza("/", Seq("1"), false),
         instructionGroup
       )
 
@@ -459,7 +461,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        PageStanza("/", Seq("1"), false),
         instructionGroup
       )
 
@@ -518,7 +520,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       // Build sequence of stanzas
       val stanzaSeq = Seq(
-        ValueStanza(List(Value(Scalar, "PageUrl", "/")), Seq("1"), false),
+        PageStanza("/", Seq("1"), false),
         titleCallout,
         instruction1,
         subTitleCallout,
@@ -562,6 +564,68 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         }
         case _ => fail("The last components is not an instruction")
       }
+    }
+
+    "Process page with multiple line bullet point list" in new Test {
+
+      val phrase1: Phrase = Phrase(Vector("You must have a tea bag", "Rhaid i chi gael bag te"))
+      val phrase2: Phrase = Phrase(Vector("You must have a cup", "Rhaid i chi gael cwpan"))
+      val phrase3: Phrase = Phrase(Vector("You must have a teaspoon", "Rhaid i chi gael llwy de"))
+      val phrase4: Phrase = Phrase(Vector("You must have water", "Rhaid i chi gael dŵr"))
+      val phrase5: Phrase = Phrase(Vector("You must have an electric kettle", "Rhaid bod gennych chi degell trydan"))
+      val phrase6: Phrase = Phrase(Vector("You must have an electricity supply", "Rhaid bod gennych gyflenwad trydan"))
+
+      val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, stack = true)
+      val instruction2: Instruction = Instruction(phrase2, Seq("3"), None, stack = true)
+      val instruction3: Instruction = Instruction(phrase3, Seq("4"), None, stack = true)
+      val instruction4: Instruction = Instruction(phrase4, Seq("5"), None, stack = true)
+      val instruction5: Instruction = Instruction(phrase5, Seq("6"), None, stack = true)
+      val instruction6: Instruction = Instruction(phrase6, Seq("end"), None, stack = true)
+
+      val instructionGroup: InstructionGroup = InstructionGroup( Seq(
+        instruction1,
+        instruction2,
+        instruction3,
+        instruction4,
+        instruction5,
+        instruction6
+      ))
+
+      val bulletPointStanzas = Seq(PageStanza("/page-1", Seq("1"), false), instructionGroup)
+
+      val bulletPointListPage = Page(Process.StartStanzaId, "/page-1", bulletPointStanzas, Seq(""), Nil)
+
+      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
+
+      uiPage.components.length mustBe 1
+
+      val leadingTextItems: Text = Text( "You must have", "Rhaid")
+
+      val bulletPointOne: Text = Text("a tea bag", "i chi gael bag te")
+      val bulletPointTwo: Text = Text("a cup", "i chi gael cwpan")
+      val bulletPointThree: Text = Text("a teaspoon", "i chi gael llwy de")
+      val bulletPointFour: Text = Text("water", "i chi gael dŵr")
+      val bulletPointFive: Text = Text("an electric kettle", "bod gennych chi degell trydan")
+      val bulletPointSix: Text = Text("an electricity supply", "bod gennych gyflenwad trydan")
+
+      uiPage.components.head match {
+
+        case b: BulletPointList => {
+
+          b.text mustBe leadingTextItems
+
+          b.listItems.size mustBe 6
+
+          b.listItems.head mustBe bulletPointOne
+          b.listItems(1) mustBe bulletPointTwo
+          b.listItems(2) mustBe bulletPointThree
+          b.listItems(3) mustBe bulletPointFour
+          b.listItems(four) mustBe bulletPointFive
+          b.listItems.last mustBe bulletPointSix
+        }
+        case _ => fail( "Did not find bullet point list")
+      }
+
     }
 
   }

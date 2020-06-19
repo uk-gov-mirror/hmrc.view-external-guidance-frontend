@@ -114,15 +114,9 @@ class UIBuilder {
         TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
       }
 
-    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(
-      insGroup.group.head.text.langs(0),
-      insGroup.group(1).text.langs(0)
-    )
+    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 0)
 
-    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(
-      insGroup.group.head.text.langs(1),
-      insGroup.group(1).text.langs(1)
-    )
+    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 1)
 
     // Process bullet points
     val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, insGroup.group)
