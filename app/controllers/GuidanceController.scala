@@ -16,6 +16,7 @@
 
 package controllers
 
+import uk.gov.hmrc.http.HeaderNames
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
@@ -94,8 +95,13 @@ class GuidanceController @Inject() (
         withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-            Redirect(nextPageUrl.url) // Treat as non-fatal, allow guidance to continue
-          case Right(_) => Redirect(nextPageUrl.url)
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
+              .withHeaders(request.headers.toSimpleMap.toSeq: _*)   // Treat as non-fatal, allow guidance to continue
+
+          case Right(_) => 
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
+              .withHeaders(request.headers.toSimpleMap.toSeq: _*)
+
         }
     )
   }
@@ -140,14 +146,21 @@ class GuidanceController @Inject() (
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }(sessionId => block(sessionId.value))
+    }{sessionId => 
+      logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
+      block(sessionId.value)
+    }
 
   private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
-        Redirect(s"${appConfig.baseUrl}$url")
+        logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
+        Redirect(routes.GuidanceController.getPage(url.drop(1)))
+          .withHeaders(request.headers.toSimpleMap.toSeq: _*)
+          .withHeaders((HeaderNames.xSessionId, sessionId))
+          .addingToSession("EG_SESSION" -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
