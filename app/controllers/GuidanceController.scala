@@ -16,6 +16,7 @@
 
 package controllers
 
+import uk.gov.hmrc.http.HeaderNames
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
@@ -95,10 +96,12 @@ class GuidanceController @Inject() (
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
-               .withHeaders(request.headers.toSimpleMap.toSeq: _*)   // Treat as non-fatal, allow guidance to continue
+              .withHeaders(request.headers.toSimpleMap.toSeq: _*)   // Treat as non-fatal, allow guidance to continue
+
           case Right(_) => 
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length+1)))
               .withHeaders(request.headers.toSimpleMap.toSeq: _*)
+
         }
     )
   }
@@ -153,8 +156,10 @@ class GuidanceController @Inject() (
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
+        logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
         Redirect(routes.GuidanceController.getPage(url.drop(1)))
           .withHeaders(request.headers.toSimpleMap.toSeq: _*)
+          .withHeaders((HeaderNames.xSessionId, sessionId))
           .addingToSession("EG_SESSION" -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
