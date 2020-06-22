@@ -13,6 +13,30 @@ site.continue = Continue
 
 error.browser.title.prefix = Error:
 
+footer.license.text1 = All content is available under the
+footer.license.text2 = Open Government Licence v3.0
+footer.license.text3 = except where otherwise stated
+footer.license.copyright = © Crown copyright
+
+language.cymraeg = Cymraeg
+language.change.cymraeg = Newid yr iaith i’r Gymraeg
+language.english = English
+language.change.english = Change the language to English
+language.switcher = Language switcher
+
+timeout.dialog.keep_alive_button.text=Continue using guidance
+timeout.dialog.sign_out_button.text=Go to GOV.UK
+timeout.dialog.title.text=Your session is about to expire
+timeout.dialog.message.text=Your session will end in
+
+# Footer Links
+# ----------------------------------------------------------
+footer.links.help_page.text=Help using GOV.UK
+footer.links.cookies.text=Cookies
+footer.links.accessibility.text=Accessibility
+footer.links.privacy_policy.text=Privacy policy
+footer.links.terms_and_conditions.text=Terms and conditions
+
 # Compliance statement
 # ----------------------------------------------------------
 accessibility.title=Accessibility statement for External Guidance - to Be Defined

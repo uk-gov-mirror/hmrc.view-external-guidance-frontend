@@ -13,11 +13,28 @@ site.continue = Parhewch
 
 error.browser.title.prefix = Gwall:
 
+footer.license.text1 = Mae’r holl gynnwys ar gael dan y
+footer.license.text2 = Drwydded Llywodraeth Agored, fersiwn 3.0
+footer.license.text3 = oni nodir yn wahanol
+footer.license.copyright = © Hawlfraint y Goron
+
+language.cymraeg = Cymraeg
+language.change.cymraeg = Newid yr iaith i’r Gymraeg
+language.english = English
+language.change.english = Newid yr iaith i Saesneg
+language.switcher = Newid yr iaith
+
+timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
+timeout.dialog.sign_out_button.text=Ewch i GOV.UK
+timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
+timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
+
+
 # Footer Links
 # ----------------------------------------------------------
 footer.links.help_page.text=Help wrth ddefnyddio GOV.UK
 footer.links.cookies.text=Cwcis
-footer.links.accessibility.text=Hygyrchedd
+footer.links.accessibility.text=Datganiad Hygyrchedd
 footer.links.privacy_policy.text=Polisi preifatrwydd
 footer.links.terms_and_conditions.text=Telerau ac Amodau
 

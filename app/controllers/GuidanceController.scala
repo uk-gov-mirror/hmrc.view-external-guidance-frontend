@@ -52,7 +52,7 @@ class GuidanceController @Inject() (
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
           case page: QuestionPage =>
-            val form = pageContext.answer.fold(formProvider(questionName(path))){ answer =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
             Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
@@ -95,7 +95,7 @@ class GuidanceController @Inject() (
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
-          case Right(_) => 
+          case Right(_) =>
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
         }
     )
@@ -104,25 +104,25 @@ class GuidanceController @Inject() (
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting journey with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.getStartPageUrl)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting scratch with sessionId = $sessionId")
-    startProcessView(uuid, sessionId, service.retrieveAndCacheScratch)
+    retreiveCacheAndRedirectToProcess(uuid, sessionId, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting publish with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.retrieveAndCachePublished)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCachePublished)
   }
 
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.retrieveAndCacheApproval)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCacheApproval)
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
@@ -134,26 +134,25 @@ class GuidanceController @Inject() (
 
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    startProcessView(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
+    retreiveCacheAndRedirectToProcess(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
   }
 
-  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
+  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: MessagesRequest[_]): Future[RequestOutcome[T]] =
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }{sessionId => 
+    } { sessionId =>
       logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
       block(sessionId.value)
     }
 
-  private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
+  private def retreiveCacheAndRedirectToProcess(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
         logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
-        Redirect(routes.GuidanceController.getPage(url.drop(1)))
-          .addingToSession("EG_SESSION" -> sessionId)
+        Redirect(routes.GuidanceController.getPage(url.drop(1))).addingToSession("EG_SESSION" -> sessionId)
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
