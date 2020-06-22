@@ -137,7 +137,7 @@ class GuidanceController @Inject() (
     retreiveCacheAndRedirectToProcess(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
   }
 
-  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: MessagesRequest[_]): Future[RequestOutcome[T]] =
+  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
