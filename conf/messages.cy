@@ -2,6 +2,13 @@ service.name = Welsh: External guidance
 hello.world = Helo o''r cais view-external-guide-frontend!
 hello.world.currentLanguage = Y gosodiad iaith cyfredol yw "{0}",
 
+service.phaseName = beta
+feedback.before = Mae hwn yn wasanaeth newydd - bydd eich
+feedback.linkLabel = adborth
+feedback.after = yn ein helpu i'w wella.
+
+getpagehelp.linkText = Mynnwch help gyda'r dudalen hon (yn agor mewn ffenestr neu dab newydd)
+
 site.continue = Parhewch
 
 error.browser.title.prefix = Gwall:
@@ -39,10 +46,6 @@ compliant.two.p3=We have also made the text in the service as simple as possible
 compliant.two.p4.0=
 compliant.two.p4.1=AbilityNet
 compliant.two.p4.2=has advice on making your device easier to use if you have a disability.
-feedback.before = This is a new service - your
-feedback.link = feedback
-feedback.after = will help us to improve it.
-feedback.reportlink = Get help with this page (opens in a new window or tab)
 
 ## section three
 compliant.three.heading=How accessible this service is
