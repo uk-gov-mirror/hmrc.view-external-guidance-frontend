@@ -40,13 +40,11 @@ class SessionIdFilter(override val mat: Materializer, uuid: => UUID, implicit va
 
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
 
-    logger.info(s"Entering SessionIdFilter ${rh.session.get(SessionKeys.sessionId)}")
-
     lazy val sessionId: String = s"session-$uuid"
 
     if (rh.session.get(SessionKeys.sessionId).isEmpty) {
 
-      logger.info(s"Creating new session ${sessionId}")
+      logger.info(s"Creating new sessionId: ${sessionId}")
 
       val cookies: String = {
 
@@ -79,6 +77,7 @@ class SessionIdFilter(override val mat: Materializer, uuid: => UUID, implicit va
         result.withSession(session + (SessionKeys.sessionId -> sessionId))
       }
     } else {
+      logger.info(s"Re-using sessionId ${rh.session.get(SessionKeys.sessionId)}")
       f(rh)
     }
   }
