@@ -3,7 +3,7 @@ hello.world = Helo o''r cais view-external-guide-frontend!
 hello.world.currentLanguage = Y gosodiad iaith cyfredol yw "{0}",
 
 service.phaseName = beta
-feedback.before = Mae hwn yn wasanaeth newydd - bydd eich
+feedback.before = Gwasanaeth newydd yw hwn – bydd eich
 feedback.linkLabel = adborth
 feedback.after = yn ein helpu i'w wella.
 
