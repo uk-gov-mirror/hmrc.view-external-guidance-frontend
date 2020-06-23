@@ -30,6 +30,7 @@ import views.html.{standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.http.SessionKeys
 
 @Singleton
 class GuidanceController @Inject() (
@@ -52,7 +53,7 @@ class GuidanceController @Inject() (
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
           case page: QuestionPage =>
-            val form = pageContext.answer.fold(formProvider(questionName(path))){ answer =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
             Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
@@ -95,7 +96,7 @@ class GuidanceController @Inject() (
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
-          case Right(_) => 
+          case Right(_) =>
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
         }
     )
@@ -141,7 +142,7 @@ class GuidanceController @Inject() (
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }{sessionId => 
+    } { sessionId =>
       logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
       block(sessionId.value)
     }
@@ -152,8 +153,7 @@ class GuidanceController @Inject() (
     processStartUrl(id, sessionId).map {
       case Right(url) =>
         logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
-        Redirect(routes.GuidanceController.getPage(url.drop(1)))
-          .addingToSession("EG_SESSION" -> sessionId)
+        Redirect(routes.GuidanceController.getPage(url.drop(1))).withSession((SessionKeys.sessionId -> sessionId), ("EG_SESSION" -> sessionId))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
