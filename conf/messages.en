@@ -2,9 +2,40 @@ service.name = External guidance
 hello.world = Hello world!
 hello.world.currentLanguage = The current language setting is "{0}",
 
+service.phaseName = beta
+feedback.before = This is a new service - your
+feedback.linkLabel = feedback
+feedback.after = will help us to improve it.
+
+getpagehelp.linkText = Get help with this page (opens in a new window or tab)
+
 site.continue = Continue
 
 error.browser.title.prefix = Error:
+
+footer.license.text1 = All content is available under the
+footer.license.text2 = Open Government Licence v3.0
+footer.license.text3 = except where otherwise stated
+footer.license.copyright = © Crown copyright
+
+language.cymraeg = Cymraeg
+language.change.cymraeg = Newid yr iaith i’r Gymraeg
+language.english = English
+language.change.english = Change the language to English
+language.switcher = Language switcher
+
+timeout.dialog.keep_alive_button.text=Continue using guidance
+timeout.dialog.sign_out_button.text=Go to GOV.UK
+timeout.dialog.title.text=Your session is about to expire
+timeout.dialog.message.text=Your session will end in
+
+# Footer Links
+# ----------------------------------------------------------
+footer.links.help_page.text=Help using GOV.UK
+footer.links.cookies.text=Cookies
+footer.links.accessibility.text=Accessibility
+footer.links.privacy_policy.text=Privacy policy
+footer.links.terms_and_conditions.text=Terms and conditions
 
 # Compliance statement
 # ----------------------------------------------------------
@@ -31,10 +62,6 @@ compliant.two.p3=We have also made the text in the service as simple as possible
 compliant.two.p4.0=
 compliant.two.p4.1=AbilityNet
 compliant.two.p4.2=has advice on making your device easier to use if you have a disability.
-feedback.before = This is a new service - your
-feedback.link = feedback
-feedback.after = will help us to improve it.
-feedback.reportlink = Get help with this page (opens in a new window or tab)
 
 ## section three
 compliant.three.heading=How accessible this service is

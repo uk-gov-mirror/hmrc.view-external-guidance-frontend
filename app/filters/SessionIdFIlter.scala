@@ -25,7 +25,7 @@ import com.google.inject.Inject
 import play.api.http.HeaderNames
 import play.api.mvc._
 import uk.gov.hmrc.http.{SessionKeys, HeaderNames => HMRCHeaderNames}
-
+import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
 class SessionIdFilter(override val mat: Materializer, uuid: => UUID, implicit val executionContext: ExecutionContext, sessionCookieBaker: SessionCookieBaker)
@@ -36,11 +36,15 @@ class SessionIdFilter(override val mat: Materializer, uuid: => UUID, implicit va
     this(mat, UUID.randomUUID(), executionContext, sessionCookieBaker)
   }
 
+  val logger = Logger(getClass)
+
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
 
     lazy val sessionId: String = s"session-$uuid"
 
     if (rh.session.get(SessionKeys.sessionId).isEmpty) {
+
+      logger.info(s"Creating new sessionId: ${sessionId}")
 
       val cookies: String = {
 
@@ -73,8 +77,10 @@ class SessionIdFilter(override val mat: Materializer, uuid: => UUID, implicit va
         result.withSession(session + (SessionKeys.sessionId -> sessionId))
       }
     } else {
+      logger.info(s"Re-using sessionId ${rh.session.get(SessionKeys.sessionId)}")
       f(rh)
     }
   }
 }
+
 // $COVERAGE-ON$
