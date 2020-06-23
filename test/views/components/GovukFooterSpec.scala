@@ -34,8 +34,6 @@ import views.components.FooterLinks
 
 class GovukFooterSpec extends ViewSpec with GuiceOneAppPerSuite {
 
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
-
   trait Test {
     private def injector: Injector = app.injector
 

@@ -19,15 +19,8 @@ package base
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json._
-import play.twirl.api.Html
-import org.jsoup._
-import org.jsoup.nodes.{Document, Element}
-import scala.collection.JavaConverters._
 
 trait BaseSpec extends WordSpec with MustMatchers with ScalaFutures {
-
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
-  def elementAttrs(el: Element): Map[String, String] = el.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 
   def missingJsObjectAttrTests[T](jsObject: JsObject, attrsToIgnore: List[String] = Nil)(implicit objectReads: Reads[T]): Unit =
     jsObject.keys.filterNot(attrsToIgnore.contains(_)).foreach { attributeName =>
