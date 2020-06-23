@@ -36,7 +36,7 @@ import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONInteger
 
 object DefaultSessionRepository {
-  final case class SessionProcess(id: String, processId: String, process: Process, lastAccessed: DateTime)
+  final case class SessionProcess(id: String, processId: String, process: Process, answers: Map[String, String], lastAccessed: DateTime)
 
   object SessionProcess {
     implicit val dateFormat: Format[DateTime] = ReactiveMongoFormats.dateTimeFormats
@@ -44,9 +44,12 @@ object DefaultSessionRepository {
   }
 }
 
+case class ProcessContext(process: Process, answers: Map[String, String])
+
 trait SessionRepository {
-  def get(key: String): Future[RequestOutcome[Process]]
+  def get(key: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process): Future[RequestOutcome[Unit]]
+  def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -89,14 +92,15 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String): Future[RequestOutcome[Process]] =
+  def get(key: String): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis))))
       .map { result =>
-        result.result[DefaultSessionRepository.SessionProcess]
+        result
+          .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
-            Left(NotFoundError): RequestOutcome[Process]
-          }(r => Right(r.process))
+            Left(NotFoundError): RequestOutcome[ProcessContext]
+          }(r => Right(ProcessContext(r.process, r.answers)))
       }
       .recover {
         case lastError =>
@@ -105,7 +109,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, DateTime.now(DateTimeZone.UTC)))
+    logger.info(s"Saving process ${process.meta.id} using key $key to session repo")
+    val sessionDocument =
+      Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), DateTime.now(DateTimeZone.UTC)))
 
     collection
       .update(false)
@@ -117,5 +123,25 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
   }
+
+  def saveAnswerToQuestion(key: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> DateTime.now(DateTimeZone.UTC).getMillis), s"answers.$url" -> answer))
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to findAndUpdate session question answers using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update question answers within session repo with _id=$key, url: $url, answer: $answer")
+          Left(DatabaseError)
+      }
 
 }

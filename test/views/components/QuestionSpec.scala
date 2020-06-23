@@ -25,6 +25,7 @@ import play.twirl.api.Html
 import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList}
+import forms.NextPageFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -37,6 +38,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
+    def formProvider: NextPageFormProvider = injector.instanceOf[NextPageFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
     val para1Text = Text("This is a question", "Welsh, This is a question")
@@ -50,9 +52,12 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ans1Hint = Vector("You agree with the assertion", "Welsh, You agree with the assertion")
     val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
     val ans3Hint = Vector("You dont know", "Welsh, You dont know")
-    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), "/yes")
-    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), "/no")
-    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), "/dontknow")
+    val answerUrl1 = "/yes"
+    val answerUrl2 = "/no"
+    val answerUrl3 = "/dontknow"
+    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), answerUrl1)
+    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), answerUrl2)
+    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), answerUrl3)
     val leading = Text("You can buy", "Gwallwch brynu")
     val bp1 = Text("apples", "afalau")
     val bp2 = Text("oranges", "orennau")
@@ -67,6 +72,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithoutBody = Question(Text(q1), None, Seq.empty, answers)
     val questionWithHint = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers)
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
+  
   }
 
   trait WelshTest extends Test {
@@ -76,14 +82,14 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "English Question component" must {
 
     "render question text as a header" in new Test {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
       heading.first.text() shouldBe q1(0)
     }
 
     "render contained paragraphs" in new Test {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
 
       doc.getElementsByTag("p").asScala.toList.foreach { p =>
         elementAttrs(p)("class").contains("govuk-body") shouldBe true
@@ -91,7 +97,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons" in new Test {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val radios = doc.getElementsByTag("input")
       radios.size shouldBe answers.length
       val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
@@ -101,8 +107,16 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radioLabels(2) shouldBe Text(ans3).value(messages.lang).head.toString
     }
 
+    "render answers as radio buttons with previous answer selected" in new Test {
+      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages))
+      val radios = doc.getElementsByTag("input").asScala.toList
+      radios.size shouldBe answers.length
+      elementAttrs(radios.head).contains("checked") shouldBe true
+    }
+
     "render answers with hints vertically" in new Test {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList
 
       val hint1Attrs = elementAttrs(hints(0))
@@ -117,7 +131,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers with hints horizontally" in new Test {
-      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test", formProvider("test"))(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
       hints shouldBe Nil
@@ -134,7 +148,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question with no body should hide the legend heading" in new Test {
-      val doc = asDocument(components.question(questionWithoutBody, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithoutBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("legend").first
       val attrs = elementAttrs(legend)
 
@@ -143,7 +157,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question with body should render hint within a span within fieldset" in new Test {
-      val doc = asDocument(components.question(questionWithHint, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
       Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
         val attrs = elementAttrs(span)
@@ -154,7 +168,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question without body should render hint within a span within fieldset" in new Test {
-      val doc = asDocument(components.question(questionWithHintAndNoBody, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
       Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
         val attrs = elementAttrs(span)
@@ -169,14 +183,14 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "Welsh Question component" must {
 
     "render question text as a header" in new WelshTest {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
       heading.first.text() shouldBe q1(1)
     }
 
     "render contained paragraphs" in new WelshTest {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
 
       doc.getElementsByTag("p").asScala.toList.foreach { p =>
         elementAttrs(p)("class").contains("govuk-body") shouldBe true
@@ -184,7 +198,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons" in new WelshTest {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val radios = doc.getElementsByTag("input")
       radios.size shouldBe answers.length
       val radioLabels = doc.getElementsByTag("label").asScala.map(_.text()).toList
@@ -194,8 +208,16 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       radioLabels(2) shouldBe Text(ans3).value(messages.lang).head.toString
     }
 
+    "render answers as radio buttons with previous answer selected" in new Test {
+      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages))
+      val radios = doc.getElementsByTag("input").asScala.toList
+      radios.size shouldBe answers.length
+      elementAttrs(radios.head).contains("checked") shouldBe true
+    }    
+
     "render answers with hints" in new WelshTest {
-      val doc = asDocument(components.question(question, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList
 
       val hint1Attrs = elementAttrs(hints(0))
@@ -210,7 +232,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers with hints horizontally" in new WelshTest {
-      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHorizontalAnswers, "test", formProvider("test"))(fakeRequest, messages))
       val hints = doc.getElementsByTag("span").asScala.toList.drop(1)
 
       hints shouldBe Nil
@@ -227,7 +249,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question with no body should hide the legend heading" in new WelshTest {
-      val doc = asDocument(components.question(questionWithoutBody, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithoutBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("legend").first
       val attrs = elementAttrs(legend)
 
@@ -236,7 +258,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question with body should render hint within a span within fieldset" in new WelshTest {
-      val doc = asDocument(components.question(questionWithHint, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
       Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
         val attrs = elementAttrs(span)
@@ -247,7 +269,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "question without body should render hint within a span within fieldset" in new WelshTest {
-      val doc = asDocument(components.question(questionWithHintAndNoBody, "test")(fakeRequest, messages))
+      val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
       Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
         val attrs = elementAttrs(span)

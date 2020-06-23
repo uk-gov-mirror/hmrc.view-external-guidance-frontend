@@ -17,7 +17,7 @@
 package controllers
 
 import base.BaseSpec
-import mocks.MockGuidanceService
+import mocks.{MockAppConfig, MockGuidanceService}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc.AnyContentAsEmpty
@@ -35,13 +35,16 @@ import scala.concurrent.Future
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   trait TestData {
+    val answerUrl1 = "/hello"
+    val answerUrl2 = "/world"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
     lazy val relativePath = path.drop(1)
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
-    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), "/hello")
-    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), "/world")
+
+    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), answerUrl1)
+    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), answerUrl2)
 
     lazy val expectedPage: Page = QuestionPage(
       path,
@@ -66,7 +69,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
 
     val formError = new FormError(relativePath, List("error.required"))
-    val target = new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+    val target = new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
   }
 
   "Calling a valid URL path to a Question page in a process" should {
@@ -89,6 +92,22 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
   }
 
+  "Returning to a previously answered Question page in a process" should {
+
+    "Show the original answer selected" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext(path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, "/", Some(answerUrl1)))))
+
+      val result = target.getPage(relativePath)(fakeRequest)
+      
+      status(result) mustBe Status.OK
+      contentType(result) mustBe Some("text/html")
+      // Probably not the right place to test this
+      contentAsString(result).contains("checked") mustBe true
+    }
+  }
+
   "Submitting a blank Question page form" should {
 
     "return a BadRequest response" in new QuestionTest {
@@ -106,12 +125,45 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a SeeOther response" in new QuestionTest {
       MockGuidanceService
-        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(Future.successful(Right(PageContext(expectedPage, "/"))))
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, "/hello"))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Right({})))
+        
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
-                                                          .withFormUrlEncodedBody((relativePath -> "/hello")).withCSRFToken
+                                                          .withFormUrlEncodedBody((relativePath -> "/guidance/hello")).withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
       status(result) mustBe Status.SEE_OTHER
+    }
+
+    "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext(path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, "/hello"))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Left(DatabaseError)))
+        
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
+                                                          .withFormUrlEncodedBody((relativePath -> "/guidance/hello")).withCSRFToken
+      val result = target.submitPage(relativePath)(fakeRequest)
+      status(result) mustBe Status.SEE_OTHER
+    }
+
+    "return a BAD_REQUEST response if trying to submit a page where url not found in process" in new QuestionTest {
+      MockGuidanceService
+        .getPageContext("/unknown", processId, Some(FormData("unknown", Map(), List( new FormError("unknown", List("error.required"))))))
+        .returns(Future.successful(Left(BadRequestError)))
+
+      override val fakeRequest = FakeRequest("POST", "/unknown")
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result = target.submitPage("unknown")(fakeRequest)
+      status(result) mustBe Status.BAD_REQUEST
     }
 
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
@@ -168,7 +220,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
     lazy val target =
-      new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+      new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
 
   }
 
@@ -179,7 +231,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       MockGuidanceService
         .retrieveAndCacheScratch(uuid, repositoryId)
         .returns(Future.successful(Right(expectedUrl)))
-
       lazy val result = target.scratch(uuid)(fakeRequest)
     }
 
@@ -191,21 +242,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "create a session using the standard naming" in new ScratchTestWithValidUUID {
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the scratch process endpoint with a valid UUID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheScratch(uuid, uuid)
-        .returns(Future.successful(Right(expectedUrl)))
-
-      val result = target.scratch(uuid)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling the scratch process endpoint with an invalid UUID" should {
@@ -252,14 +288,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.startJourney(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-
     "return an internal server error if unable to persist the into the session repo" in new ProcessTest {
       MockGuidanceService
         .getStartPageUrl(processId, processId)
@@ -268,17 +296,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val result = target.startJourney(processId)(fakeRequest)
 
       status(result) mustBe Status.INTERNAL_SERVER_ERROR
-    }
-  }
-
-  "Calling the start process endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.startJourney(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
@@ -314,24 +331,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.published(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the published endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.published(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling published endpoint with a invalid process ID" should {
@@ -364,25 +363,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approval(processId)(fakeRequest)
       redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
-    }
-
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approval(processId)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the approval endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approval(processId)(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
     }
   }
 
@@ -420,24 +400,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       redirectLocation(result) mustBe Some(s"/guidance/$url")
     }
 
-    "add the process ID to the user's session" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approvalPage(processId, url)(fakeRequest)
-      session(result).data.keys must contain(SessionKeys.sessionId)
-    }
-  }
-
-  "Calling the approvalPage endpoint with a valid process ID and existing sessionId" should {
-
-    "Use the existing session ID" in new ProcessTest {
-      MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.approvalPage(processId, "/")(fakeRequest.withSession(SessionKeys.sessionId -> "SESSIONID"))
-      session(result).data.get(SessionKeys.sessionId) mustBe Some("SESSIONID")
-    }
   }
 
   "Calling approvalPage endpoint with a invalid process ID" should {
@@ -463,7 +425,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(PageContext(standardPage, "/"))))
 
       lazy val target =
-        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+        new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result = target.getPage(relativePath)(fakeRequest)
     }
 
@@ -488,7 +450,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Left(DatabaseError)))
 
       lazy val target =
-        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+        new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result = target.getPage(relativePath)(fakeRequest)
     }
 
@@ -513,7 +475,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Left(NotFoundError)))
 
       lazy val target =
-        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+        new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result = target.getPage(unknownPath.drop(1))(fakeRequest)
     }
 
@@ -537,7 +499,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(PageContext(expectedPage, "/"))))
 
       lazy val target =
-        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+        new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result = target.getPage(path)(fakeRequest)
     }
 
@@ -564,7 +526,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Left(NotFoundError)))
 
       lazy val target =
-        new GuidanceController(errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
+        new GuidanceController(MockAppConfig, errorHandler, view, questionView, new NextPageFormProvider(), mockGuidanceService, stubMessagesControllerComponents())
       lazy val result = target.getPage(unknownPath)(fakeRequest)
     }
 

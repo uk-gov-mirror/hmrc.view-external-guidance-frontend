@@ -16,6 +16,7 @@
 
 package services
 
+import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.{FormData, PageContext}
@@ -24,18 +25,24 @@ import models.errors._
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
-import repositories.SessionRepository
+import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.Process
 
 @Singleton
-class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository: SessionRepository, pageBuilder: PageBuilder, uiBuilder: UIBuilder) {
+class GuidanceService @Inject() (
+    appConfig: AppConfig,
+    connector: GuidanceConnector,
+    sessionRepository: SessionRepository,
+    pageBuilder: PageBuilder,
+    uiBuilder: UIBuilder
+) {
   val logger = Logger(getClass)
 
   def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     sessionRepository.get(sessionId).map {
-      case Right(process) =>
+      case Right(ProcessContext(process, answers)) =>
         pageBuilder
           .pages(process)
           .fold(
@@ -43,41 +50,48 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
-            pages => {
-              val stanzaIdToUrlMap: Map[String, String] = pages.map(page => (page.id, s"/guidance${page.url}")).toMap
+            pages =>
               pages
-                .find(page => page.url == url)
+                .find(_.url == url)
                 .fold {
                   logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
                   Left(BadRequestError): RequestOutcome[PageContext]
                 } { pge =>
-                  Right(PageContext(uiBuilder.fromStanzaPage(pge, formData)(stanzaIdToUrlMap), s"/guidance${pages.head.url}"))
+                  Right(
+                    PageContext(
+                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
+                      s"${appConfig.baseUrl}${pages.head.url}",
+                      answers.get(url)
+                    )
+                  )
                 }
-            }
           )
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
         Left(err)
     }
 
-  def retrieveAndCacheScratch(uuid: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(uuid, repositoryId, connector.scratchProcess)
+  def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
+    sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
-  def retrieveAndCachePublished(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.publishedProcess)
+  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(uuid, docId, connector.scratchProcess)
 
-  def retrieveAndCacheApproval(processId: String, repositoryId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.approvalProcess)
+  def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.publishedProcess)
 
-  def getStartPageUrl(processId: String, repositoryId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, repositoryId, connector.getProcess)
+  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.approvalProcess)
 
-  private def retrieveAndCache(id: String, repositoryId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
+  def getStartPageUrl(processId: String, docId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
+    retrieveAndCache(processId, docId, connector.getProcess)
+
+  private def retrieveAndCache(id: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[String]] =
     retrieveProcessById(id).flatMap {
       case Right(process) =>
-        sessionRepository.set(repositoryId, process).map {
+        sessionRepository.set(docId, process).map {
           case Right(_) =>
             pageBuilder
               .pages(process)
@@ -95,4 +109,5 @@ class GuidanceService @Inject() (connector: GuidanceConnector, sessionRepository
         logger.warn(s"Unable to find process using id $id, error")
         Future.successful(Left(err))
     }
+
 }

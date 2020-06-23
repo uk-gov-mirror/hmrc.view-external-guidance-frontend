@@ -34,7 +34,7 @@
 
   @formWithCSRF(action = routes.GuidanceController.submitPage(page.relativePath)) {
 
-    @components.question(page.question, questionName)
+    @components.question(page.question, questionName, form)
 
     <button class="govuk-button" data-module="govuk-button">
       @messages("site.continue")

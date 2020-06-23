@@ -16,7 +16,7 @@
 
 package controllers
 
-import config.ErrorHandler
+import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -27,13 +27,14 @@ import models.RequestOutcome
 import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
-import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import uk.gov.hmrc.http.SessionKeys
 
 @Singleton
 class GuidanceController @Inject() (
+    appConfig: AppConfig,
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
@@ -48,10 +49,14 @@ class GuidanceController @Inject() (
   def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
     withSession[PageContext](service.getPageContext(s"/$path", _)).map {
       case Right(pageContext) =>
-        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}")
+        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
-          case page: QuestionPage => Ok(questionView(page, pageContext.processStartUrl, questionName(path), formProvider(questionName(path))))
+          case page: QuestionPage =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
+              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            }
+            Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -86,7 +91,14 @@ class GuidanceController @Inject() (
             InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
-      nextPageUrl => Future.successful(Redirect(nextPageUrl.url))
+      nextPageUrl =>
+        withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
+          case Left(err) =>
+            logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
+          case Right(_) =>
+            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
+        }
     )
   }
 
@@ -130,14 +142,18 @@ class GuidanceController @Inject() (
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
-    }(sessionId => block(sessionId.value))
+    } { sessionId =>
+      logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
+      block(sessionId.value)
+    }
 
   private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {
       case Right(url) =>
-        Redirect(s"/guidance$url").addingToSession(SessionKeys.sessionId -> sessionId)
+        logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
+        Redirect(routes.GuidanceController.getPage(url.drop(1))).withSession((SessionKeys.sessionId -> sessionId), ("EG_SESSION" -> sessionId))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
