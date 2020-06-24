@@ -24,6 +24,7 @@ import org.scalatest.{MustMatchers, OptionValues, WordSpec}
 import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
 import play.api.{Application, BuiltInComponents, BuiltInComponentsFromContext, NoHttpFiltersComponents}
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.http.DefaultHttpFilters
 import play.api.libs.json.Json
 import play.api.mvc.SessionCookieBaker
 import play.api.test.FakeRequest
@@ -36,25 +37,29 @@ object SessionIdFilterSpec {
 
   val sessionId = "28836767-a008-46be-ac18-695ab140e705"
 
-  class TestSessionIdFilter @Inject() (
-      override val mat: Materializer,
-      sessionCookieBaker: SessionCookieBaker,
-      ec: ExecutionContext
-  ) extends SessionIdFilter(mat, UUID.fromString(sessionId), sessionCookieBaker, ec)
+  class Filters @Inject()(sessionId: SessionIdFilter) extends DefaultHttpFilters(sessionId)
+
+  class TestSessionIdFilter @Inject()(override val mat: Materializer,
+                                      executionContext: ExecutionContext,
+                                      sessionCookieBaker: SessionCookieBaker
+                                     ) extends SessionIdFilter(mat, UUID.fromString(sessionId), executionContext, sessionCookieBaker)
 
 }
 
-class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues with OneAppPerSuiteWithComponents {
+class SessionIdFilterSpec extends WordSpec with MustMatchers  with OptionValues with OneAppPerSuiteWithComponents{
 
   override def components: BuiltInComponents = new BuiltInComponentsFromContext(context) with NoHttpFiltersComponents {
 
     import play.api.mvc.Results
     import play.api.routing.Router
-    import play.api.routing.sird._
 
-    lazy val router: Router = Router.from {
-      case GET(p"/test") =>
-        defaultActionBuilder.apply { request =>
+  val router: Router = {
+
+    import play.api.routing.sird._
+    
+    Router.from {
+      case GET(p"/test") => defaultActionBuilder.apply {
+        request =>
           val fromHeader = request.headers.get(HeaderNames.xSessionId).getOrElse("")
           val fromSession = request.session.get(SessionKeys.sessionId).getOrElse("")
           Results.Ok(
@@ -70,6 +75,7 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues w
         }
     }
   }
+}
 
   import SessionIdFilterSpec._
 
@@ -83,28 +89,25 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues w
       )
       .configure(
         "play.filters.disabled" -> List("uk.gov.hmrc.play.bootstrap.filters.frontend.crypto.SessionCookieCryptoFilter")
-      )
+      )      
       .router(components.router)
       .build()
   }
 
-  "session id filter" must {
+  ".apply" must {
 
     "add a sessionId if one doesn't already exist" in {
 
-      val result = route(app, FakeRequest(GET, "/test")).value
+      val Some(result) = route(app, FakeRequest(GET, "/test"))
 
       val body = contentAsJson(result)
 
       (body \ "fromHeader").as[String] mustEqual s"session-$sessionId"
-      (body \ "fromSession").as[String] mustEqual s"session-$sessionId"
-
-      session(result).data.get(SessionKeys.sessionId) mustBe defined
     }
 
     "not override a sessionId if one doesn't already exist" in {
 
-      val result = route(app, FakeRequest(GET, "/test").withSession(SessionKeys.sessionId -> "foo")).value
+      val Some(result) = route(app, FakeRequest(GET, "/test").withSession(SessionKeys.sessionId -> "foo"))
 
       val body = contentAsJson(result)
 
@@ -112,16 +115,9 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers with OptionValues w
       (body \ "fromSession").as[String] mustEqual "foo"
     }
 
-    "not override other session values from the response" in {
-
-      val result = route(app, FakeRequest(GET, "/test2")).value
-
-      session(result).data must contain("foo" -> "bar")
-    }
-
     "not override other session values from the request" in {
 
-      val result = route(app, FakeRequest(GET, "/test").withSession("foo" -> "bar")).value
+      val Some(result) = route(app, FakeRequest(GET, "/test").withSession("foo" -> "bar"))
       session(result).data must contain("foo" -> "bar")
     }
   }

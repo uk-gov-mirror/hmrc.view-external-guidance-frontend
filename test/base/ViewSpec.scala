@@ -29,6 +29,9 @@ import org.scalatest.{MustMatchers, WordSpec}
 
 trait ViewSpec extends WordSpec with MustMatchers {
 
+  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+  def elementAttrs(el: Element): Map[String, String] = el.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+
   def getSingleElementByTag(markUp: Html, htmlTag: String): Element = {
 
     val document: Document = Jsoup.parse(markUp.toString())
