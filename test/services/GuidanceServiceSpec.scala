@@ -112,7 +112,7 @@ class GuidanceServiceSpec extends BaseSpec {
         }
       }
     }
-  }  
+  }
 
   "Calling getPageContext with an invalid URL" should {
 

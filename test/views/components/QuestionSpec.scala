@@ -72,7 +72,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithoutBody = Question(Text(q1), None, Seq.empty, answers)
     val questionWithHint = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers)
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
-  
+
   }
 
   trait WelshTest extends Test {
@@ -159,7 +159,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "question with body should render hint within a span within fieldset" in new Test {
       val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
+      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
@@ -170,7 +170,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "question without body should render hint within a span within fieldset" in new Test {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
+      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
@@ -214,7 +214,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
       elementAttrs(radios.head).contains("checked") shouldBe true
-    }    
+    }
 
     "render answers with hints" in new WelshTest {
       val doc = asDocument(components.question(question, "test", formProvider("test"))(fakeRequest, messages))
@@ -260,7 +260,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "question with body should render hint within a span within fieldset" in new WelshTest {
       val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
+      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true
@@ -271,7 +271,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     "question without body should render hint within a span within fieldset" in new WelshTest {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")){span =>
+      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "question-hint"
         attrs("class").contains("govuk-hint") shouldBe true

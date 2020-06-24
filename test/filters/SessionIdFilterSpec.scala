@@ -56,7 +56,7 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers  with OptionValues 
   val router: Router = {
 
     import play.api.routing.sird._
-
+    
     Router.from {
       case GET(p"/test") => defaultActionBuilder.apply {
         request =>
@@ -68,11 +68,11 @@ class SessionIdFilterSpec extends WordSpec with MustMatchers  with OptionValues 
               "fromSession" -> fromSession
             )
           )
-      }
-      case GET(p"/test2") => defaultActionBuilder.apply {
-        implicit request =>
+        }
+      case GET(p"/test2") =>
+        defaultActionBuilder.apply { implicit request =>
           Results.Ok.addingToSession("foo" -> "bar")
-      }
+        }
     }
   }
 }
