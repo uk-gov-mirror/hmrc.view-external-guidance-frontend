@@ -1816,7 +1816,7 @@ object PrototypeJson {
           ],
           "stack": false,
           "type": "PageStanza",
-          "url": "/"
+          "url": "/start"
         },
         "129": {
           "next": [
