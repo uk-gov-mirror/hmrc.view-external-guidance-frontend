@@ -314,7 +314,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Ensure all urls have a leading /" in {
 
-      val process: Process = validOnePageJson.as[Process]
+      val process: Process = invalidOnePageJson.as[Process]
 
       pageBuilder.buildPage("start", process) match {
         case Right(Page(_,url,_,_,_)) if url.startsWith("/") => succeed

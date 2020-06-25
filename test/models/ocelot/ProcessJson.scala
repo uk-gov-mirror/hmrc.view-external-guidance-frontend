@@ -41,7 +41,7 @@ trait ProcessJson {
       |  "flow": {
       |    "start": {
       |      "type": "PageStanza",
-      |      "url": "feeling-bad",
+      |      "url": "/feeling-bad",
       |      "next": ["3"],
       |      "stack": true
       |    },

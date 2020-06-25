@@ -23,8 +23,8 @@ import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
-import views.html.components.paragraph
-import models.ui.{Paragraph, Text, Words}
+import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
+import models.ui.{H1, H2, H3, Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -55,6 +55,24 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       strong.size shouldBe 0
     }
 
+    "generate English html containing an H1" in new Test {
+      val doc = asDocument(h1_heading(H1(normalText)))
+      val h1 = doc.getElementsByTag("h1")
+      h1.size shouldBe 1
+    }
+
+    "generate English html containing an H2" in new Test {
+      val doc = asDocument(h2_heading(H2(normalText)))
+      val h2 = doc.getElementsByTag("h2")
+      h2.size shouldBe 1
+    }
+
+    "generate English html containing an H3" in new Test {
+      val doc = asDocument(h3_heading(H3(normalText)))
+      val h3 = doc.getElementsByTag("h3")
+      h3.size shouldBe 1
+    }
+
     "generate English html containing a normal text paragraph" in new Test {
       val doc = asDocument(paragraph(Paragraph(boldText)))
       val strong = doc.getElementsByTag("strong")
@@ -65,6 +83,24 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(normalText)))
       val strong = doc.getElementsByTag("strong")
       strong.size shouldBe 0
+    }
+
+    "generate Welsh html containing an H1" in new WelshTest {
+      val doc = asDocument(h1_heading(H1(normalText)))
+      val h1 = doc.getElementsByTag("h1")
+      h1.size shouldBe 1
+    }
+
+    "generate Welsh html containing an H2" in new WelshTest {
+      val doc = asDocument(h2_heading(H2(normalText)))
+      val h2 = doc.getElementsByTag("h2")
+      h2.size shouldBe 1
+    }
+
+    "generate Welsh html containing an H3" in new WelshTest {
+      val doc = asDocument(h3_heading(H3(normalText)))
+      val h3 = doc.getElementsByTag("h3")
+      h3.size shouldBe 1
     }
 
     "generate Welsh html containing a normal text paragraph" in new WelshTest {
