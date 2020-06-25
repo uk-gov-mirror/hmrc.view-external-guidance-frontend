@@ -65,14 +65,14 @@ object BulletPointBuilder {
     mergedTexts.filter(_ != "")
   }
 
-  def determineMatchedLeadingText(text1: String, text2: String): String = {
+  def determineMatchedLeadingText(instructionGroup: InstructionGroup, langIndex: Int): String = {
 
-    val (text1NoOfWordsToDisplay, text2NoOfWordsToDisplay, matchedWords) = matchInstructionText(text1, text2)
+    val noOfMatchedWords = noOfMatchedLeadingWordsForInstructionGroup(instructionGroup, langIndex)
 
-    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(text2)
+    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(instructionGroup.group.head.text.langs(langIndex))
 
     val (wordsProcessed, outputTexts, outputMatches) = locateTextsAndMatchesContainingLeadingText(
-      matchedWords.size,
+      noOfMatchedWords,
       texts,
       0,
       matches,
@@ -82,7 +82,20 @@ object BulletPointBuilder {
       0
     )
 
-    constructLeadingText(matchedWords.size, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
+    constructLeadingText(noOfMatchedWords, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
+  }
+
+  def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int): Int = {
+
+    val firstInstruction = instructionGroup.group.head
+
+    val remainingInstructions = instructionGroup.group.drop(1)
+
+    val matchedWordsSeq = remainingInstructions.map { i =>
+      matchInstructionText(firstInstruction.text.langs(langIndex), i.text.langs(langIndex))._3
+    }
+
+    matchedWordsSeq.map(_.size).min
   }
 
   /**

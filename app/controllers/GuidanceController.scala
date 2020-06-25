@@ -105,25 +105,25 @@ class GuidanceController @Inject() (
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting journey with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.getStartPageUrl)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting scratch with sessionId = $sessionId")
-    startProcessView(uuid, sessionId, service.retrieveAndCacheScratch)
+    retreiveCacheAndRedirectToProcess(uuid, sessionId, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting publish with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.retrieveAndCachePublished)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCachePublished)
   }
 
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    startProcessView(processId, sessionId, service.retrieveAndCacheApproval)
+    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCacheApproval)
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
@@ -135,7 +135,7 @@ class GuidanceController @Inject() (
 
     val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
     logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    startProcessView(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
+    retreiveCacheAndRedirectToProcess(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
   }
 
   private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
@@ -147,7 +147,7 @@ class GuidanceController @Inject() (
       block(sessionId.value)
     }
 
-  private def startProcessView(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
+  private def retreiveCacheAndRedirectToProcess(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] =
     processStartUrl(id, sessionId).map {

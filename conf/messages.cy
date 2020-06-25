@@ -2,15 +2,39 @@ service.name = Welsh: External guidance
 hello.world = Helo o''r cais view-external-guide-frontend!
 hello.world.currentLanguage = Y gosodiad iaith cyfredol yw "{0}",
 
+service.phaseName = beta
+feedback.before = Gwasanaeth newydd yw hwn – bydd eich
+feedback.linkLabel = adborth
+feedback.after = yn ein helpu i'w wella.
+
+getpagehelp.linkText = Mynnwch help gyda'r dudalen hon (yn agor mewn ffenestr neu dab newydd)
+
 site.continue = Parhewch
 
 error.browser.title.prefix = Gwall:
+
+footer.license.text1 = Mae’r holl gynnwys ar gael dan y
+footer.license.text2 = Drwydded Llywodraeth Agored, fersiwn 3.0
+footer.license.text3 = oni nodir yn wahanol
+footer.license.copyright = © Hawlfraint y Goron
+
+language.cymraeg = Cymraeg
+language.change.cymraeg = Newid yr iaith i’r Gymraeg
+language.english = English
+language.change.english = Newid yr iaith i Saesneg
+language.switcher = Newid yr iaith
+
+timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
+timeout.dialog.sign_out_button.text=Ewch i GOV.UK
+timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
+timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
+
 
 # Footer Links
 # ----------------------------------------------------------
 footer.links.help_page.text=Help wrth ddefnyddio GOV.UK
 footer.links.cookies.text=Cwcis
-footer.links.accessibility.text=Hygyrchedd
+footer.links.accessibility.text=Datganiad Hygyrchedd
 footer.links.privacy_policy.text=Polisi preifatrwydd
 footer.links.terms_and_conditions.text=Telerau ac Amodau
 
@@ -39,10 +63,6 @@ compliant.two.p3=We have also made the text in the service as simple as possible
 compliant.two.p4.0=
 compliant.two.p4.1=AbilityNet
 compliant.two.p4.2=has advice on making your device easier to use if you have a disability.
-feedback.before = This is a new service - your
-feedback.link = feedback
-feedback.after = will help us to improve it.
-feedback.reportlink = Get help with this page (opens in a new window or tab)
 
 ## section three
 compliant.three.heading=How accessible this service is
