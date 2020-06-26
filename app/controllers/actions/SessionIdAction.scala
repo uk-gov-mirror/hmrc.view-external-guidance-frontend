@@ -24,7 +24,9 @@ import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
-trait SessionIdAction extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request]
+trait SessionIdAction extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request] {
+  val EgNewSessionIdName: String = "EG_NEW_SESSIONID"
+}
 
 class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
                                (implicit val executionContext: ExecutionContext) 
@@ -34,10 +36,10 @@ class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
 
   override def invokeBlock[A](request: Request[A], block:Request[A] => Future[Result]): Future[Result] = {
 
-    logger.info(s"SessionIdAction Before: sessionId = ${request.session.data.get(SessionKeys.sessionId)}, EG_NEW_SESSIONID ${request.session.data.get("EG_NEW_SESSIONID")}")
+    logger.info(s"SessionIdAction Before: sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}")
 
-    request.session.data.get("EG_NEW_SESSIONID").fold(block(request)){egNewId =>
-      val updatedSession = Session((request.session.data -- List(SessionKeys.sessionId, "EG_NEW_SESSIONID")) ++ List((SessionKeys.sessionId -> egNewId)))
+    request.session.data.get(EgNewSessionIdName).fold(block(request)){egNewId =>
+      val updatedSession = Session((request.session.data -- List(SessionKeys.sessionId, EgNewSessionIdName)) ++ List((SessionKeys.sessionId -> egNewId)))
       block(Request(request.addAttr[Cell[Session]](RequestAttrKey.Session, Cell(updatedSession)), request.body)).map{ res =>
         res.withSession(updatedSession)
       }

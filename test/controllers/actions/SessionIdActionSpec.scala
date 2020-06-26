@@ -26,7 +26,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
-  // Define simple harness class to represent controller
   case class Harness(action: SessionIdAction) {
     def onPageLoad(): Action[AnyContent] = action { _ => Results.Ok }
   }
@@ -56,7 +55,7 @@ class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
     "Convert EG_NEW_SESSIONID into a sessionId" in new Test {
 
-      override val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", path).withSession("EG_NEW_SESSIONID" -> egSessionId)
+      override val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", path).withSession(sessionIdAction.EgNewSessionIdName -> egSessionId)
       val result: Result = await(target.onPageLoad()(fakeRequest))
 
       println(result)
