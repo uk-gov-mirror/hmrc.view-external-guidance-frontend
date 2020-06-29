@@ -27,7 +27,8 @@
 @(page: QuestionPage, startUrl: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 @pageTitle(page: QuestionPage) = @{
-  page.question.errorMsgs.headOption.fold("")(_ => s"""${messages("error.browser.title.prefix")} """) + page.heading.toWords(messages.lang).mkString(" ")
+  val titleText = page.heading.toWords(messages.lang).mkString(" ")
+  page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} $titleText""")
 }
 
 @layout(pageTitle(page), Some(startUrl)) {
