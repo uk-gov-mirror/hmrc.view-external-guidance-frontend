@@ -24,9 +24,13 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
-import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text}
-import org.jsoup.nodes.Document
+import views.html.question_page
+import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage}
+import org.jsoup.nodes.{Element, Document}
+import forms.NextPageFormProvider
 import scala.collection.JavaConverters._
+import play.api.data.FormError
+import models.ui.ErrorMsg
 
 class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -39,6 +43,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", "/")
 
     val standardPageView = app.injector.instanceOf[views.html.standard_page]
+    val questionPageView = app.injector.instanceOf[views.html.question_page]
     val title = Text("Telling HMRC about extra income", "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 
     val openingPara = Text(
@@ -59,13 +64,27 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val bulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
 
     val simplePage = StandardPage("root", Seq(para, H1(title), bulletPointList))
+
+    val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
+    val ans1 = Vector("Yes", "Welsh, Yes")
+    val ans2 = Vector("No", "Welsh, Yes")
+    val a1 = Answer(Text(ans1), None, "/blah")
+    val a2 = Answer(Text(ans2), None, "/other")
+    val answers = Seq(a1, a2)
+    val questionText = Text(q1)
+    val question = Question(questionText, None, Seq(para, bulletPointList), answers)
+    val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
+    val formProvider = new NextPageFormProvider()
+    val questionPage = QuestionPage("root", question)
+    val questionPageWithErrors = QuestionPage("root", questionWithErrors)
   }
 
   trait WelshTest extends Test {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
-  "Page component" should {
+  "Standard Page component" should {
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
 
@@ -118,6 +137,85 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+  }
+
+  "Question Page component" should {
+
+    "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
+
+      val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val titleElement: Element = doc.getElementsByTag("title").first
+      titleElement.text shouldBe questionText.english.head.toString()
+
+      val h1s = doc.getElementsByTag("h1")
+      h1s.size shouldBe 1
+      h1s.first.text shouldBe questionText.english.head.toString
+
+      val paras = doc.select("main.govuk-main-wrapper p")
+
+      paras.size shouldBe 2
+
+      val firstPara = paras.eq(0)
+      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+
+      val secondPara = paras.eq(1)
+      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
+
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
+      actualListItems.size shouldBe 3
+
+      val expectedListItems: List[String] =
+        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
+
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+    "generate Englsh title prefixed by Error: when errors are dsplayed" in new Test {
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val titleElement: Element = doc.getElementsByTag("title").first
+      titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.english.head.toString}"
+    }
+
+    "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
+
+      val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val titleElement: Element = doc.getElementsByTag("title").first
+      titleElement.text shouldBe questionText.welsh.head.toString()
+
+      val h1s = doc.getElementsByTag("h1")
+      h1s.size shouldBe 1
+      h1s.first.text shouldBe questionText.welsh.head.toString
+
+      val paras = doc.select("main.govuk-main-wrapper p")
+
+      paras.size shouldBe 2
+
+      val firstPara = paras.eq(0)
+      firstPara.first.text shouldBe openingPara.welsh.head.toString
+
+      val secondPara = paras.eq(1)
+      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
+
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
+      actualListItems.size shouldBe 3
+
+      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
+
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+    "generate Welsh title prefixed by Error: when errors are dsplayed" in new WelshTest {
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val titleElement: Element = doc.getElementsByTag("title").first
+      titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.welsh.head.toString}"
     }
 
   }

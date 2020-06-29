@@ -26,7 +26,11 @@
 
 @(page: QuestionPage, startUrl: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.toWords(messages.lang).mkString(" "), Some(startUrl)) {
+@pageTitle(page: QuestionPage) = @{
+  page.question.errorMsgs.headOption.fold("")(_ => s"""${messages("error.browser.title.prefix")} """) + page.heading.toWords(messages.lang).mkString(" ")
+}
+
+@layout(pageTitle(page), Some(startUrl)) {
   
   @components.error_summary(page.question.text, page.question.errorMsgs)
 
