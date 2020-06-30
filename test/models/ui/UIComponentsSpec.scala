@@ -34,9 +34,13 @@ class UIComponentsSpec extends BaseSpec {
   val h3English: String = "Heading level 3 text"
   val h3Welsh: String = "Welsh heading level 3 text"
 
+  val h4English: String = "Heading level 4 text"
+  val h4Welsh: String = "Welsh heading level 4 text"
+
   val h1 = H1(Text(h1English, h1Welsh))
   val h2 = H2(Text(h2English, h2Welsh))
   val h3 = H3(Text(h3English, h3Welsh))
+  val h4 = H4(Text(h4English, h4Welsh))
 
   val engLeadingText: String = "Leading text"
   val welLeadingText: String = "Welsh leading text"
@@ -112,9 +116,15 @@ class UIComponentsSpec extends BaseSpec {
       h3.text.value(welshLang) mustBe Seq(Words(h3Welsh))
     }
 
+    "Support English and Welsh text in HTML h4 elements" in {
+
+      h4.text.value(englishLang) mustBe Seq(Words(h4English))
+      h4.text.value(welshLang) mustBe Seq(Words(h4Welsh))
+    }
+
     "Support the identification of heading components in a list of UIComponents" in {
 
-      val uiComponents: List[UIComponent] = List(h1, h2, h3)
+      val uiComponents: List[UIComponent] = List(h1, h2, h3, h4)
 
       uiComponents.head match {
         case matchedH1: H1 => matchedH1 mustBe h1
@@ -129,6 +139,11 @@ class UIComponentsSpec extends BaseSpec {
       uiComponents(2) match {
         case matchedH3: H3 => matchedH3 mustBe h3
         case _ => fail("H3 Html component not matched")
+      }
+
+      uiComponents(3) match {
+        case matchedH4: H4 => matchedH4 mustBe h4
+        case _ => fail("H4 Html component not matched")
       }
 
     }

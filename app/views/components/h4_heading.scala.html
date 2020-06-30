@@ -14,26 +14,12 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
+@import ui.H4
 
-@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages)
+@( h4: H4 )( implicit messages: Messages )
 
-@for(cmp <- elements) {
-  @{cmp match {
-        case p: Paragraph => components.paragraph(p)
-        case h: H1 => components.h1_heading(h)
-        case h: H2 => components.h2_heading(h)
-        case h: H3 => components.h3_heading(h)
-        case h: H4 => components.h4_heading(h)
-        case b: BulletPointList => components.bullet_point_list(b)
-        case _ =>
-      }
-
-  }
-}
+<h4 class="govuk-heading-s">@components.render_text(h4.text)</h4>
 
 @{
-     //$COVERAGE-OFF$
+//$COVERAGE-OFF$
 }
-
