@@ -154,7 +154,7 @@ class GuidanceController @Inject() (
       case Right(url) =>
         val target = routes.GuidanceController.getPage(url.drop(1)).toString
         logger.warn(s"Redirecting to begin viewing process $id at ${target.toString} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
-        egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession(("EG_NEW_SESSIONID" -> newId)))
+        egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId)))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
@@ -164,7 +164,7 @@ class GuidanceController @Inject() (
     }
   }
 
-  private def existingOrNewSessionId()(implicit request: Request[_]): (String, Option[String]) = 
+  private def existingOrNewSessionId()(implicit request: Request[_]): (String, Option[String]) =
     hc.sessionId.fold{
       val id = s"session-${java.util.UUID.randomUUID.toString}"
       (id, Some(id)): (String, Option[String])

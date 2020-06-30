@@ -55,7 +55,7 @@ class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
     "Convert EG_NEW_SESSIONID into a sessionId" in new Test {
 
-      target{ request => 
+      target{ request =>
         request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
         request.session.data.get(SessionKeys.sessionId) mustBe Some(egSessionId)
         Results.Ok.withSession(request.session)
@@ -65,7 +65,7 @@ class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
     "Add nothing if neither sessionId or EG_NEW_SESSIONID found" in new Test {
 
-      target{ request => 
+      target{ request =>
         request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
         request.session.data.get(SessionKeys.sessionId) mustBe None
         Results.Ok.withSession(request.session)
