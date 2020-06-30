@@ -107,22 +107,22 @@ class GuidanceController @Inject() (
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting journey")
-    retreiveCacheAndRedirectToView(processId, service.getStartPageUrl)
+    retrieveCacheAndRedirectToView(processId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting scratch journey")
-    retreiveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
+    retrieveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting publish journey")
-    retreiveCacheAndRedirectToView(processId, service.retrieveAndCachePublished)
+    retrieveCacheAndRedirectToView(processId, service.retrieveAndCachePublished)
   }
 
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting approval direct view journey")
-    retreiveCacheAndRedirectToView(processId, service.retrieveAndCacheApproval)
+    retrieveCacheAndRedirectToView(processId, service.retrieveAndCacheApproval)
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
@@ -133,7 +133,7 @@ class GuidanceController @Inject() (
       }
 
     logger.info(s"Starting approval direct page view journey")
-    retreiveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
+    retrieveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
   }
 
   private def withExistingSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
@@ -145,12 +145,12 @@ class GuidanceController @Inject() (
       block(sessionId.value)
     }
 
-  private def retreiveCacheAndRedirectToView(id: String, retreiveAndCache: (String, String) => Future[RequestOutcome[String]])(
+  private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] = {
     val (sessionId, egNewSessionId) = existingOrNewSessionId()
-    logger.info(s"Calling Retreive and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
-    retreiveAndCache(id, sessionId).map {
+    logger.info(s"Calling Retrieve and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
+    retrieveAndCache(id, sessionId).map {
       case Right(url) =>
         val target = routes.GuidanceController.getPage(url.drop(1)).toString
         logger.warn(s"Redirecting to begin viewing process $id at ${target.toString} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
