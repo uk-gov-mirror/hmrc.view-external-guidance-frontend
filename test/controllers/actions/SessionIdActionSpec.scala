@@ -23,49 +23,54 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.http.SessionKeys
 
 class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
-  case class Harness(action: SessionIdAction) {
-    def onPageLoad(): Action[AnyContent] = action { _ => Results.Ok }
+  case class Harness(action: SessionIdAction)(block:Request[_] => Result) {
+    def onPageLoad(): Action[AnyContent] = action{req => block(req)}
   }
 
   trait Test {
 
     val path: String = "/path"
-    val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", path)
-
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
     val sessionId = s"session-${java.util.UUID.randomUUID.toString}"
     val egSessionId = s"session-${java.util.UUID.randomUUID.toString}"
     lazy val sessionIdAction = new SessionIdActionImpl(app.injector.instanceOf[BodyParsers.Default])
 
-    lazy val target = Harness(sessionIdAction)
+    lazy val target = Harness(sessionIdAction) _
   }
 
   "SessionIdAction" should {
 
     "Pass on requests containing only sessionid" in new Test {
 
-      val result: Future[Result] = target.onPageLoad()(fakeRequest)
-
+      val result: Future[Result] = target{ request => Results.Ok.withSession(request.session)}
+                                    .onPageLoad()(FakeRequest("GET", path).withSession(SessionKeys.sessionId -> sessionId))
+      session(result).get(SessionKeys.sessionId) mustBe Some(sessionId)
       status(result) mustBe Status.OK
     }
 
     "Convert EG_NEW_SESSIONID into a sessionId" in new Test {
 
-      override val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", path).withSession(sessionIdAction.EgNewSessionIdName -> egSessionId)
-      val result: Result = await(target.onPageLoad()(fakeRequest))
-
-      println(result)
+      target{ request => 
+        request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
+        request.session.data.get(SessionKeys.sessionId) mustBe Some(egSessionId)
+        Results.Ok.withSession(request.session)
+      }.onPageLoad()(FakeRequest("GET", path).withSession(sessionIdAction.EgNewSessionIdName -> egSessionId))
+      
     }
 
-    "When included in the request, ensure it is not included in the Result" in new Test {
+    "Add nothing if neither sessionId or EG_NEW_SESSIONID found" in new Test {
 
-      val result: Future[Result] = target.onPageLoad()(fakeRequest)
-
-      //status(result) mustBe UNAUTHORIZED
+      target{ request => 
+        request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
+        request.session.data.get(SessionKeys.sessionId) mustBe None
+        Results.Ok.withSession(request.session)
+      }.onPageLoad()(FakeRequest("GET", path))
+      
     }
 
   }

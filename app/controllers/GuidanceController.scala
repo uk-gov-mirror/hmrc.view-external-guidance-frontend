@@ -92,35 +92,37 @@ class GuidanceController @Inject() (
             InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
-      nextPageUrl =>
+      nextPageUrl => {
+        val redirectLocation  = routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1))
         withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
-            logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
+            logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.toString}, error: $err")
+            Redirect(redirectLocation)
           case Right(_) =>
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
         }
+      }
     )
   }
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting journey")
-    retreiveCacheAndRedirectToProcess(processId, service.getStartPageUrl)
+    retreiveCacheAndRedirectToView(processId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting scratch journey")
-    retreiveCacheAndRedirectToProcess(uuid, service.retrieveAndCacheScratch)
+    retreiveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting publish journey")
-    retreiveCacheAndRedirectToProcess(processId, service.retrieveAndCachePublished)
+    retreiveCacheAndRedirectToView(processId, service.retrieveAndCachePublished)
   }
 
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting approval direct view journey")
-    retreiveCacheAndRedirectToProcess(processId, service.retrieveAndCacheApproval)
+    retreiveCacheAndRedirectToView(processId, service.retrieveAndCacheApproval)
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
@@ -131,7 +133,7 @@ class GuidanceController @Inject() (
       }
 
     logger.info(s"Starting approval direct page view journey")
-    retreiveCacheAndRedirectToProcess(processId, retrieveCacheAndRedirect(s"/$url"))
+    retreiveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
   }
 
   private def withExistingSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
@@ -143,18 +145,16 @@ class GuidanceController @Inject() (
       block(sessionId.value)
     }
 
-  private def retreiveCacheAndRedirectToProcess(id: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
+  private def retreiveCacheAndRedirectToView(id: String, retreiveAndCache: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
   ): Future[Result] = {
     val (sessionId, egNewSessionId) = existingOrNewSessionId()
-    logger.info(s"retreiveCacheAndRedirectToProcess, sessionId = $sessionId, EG = ${egNewSessionId}")
-    processStartUrl(id, sessionId).map {
+    logger.info(s"Calling Retreive and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
+    retreiveAndCache(id, sessionId).map {
       case Right(url) =>
         val target = routes.GuidanceController.getPage(url.drop(1)).toString
-        logger.warn(s"Redirecting to begin viewing process $id at $target using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
-        egNewSessionId.fold(Redirect(routes.GuidanceController.getPage(url.drop(1)))){ newId =>
-          Redirect(routes.GuidanceController.getPage(url.drop(1))).addingToSession(("EG_NEW_SESSIONID" -> newId))
-        }
+        logger.warn(s"Redirecting to begin viewing process $id at ${target.toString} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
+        egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession(("EG_NEW_SESSIONID" -> newId)))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)

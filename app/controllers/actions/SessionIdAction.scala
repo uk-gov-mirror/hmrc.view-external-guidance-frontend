@@ -36,7 +36,7 @@ class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
 
   override def invokeBlock[A](request: Request[A], block:Request[A] => Future[Result]): Future[Result] = {
 
-    logger.info(s"SessionIdAction Before: sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}")
+    logger.info(s"SessionIdAction sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}")
 
     request.session.data.get(EgNewSessionIdName).fold(block(request)){egNewId =>
       val updatedSession = Session((request.session.data -- List(SessionKeys.sessionId, EgNewSessionIdName)) ++ List((SessionKeys.sessionId -> egNewId)))
@@ -44,6 +44,5 @@ class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
         res.withSession(updatedSession)
       }
     }
-
   }
 }
