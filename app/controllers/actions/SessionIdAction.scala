@@ -29,14 +29,16 @@ trait SessionIdAction extends ActionBuilder[Request, AnyContent] with ActionFunc
 }
 
 class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
-                               (implicit val executionContext: ExecutionContext) 
+                               (implicit val executionContext: ExecutionContext)
                                extends SessionIdAction {
 
   val logger: Logger = Logger(getClass)
 
   override def invokeBlock[A](request: Request[A], block:Request[A] => Future[Result]): Future[Result] = {
 
-    logger.info(s"SessionIdAction sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}")
+    logger.info(
+      s"SessionIdAction sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}"
+    )
 
     request.session.data.get(EgNewSessionIdName).fold(block(request)){egNewId =>
       val updatedSession = Session((request.session.data -- List(SessionKeys.sessionId, EgNewSessionIdName)) ++ List((SessionKeys.sessionId -> egNewId)))
