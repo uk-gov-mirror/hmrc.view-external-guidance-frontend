@@ -54,11 +54,11 @@ class PageBuilder extends ProcessPopulation {
     collectStanzas(key, Nil, Nil) match {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
-          case p: PageStanza if p.url.trim.isEmpty => Left(PageStanzaMissingOrUrlEmpty(ks.head.key))
+          case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
           case p: PageStanza =>
             val stanzas = BulletPointBuilder.groupBulletPointInstructions(ks.map(_.stanza), Nil)
             Right(Page(ks.head.key, p.url, stanzas, next, linked))
-          case _ => Left(PageStanzaMissingOrUrlEmpty(ks.head.key))
+          case _ => Left(PageStanzaMissing(ks.head.key))
         }
       case Left(err) => Left(err)
     }

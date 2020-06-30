@@ -28,7 +28,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     implicit val urlMap: Map[String, String] =
       Map(
-        Process.StartStanzaId -> "/",
+        Process.StartStanzaId -> "/blah",
         "3" -> "dummy-path",
         "4" -> "dummy-path/question",
         "5" -> "dummy-path/blah",
@@ -45,7 +45,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
 
     val stanzas = Seq(
-      PageStanza("/", Seq("1"), false),
+      PageStanza("/blah", Seq("1"), false),
       Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
       Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false),
       Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false)
@@ -157,8 +157,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageLink1En = Link("dummy-path/next", pageLink1TextEn)
     val pageLink2En = Link("dummy-path", pageLink2TextEn)
 
-    val startLinkEn = Link("/", link2StartEn)
-    val startLinkCy = Link("/", link2StartCy)
+    val startLinkEn = Link("/blah", link2StartEn)
+    val startLinkCy = Link("/blah", link2StartCy)
 
     val link1Cy = Link("https://www.bbc.co.uk", link1TxtCy, false)
     val link2Cy = Link("https://www.gov.uk", link2TxtCy, false)
@@ -172,7 +172,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     implicit val urlMap: Map[String, String] =
       Map(
-        Process.StartStanzaId -> "/",
+        Process.StartStanzaId -> "/blah",
         "3" -> "dummy-path",
         "4" -> "dummy-path/question",
         "5" -> "dummy-path/blah",
@@ -224,7 +224,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
     val initialStanza = Seq(
-      PageStanza("/", Seq("1"), false),
+      PageStanza("/blah", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Callout(Title, Phrase(lang0), Seq("3"), false),
       Callout(SubTitle, Phrase(lang1), Seq("4"), false),
@@ -233,21 +233,21 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     )
 
     val stanzasWithQuestion = Seq(
-      PageStanza("/", Seq("1"), false),
+      PageStanza("/blah", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Instruction(Phrase(lang3), Seq("3"), None, false),
       question
     )
 
     val stanzasWithQuestionAndHints = Seq(
-      PageStanza("/", Seq("1"), false),
+      PageStanza("/blah", Seq("1"), false),
       Instruction(Phrase(lang2), Seq("2"), None, false),
       Instruction(Phrase(lang3), Seq("3"), None, false),
       questionWithAnswerHints
     )
 
-    val questionPage = Page(Process.StartStanzaId, "/", stanzasWithQuestion, Seq(""), Nil)
-    val questionPageWithHints = Page(Process.StartStanzaId, "/", stanzasWithQuestionAndHints, Seq(""), Nil)
+    val questionPage = Page(Process.StartStanzaId, "/blah", stanzasWithQuestion, Seq(""), Nil)
+    val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq(""), Nil)
 
     val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
     val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
@@ -426,11 +426,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        PageStanza("/", Seq("1"), false),
+        PageStanza("/blah", Seq("1"), false),
         instructionGroup
       )
 
-      val bulletPointListPage = Page(Process.StartStanzaId, "/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq(""), Nil)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -477,11 +477,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        PageStanza("/", Seq("1"), false),
+        PageStanza("/blah", Seq("1"), false),
         instructionGroup
       )
 
-      val bulletPointListPage = Page(Process.StartStanzaId, "/", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq(""), Nil)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -536,7 +536,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       // Build sequence of stanzas
       val stanzaSeq = Seq(
-        PageStanza("/", Seq("1"), false),
+        PageStanza("/blah", Seq("1"), false),
         titleCallout,
         instruction1,
         subTitleCallout,
@@ -545,7 +545,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         instruction3
       )
 
-      val complexPage = Page(Process.StartStanzaId, "/", stanzaSeq, Seq(""), Nil)
+      val complexPage = Page(Process.StartStanzaId, "/blah", stanzaSeq, Seq(""), Nil)
 
       val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
 

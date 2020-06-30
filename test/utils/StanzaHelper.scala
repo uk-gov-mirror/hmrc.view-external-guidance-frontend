@@ -73,7 +73,7 @@ trait StanzaHelper {
 
   def onePage: Map[String, Stanza] = {
 
-    val value1 = "/"
+    val value1 = "/blah"
     Map(
       (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),
       ("1" -> InstructionStanza(0, Seq("2"), None, false)),
@@ -84,7 +84,7 @@ trait StanzaHelper {
 
   def twoPagesSeperatedByValueStanza: Map[String, Stanza] = {
 
-    val value1 = "/"
+    val value1 = "/blah"
     val value2 = "/a"
     Map(
       (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),

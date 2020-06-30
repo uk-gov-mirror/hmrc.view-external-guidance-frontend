@@ -24,6 +24,7 @@
 
 <footer class="govuk-footer @classes" role="contentinfo"@toAttributes(attributes)>
   <div class="govuk-width-container @containerClasses">
+    @*
       @if(navigation.nonEmpty){
         <div class="govuk-footer__navigation">
           @for(nav <- navigation) {
@@ -50,6 +51,7 @@
         </div>
         <hr class="govuk-footer__section-break">
       }
+    *@
     <div class="govuk-footer__meta">
       <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
         @meta.map { meta =>

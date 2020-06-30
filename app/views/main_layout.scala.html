@@ -52,6 +52,18 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
     <!--[if gt IE 8]><!--> <link href='@controllers.routes.Assets.versioned("stylesheets/application.css")' media="screen" rel="stylesheet" type="text/css" />
         <!--<![endif]-->
 
+    @timeoutDialog(
+        TimeoutDialog(
+            timeout = Some(appConfig.timeoutInSeconds),
+            countdown = Some(appConfig.timeoutWarningInSeconds),
+            keepAliveUrl = Some("#"),
+            keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
+            signOutUrl = Some(appConfig.signOutUrl),
+            signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
+            title = Some(messages("timeout.dialog.title.text")),
+            message = Some(messages("timeout.dialog.message.text"))
+        )
+    )
 }
 
 @headerBlock = {
@@ -76,20 +88,8 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 @scripts = {
     <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
     <script src='@controllers.routes.Assets.versioned("lib/hmrc-frontend/hmrc/all.js")'></script>
-    @timeoutDialog(
-        TimeoutDialog(
-        timeout = Some(appConfig.timeoutInSeconds),
-        countdown = Some(appConfig.timeoutWarningInSeconds),
-        keepAliveUrl = Some("#"),
-        keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
-        signOutUrl = Some(appConfig.signOutUrl),
-        signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
-        title = Some(messages("timeout.dialog.title.text")),
-        message = Some(messages("timeout.dialog.message.text"))
-        )
-    )
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={appConfig.gtmContainer}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=@{appConfig.gtmContainer}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     <script>window.GOVUKFrontend.initAll();</script>
     <script>window.HMRCFrontend.initAll();</script>
