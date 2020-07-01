@@ -158,23 +158,28 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "question with body should render hint within a span within fieldset" in new Test {
       val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
-      val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-        val attrs = elementAttrs(span)
-        attrs("id") shouldBe "question-hint"
-        attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe questionHint(0)
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
+        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
+          val attrs = elementAttrs(span)
+          attrs("id") shouldBe "question-hint"
+          attrs("class").contains("govuk-hint") shouldBe true
+          span.text shouldBe questionHint(0)
+        }
       }
     }
 
     "question without body should render hint within a span within fieldset" in new Test {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
-      val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-        val attrs = elementAttrs(span)
-        attrs("id") shouldBe "question-hint"
-        attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe questionHint(0)
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
+          val attrs = elementAttrs(span)
+          attrs("id") shouldBe "question-hint"
+          attrs("class").contains("govuk-hint") shouldBe true
+          span.text shouldBe questionHint(0)
+        }
       }
     }
 
@@ -259,23 +264,28 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "question with body should render hint within a span within fieldset" in new WelshTest {
       val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
-      val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-        val attrs = elementAttrs(span)
-        attrs("id") shouldBe "question-hint"
-        attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe questionHint(1)
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
+        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
+          val attrs = elementAttrs(span)
+          attrs("id") shouldBe "question-hint"
+          attrs("class").contains("govuk-hint") shouldBe true
+          span.text shouldBe questionHint(1)
+        }
       }
     }
 
     "question without body should render hint within a span within fieldset" in new WelshTest {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
-      val legend = doc.getElementsByTag("fieldset").first
-      Option(legend.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-        val attrs = elementAttrs(span)
-        attrs("id") shouldBe "question-hint"
-        attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe questionHint(1)
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
+          val attrs = elementAttrs(span)
+          attrs("id") shouldBe "question-hint"
+          attrs("class").contains("govuk-hint") shouldBe true
+          span.text shouldBe questionHint(1)
+        }
       }
     }
 
