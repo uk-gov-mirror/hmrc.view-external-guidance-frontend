@@ -30,11 +30,12 @@ import views.html.{standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import uk.gov.hmrc.http.SessionKeys
+import controllers.actions.SessionIdAction
 
 @Singleton
 class GuidanceController @Inject() (
     appConfig: AppConfig,
+    sessionIdAction: SessionIdAction,
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
@@ -46,8 +47,8 @@ class GuidanceController @Inject() (
 
   val logger = Logger(getClass)
 
-  def getPage(path: String): Action[AnyContent] = Action.async { implicit request =>
-    withSession[PageContext](service.getPageContext(s"/$path", _)).map {
+  def getPage(path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
+    withExistingSession[PageContext](service.getPageContext(s"/$path", _)).map {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
@@ -74,7 +75,7 @@ class GuidanceController @Inject() (
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withSession[PageContext](service.getPageContext(s"/$path", _, Some(formData))).map {
+        withExistingSession[PageContext](service.getPageContext(s"/$path", _, Some(formData))).map {
           case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, questionName(path), formWithErrors))
@@ -91,39 +92,37 @@ class GuidanceController @Inject() (
             InternalServerError(errorHandler.internalServerErrorTemplate)
         }
       },
-      nextPageUrl =>
-        withSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
+      nextPageUrl => {
+        val redirectLocation  = routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1))
+        withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
-            logger.error(s"Save Answer on page: $path failed, answser: ${nextPageUrl.url.drop(appConfig.baseUrl.length)}, error: $err")
-            Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
+            logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.toString}, error: $err")
+            Redirect(redirectLocation)
           case Right(_) =>
             Redirect(routes.GuidanceController.getPage(nextPageUrl.url.drop(appConfig.baseUrl.length + 1)))
         }
+      }
     )
   }
 
   def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    logger.info(s"Starting journey with sessionId = $sessionId")
-    retreiveCacheAndRedirectToProcess(processId, sessionId, service.getStartPageUrl)
+    logger.info(s"Starting journey")
+    retrieveCacheAndRedirectToView(processId, service.getStartPageUrl)
   }
 
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
-    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    logger.info(s"Starting scratch with sessionId = $sessionId")
-    retreiveCacheAndRedirectToProcess(uuid, sessionId, service.retrieveAndCacheScratch)
+    logger.info(s"Starting scratch journey")
+    retrieveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
   }
 
   def published(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    logger.info(s"Starting publish with sessionId = $sessionId")
-    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCachePublished)
+    logger.info(s"Starting publish journey")
+    retrieveCacheAndRedirectToView(processId, service.retrieveAndCachePublished)
   }
 
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    retreiveCacheAndRedirectToProcess(processId, sessionId, service.retrieveAndCacheApproval)
+    logger.info(s"Starting approval direct view journey")
+    retrieveCacheAndRedirectToView(processId, service.retrieveAndCacheApproval)
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
@@ -133,27 +132,29 @@ class GuidanceController @Inject() (
         case err @ Left(_) => err
       }
 
-    val sessionId: String = hc.sessionId.fold(java.util.UUID.randomUUID.toString)(_.value)
-    logger.info(s"Starting approval direct view with sessionId = $sessionId")
-    retreiveCacheAndRedirectToProcess(processId, sessionId, retrieveCacheAndRedirect(s"/$url"))
+    logger.info(s"Starting approval direct page view journey")
+    retrieveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
   }
 
-  private def withSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
+  private def withExistingSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
     hc.sessionId.fold {
       logger.error(s"Session Id missing from request when required")
       Future.successful(Left(BadRequestError): RequestOutcome[T])
     } { sessionId =>
-      logger.info(s"withSession, EG_SESSIONID ${request.session.get("EG_SESSION")}, sessionId $sessionId")
+      logger.info(s"Found existing sessionId = $sessionId")
       block(sessionId.value)
     }
 
-  private def retreiveCacheAndRedirectToProcess(id: String, sessionId: String, processStartUrl: (String, String) => Future[RequestOutcome[String]])(
+  private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[String]])(
       implicit request: Request[_]
-  ): Future[Result] =
-    processStartUrl(id, sessionId).map {
+  ): Future[Result] = {
+    val (sessionId, egNewSessionId) = existingOrNewSessionId()
+    logger.info(s"Calling Retrieve and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
+    retrieveAndCache(id, sessionId).map {
       case Right(url) =>
-        logger.warn(s"Redirecting to begin viewing process $id at ${routes.GuidanceController.getPage(url.drop(1)).toString} using sessionId $sessionId")
-        Redirect(routes.GuidanceController.getPage(url.drop(1))).withSession((SessionKeys.sessionId -> sessionId), ("EG_SESSION" -> sessionId))
+        val target = routes.GuidanceController.getPage(url.drop(1)).toString
+        logger.warn(s"Redirecting to begin viewing process $id at ${target.toString} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
+        egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId)))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)
@@ -161,6 +162,13 @@ class GuidanceController @Inject() (
         logger.error(s"Error $err returned from Guidance service when trying to access process $id using sessionId $sessionId")
         InternalServerError(errorHandler.internalServerErrorTemplate)
     }
+  }
+
+  private def existingOrNewSessionId()(implicit request: Request[_]): (String, Option[String]) =
+    hc.sessionId.fold{
+      val id = s"session-${java.util.UUID.randomUUID.toString}"
+      (id, Some(id)): (String, Option[String])
+    }(sessionId => (sessionId.value, None))
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
 }

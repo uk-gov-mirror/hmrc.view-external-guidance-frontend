@@ -17,18 +17,16 @@
 package services
 
 import javax.inject.Singleton
-
-import models.ocelot.stanzas.{Instruction, InstructionGroup, ValueStanza, PageStanza, EndStanza, Callout, Title, SubTitle, Lede, Error, Section}
-import models.ocelot.Phrase
-import play.api.Logger
-import models.ocelot.stanzas.{Question => OcelotQuestion}
-import models.ocelot.{Page => OcelotPage, Link => OcelotLink}
+import models.ocelot.stanzas.{Question => OcelotQuestion, _}
+import models.ocelot.{Phrase, Link => OcelotLink, Page => OcelotPage}
 import models.ui._
+import play.api.Logger
+
 import scala.annotation.tailrec
 
 @Singleton
 class UIBuilder {
-  val logger = Logger(getClass)
+  val logger: Logger = Logger(getClass)
 
   def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
@@ -42,7 +40,6 @@ class UIBuilder {
             acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) => acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
           case Instruction(txt, _, _, _) => acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
-
           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
           case c: Callout => acc ++ fromCallout(c, formData)
           case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
@@ -80,6 +77,7 @@ class UIBuilder {
       case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
+      case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
       // Ignore error messages if no errors exist within form data
       case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
