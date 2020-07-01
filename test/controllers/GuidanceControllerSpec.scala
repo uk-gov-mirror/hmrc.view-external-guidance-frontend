@@ -304,49 +304,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   }
 
-  "Calling the start process endpoint with a valid process ID" should {
-
-    "redirect the caller to another page" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-
-      val result = target.startJourney(processId)(fakeRequest)
-      status(result) mustBe Status.SEE_OTHER
-    }
-
-    "redirect the caller to the start page of the process" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
-      val result = target.startJourney(processId)(fakeRequest)
-      redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
-    }
-
-    "return an internal server error if unable to persist the into the session repo" in new ProcessTest {
-      MockGuidanceService
-        .getStartPageUrl(processId, processId)
-        .returns(Future.successful(Left(DatabaseError)))
-
-      val result = target.startJourney(processId)(fakeRequest)
-
-      status(result) mustBe Status.INTERNAL_SERVER_ERROR
-    }
-  }
-
-  "Calling start process endpoint with a invalid process ID" should {
-
-    "return a NOT_FOUND error" in new ProcessTest {
-      val unknownProcessId = "ext90077"
-      MockGuidanceService
-        .getStartPageUrl(unknownProcessId, unknownProcessId)
-        .returns(Future.successful(Left(NotFoundError)))
-      val result = target.startJourney(unknownProcessId)(fakeRequest)
-      status(result) mustBe Status.NOT_FOUND
-    }
-
-  }
-
   "Calling the published endpoint with a valid process ID" should {
 
     "redirect the caller to another page" in new ProcessTest {

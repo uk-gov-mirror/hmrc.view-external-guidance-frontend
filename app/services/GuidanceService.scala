@@ -83,9 +83,6 @@ class GuidanceService @Inject() (
   def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
-  def getStartPageUrl(processId: String, docId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(processId, docId, connector.getProcess)
-
   private def retrieveAndCache(id: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[String]] =

@@ -136,30 +136,6 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-  "Calling getStartPageUrl" should {
-
-    "retrieve the url of the start page for the process" in new Test {
-
-      MockGuidanceConnector
-        .getProcess(processId)
-        .returns(Future.successful(Right(process)))
-
-      MockSessionRepository
-        .set(processId, process)
-        .returns(Future.successful(Right(())))
-
-      MockPageBuilder
-        .pages(process)
-        .returns(Right(pages))
-
-      private val result = target.getStartPageUrl(processId, processId)
-
-      whenReady(result) { url =>
-        url mustBe Right(firstPageUrl)
-      }
-    }
-  }
-
   "Calling retrieveAndCacheScratch" should {
 
     "retrieve the url of the start page for the scratch process" in new Test {

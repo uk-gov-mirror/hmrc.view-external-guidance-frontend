@@ -37,14 +37,6 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
     val approvalEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/approval/"
   }
 
-  "Calling the getProcess with an existing process ID" should {
-    "return a model representing the Ocelot Process" in new Test {
-      val result = gc.getProcess("ext90002")
-
-      whenReady(result) { _ mustBe Right(process) }
-    }
-  }
-
   "Calling the scratchProcess with an existing scratch process UUID" should {
 
     "return a model representing a Scatch Process" in new Test {

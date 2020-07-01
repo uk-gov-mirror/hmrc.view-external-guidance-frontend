@@ -31,10 +31,6 @@ trait MockGuidanceConnector extends MockFactory {
 
   object MockGuidanceConnector {
 
-    def getProcess(id: String): CallHandler[Future[RequestOutcome[Process]]] = {
-      (mockGuidanceConnector.getProcess(_: String)).expects(id)
-    }
-
     def scratchProcess(uuid: String): CallHandler[Future[RequestOutcome[Process]]] = {
       (mockGuidanceConnector
         .scratchProcess(_: String)(_: HeaderCarrier, _: ExecutionContext))
