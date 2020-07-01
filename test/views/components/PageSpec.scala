@@ -173,7 +173,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
 
-    "generate Englsh title prefixed by Error: when errors are dsplayed" in new Test {
+    "generate Englsh title prefixed by Error: when errors are displayed" in new Test {
 
       val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
@@ -210,7 +210,7 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
 
-    "generate Welsh title prefixed by Error: when errors are dsplayed" in new WelshTest {
+    "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
 
       val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
