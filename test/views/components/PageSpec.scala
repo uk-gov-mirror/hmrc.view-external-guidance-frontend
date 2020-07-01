@@ -31,10 +31,9 @@ import forms.NextPageFormProvider
 import scala.collection.JavaConverters._
 import play.api.data.FormError
 import models.ui.ErrorMsg
+import base.ViewFns
 
-class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
-
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
   trait Test {
     private def injector: Injector = app.injector
@@ -181,6 +180,16 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.english.head.toString}"
     }
 
+    "set radios fieldset aria-describedby correctly whn error occurs" in new Test {
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val fieldset: Element = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){fset =>
+        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      }
+    }
+
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
       val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
@@ -216,6 +225,16 @@ class PageSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       val titleElement: Element = doc.getElementsByTag("title").first
       titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.welsh.head.toString}"
+    }
+
+    "set radios fieldset aria-describedby correctly when error occurs" in new WelshTest {
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+
+      val fieldset: Element = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){fset =>
+        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      }
     }
 
   }

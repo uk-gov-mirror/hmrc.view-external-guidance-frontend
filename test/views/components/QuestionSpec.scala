@@ -174,6 +174,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
         Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
           val attrs = elementAttrs(span)
           attrs("id") shouldBe "question-hint"
@@ -280,6 +281,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(components.question(questionWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages))
       val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
         Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
           val attrs = elementAttrs(span)
           attrs("id") shouldBe "question-hint"

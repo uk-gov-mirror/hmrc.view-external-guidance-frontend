@@ -27,12 +27,12 @@ import views.html.components.govukFooter
 import models.ui.{Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
-import base.ViewSpec
+import base.{ViewSpec, ViewFns}
 import uk.gov.hmrc.hmrcfrontend.views.html.components._
 import uk.gov.hmrc.govukfrontend.views.html.components._
 import views.components.FooterLinks
 
-class GovukFooterSpec extends ViewSpec with GuiceOneAppPerSuite {
+class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   trait Test {
     private def injector: Injector = app.injector
