@@ -32,7 +32,7 @@
             @if(form(name).value.contains(ans.dest)) {checked}
             @if(!ans.hint.isEmpty) { aria-describedby="@name-item-@index-hint" }>
 
-      <label class="govuk-label govuk-radios__label govuk-label--s" for="@name-@index">
+      <label class="govuk-label govuk-radios__label" for="@name-@index">
         @components.render_text(ans.text)
       </label>
 
