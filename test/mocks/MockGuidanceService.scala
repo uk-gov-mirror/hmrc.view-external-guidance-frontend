@@ -37,12 +37,6 @@ trait MockGuidanceService extends MockFactory {
         .expects(uuid, *, *, *)
     }
 
-    def getStartPageUrl(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
-      (mockGuidanceService
-        .getStartPageUrl(_: String, _: String)(_: ExecutionContext))
-        .expects(processId, *, *)
-    }
-
     def retrieveAndCachePublished(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
       (mockGuidanceService
         .retrieveAndCachePublished(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))

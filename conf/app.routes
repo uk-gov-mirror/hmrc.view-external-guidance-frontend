@@ -10,8 +10,6 @@ GET   /bye-world                         controllers.HelloWorldController.byeWor
 
 GET   /scratch/$uuid<[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>     controllers.GuidanceController.scratch(uuid: String)
 
-GET   /start/:processId                  controllers.GuidanceController.startJourney(processId)
-
 GET   /published/:processId              controllers.GuidanceController.published(processId)
 
 GET   /approval/:processId/*url          controllers.GuidanceController.approvalPage(processId: String, url: String)

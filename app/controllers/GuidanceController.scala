@@ -105,11 +105,6 @@ class GuidanceController @Inject() (
     )
   }
 
-  def startJourney(processId: String): Action[AnyContent] = Action.async { implicit request =>
-    logger.info(s"Starting journey")
-    retrieveCacheAndRedirectToView(processId, service.getStartPageUrl)
-  }
-
   def scratch(uuid: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting scratch journey")
     retrieveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
