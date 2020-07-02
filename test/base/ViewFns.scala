@@ -18,7 +18,6 @@ package base
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes._
-
 import play.twirl.api.Html
 
 import scala.collection.JavaConverters._
