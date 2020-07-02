@@ -23,7 +23,7 @@
 @ariaDescribedBy(s: String) = { aria-describedby="@s" }
 
 @optionalAria(a: Question) = @{
-  (q.hint.map(_ => "question-hint")::q.errorMsgs.headOption.map(err => s"${err.id}-error")::Nil).flatten match {
+  Seq(q.hint.map(_ => "question-hint"), q.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
     case l => ariaDescribedBy(l.mkString(" "))
   }
