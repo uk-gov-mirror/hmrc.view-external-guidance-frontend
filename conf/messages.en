@@ -1,5 +1,4 @@
-service.name = External guidance
-service.titleName = Guidance
+service.name = Guidance
 service.govuk = GOV.UK
 hello.world = Hello world!
 hello.world.currentLanguage = The current language setting is "{0}",
