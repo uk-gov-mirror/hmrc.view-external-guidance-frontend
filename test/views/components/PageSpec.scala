@@ -77,6 +77,21 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val formProvider = new NextPageFormProvider()
     val questionPage = QuestionPage("root", question)
     val questionPageWithErrors = QuestionPage("root", questionWithErrors)
+
+    def expectedTitleText(h1Text: String, section: Option[String] = None): String =
+      section.fold(s"${h1Text} - ${messages("service.name")} - ${messages("service.govuk")}"){s =>
+        s"${h1Text} - ${s} - ${messages("service.name")} - ${messages("service.govuk")}"
+      }
+
+    def checkTitle(doc: Document, section: Option[String] = None, prefix: Option[String] = None): Unit =
+      Option(doc.getElementsByTag("h1").first).fold(fail("Missing H1")){ h1 =>
+        Option(doc.getElementsByTag("title").first).fold(fail("Missing title")){title =>
+          prefix.fold(title.text shouldBe expectedTitleText(h1.text, section)){ prefx =>
+            title.text shouldBe s"$prefx ${expectedTitleText(h1.text, section)}"
+          }
+        }
+      }
+
   }
 
   trait WelshTest extends Test {
@@ -146,8 +161,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
-      val titleElement: Element = doc.getElementsByTag("title").first
-      titleElement.text shouldBe questionText.english.head.toString()
+      checkTitle(doc)
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -176,8 +190,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
-      val titleElement: Element = doc.getElementsByTag("title").first
-      titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.english.head.toString}"
+      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly whn error occurs" in new Test {
@@ -194,8 +207,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
-      val titleElement: Element = doc.getElementsByTag("title").first
-      titleElement.text shouldBe questionText.welsh.head.toString()
+      checkTitle(doc)
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -223,8 +235,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
 
-      val titleElement: Element = doc.getElementsByTag("title").first
-      titleElement.text shouldBe s"${messages("error.browser.title.prefix")} ${questionText.welsh.head.toString}"
+      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly when error occurs" in new WelshTest {
