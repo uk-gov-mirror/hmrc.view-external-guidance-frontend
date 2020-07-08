@@ -4,20 +4,20 @@ import sbt._
 object AppDependencies {
 
   val compile = Seq(
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.26.0-play-26",
-    "com.typesafe.play" %% "play-json-joda" % "2.6.0",
-    "uk.gov.hmrc" %% "play-language" % "4.2.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.8.0",
-    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.48.0-play-26",
-    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.13.0-play-26"
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
+    "com.typesafe.play" %% "play-json-joda" % "2.6.14",
+    "uk.gov.hmrc" %% "play-language" % "4.3.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.13.0",
+    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.49.0-play-26",
+    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.16.0-play-26"
   )
 
   val test = Seq(
-    "uk.gov.hmrc" %% "reactivemongo-test" % "4.16.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.8.0" % Test classifier "tests",
+    "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.13.0" % Test classifier "tests",
     "org.scalamock" %% "scalamock" % "4.4.0" % "test",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
-    "org.jsoup" % "jsoup" % "1.10.2" % "test",
+    "org.jsoup" % "jsoup" % "1.13.1" % "test",
     "com.typesafe.play" %% "play-test" % current % "test",
     "org.pegdown" % "pegdown" % "1.6.0" % "test, it",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % "test, it",
