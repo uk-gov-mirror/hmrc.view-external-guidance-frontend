@@ -18,7 +18,7 @@ package connectors.httpParsers
 
 import base.BaseSpec
 import play.api.http.{HttpVerbs, Status}
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, OFormat, JsNull}
 import uk.gov.hmrc.http.HttpResponse
 
 class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser {
@@ -33,14 +33,14 @@ class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser
     "return the model associated with the JSON" in {
       val model = Person("Bob", 1)
       val json = Json.toJson(model)
-      val response = HttpResponse(OK, Some(json))
+      val response = HttpResponse(OK, json, Map.empty[String, Seq[String]])
       response.validateJson[Person] mustBe Some(model)
     }
   }
 
   "Calling validateJson with no response" should {
     "return None" in {
-      val response = HttpResponse(OK)
+      val response = HttpResponse(OK, JsNull, Map.empty[String, Seq[String]])
       response.validateJson[Person] mustBe None
     }
   }
@@ -48,7 +48,7 @@ class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser
   "Calling validateJson with an invalid JSON response" should {
     "return None" in {
       val json = Json.obj()
-      val response = HttpResponse(OK, Some(json))
+      val response = HttpResponse(OK, json, Map.empty[String, Seq[String]])
       response.validateJson[Person] mustBe None
     }
   }
