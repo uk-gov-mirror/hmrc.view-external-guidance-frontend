@@ -14,6 +14,7 @@ getpagehelp.linkText = Mynnwch help gyda'r dudalen hon (yn agor mewn ffenestr ne
 site.continue = Parhewch
 
 error.browser.title.prefix = Gwall:
+error.summary.title = Mae yna broblem
 
 footer.license.text1 = Mae’r holl gynnwys ar gael dan y
 footer.license.text2 = Drwydded Llywodraeth Agored, fersiwn 3.0
