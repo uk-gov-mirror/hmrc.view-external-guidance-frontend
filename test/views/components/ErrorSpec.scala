@@ -49,7 +49,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(components.error_summary(heading, errorMsgs)(messages))
       val head = doc.getElementById("error-summary-title")
 
-      head.text() shouldBe headStrings(0)
+      head.text() shouldBe messages("error.summary.title")
 
       val lists = doc.getElementsByTag("ul").asScala.toList
       val listItems = lists(0).getElementsByTag("li").asScala.toList
