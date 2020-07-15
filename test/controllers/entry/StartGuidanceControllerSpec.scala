@@ -17,7 +17,7 @@
 package controllers.entry
 
 import base.BaseSpec
-import mocks.{MockAppConfig, MockGuidanceService}
+import mocks.MockGuidanceService
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc._
@@ -25,7 +25,6 @@ import play.api.mvc.{BodyParsers,AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
-import forms.NextPageFormProvider
 import models.ui._
 import models.errors._
 import scala.concurrent.{ExecutionContext, Future}
@@ -77,13 +76,9 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     lazy val target =
       new StartGuidanceController(
-        MockAppConfig,
-        fakeSessionIdAction,
         errorHandler,
-        view,
-        questionView,
-        new NextPageFormProvider(),
         mockGuidanceService,
+        fakeSessionIdAction,
         stubMessagesControllerComponents()
       )
 

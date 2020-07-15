@@ -16,7 +16,7 @@
 
 package controllers.entry
 
-import config.{AppConfig, ErrorHandler}
+import config.ErrorHandler
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -24,8 +24,6 @@ import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.RequestOutcome
-import forms.NextPageFormProvider
-import views.html.{standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -33,13 +31,9 @@ import controllers.actions.SessionIdAction
 
 @Singleton
 class StartGuidanceController @Inject() (
-    appConfig: AppConfig,
-    sessionIdAction: SessionIdAction,
     errorHandler: ErrorHandler,
-    standardView: standard_page,
-    questionView: question_page,
-    formProvider: NextPageFormProvider,
     service: GuidanceService,
+    sessionIdAction: SessionIdAction,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
     with I18nSupport {
