@@ -41,6 +41,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     val answerUrl2 = "/world"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
+    lazy val adminViewerUrl = "/guidance-review"
     lazy val relativePath = path.drop(1)
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
@@ -274,7 +275,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "redirect the caller to the start page of the process" in new ScratchTestWithValidUUID {
-      redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
+      redirectLocation(result) mustBe Some(s"$adminViewerUrl$expectedUrl")
     }
 
   }
@@ -320,7 +321,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.published(processId)(fakeRequest)
-      redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
+      redirectLocation(result) mustBe Some(s"$adminViewerUrl$expectedUrl")
     }
 
   }
@@ -354,7 +355,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCacheApproval(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approval(processId)(fakeRequest)
-      redirectLocation(result) mustBe Some(s"/guidance$expectedUrl")
+      redirectLocation(result) mustBe Some(s"$adminViewerUrl$expectedUrl")
     }
   }
 
@@ -389,7 +390,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCacheApproval(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approvalPage(processId, url)(fakeRequest)
-      redirectLocation(result) mustBe Some(s"/guidance/$url")
+      redirectLocation(result) mustBe Some(s"$adminViewerUrl/$url")
     }
 
   }
