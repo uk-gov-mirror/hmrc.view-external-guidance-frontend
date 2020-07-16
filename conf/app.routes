@@ -2,24 +2,10 @@
 GET   /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
 
 GET   /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
-GET   /hello-world                       controllers.HelloWorldController.helloWorld
-GET   /bye-world                         controllers.HelloWorldController.byeWorld
 
-->    /govuk-frontend                    govuk.Routes
-->    /hmrc-frontend                     hmrcfrontend.Routes
-
-GET   /scratch/$uuid<[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>     controllers.GuidanceController.scratch(uuid: String)
-
-GET   /published/:processId              controllers.GuidanceController.published(processId)
-
-GET   /approval/:processId/*url          controllers.GuidanceController.approvalPage(processId: String, url: String)
-GET   /approval/:processId/              controllers.GuidanceController.approvalPage(processId: String, url: String ?= "")
-GET   /approval/:processId               controllers.GuidanceController.approval(processId: String)
+GET   /published/:processId              controllers.entry.StartGuidanceController.published(processId)
 
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
 
 GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)
-
-GET   /                                  controllers.GuidanceController.getPage(path: String ?= "")
-POST  /                                  controllers.GuidanceController.submitPage(path: String ?= "")

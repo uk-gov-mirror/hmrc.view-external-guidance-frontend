@@ -29,5 +29,5 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
   override def languageMap: Map[String, Lang] = appConfig.languageMap
 
   // TODO requires suitable index like fallback URL
-  override def fallbackURL: String = routes.HelloWorldController.helloWorld().url
+  override def fallbackURL: String = routes.AccessibilityStatementController.getPage().url
 }
