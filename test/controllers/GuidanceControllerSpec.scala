@@ -41,7 +41,6 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     val answerUrl2 = "/world"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
-    lazy val adminViewerUrl = "/guidance-review"
     lazy val relativePath = path.drop(1)
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
