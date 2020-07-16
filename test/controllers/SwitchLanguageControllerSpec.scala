@@ -29,6 +29,7 @@ import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import config.AppConfigImpl
 import uk.gov.hmrc.play.language.LanguageUtils
+import play.api.http.HeaderNames
 
 class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   private val fakeRequest = FakeRequest("GET", "/")
@@ -71,6 +72,20 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
       val result = controller.switchToLanguage("xx")(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
       confirmLangCookie(cookies(result), "en")
+    }
+  }
+
+  "Lang switch" should {
+    "redirect to current page if referer is valid" in {
+      val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, s"${appConfig.baseHostUrl}/somepage")))
+      redirectLocation(result) shouldBe Some(s"${appConfig.baseHostUrl}/somepage")
+      
+    }
+
+    "redirect to accessibility page if referer is bogus" in {
+      val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, "https://www.bbc.co.uk")))
+      redirectLocation(result) shouldBe Some("/guidance/accessibility")
+      
     }
   }
 
