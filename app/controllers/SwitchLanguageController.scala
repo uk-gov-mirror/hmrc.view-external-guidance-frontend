@@ -23,8 +23,7 @@ import config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
-class SwitchLanguageController @Inject(
-) (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
+class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
     extends LanguageController(appConfig.config, languageUtils, cc) {
 
 
@@ -40,9 +39,9 @@ class SwitchLanguageController @Inject(
     val lang: Lang =
       if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
       else languageUtils.getCurrentLang
-    
+
     val redirectURL: String = request.headers.get(REFERER).find(_.startsWith(appConfig.baseHostUrl)).getOrElse(fallbackURL)
-      
+
     Redirect(redirectURL).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
   }
 

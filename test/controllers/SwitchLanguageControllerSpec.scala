@@ -75,7 +75,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
     }
   }
 
-  "Lang swtich" should {
+  "Lang switch" should {
     "redirect to current page if referer is valid" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, s"${appConfig.baseHostUrl}/somepage")))
       redirectLocation(result) shouldBe Some(s"${appConfig.baseHostUrl}/somepage")
