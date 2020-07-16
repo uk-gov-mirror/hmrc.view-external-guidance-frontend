@@ -9,4 +9,3 @@ GET   /accessibility                     controllers.AccessibilityStatementContr
 
 GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)
-
