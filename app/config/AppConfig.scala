@@ -44,6 +44,7 @@ trait AppConfig {
   def feedbackUrl(implicit request: RequestHeader): String
   val gtmContainer: String
   val baseUrl: String
+  val baseHostUrl: String
 }
 
 @Singleton
@@ -77,5 +78,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")
   lazy val timeoutWarningInSeconds: Int = config.get[Int]("session-timeout.warning")
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
+  lazy val baseHostUrl: String = s"$host$baseUrl"
 
 }

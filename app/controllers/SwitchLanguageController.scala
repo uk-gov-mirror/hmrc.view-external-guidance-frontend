@@ -23,11 +23,27 @@ import config.AppConfig
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
-class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
+class SwitchLanguageController @Inject(
+) (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
     extends LanguageController(appConfig.config, languageUtils, cc) {
 
+
   override def languageMap: Map[String, Lang] = appConfig.languageMap
+  private val SwitchIndicatorKey = "switching-language"
+  private val FlashWithSwitchIndicator = Flash(Map(SwitchIndicatorKey -> "true"))
 
   // TODO requires suitable index like fallback URL
   override def fallbackURL: String = routes.AccessibilityStatementController.getPage().url
+
+  override def switchToLanguage(language: String): Action[AnyContent] = Action { implicit request =>
+    val enabled: Boolean = languageMap.get(language).exists(languageUtils.isLangAvailable)
+    val lang: Lang =
+      if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
+      else languageUtils.getCurrentLang
+    
+    val redirectURL: String = request.headers.get(REFERER).find(_.startsWith(appConfig.baseHostUrl)).getOrElse(fallbackURL)
+      
+    Redirect(redirectURL).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
+  }
+
 }
