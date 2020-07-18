@@ -20,10 +20,8 @@
 
 @(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@ariaDescribedBy(s: String) = { aria-describedby="@s" }
-
-@optionalAria(a: Question) = @{
-  Seq(q.hint.map(_ => "question-hint"), q.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+@optionalAria(qu: Question) = @{
+  Seq(qu.hint.map(_ => "question-hint"), qu.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
     case l => ariaDescribedBy(l.mkString(" "))
   }
@@ -48,7 +46,7 @@
 
     @components.error_message(q.errorMsgs)
 
-    @components.answers(q.answers, q.horizontal, name, form)
+    @components.answers(q, name, form)
 
   </fieldset>
   

@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup._
 import views.html._
-import models.ui.{Paragraph, Text, Question, Answer, BulletPointList}
+import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
 import forms.NextPageFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
@@ -72,6 +72,8 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithoutBody = Question(Text(q1), None, Seq.empty, answers)
     val questionWithHint = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers)
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
+    val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    val questionWithHintAndErrors = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers, Seq(errorMsg))
 
   }
 
@@ -184,6 +186,46 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
     }
 
+   "question with hint should include hint id in aria-desribedby on fieldset" in new Test { 
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
+      }
+   }
+
+   "question with hint in error should include hint id and error id in aria-desribedby on fieldset" in new Test { 
+      val doc = asDocument(components.question(questionWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages))
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+          aria should include("question-hint")
+          aria should include("id-error")
+        }
+      }
+   }
+
+   "answer with hint should include hint id in aria-desribedby on input" in new Test { 
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
+      for{
+        (inp, index) <- doc.getElementsByTag("input").asScala.toList.zipWithIndex
+      } yield {
+        elementAttrs(inp)("aria-describedby") shouldBe s"test-item-$index-hint"
+      }
+   }
+
+   "answer with hint in error should include hint id and error id in aria-desribedby on input" in new Test { 
+      val doc = asDocument(components.question(questionWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages))
+      for{
+        (inp, index) <- doc.getElementsByTag("input").asScala.toList.zipWithIndex
+      } yield {
+        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+          aria should include(s"test-item-$index-hint")
+          aria should include(s"id-error")
+        }
+      }
+   }
+
   }
 
   "Welsh Question component" must {
@@ -290,6 +332,46 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         }
       }
     }
+    
+   "question with hint should include hint id in aria-desribedby on fieldset" in new Test { 
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset)("aria-describedby") shouldBe "question-hint"
+      }
+   }
+
+   "question with hint in error should include hint id and error id in aria-desribedby on fieldset" in new Test { 
+      val doc = asDocument(components.question(questionWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages))
+      val fieldset = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
+        elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+          aria should include("question-hint")
+          aria should include("id-error")
+        }
+      }
+   }
+
+   "answer with hint should include hint id in aria-desribedby on input" in new Test { 
+      val doc = asDocument(components.question(questionWithHint, "test", formProvider("test"))(fakeRequest, messages))
+      for{
+        (inp, index) <- doc.getElementsByTag("input").asScala.toList.zipWithIndex
+      } yield {
+        elementAttrs(inp)("aria-describedby") shouldBe s"test-item-$index-hint"
+      }
+   }
+
+   "answer with hint in error should include hint id and error id in aria-desribedby on input" in new Test { 
+      val doc = asDocument(components.question(questionWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages))
+      for{
+        (inp, index) <- doc.getElementsByTag("input").asScala.toList.zipWithIndex
+      } yield {
+        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+          aria should include(s"test-item-$index-hint")
+          aria should include(s"id-error")
+        }
+      }
+   }
 
   }
 }
