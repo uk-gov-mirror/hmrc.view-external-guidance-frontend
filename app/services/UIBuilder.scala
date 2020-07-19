@@ -32,27 +32,38 @@ class UIBuilder {
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
   def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(
-      pge.url,
-      pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
-        stanza match {
-          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if OcelotLink.isLinkableStanzaId(dest) =>
-            acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))
-          case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) => acc ++ Seq(Paragraph(Text.link(dest, txt.langs), window))
-          case Instruction(txt, _, _, _) => acc ++ Seq(Paragraph(TextBuilder.fromPhrase(txt)))
-          case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-          case c: Callout => acc ++ fromCallout(c, formData)
-          case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
-          case PageStanza(_, _, _) => acc
-          case ValueStanza(_, _, _) => acc
-          case EndStanza => acc
-        }
-      }
-    )
+    Page(pge.url,
+         pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+           stanza match {
+             case i: Instruction => acc :+ fromInstruction(i)
+             case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
+             case c: Callout => acc ++ fromCallout(c, formData)
+             case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case _ => acc
+           }
+         })
+
+  private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    i match {
+      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if OcelotLink.isLinkableStanzaId(dest) =>
+        Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window)
+      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) =>
+        Paragraph(Text.link(dest, txt.langs), window)
+      case Instruction(txt, _, _, _) =>
+        Paragraph(TextBuilder.fromPhrase(txt))
+    }
 
   private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
       implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
+  @tailrec
+  def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+    components match {
+      case Nil => (errors.reverse, others.reverse)
+      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+      case x :: xs => partitionComponents(xs, errors, x +: others)
+    }
+
     val answers = (q.answers zip q.next).map { t =>
       val (phrase, stanzaId) = t
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
@@ -64,13 +75,6 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  @tailrec
-  private def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
-    components match {
-      case Nil => (errors.reverse, others.reverse)
-      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
-      case x :: xs => partitionComponents(xs, errors, x +: others)
-    }
 
   private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
@@ -95,15 +99,13 @@ class UIBuilder {
           .getOrElse(Seq.empty)
     }
 
-  private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): BulletPointList = {
-
+  private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
       remainder.map { instruction =>
         val bulletPointEnglish: String = instruction.text
           .langs(0)
           .substring(leadingEn.length, instruction.text.langs(0).length)
           .trim
-
         val bulletPointWelsh: String = instruction.text
           .langs(1)
           .substring(leadingCy.length, instruction.text.langs(1).length)
@@ -113,13 +115,10 @@ class UIBuilder {
       }
 
     val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 0)
-
     val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 1)
-
     // Process bullet points
     val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, insGroup.group)
 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
-
 }
