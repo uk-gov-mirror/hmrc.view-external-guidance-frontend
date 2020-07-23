@@ -55,13 +55,14 @@ class UIBuilder {
   private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
       implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
-  @tailrec
-  def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
-    components match {
-      case Nil => (errors.reverse, others.reverse)
-      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
-      case x :: xs => partitionComponents(xs, errors, x +: others)
-    }
+    
+    @tailrec
+    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+      components match {
+        case Nil => (errors.reverse, others.reverse)
+        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+        case x :: xs => partitionComponents(xs, errors, x +: others)
+      }
 
     val answers = (q.answers zip q.next).map { t =>
       val (phrase, stanzaId) = t
