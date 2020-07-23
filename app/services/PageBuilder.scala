@@ -17,19 +17,19 @@
 package services
 
 import javax.inject.Singleton
-
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process}
-
+import play.api.Logger
 import scala.annotation.tailrec
 
 case class KeyedStanza(key: String, stanza: Stanza)
 
 @Singleton
 class PageBuilder extends ProcessPopulation {
+  val logger: Logger = Logger(this.getClass)
 
   private val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
-
+  private val hintRegex = "\\[hint:([^\\]])+\\]".r
   private def pageUrlUnique(url: String, existingPages: Seq[Page]): Boolean = !existingPages.exists(_.url == url)
 
   private def pageLinkIds(str: String): Seq[String] = pageLinkRegex.findAllMatchIn(str).map(_.group(1)).toList
@@ -42,7 +42,6 @@ class PageBuilder extends ProcessPopulation {
         case Right(q: Question) => Right((acc :+ KeyedStanza(key, q), q.next, linkedAcc))
         case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), Nil, linkedAcc))
         case Right(p: PageStanza) if acc.nonEmpty => Right((acc, acc.last.stanza.next, linkedAcc))
-
         case Right(p: PageStanza) => collectStanzas(p.next.head, acc :+ KeyedStanza(key, p), linkedAcc)
         case Right(i: Instruction) => collectStanzas(i.next.head, acc :+ KeyedStanza(key, i), linkedAcc ++ pageLinkIds(i.text.langs.head) ++ i.linkIds)
         case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedAcc)
@@ -55,9 +54,7 @@ class PageBuilder extends ProcessPopulation {
       case Right((ks, next, linked)) =>
         ks.head.stanza match {
           case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
-          case p: PageStanza =>
-            val stanzas = BulletPointBuilder.groupBulletPointInstructions(ks.map(_.stanza), Nil)
-            Right(Page(ks.head.key, p.url, stanzas, next, linked))
+          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), next, linked))
           case _ => Left(PageStanzaMissing(ks.head.key))
         }
       case Left(err) => Left(err)
@@ -75,11 +72,23 @@ class PageBuilder extends ProcessPopulation {
             case Right(page) if pageUrlUnique(page.url, acc) =>
               pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
             case Right(page) => Left(DuplicatePageUrl(page.id, page.url))
-            case Left(err) => Left(err)
+            case Left(err) => 
+              logger.error(s"Could not parse process - $err")
+              Left(err)              
           }
         case _ :: xs => pagesByKeys(xs, acc)
       }
 
     pagesByKeys(List(start), Nil)
   }
+
+  def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =
+    pages.toList.flatMap{ page =>
+      page.stanzas.collectFirst{
+        case Callout(Title, text, _, _) => 
+          f(page.id, page.url, text.langs(0))
+        case q: Question =>
+          f(page.id, page.url, hintRegex.replaceAllIn(q.text.langs(0), ""))
+      }
+    }  
 }
