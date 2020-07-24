@@ -298,6 +298,33 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
+    "detect MissingWelshText" in {
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> PageStanza("/that", Seq("5"), false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(
+        metaSection,
+        flow,
+        Vector[Phrase](
+          Phrase(Vector("Some Text", "Welsh, Some Text")),
+          Phrase(Vector("Some Text1", "")),
+          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
+          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
+        ),
+        Vector[Link]()
+      )
+      pageBuilder.pages(process) match {
+        case Left(MissingWelshText("2", "Some Text1")) => succeed
+        case Left(err) => fail(s"MissingWelshText error not detected, failed with $err")
+        case _ => fail(s"MissingWelshText not detected")
+      }
+    }
+
   }
 
   "PageBuilder" must {
@@ -512,9 +539,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, false)
       val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, false)
 
-      val phrase1: Phrase = Phrase(Vector("Today I bought some beetroot", ""))
-      val phrase2: Phrase = Phrase(Vector("Today I bought some carrots", ""))
-      val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", ""))
+      val phrase1: Phrase = Phrase(Vector("Today I bought some beetroot", "Welsh, Today I bought some beetroot"))
+      val phrase2: Phrase = Phrase(Vector("Today I bought some carrots", "Welsh, Today I bought some carrots"))
+      val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", "Welsh, Today I bought some peppers"))
 
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
@@ -558,15 +585,15 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val instructionStanza7: InstructionStanza = InstructionStanza(eight, Seq("end"), None, false)
 
       // Define phrases
-      val phrase1: Phrase = Phrase(Vector("Main title", ""))
-      val phrase2: Phrase = Phrase(Vector("My favourite sweets are Wine gums", ""))
-      val phrase3: Phrase = Phrase(Vector("My favourite sweets are humbugs", ""))
-      val phrase4: Phrase = Phrase(Vector("Today is Monday", ""))
-      val phrase5: Phrase = Phrase(Vector("More news", ""))
-      val phrase6: Phrase = Phrase(Vector("Today in the West Midlands", ""))
-      val phrase7: Phrase = Phrase(Vector("Late night in Brierly hill"))
-      val phrase8: Phrase = Phrase(Vector("What is happening in Dudley", ""))
-      val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", ""))
+      val phrase1: Phrase = Phrase(Vector("Main title", "Welsh, Main title"))
+      val phrase2: Phrase = Phrase(Vector("My favourite sweets are Wine gums", "Welsh, My favourite sweets are Wine gums"))
+      val phrase3: Phrase = Phrase(Vector("My favourite sweets are humbugs", "Welsh, My favourite sweets are humbugs"))
+      val phrase4: Phrase = Phrase(Vector("Today is Monday", "Welsh, Today is Monday"))
+      val phrase5: Phrase = Phrase(Vector("More news", "Welsh, More news"))
+      val phrase6: Phrase = Phrase(Vector("Today in the West Midlands", "Welsh, Today in the West Midlands"))
+      val phrase7: Phrase = Phrase(Vector("Late night in Brierly hill", "Welsh, Late night in Brierly hill"))
+      val phrase8: Phrase = Phrase(Vector("What is happening in Dudley", "Welsh, What is happening in Dudley"))
+      val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", "Welsh, What is happening in Halesowen"))
 
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
