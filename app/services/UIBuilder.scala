@@ -33,7 +33,7 @@ class UIBuilder {
 
   def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(pge.url,
-         pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+         BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
@@ -50,7 +50,6 @@ class UIBuilder {
       case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) => Paragraph(Text.link(dest, txt.langs), window)
       case Instruction(txt, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
-
 
   private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
       implicit stanzaIdToUrlMap: Map[String, String]
