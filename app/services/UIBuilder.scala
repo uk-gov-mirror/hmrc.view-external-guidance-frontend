@@ -34,7 +34,7 @@ class UIBuilder {
   def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(
       pge.url,
-      pge.stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+      BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
         stanza match {
           case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if OcelotLink.isLinkableStanzaId(dest) =>
             acc ++ Seq(Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs), window))

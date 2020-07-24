@@ -529,7 +529,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageBuilder.pages(process) match {
         case Right(pages) => {
 
-          assert(pages.head.stanzas.size == 3)
+          assert(pages.head.stanzas.size == 5)
 
           // Construct expected instruction group stanza
           val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None)
@@ -538,7 +538,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
 
-          pages.head.stanzas(1) mustBe expectedInstructionGroup
+          BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)(1) mustBe expectedInstructionGroup
         }
         case Left(err) => fail(s"Flow error $err")
       }
@@ -589,7 +589,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageBuilder.pages(process) match {
         case Right(pages) => {
 
-          assert(pages.head.stanzas.size == 10)
+          assert(pages.head.stanzas.size == 12)
 
           // Test expected instruction group stanzas
           val instruction1: Instruction = Instruction(instructionStanza1, phrase2, None)
@@ -597,14 +597,14 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
           val expectedInstructionGroup1: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          pages.head.stanzas(2) mustBe expectedInstructionGroup1
+          BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)(2) mustBe expectedInstructionGroup1
 
           val instruction6: Instruction = Instruction(instructionStanza6, phrase8, None)
           val instruction7: Instruction = Instruction(instructionStanza7, phrase9, None)
 
           val expectedInstructionGroup2: InstructionGroup = InstructionGroup(Seq(instruction6, instruction7))
 
-          pages.head.stanzas(eight) mustBe expectedInstructionGroup2
+          BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)(eight) mustBe expectedInstructionGroup2
         }
         case Left(err) => fail(s"Flow error $err")
       }
