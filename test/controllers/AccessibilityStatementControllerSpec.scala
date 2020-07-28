@@ -24,10 +24,11 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
-
+import base.ViewFns
 import scala.concurrent.Future
+import scala.collection.JavaConverters._
 
-class AccessibilityStatementControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
+class AccessibilityStatementControllerSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
   private trait Test {
     val fakeRequest = FakeRequest("GET", "/")
@@ -49,6 +50,17 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with G
 
     }
 
+  }
+
+  "GET /accessibility/startOfGuidanceUrl" should {
+    "generate page with header link url pointing to nominated url" in new Test {
+      val result: Future[Result] = controller.getPageWithUrl("/startOfGuidanceUrl")(fakeRequest)
+      status(result) shouldBe Status.OK
+      val doc = asDocument(contentAsString(result))
+      doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
+          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe "/startOfGuidanceUrl")
+
+    }
   }
 
 }
