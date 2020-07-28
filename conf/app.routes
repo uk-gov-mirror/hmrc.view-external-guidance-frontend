@@ -5,7 +5,9 @@ GET   /language/:lang                    controllers.SwitchLanguageController.sw
 
 GET   /published/:processId              controllers.entry.StartGuidanceController.published(processId)
 
-GET   /accessibility                     controllers.AccessibilityStatementController.getPage
+GET   /accessibility                     controllers.AccessibilityStatementController.getPage()
+GET   /accessibility*startOfGuidanceUrl  controllers.AccessibilityStatementController.getPageWithUrl(startOfGuidanceUrl: String)
+
 
 GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)

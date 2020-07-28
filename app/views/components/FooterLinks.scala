@@ -44,14 +44,15 @@ class FooterLinks @Inject() (implicit appConfig: AppConfig) {
     Some(appConfig.govukHelp)
   )
 
-  def accecssibilityLink()(implicit messages: Messages): FooterItem = FooterItem(
+  def accecssibilityLink(startOfGuidanceUrl: Option[String] = None)(implicit messages: Messages): FooterItem = FooterItem(
     Some(messages("footer.links.accessibility.text")),
-    Some(routes.AccessibilityStatementController.getPage().url)
+    Some(startOfGuidanceUrl.fold(routes.AccessibilityStatementController.getPage.url)
+                                (routes.AccessibilityStatementController.getPageWithUrl(_).url))
   )
 
-  def items(implicit messages: Messages): Seq[FooterItem] = Seq(
+  def items(startUrl: Option[String])(implicit messages: Messages): Seq[FooterItem] = Seq(
     cookieLink,
-    accecssibilityLink,
+    accecssibilityLink(startUrl),
     privacyLink,
     termsConditionsLink,
     govukHelpLink

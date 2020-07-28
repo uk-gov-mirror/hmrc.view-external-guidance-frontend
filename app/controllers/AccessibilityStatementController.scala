@@ -35,4 +35,8 @@ class AccessibilityStatementController @Inject() (appConfig: AppConfig, mcc: Mes
     Future.successful(Ok(view()))
   }
 
+  def getPageWithUrl(startOfGuidanceUrl: String): Action[AnyContent] = Action.async { implicit request =>
+    Future.successful(Ok(view(Some(startOfGuidanceUrl))))
+  }
+
 }
