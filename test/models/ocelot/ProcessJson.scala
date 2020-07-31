@@ -1720,4 +1720,99 @@ trait ProcessJson {
     )
     .as[JsObject]
 
+  // Do you need to tell HMRC about extra income V6 bullet point list bug example
+  val prototypeExtraIncomeV6MetaSection: String =
+    """
+      |  {
+      |     "id": "oct90002",
+      |     "title": "Telling HMRC about extra income",
+      |     "ocelot": 1,
+      |     "lastAuthor": "7903088",
+      |     "lastUpdate": 1579177321336,
+      |     "version": 1,
+      |     "filename": "oct90002.js"
+      |  }
+   """.stripMargin
+
+  val prototypeExtraIncomeV6FlowSection: String =
+  """
+     {
+      "start" : {
+        "type" : "PageStanza",
+        "url" : "/sales/do-you-receive-any-income-no-SA",
+        "next" : [
+          "1"
+        ],
+        "stack" : false
+      },
+      "1" : {
+        "type" : "InstructionStanza",
+        "text" : 0,
+        "next" : [
+          "2"
+        ],
+        "stack" : false
+      },
+      "2" : {
+        "type" : "InstructionStanza",
+        "text" : 1,
+        "next" : [
+          "3"
+        ],
+        "stack" : false
+      },
+      "3" : {
+        "type" : "InstructionStanza",
+        "text" : 2,
+        "next" : [
+          "4"
+        ],
+        "stack" : true
+      },
+      "4" : {
+        "type" : "InstructionStanza",
+        "text" : 3,
+        "next" : [
+          "end"
+        ],
+        "stack" : true
+      },
+      "end": {
+      "type": "EndStanza"
+      }
+    }
+      """
+
+    val prototypeExtraIncomeV6PhrasesSection: String =
+    """
+        |[
+        |      [
+        |        "You've received income that you have not yet paid tax on from: a business you own or control (such as a partnership or limited company)",
+        |        "Welsh: You've received income that you have not yet paid tax on from: a business you own or control (such as a partnership or limited company)"
+        |      ],
+        |      [
+        |        "You've received income that you have not yet paid tax on from: a business a relative owns or controls",
+        |        "Welsh: You've received income that you have not yet paid tax on from: a business a relative owns or controls"
+        |      ],
+        |      [
+        |        "You've received income that you have not yet paid tax on from: your employer (for example for freelance services outside your normal contract hours)",
+        |        "Welsh: You've received income that you have not yet paid tax on from: your employer (for example for freelance services outside your normal contract hours)"
+        |      ],
+        |      [
+        |        "You've received income that you have not yet paid tax on from: the employer of your spouse or civil partner",
+        |        "Welsh: You've received income that you have not yet paid tax on from: the employer of your spouse or civil partner"
+        |      ]
+        |    ]
+        |""".stripMargin
+
+  val prototypeExtraIncomeV6Json: JsObject = Json
+    .parse(
+      s"""{ "meta" : ${prototypeExtraIncomeV6MetaSection},
+         | "flow": ${prototypeExtraIncomeV6FlowSection},
+         | "phrases": ${prototypeExtraIncomeV6PhrasesSection},
+         | "links": [],
+         | "contacts": [],
+         | "howto": []}""".stripMargin
+    )
+    .as[JsObject]
 }

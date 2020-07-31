@@ -283,6 +283,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzaPages = pageBuilder.pages(prototypeJson.as[Process]).right.get
     val prototypeUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
 
+    // Create pages for extra income V6 process
+    val extraIncomeStanzaPages = pageBuilder.pages(prototypeExtraIncomeV6Json.as[Process]).right.get
+    val extraIncomeUrlMap = extraIncomeStanzaPages.map(p =>(p.id, p.url)).toMap
+
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
 
@@ -644,6 +648,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Did not find bullet point list")
       }
 
+    }
+
+    "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
+
+      val uiPage = uiBuilder.fromStanzaPage(extraIncomeStanzaPages.head)(extraIncomeUrlMap)
     }
 
   }
