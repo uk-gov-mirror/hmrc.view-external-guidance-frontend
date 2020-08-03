@@ -75,9 +75,9 @@ class StartGuidanceController @Inject() (
       case Right(url) =>
         val target = controllers.routes.GuidanceController.getPage(url.drop(1)).url
 
-        logger.warn(s"Redirecting to begin viewing process $id at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId and ${controllers.StartOfGuidanceUrl} = $url")
+        logger.warn(s"Redirecting to begin viewing process $id at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId and ${controllers.StartUrlSessionKey} = $url")
         egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId), 
-                                                                                        (controllers.StartOfGuidanceUrl -> url)))
+                                                                                        (controllers.StartUrlSessionKey -> url)))
       case Left(NotFoundError) =>
         logger.warn(s"Unable to find process $id and render using sessionId $sessionId")
         NotFound(errorHandler.notFoundTemplate)

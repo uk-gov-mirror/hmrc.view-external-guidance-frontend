@@ -31,7 +31,7 @@ class AccessibilityStatementController @Inject() (appConfig: AppConfig, mcc: Mes
   implicit val config: AppConfig = appConfig
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
-    val startOfGuidanceUrl: Option[String] = request.session.get(StartOfGuidanceUrl).map(startUrl =>s"${appConfig.baseUrl}$startUrl")
+    val startOfGuidanceUrl: Option[String] = request.session.get(StartUrlSessionKey).map(startUrl =>s"${appConfig.baseUrl}$startUrl")
     Future.successful(Ok(view(startOfGuidanceUrl)))
   }
 }

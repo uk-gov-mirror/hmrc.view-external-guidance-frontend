@@ -15,5 +15,5 @@
  */
 
 package object controllers {
-  val StartOfGuidanceUrl: String = "GUIDANCE_START"  
+  val StartUrlSessionKey: String = "GUIDANCE_START"  
 }

@@ -31,7 +31,7 @@ import scala.collection.JavaConverters._
 class AccessibilityStatementControllerSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
   private trait Test {
-    val fakeRequest = FakeRequest("GET", "/").withSession((controllers.StartOfGuidanceUrl -> "/startOfGuidanceUrl"))
+    val fakeRequest = FakeRequest("GET", "/").withSession((controllers.StartUrlSessionKey -> "/startOfGuidanceUrl"))
 
     private val view = app.injector.instanceOf[views.html.accessibility_statement]
     val controller = new AccessibilityStatementController(MockAppConfig, stubMessagesControllerComponents(), view)
