@@ -21,7 +21,6 @@ import config.AppConfig
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-
 import scala.concurrent.Future
 
 @Singleton
@@ -32,8 +31,7 @@ class AccessibilityStatementController @Inject() (appConfig: AppConfig, mcc: Mes
   implicit val config: AppConfig = appConfig
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(view()))
+    val startOfGuidanceUrl: Option[String] = request.session.get(StartOfGuidanceUrl).map(startUrl =>s"${appConfig.baseUrl}$startUrl")
+    Future.successful(Ok(view(startOfGuidanceUrl)))
   }
-
-
 }
