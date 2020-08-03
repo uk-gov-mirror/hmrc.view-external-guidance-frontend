@@ -31,7 +31,7 @@ import scala.collection.JavaConverters._
 class AccessibilityStatementControllerSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
   private trait Test {
-    val fakeRequest = FakeRequest("GET", "/")
+    val fakeRequest = FakeRequest("GET", "/").withSession((controllers.StartOfGuidanceUrl -> "/startOfGuidanceUrl"))
 
     private val view = app.injector.instanceOf[views.html.accessibility_statement]
     val controller = new AccessibilityStatementController(MockAppConfig, stubMessagesControllerComponents(), view)
@@ -52,13 +52,13 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
 
   }
 
-  "GET /accessibility/startOfGuidanceUrl" should {
+  "GET /accessibility" should {
     "generate page with header link url pointing to nominated url" in new Test {
-      val result: Future[Result] = controller.getPageWithUrl("/startOfGuidanceUrl")(fakeRequest)
+      val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
-          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe "/startOfGuidanceUrl")
+          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/startOfGuidanceUrl")
 
     }
   }
