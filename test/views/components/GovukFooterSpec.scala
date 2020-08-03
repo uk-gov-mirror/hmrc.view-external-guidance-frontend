@@ -53,7 +53,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     "contain correct English footer link texts" in new Test {
 
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val listElement: Element = footerElement.getElementsByTag("ul").first
       val footerItems: List[String] = listElement.getElementsByTag("a").asScala.map(_.text).toList
@@ -66,7 +66,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "contain correct English footer licence texts" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val licence: Element = footerElement.getElementsByClass("govuk-footer__licence-description").first
       
@@ -76,7 +76,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "contain correct English copyright text" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val copyright: Element = footerElement.getElementsByClass("govuk-footer__copyright-logo").first
       
@@ -86,7 +86,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     "contain correct Welsh footer link texts" in new WelshTest {
 
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val listElement: Element = footerElement.getElementsByTag("ul").first
       val footerItems: List[String] = listElement.getElementsByTag("a").asScala.map(_.text).toList
@@ -99,7 +99,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "contain correct Welsh footer licence texts" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val licence: Element = footerElement.getElementsByClass("govuk-footer__licence-description").first
       
@@ -109,7 +109,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "contain correct WELSH copyright text" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(None)))))))
+      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val copyright: Element = footerElement.getElementsByClass("govuk-footer__copyright-logo").first
       

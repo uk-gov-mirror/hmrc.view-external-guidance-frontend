@@ -96,7 +96,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 }
 
 @footerBlock = {
-    @footer(Footer(meta = Some(Meta(items = Some(footerLinks.items(startUrl))))))
+    @footer(Footer(meta = Some(Meta(items = Some(footerLinks.items)))))
 }
 
 @layout(
