@@ -51,7 +51,8 @@ compliant.one.lede=This accessibility statement explains how accessible this ser
 compliant.one.p1.1=This service is part of the wider GOV.UK website. There is a separate
 compliant.one.p1.2=accessibility statement
 compliant.one.p1.3=for the main GOV.UK website.
-compliant.one.p2=This page only contains information about the External Guidance service, available at www<to be defined>/guidance
+compliant.one.p2.1=This page only contains information about the External Guidance service, available at
+compliant.one.p2.2=www<to be defined>/guidance
 
 ## section two
 compliant.two.heading=Using this service

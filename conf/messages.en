@@ -41,19 +41,20 @@ footer.links.terms_and_conditions.text=Terms and conditions
 
 # Compliance statement
 # ----------------------------------------------------------
-accessibility.title=Accessibility statement for External Guidance - to Be Defined
+accessibility.title=Accessibility statement for HMRC Interactive Guidance
 
 ## section one
-compliant.one.heading=Accessibility statement for External Guidance - to Be Defined
+compliant.one.heading=Accessibility statement for HMRC Interactive Guidance
 compliant.one.lede=This accessibility statement explains how accessible this service is, what to do if you have difficulty using it, and how to report accessibility problems with the service.
 compliant.one.p1.1=This service is part of the wider GOV.UK website. There is a separate
 compliant.one.p1.2=accessibility statement
 compliant.one.p1.3=for the main GOV.UK website.
-compliant.one.p2=This page only contains information about the External Guidance service, available at www<to be defined>/guidance
+compliant.one.p2.1=This page only contains information about the External Guidance service, available at
+compliant.one.p2.2= https://www.tax.service.gov.uk/
 
 ## section two
 compliant.two.heading=Using this service
-compliant.two.p1=Info on service will go here
+compliant.two.p1=HMRC interactive guidance gives users targeted information based on their answers to a series of questions.
 compliant.two.p2=This service is run by HM Revenue and Customs (HMRC). We want as many people as possible to be able to use this service. This means you should be able to:
 compliant.two.l1=change colours, contrast levels and fonts
 compliant.two.l2=zoom in up to 300% without the text spilling off the screen
@@ -67,9 +68,9 @@ compliant.two.p4.2=has advice on making your device easier to use if you have a 
 
 ## section three
 compliant.three.heading=How accessible this service is
-compliant.three.p1.1=This service is partially compliant with the
+compliant.three.p1.1=This service is fully compliant with the
 compliant.three.p1.2=Web Content Accessibility Guidelines version 2.1 AA standard
-compliant.three.p1.3=We cannot be certain that it is fully compliant until it is fully tested, which will be within one week of its launch date of 20 April 2020.
+compliant.three.p1.3=There are no known accessibility issues within this service.
 
 ## section five
 compliant.five.heading=Reporting accessibility problems with this service
@@ -99,9 +100,7 @@ compliant.eight.p2.2=Web Content Accessibility Guidelines version 2.1 AA standar
 
 ## section nine
 compliant.nine.heading=How we tested this service
-compliant.nine.p1=The service was launched on 20 April 2020 and checked for compliance with WCAG 2.1 AA.
-compliant.nine.p2.1=The service was built using parts that were tested by the
-compliant.nine.p2.2=Digital Accessibility Centre
-compliant.nine.p2.3=The full service will be tested by HMRC within a week of the launch date. Tests will include disabled users.
-compliant.nine.p3=This page was prepared on 17 April 2020. It was last updated on 20 April 2020.
+compliant.nine.p1=The service was last tested on 5 August 2020 and was checked for compliance with WCAG 2.1 AA.
+compliant.nine.p2.1=The full service was tested by HMRC and included disabled users.
+compliant.nine.p3=This page was prepared on 5 August 2020. It was last updated on 5 August 2020.
 
