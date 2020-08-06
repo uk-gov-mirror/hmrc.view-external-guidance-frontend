@@ -7,5 +7,6 @@ GET   /published/:processId              controllers.entry.StartGuidanceControll
 
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
 
+
 GET   /*path                             controllers.GuidanceController.getPage(path: String)
 POST  /*path                             controllers.GuidanceController.submitPage(path: String)

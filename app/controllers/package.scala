@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package base
-
-import org.jsoup.Jsoup
-import org.jsoup.nodes._
-import play.twirl.api.Html
-
-import scala.collection.JavaConverters._
-
-trait ViewFns {
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
-  def asDocument(content: String): Document = Jsoup.parse(content)
-  def elementAttrs(el: Element): Map[String, String] = el.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+package object controllers {
+  val StartUrlSessionKey: String = "GUIDANCE_START"  
 }
