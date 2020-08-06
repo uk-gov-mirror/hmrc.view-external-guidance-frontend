@@ -32,7 +32,7 @@ object BulletPointBuilder {
       case Nil => acc
       case x :: xs =>
         x match {
-          case i: Instruction if i.stack =>
+          case i: Instruction =>
             val matchedInstructions: Seq[Instruction] = groupMatchedInstructions(xs, Seq(i))
             if (matchedInstructions.size > 1) {
               groupBulletPointInstructions(xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
@@ -49,7 +49,7 @@ object BulletPointBuilder {
       case Nil => acc
       case x :: xs =>
         x match {
-          case i: Instruction if BulletPointBuilder.matchInstructions(acc.last, i) => groupMatchedInstructions(xs, acc :+ i)
+          case i: Instruction if(i.stack && BulletPointBuilder.matchInstructions(acc.last, i)) => groupMatchedInstructions(xs, acc :+ i)
           case _ => acc
         }
     }

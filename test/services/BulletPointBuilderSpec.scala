@@ -18,10 +18,10 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ocelot.stanzas.{Instruction, InstructionGroup}
+import models.ocelot.stanzas._
 import scala.util.matching.Regex.Match
 
-class BulletPointBuilderSpec extends BaseSpec {
+class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
   def asString(elements: Seq[String]): String = elements.mkString
 
@@ -826,6 +826,289 @@ class BulletPointBuilderSpec extends BaseSpec {
 
       BulletPointBuilder.matchInstructions(i1, i2) mustBe true
     }
+  }
+
+  "Bullet point list instruction stacking" must {
+
+    val phrase1: Phrase = Phrase(Vector("My favourite sweets are wine gums", "Welsh - My favourite sweets are wine gums"))
+    val phrase2: Phrase = Phrase(Vector("My favourite sweets are porkie percys", "Welsh - My favourite sweets are porkie percys"))
+    val phrase3: Phrase = Phrase(Vector("My favourite sweets are lemon bon bons", "Welsh - My favourite sweets are lemon bon bons"))
+
+    val pageBuilder: PageBuilder = new PageBuilder()
+
+    "Create two separate instructions for two instruction stanzas where both stanzas disable stacking" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 4)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create two separate instructions for two instruction stanzas where the first stanza enables stacking and the second stanza disables stacking" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = true)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 4)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create instruction group for two instruction stanzas where the first stanza disables stacking and the second stanza enables stacking" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 4)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None)
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
+
+          val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
+
+          stanzas(1) mustBe expectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create instruction group for two instruction stanzas where both stanzas enable stacking" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = true)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 4)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None)
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
+
+          val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
+
+          stanzas(1) mustBe expectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create three separate instructions for three instruction stanzas with stacking properties : false, false, false" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = false)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "3" -> instructionStanza3,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 5)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
+          stanzas(3) mustBe Instruction(instructionStanza3, phrase3, None)
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create instruction group plus instruction for three instruction stanzas with stacking properties : false, true, false" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "3" -> instructionStanza3,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 5)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None)
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
+
+          val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
+
+          stanzas(1) mustBe expectedInstructionGroup
+          stanzas(2) mustBe Instruction(instructionStanza3, phrase3, None)
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create instruction plus instruction group for three instruction stanzas with stacking properties : false, false, true" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = false)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "3" -> instructionStanza3,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 5)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
+
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
+          val instruction3: Instruction = Instruction(instructionStanza3, phrase3, None)
+
+          val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction2, instruction3))
+
+          stanzas(2) mustBe expectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "Create instruction group for three instruction stanzas with stacking properties : false, true, true" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/list", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "3" -> instructionStanza3,
+        "end" -> EndStanza
+      )
+
+      val process: Process =
+        Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
+
+      pageBuilder.pages(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 5)
+
+          val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
+
+          val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None)
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
+          val instruction3: Instruction = Instruction(instructionStanza3, phrase3, None)
+
+          val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
+
+          stanzas(1) mustBe expectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
   }
 
 }

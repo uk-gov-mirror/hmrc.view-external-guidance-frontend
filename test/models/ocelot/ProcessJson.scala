@@ -1759,7 +1759,7 @@ trait ProcessJson {
         "next" : [
           "3"
         ],
-        "stack" : false
+        "stack" : true
       },
       "3" : {
         "type" : "InstructionStanza",
