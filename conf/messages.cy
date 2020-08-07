@@ -77,9 +77,8 @@ compliant.three.p1.3=Nid oes unrhyw broblemau hygyrchedd hysbys yn y gwasanaeth 
 ## section five
 compliant.five.heading=Rhoi gwybod am broblemau hygyrchedd gyda’r gwasanaeth hwn
 compliant.five.p.1=Rydym bob amser yn ceisio gwella hygyrchedd y gwasanaeth hwn. Os byddwch yn dod o hyd i unrhyw broblemau nad ydynt wedi’u rhestru ar y dudalen hon, neu os ydych o’r farn nad ydym yn bodloni gofynion hygyrchedd, rhowch wybod am y
-compliant.five.p.2=
-compliant.five.p.3=broblem hygyrchedd (yn agor ffenestr neu dab newydd)
-compliant.five.p.4=.
+compliant.five.p.2=broblem hygyrchedd (yn agor ffenestr neu dab newydd)
+
 
 ## section six
 compliant.six.heading=Beth i’w wneud os nad ydych yn hapus â sut rydym yn ateb eich cwyn
