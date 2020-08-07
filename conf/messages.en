@@ -77,12 +77,11 @@ compliant.five.heading=Reporting accessibility problems with this service
 compliant.five.p.1=We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, report the
 compliant.five.p.2=accessibility problem (opens in a new window or tab)
 
-
 ## section six
 compliant.six.heading=What to do if you are not happy with how we respond to your complaint
 compliant.six.p.1=The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you are not happy with how we respond to your complaint,
 compliant.six.p.2=contact the Equality Advisory and Support Service
-compliant.six.p.3=
+compliant.six.p.3=https://www.equalityadvisoryservice.com/
 compliant.six.p.4=(EASS), or the
 compliant.six.p.5=Equality Commission for Northern Ireland
 compliant.six.p.6=(ECNI) if you live in Northern Ireland.
@@ -93,8 +92,7 @@ compliant.seven.p1=We provide a text relay service if you are deaf, hearing impa
 compliant.seven.p2=We can provide a British Sign Language (BSL) interpreter, or you can arrange a visit from an HMRC advisor to help you complete the service.
 compliant.seven.p3.1=Find out how to
 compliant.seven.p3.2=contact us
-compliant.seven.p3.3=
-compliant.seven.p3.4=.
+compliant.seven.p3.3=https://www.gov.uk/dealing-hmrc-additional-needs
 
 ## section eight
 compliant.eight.heading=Technical information about this service’s accessibility

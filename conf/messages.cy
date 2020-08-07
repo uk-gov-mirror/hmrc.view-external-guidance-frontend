@@ -79,12 +79,11 @@ compliant.five.heading=Rhoi gwybod am broblemau hygyrchedd gyda’r gwasanaeth h
 compliant.five.p.1=Rydym bob amser yn ceisio gwella hygyrchedd y gwasanaeth hwn. Os byddwch yn dod o hyd i unrhyw broblemau nad ydynt wedi’u rhestru ar y dudalen hon, neu os ydych o’r farn nad ydym yn bodloni gofynion hygyrchedd, rhowch wybod am y
 compliant.five.p.2=broblem hygyrchedd (yn agor ffenestr neu dab newydd)
 
-
 ## section six
 compliant.six.heading=Beth i’w wneud os nad ydych yn hapus â sut rydym yn ateb eich cwyn
 compliant.six.p.1=Mae’r Comisiwn Cydraddoldeb a Hawliau Dynol (EHRC) yn gyfrifol am orfodi Rheoliadau Hygyrchedd Cyrff Sector Cyhoeddus (Gwefannau a Chymwysiadau Symudol) (Rhif 2) 2018 (y ‘rheoliadau hygyrchedd’). Os nad ydych yn hapus â sut rydym yn ateb eich cwyn,
-compliant.six.p.2=
-compliant.six.p.3=cysylltwch â’r Gwasanaeth Cynghori a Chymorth Cydraddoldeb
+compliant.six.p.2=cysylltwch â’r Gwasanaeth Cynghori a Chymorth Cydraddoldeb
+compliant.six.p.3=http://eass-ws.custhelp.com/app/home
 compliant.six.p.4=(EASS), neu’r
 compliant.six.p.5=Equality Commission for Northern Ireland
 compliant.six.p.6=(ECNI) os ydych yn byw yng Ngogledd Iwerddon.
@@ -94,9 +93,8 @@ compliant.seven.heading=Cysylltu â ni dros y ffôn neu gael ymweliad personol g
 compliant.seven.p1=Rydym yn cynnig gwasanaeth text relay os ydych yn fyddar, â nam ar eich clyw neu os oes gennych nam ar eich lleferydd.
 compliant.seven.p2=Gallwn ddarparu dehonglydd Iaith Arwyddion Prydain (BSL), neu gallwch drefnu ymweliad gan ymgynghorydd CThEM i’ch helpu i gwblhau’r gwasanaeth.
 compliant.seven.p3.1=Gwybodaeth am sut i
-compliant.seven.p3.2=
-compliant.seven.p3.3= gysylltu â ni
-compliant.seven.p3.4=.
+compliant.seven.p3.2=gysylltu â ni
+compliant.seven.p3.3=https://www.gov.uk/cael-help-cthem-cymorth-ychwanegol
 
 ## section eight
 compliant.eight.heading=Gwybodaeth dechnegol am hygyrchedd y gwasanaeth hwn
@@ -109,6 +107,6 @@ compliant.nine.heading=Sut gwnaethom brofi’r gwasanaeth hwn
 compliant.nine.p1=Cafodd y gwasanaeth ei brofi ddiwethaf ar 5 Awst 2020 a gwiriwyd ei fod yn cydymffurfio â safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 2.1.
 compliant.nine.p2.1=Adeiladwyd y gwasanaeth gan ddefnyddio rhannau a brofwyd gan y Ganolfan Hygyrchedd Digidol (
 compliant.nine.p2.2=Digital Accessibility Centre
-compliant.nine.p2.3=). Profwyd y gwasanaeth llawn gan CThEM, ac roedd y gwaith o brofi’r gwasanaeth yn cynnwys defnyddwyr anabl
+compliant.nine.p2.3=). Profwyd y gwasanaeth llawn gan CThEM, ac roedd y gwaith o brofi’r gwasanaeth yn cynnwys defnyddwyr anabl.
 compliant.nine.p3=Paratowyd y dudalen hon ar 5 Awst 2020. Cafodd ei diweddaru ddiwethaf ar 5 Awst 2020.
 
