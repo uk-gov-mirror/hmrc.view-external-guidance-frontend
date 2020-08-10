@@ -55,23 +55,23 @@ class PageStanzaSpec extends BaseSpec {
 
       val stanza: PageStanza = validPageStanzaJson.as[PageStanza]
 
-      stanza.stack mustBe false
-      stanza.next.length mustBe 1
-      stanza.next(0) mustBe next
+      stanza.stack shouldBe false
+      stanza.next.length shouldBe 1
+      stanza.next(0) shouldBe next
     }
 
     "serialise to json" in {
       val stanza: PageStanza = PageStanza("/", Seq("4"), true)
       val expectedJson: String = """{"url":"/","next":["4"],"stack":true}"""
       val json: String = Json.toJson(stanza).toString
-      json mustBe expectedJson
+      json shouldBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
       val stanza: Stanza = PageStanza("/", Seq("4"), true)
       val expectedJson: String = """{"next":["4"],"stack":true,"type":"PageStanza","url":"/"}"""
       val json: String = Json.toJson(stanza).toString
-      json mustBe expectedJson
+      json shouldBe expectedJson
     }
 
     "fail to parse if an unkown value type is found" in {

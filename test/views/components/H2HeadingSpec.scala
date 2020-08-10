@@ -56,7 +56,7 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
-      h2Element.hasClass("govuk-heading-l") mustBe true
+      h2Element.hasClass("govuk-heading-l") shouldBe true
     }
 
     "display text in English" in new Test {
@@ -65,7 +65,7 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
-      h2Element.text() mustBe h2English
+      h2Element.text() shouldBe h2English
     }
 
     "display text in Welsh when requested" in new WelshTest {
@@ -74,7 +74,7 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
-      h2Element.text() mustBe h2Welsh
+      h2Element.text() shouldBe h2Welsh
     }
 
   }

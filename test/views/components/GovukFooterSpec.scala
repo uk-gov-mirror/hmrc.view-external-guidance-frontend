@@ -58,11 +58,11 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val listElement: Element = footerElement.getElementsByTag("ul").first
       val footerItems: List[String] = listElement.getElementsByTag("a").asScala.map(_.text).toList
       
-      footerItems.contains(messages("footer.links.help_page.text")) mustBe true
-      footerItems.contains(messages("footer.links.cookies.text")) mustBe true
-      footerItems.contains(messages("footer.links.accessibility.text")) mustBe true
-      footerItems.contains(messages("footer.links.privacy_policy.text")) mustBe true
-      footerItems.contains(messages("footer.links.terms_and_conditions.text")) mustBe true
+      footerItems.contains(messages("footer.links.help_page.text")) shouldBe true
+      footerItems.contains(messages("footer.links.cookies.text")) shouldBe true
+      footerItems.contains(messages("footer.links.accessibility.text")) shouldBe true
+      footerItems.contains(messages("footer.links.privacy_policy.text")) shouldBe true
+      footerItems.contains(messages("footer.links.terms_and_conditions.text")) shouldBe true
     }
 
     "contain correct English footer licence texts" in new Test {
@@ -70,9 +70,9 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val footerElement: Element = doc.getElementsByTag("footer").first
       val licence: Element = footerElement.getElementsByClass("govuk-footer__licence-description").first
       
-      licence.text.contains(messages("footer.license.text1")) mustBe true
-      licence.text.contains(messages("footer.license.text2")) mustBe true
-      licence.text.contains(messages("footer.license.text3")) mustBe true
+      licence.text.contains(messages("footer.license.text1")) shouldBe true
+      licence.text.contains(messages("footer.license.text2")) shouldBe true
+      licence.text.contains(messages("footer.license.text3")) shouldBe true
     }
 
     "contain correct English copyright text" in new Test {
@@ -80,7 +80,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val footerElement: Element = doc.getElementsByTag("footer").first
       val copyright: Element = footerElement.getElementsByClass("govuk-footer__copyright-logo").first
       
-      copyright.text.contains(messages("footer.license.copyright")) mustBe true
+      copyright.text.contains(messages("footer.license.copyright")) shouldBe true
     }
 
 
@@ -91,11 +91,11 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val listElement: Element = footerElement.getElementsByTag("ul").first
       val footerItems: List[String] = listElement.getElementsByTag("a").asScala.map(_.text).toList
       
-      footerItems.contains(messages("footer.links.help_page.text")) mustBe true
-      footerItems.contains(messages("footer.links.cookies.text")) mustBe true
-      footerItems.contains(messages("footer.links.accessibility.text")) mustBe true
-      footerItems.contains(messages("footer.links.privacy_policy.text")) mustBe true
-      footerItems.contains(messages("footer.links.terms_and_conditions.text")) mustBe true
+      footerItems.contains(messages("footer.links.help_page.text")) shouldBe true
+      footerItems.contains(messages("footer.links.cookies.text")) shouldBe true
+      footerItems.contains(messages("footer.links.accessibility.text")) shouldBe true
+      footerItems.contains(messages("footer.links.privacy_policy.text")) shouldBe true
+      footerItems.contains(messages("footer.links.terms_and_conditions.text")) shouldBe true
     }
 
     "contain correct Welsh footer licence texts" in new Test {
@@ -103,9 +103,9 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val footerElement: Element = doc.getElementsByTag("footer").first
       val licence: Element = footerElement.getElementsByClass("govuk-footer__licence-description").first
       
-      licence.text.contains(messages("footer.license.text1")) mustBe true
-      licence.text.contains(messages("footer.license.text2")) mustBe true
-      licence.text.contains(messages("footer.license.text3")) mustBe true
+      licence.text.contains(messages("footer.license.text1")) shouldBe true
+      licence.text.contains(messages("footer.license.text2")) shouldBe true
+      licence.text.contains(messages("footer.license.text3")) shouldBe true
     }
 
     "contain correct WELSH copyright text" in new Test {
@@ -113,7 +113,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val footerElement: Element = doc.getElementsByTag("footer").first
       val copyright: Element = footerElement.getElementsByClass("govuk-footer__copyright-logo").first
       
-      copyright.text.contains(messages("footer.license.copyright")) mustBe true
+      copyright.text.contains(messages("footer.license.copyright")) shouldBe true
     }
 
   }

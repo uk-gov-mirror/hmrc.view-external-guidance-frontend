@@ -17,8 +17,8 @@
 package mocks
 
 import models.ocelot.{Page, Process}
-import services.{FlowError, PageBuilder}
-
+import services.PageBuilder
+import models.ocelot.errors.FlowError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 

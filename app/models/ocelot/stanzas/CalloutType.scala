@@ -34,9 +34,8 @@ case object SubSection extends CalloutType
 
 object CalloutType {
 
-  implicit val reads: Reads[CalloutType] = new Reads[CalloutType] {
-
-    override def reads(json: JsValue): JsResult[CalloutType] = json match {
+  implicit val reads: Reads[CalloutType] = (json: JsValue) =>
+    json match {
       case JsString("Title") => JsSuccess(Title, __)
       case JsString("SubTitle") => JsSuccess(SubTitle, __)
       case JsString("Lede") => JsSuccess(Lede, __)
@@ -46,11 +45,9 @@ object CalloutType {
       case _ => JsError("Invalid Callout type")
     }
 
-  }
 
-  implicit val writes: Writes[CalloutType] = new Writes[CalloutType] {
+  implicit val writes: Writes[CalloutType] = (calloutType: CalloutType) =>
 
-    override def writes(calloutType: CalloutType): JsValue =
       calloutType match {
         case Title => Json.toJson("Title")
         case SubTitle => Json.toJson("SubTitle")
@@ -62,4 +59,3 @@ object CalloutType {
 
   }
 
-}

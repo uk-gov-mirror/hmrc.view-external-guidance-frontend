@@ -79,7 +79,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       whenReady(result) { pageContext =>
         pageContext match {
-          case Right(pc) => pc.page.urlPath mustBe lastPageUrl
+          case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
           case Left(err) => fail(s"no PageContext found with error $err")
         }
       }
@@ -131,7 +131,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.getPageContext(url, processId)
 
       whenReady(result) {
-        _ mustBe Left(BadRequestError)
+        _ shouldBe Left(BadRequestError)
       }
     }
   }
@@ -155,7 +155,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.retrieveAndCacheScratch(uuid, uuid)
 
       whenReady(result) { url =>
-        url mustBe Right(firstPageUrl)
+        url shouldBe Right(firstPageUrl)
       }
     }
   }
@@ -179,7 +179,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url mustBe Right(firstPageUrl)
+        url shouldBe Right(firstPageUrl)
       }
     }
   }
@@ -203,7 +203,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.retrieveAndCacheApproval(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url mustBe Right(firstPageUrl)
+        url shouldBe Right(firstPageUrl)
       }
     }
   }
@@ -223,7 +223,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.saveAnswerToQuestion(sessionRepoId, firstPageUrl, lastPageUrl)
 
       whenReady(result) { ret =>
-        ret mustBe Right({})
+        ret shouldBe Right({})
       }
     }
   }

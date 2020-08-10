@@ -16,10 +16,10 @@
 
 package models.ocelot.stanzas
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import models.ocelot.Phrase
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 case class CalloutStanza(noteType: CalloutType, text: Int, override val next: Seq[String], stack: Boolean) extends Stanza
 

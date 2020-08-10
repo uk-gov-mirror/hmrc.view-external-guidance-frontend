@@ -83,9 +83,9 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
-        paragraph.text() mustBe enLeadingText
+        paragraph.text() shouldBe enLeadingText
 
         // Test list items
         val ul: Element = getSingleElementByTag(document, "ul")
@@ -108,9 +108,9 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
-        paragraph.text() mustBe cyLeadingText
+        paragraph.text() shouldBe cyLeadingText
 
         // Test list items
         val ul: Element = getSingleElementByTag(document, "ul")
@@ -161,14 +161,14 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
         val textNodes = paragraph.textNodes().asScala
 
-        textNodes.length mustBe 2
+        textNodes.length shouldBe 2
 
-        textNodes(0).text().trim mustBe enLeading1
-        textNodes(1).text().trim mustBe enLeadingTextPartTwo
+        textNodes(0).text().trim shouldBe enLeading1
+        textNodes(1).text().trim shouldBe enLeadingTextPartTwo
 
         val link: Element = getSingleElementByTag(document, "a")
 
@@ -195,14 +195,14 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
         val textNodes = paragraph.textNodes().asScala
 
-        textNodes.length mustBe 2
+        textNodes.length shouldBe 2
 
-        textNodes(0).text().trim mustBe cyLeading1
-        textNodes(1).text().trim mustBe cyLeadingTextPartTwo
+        textNodes(0).text().trim shouldBe cyLeading1
+        textNodes(1).text().trim shouldBe cyLeadingTextPartTwo
 
         val link: Element = getSingleElementByTag(document, "a")
 
@@ -263,13 +263,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading paragraph
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
         val textNode = paragraph.textNodes().asScala
 
-        textNode.length mustBe 1
+        textNode.length shouldBe 1
 
-        textNode(0).text().trim mustBe enLeadingText
+        textNode(0).text().trim shouldBe enLeadingText
 
         // Test list items
         val listItems: Elements = getMultipleElementsByTag(document, "li", 2)
@@ -279,13 +279,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // First list item
         val firstListItemsTextNodes = firstListItem.textNodes().asScala
 
-        firstListItemsTextNodes.length mustBe 2
+        firstListItemsTextNodes.length shouldBe 2
 
-        firstListItemsTextNodes(0).text().trim mustBe enBpOneText
+        firstListItemsTextNodes(0).text().trim shouldBe enBpOneText
 
         val firstListItemLinks: Elements = firstListItem.getElementsByTag("a")
 
-        firstListItemLinks.size() mustBe 1
+        firstListItemLinks.size() shouldBe 1
 
         checkHyperLink(firstListItemLinks.first, bpOneLinkUrl, enBpOneLinkText, false)
 
@@ -294,13 +294,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         val secondListItemTextNodes = secondListItem.textNodes().asScala
 
-        secondListItemTextNodes.length mustBe 2
+        secondListItemTextNodes.length shouldBe 2
 
-        secondListItemTextNodes(0).text().trim mustBe enBpTwoText
+        secondListItemTextNodes(0).text().trim shouldBe enBpTwoText
 
         val secondListItemLinks: Elements = secondListItem.getElementsByTag("a")
 
-        secondListItemLinks.size() mustBe 1
+        secondListItemLinks.size() shouldBe 1
 
         checkHyperLink(secondListItemLinks.first, bpTwoLinkUrl, enBpTwoLinkText, true)
       }
@@ -314,13 +314,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // Test leading paragraph
         val paragraph: Element = getSingleElementByTag(document, "p")
 
-        paragraph.hasClass("govuk-body") mustBe true
+        paragraph.hasClass("govuk-body") shouldBe true
 
         val textNode = paragraph.textNodes().asScala
 
-        textNode.length mustBe 1
+        textNode.length shouldBe 1
 
-        textNode(0).text().trim mustBe cyLeadingText
+        textNode(0).text().trim shouldBe cyLeadingText
 
         // Test list items
         val listItems: Elements = getMultipleElementsByTag(document, "li", 2)
@@ -330,13 +330,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         // First list item
         val firstListItemsTextNodes = firstListItem.textNodes().asScala
 
-        firstListItemsTextNodes.length mustBe 2
+        firstListItemsTextNodes.length shouldBe 2
 
-        firstListItemsTextNodes(0).text().trim mustBe cyBpOneText
+        firstListItemsTextNodes(0).text().trim shouldBe cyBpOneText
 
         val firstListItemLinks: Elements = firstListItem.getElementsByTag("a")
 
-        firstListItemLinks.size() mustBe 1
+        firstListItemLinks.size() shouldBe 1
 
         checkHyperLink(firstListItemLinks.first, bpOneLinkUrl, cyBpOneLinkText, false)
 
@@ -345,13 +345,13 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
         val secondListItemTextNodes = secondListItem.textNodes().asScala
 
-        secondListItemTextNodes.length mustBe 2
+        secondListItemTextNodes.length shouldBe 2
 
-        secondListItemTextNodes(0).text().trim mustBe cyBpTwoText
+        secondListItemTextNodes(0).text().trim shouldBe cyBpTwoText
 
         val secondListItemLinks: Elements = secondListItem.getElementsByTag("a")
 
-        secondListItemLinks.size() mustBe 1
+        secondListItemLinks.size() shouldBe 1
 
         checkHyperLink(secondListItemLinks.first, bpTwoLinkUrl, cyBpTwoLinkText, true)
       }

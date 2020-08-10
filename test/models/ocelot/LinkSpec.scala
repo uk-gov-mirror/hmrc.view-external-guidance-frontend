@@ -69,9 +69,9 @@ class LinkSpec extends BaseSpec {
   "Link" must {
     "deserialise from json" in {
 
-      link1Json.as[Link] mustBe link1
+      link1Json.as[Link] shouldBe link1
 
-      link2Json.as[Link] mustBe link2
+      link2Json.as[Link] shouldBe link2
     }
 
     missingJsObjectAttrTests[Link](link1Json, List("popup", "always", "leftbar"))
@@ -81,7 +81,7 @@ class LinkSpec extends BaseSpec {
 
     "deserialise from links section json" in {
 
-      Json.parse(linksStr).as[Vector[Link]] mustBe Vector(link1, link2)
+      Json.parse(linksStr).as[Vector[Link]] shouldBe Vector(link1, link2)
 
     }
 
