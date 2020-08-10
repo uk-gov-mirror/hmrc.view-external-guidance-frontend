@@ -21,7 +21,7 @@ import play.api.http.{HttpVerbs, Status}
 import play.api.libs.json.{Json, JsValue, JsObject, JsNull}
 import uk.gov.hmrc.http.HttpResponse
 import models.RequestOutcome
-import models.errors.{InvalidProcessError, InternalServiceError}
+import models.errors.{InvalidProcessError, InternalServerError}
 import models.ocelot.Process
 import base.BaseSpec
 
@@ -52,7 +52,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
 
       private val httpResponse = HttpResponse(OK, JsNull, Map.empty[String, Seq[String]])
       private val result = getProcessHttpReads.read(GET, url, httpResponse)
-      result shouldBe Left(InternalServiceError)
+      result shouldBe Left(InternalServerError)
     }
 
     "return an invalid process error for a Not found" in new Test {
@@ -82,7 +82,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result shouldBe Left(InternalServiceError)
+      result shouldBe Left(InternalServerError)
     }
 
     "return an internal server error when an error distinct from invalid process occurs" in new Test {
@@ -92,7 +92,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result shouldBe Left(InternalServiceError)
+      result shouldBe Left(InternalServerError)
     }
   }
 }

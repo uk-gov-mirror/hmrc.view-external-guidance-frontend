@@ -16,7 +16,7 @@
 
 package connectors.httpParsers
 
-import models.errors.{InternalServiceError, InvalidProcessError}
+import models.errors.{InternalServerError, InvalidProcessError}
 import models.ocelot._
 import models.RequestOutcome
 import play.api.Logger
@@ -32,7 +32,7 @@ object GetProcessHttpParser extends HttpParser {
         case Some(result) => Right(result)
         case None =>
           logger.error("Unable to parse successful response when requesting process")
-          Left(InternalServiceError)
+          Left(InternalServerError)
       }
     case (_, _, response) if response.status == NOT_FOUND =>
       Left(InvalidProcessError)
@@ -40,7 +40,7 @@ object GetProcessHttpParser extends HttpParser {
       Left(InvalidProcessError)
     case unknown =>
       logger.info(s"unexpected $unknown response received when requesting process")
-      Left(InternalServiceError)
+      Left(InternalServerError)
   }
 
 }
