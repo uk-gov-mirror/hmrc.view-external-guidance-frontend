@@ -75,10 +75,10 @@ trait StanzaHelper {
 
     val value1 = "/blah"
     Map(
-      (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),
-      ("1" -> InstructionStanza(0, Seq("2"), None, false)),
-      ("2" -> InstructionStanza(1, Seq("end"), None, false)),
-      ("end" -> EndStanza)
+      Process.StartStanzaId -> PageStanza(value1, Seq("1"), false),
+      "1" -> InstructionStanza(0, Seq("2"), None, false),
+      "2" -> InstructionStanza(1, Seq("end"), None, false),
+      "end" -> EndStanza
     )
   }
 
@@ -87,12 +87,12 @@ trait StanzaHelper {
     val value1 = "/blah"
     val value2 = "/a"
     Map(
-      (Process.StartStanzaId -> PageStanza(value1, Seq("1"), false)),
-      ("1" -> InstructionStanza(0, Seq("2"), None, false)),
-      ("2" -> InstructionStanza(1, Seq("3"), None, false)),
-      ("3" -> PageStanza(value2, Seq("4"), false)),
-      ("4" -> InstructionStanza(0, Seq("end"), None, false)),
-      ("end" -> EndStanza)
+      Process.StartStanzaId -> PageStanza(value1, Seq("1"), false),
+      "1" -> InstructionStanza(0, Seq("2"), None, false),
+      "2" -> InstructionStanza(1, Seq("3"), None, false),
+      "3" -> PageStanza(value2, Seq("4"), false),
+      "4" -> InstructionStanza(0, Seq("end"), None, false),
+      "end" -> EndStanza
     )
   }
 

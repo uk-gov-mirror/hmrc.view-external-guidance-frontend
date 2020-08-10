@@ -51,7 +51,7 @@ class MetaSpec extends BaseSpec {
 
     "deserialise correctly" in {
       val result: Meta = validJson.as[Meta]
-      result mustBe validModel
+      result shouldBe validModel
     }
 
     missingJsObjectAttrTests[Meta](validJson)

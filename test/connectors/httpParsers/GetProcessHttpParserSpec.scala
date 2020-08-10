@@ -42,7 +42,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
 
       private val httpResponse = HttpResponse(OK, validResponse, Map.empty[String, Seq[String]])
       private val result = getProcessHttpReads.read(GET, url, httpResponse)
-      result mustBe Right(process)
+      result shouldBe Right(process)
     }
   }
 
@@ -52,7 +52,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
 
       private val httpResponse = HttpResponse(OK, JsNull, Map.empty[String, Seq[String]])
       private val result = getProcessHttpReads.read(GET, url, httpResponse)
-      result mustBe Left(InternalServerError)
+      result shouldBe Left(InternalServerError)
     }
 
     "return an invalid process error for a Not found" in new Test {
@@ -62,7 +62,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result mustBe Left(InvalidProcessError)
+      result shouldBe Left(InvalidProcessError)
     }
 
     "return an invalid process error for a bad request" in new Test {
@@ -72,7 +72,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result mustBe Left(InvalidProcessError)
+      result shouldBe Left(InvalidProcessError)
     }
 
     "return an internal server error for an invalid response" in new Test {
@@ -82,7 +82,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result mustBe Left(InternalServerError)
+      result shouldBe Left(InternalServerError)
     }
 
     "return an internal server error when an error distinct from invalid process occurs" in new Test {
@@ -92,7 +92,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
       val result: RequestOutcome[Process] =
         getProcessHttpReads.read(GET, url, httpResponse)
 
-      result mustBe Left(InternalServerError)
+      result shouldBe Left(InternalServerError)
     }
   }
 }

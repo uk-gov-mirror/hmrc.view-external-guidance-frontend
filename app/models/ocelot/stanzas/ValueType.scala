@@ -24,23 +24,16 @@ case object Scalar extends ValueType
 
 object ValueType {
 
-  implicit val reads: Reads[ValueType] = new Reads[ValueType] {
-
-    override def reads(json: JsValue): JsResult[ValueType] = json match {
+  implicit val reads: Reads[ValueType] = (json: JsValue) =>
+    json match {
       case JsString("scalar") => JsSuccess(Scalar, __)
       case _ => JsError("Invalid ValueType type")
     }
 
-  }
-
-  implicit val writes: Writes[ValueType] = new Writes[ValueType] {
-
-    override def writes(valueType: ValueType): JsValue =
-      valueType match {
-        case Scalar => Json.toJson("scalar")
-      }
-
-  }
+  implicit val writes: Writes[ValueType] = (valueType: ValueType) =>
+    valueType match {
+      case Scalar => Json.toJson("scalar")
+    }
 
 }
 

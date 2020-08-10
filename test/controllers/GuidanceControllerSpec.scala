@@ -98,7 +98,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(PageContext(expectedPage, "/"))))
 
       val result = target.getPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.OK
+      status(result) shouldBe Status.OK
     }
 
     "be a HTML response" in new QuestionTest {
@@ -106,7 +106,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(path, processId, None)
         .returns(Future.successful(Right(PageContext(expectedPage, "/"))))
       val result = target.getPage(relativePath)(fakeRequest)
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
   }
 
@@ -119,10 +119,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       val result = target.getPage(relativePath)(fakeRequest)
 
-      status(result) mustBe Status.OK
-      contentType(result) mustBe Some("text/html")
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
       // Probably not the right place to test this
-      contentAsString(result).contains("checked") mustBe true
+      contentAsString(result).contains("checked") shouldBe true
     }
   }
 
@@ -135,7 +135,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.BAD_REQUEST
+      status(result) shouldBe Status.BAD_REQUEST
     }
   }
 
@@ -155,7 +155,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
         .withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.SEE_OTHER
+      status(result) shouldBe Status.SEE_OTHER
     }
 
     "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
@@ -172,7 +172,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
         .withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.SEE_OTHER
+      status(result) shouldBe Status.SEE_OTHER
     }
 
     "return a BAD_REQUEST response if trying to submit a page where url not found in process" in new QuestionTest {
@@ -185,7 +185,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody()
         .withCSRFToken
       val result = target.submitPage("unknown")(fakeRequest)
-      status(result) mustBe Status.BAD_REQUEST
+      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
@@ -198,7 +198,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody()
         .withCSRFToken
       val result = target.submitPage(relativeStdPath)(fakeRequest)
-      status(result) mustBe Status.BAD_REQUEST
+      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "return a NOT_FOUND response if trying to submit to a non-existent page" in new QuestionTest {
@@ -213,7 +213,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody()
         .withCSRFToken
       val result = target.submitPage(unknownRelativePath)(fakeRequest)
-      status(result) mustBe Status.NOT_FOUND
+      status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a INTERNAL_SERVER_ERROR response if submitting to a Process containing errors is referenced" in new QuestionTest {
@@ -225,7 +225,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody()
         .withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.INTERNAL_SERVER_ERROR
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "return a INTERNAL_SERVER_ERROR response if encountering a database error when submitting a page" in new QuestionTest {
@@ -237,7 +237,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .withFormUrlEncodedBody()
         .withCSRFToken
       val result = target.submitPage(relativePath)(fakeRequest)
-      status(result) mustBe Status.INTERNAL_SERVER_ERROR
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
   }
@@ -283,11 +283,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return a success response" in new Test {
-      status(result) mustBe Status.OK
+      status(result) shouldBe Status.OK
     }
 
     "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
 
   }
@@ -316,11 +316,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return an INTERNAL_SERVER_ERROR response" in new Test {
-      status(result) mustBe Status.INTERNAL_SERVER_ERROR
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
 
   }
@@ -350,11 +350,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return a success response" in new Test {
-      status(result) mustBe Status.NOT_FOUND
+      status(result) shouldBe Status.NOT_FOUND
     }
 
     "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
 
   }
@@ -384,11 +384,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "return a bad request response" in new Test {
 
-      status(result) mustBe Status.BAD_REQUEST
+      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
 
   }
@@ -419,11 +419,11 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "return not found response" in new Test {
-      status(result) mustBe Status.NOT_FOUND
+      status(result) shouldBe Status.NOT_FOUND
     }
 
     "be a HTML response" in new Test {
-      contentType(result) mustBe Some("text/html")
+      contentType(result) shouldBe Some("text/html")
     }
 
   }

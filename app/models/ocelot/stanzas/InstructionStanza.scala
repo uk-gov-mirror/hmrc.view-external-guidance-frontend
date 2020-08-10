@@ -16,22 +16,22 @@
 
 package models.ocelot.stanzas
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads, OWrites}
-import play.api.libs.json.Reads._
 import models.ocelot.{Link, Phrase}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json.{JsPath, OWrites, Reads}
 
 case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza
 
 object InstructionStanza {
 
-  implicit val reads: Reads[InstructionStanza] =
+  implicit val instructionReads: Reads[InstructionStanza] =
     ((JsPath \ "text").read[Int] and
       (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
       (JsPath \ "link").readNullable[Int] and
       (JsPath \ "stack").read[Boolean])(InstructionStanza.apply _)
 
-  implicit val owrites: OWrites[InstructionStanza] =
+  implicit val instructionWrites: OWrites[InstructionStanza] =
     (
       (JsPath \ "text").write[Int] and
         (JsPath \ "next").write[Seq[String]] and

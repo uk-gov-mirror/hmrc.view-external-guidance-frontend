@@ -59,7 +59,7 @@ class InstructionStanzaSpec extends BaseSpec {
 
       val validInstructionStanza: InstructionStanza = validInstructionStanzaJson.as[InstructionStanza]
 
-      validInstructionStanza mustBe expectedValidInstructionStanzaWithLink
+      validInstructionStanza shouldBe expectedValidInstructionStanzaWithLink
     }
 
     "Deserialising a valid Instruction Stanza without a link should create an instance of the class InstructionStanza" in {
@@ -68,27 +68,27 @@ class InstructionStanzaSpec extends BaseSpec {
 
       val validInstructionStanza: InstructionStanza = validInstructionStanzaJson.as[InstructionStanza]
 
-      validInstructionStanza mustBe expectedValidInstructionStanzaWithoutLink
+      validInstructionStanza shouldBe expectedValidInstructionStanzaWithoutLink
     }
 
     "serialise to json" in {
       val stanza: InstructionStanza = InstructionStanza(0, Seq("4"), None, true)
       val expectedJson: String = """{"text":0,"next":["4"],"stack":true}"""
-      Json.toJson(stanza).toString mustBe expectedJson
+      Json.toJson(stanza).toString shouldBe expectedJson
 
       val stanzaWithLink: InstructionStanza = InstructionStanza(0, Seq("4"), Some(0), true)
       val expectedJsonWithLink: String = """{"text":0,"next":["4"],"link":0,"stack":true}"""
-      Json.toJson(stanzaWithLink).toString mustBe expectedJsonWithLink
+      Json.toJson(stanzaWithLink).toString shouldBe expectedJsonWithLink
     }
 
     "serialise to json from a Stanza reference" in {
       val stanza: Stanza = InstructionStanza(0, Seq("4"), None, true)
       val expectedJson: String = """{"next":["4"],"stack":true,"text":0,"type":"InstructionStanza"}"""
-      Json.toJson(stanza).toString mustBe expectedJson
+      Json.toJson(stanza).toString shouldBe expectedJson
 
       val stanzaWithLink: Stanza = InstructionStanza(0, Seq("4"), Some(0), true)
       val expectedJsonWithLink: String = """{"next":["4"],"stack":true,"link":0,"text":0,"type":"InstructionStanza"}"""
-      Json.toJson(stanzaWithLink).toString mustBe expectedJsonWithLink
+      Json.toJson(stanzaWithLink).toString shouldBe expectedJsonWithLink
     }
 
     /** Test for missing properties in Json object representing instruction stanzas */

@@ -34,14 +34,14 @@ class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser
       val model = Person("Bob", 1)
       val json = Json.toJson(model)
       val response = HttpResponse(OK, json, Map.empty[String, Seq[String]])
-      response.validateJson[Person] mustBe Some(model)
+      response.validateJson[Person] shouldBe Some(model)
     }
   }
 
   "Calling validateJson with no response" should {
     "return None" in {
       val response = HttpResponse(OK, JsNull, Map.empty[String, Seq[String]])
-      response.validateJson[Person] mustBe None
+      response.validateJson[Person] shouldBe None
     }
   }
 
@@ -49,7 +49,7 @@ class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser
     "return None" in {
       val json = Json.obj()
       val response = HttpResponse(OK, json, Map.empty[String, Seq[String]])
-      response.validateJson[Person] mustBe None
+      response.validateJson[Person] shouldBe None
     }
   }
 

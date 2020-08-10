@@ -18,7 +18,6 @@ package connectors.httpParsers
 
 import models.errors.{InternalServerError, InvalidProcessError}
 import models.ocelot._
-import models.errors._
 import models.RequestOutcome
 import play.api.Logger
 import play.api.http.Status._

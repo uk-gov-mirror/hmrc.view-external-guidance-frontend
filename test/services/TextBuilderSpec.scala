@@ -64,30 +64,30 @@ class TextBuilderSpec extends BaseSpec {
 
       val txt = TextBuilder.fromPhrase(txtWithLinks)
 
-      txt.english(0) mustBe lEnWords1
-      txt.welsh(0) mustBe lCyWords1
+      txt.english(0) shouldBe lEnWords1
+      txt.welsh(0) shouldBe lCyWords1
 
-      txt.english(1).toWords mustBe Link("https://www.bbc.co.uk", link1EnWords).toWords
-      txt.welsh(1).toWords mustBe Link("https://www.bbc.co.uk", link1CyWords).toWords
+      txt.english(1).toWords shouldBe Link("https://www.bbc.co.uk", link1EnWords).toWords
+      txt.welsh(1).toWords shouldBe Link("https://www.bbc.co.uk", link1CyWords).toWords
 
-      txt.english(2) mustBe lEnWords2
-      txt.welsh(2) mustBe lCyWords2
+      txt.english(2) shouldBe lEnWords2
+      txt.welsh(2) shouldBe lCyWords2
 
-      txt.english(3).toWords mustBe Link("https://www.gov.uk", link2EnWords).toWords
-      txt.welsh(3).toWords mustBe Link("https://www.gov.uk", link2CyWords).toWords
+      txt.english(3).toWords shouldBe Link("https://www.gov.uk", link2EnWords).toWords
+      txt.welsh(3).toWords shouldBe Link("https://www.gov.uk", link2CyWords).toWords
 
-      txt.english(4) mustBe lEnWords3
-      txt.welsh(4) mustBe lCyWords3
+      txt.english(4) shouldBe lEnWords3
+      txt.welsh(4) shouldBe lCyWords3
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
       val txt: Text = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1)
 
-      txt.english.length mustBe 1
-      txt.welsh.length mustBe 1
+      txt.english.length shouldBe 1
+      txt.welsh.length shouldBe 1
 
-      txt.english(0) mustBe Words("Hello [link:Blah Blah:htts://www.bbc.co.uk]")
-      txt.welsh(0) mustBe Words("Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
+      txt.english(0) shouldBe Words("Hello [link:Blah Blah:htts://www.bbc.co.uk]")
+      txt.welsh(0) shouldBe Words("Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
     }
 
     "convert syntactically correct link placeholders into PageLink or HyperLink" in new Test {
@@ -96,20 +96,20 @@ class TextBuilderSpec extends BaseSpec {
 
       val txt: Text = TextBuilder.fromPhrase(linkPhrase)(urlMap1)
 
-      txt.english.length mustBe 4
-      txt.welsh.length mustBe 4
+      txt.english.length shouldBe 4
+      txt.welsh.length shouldBe 4
 
-      txt.english(0) mustBe Words("Hello ")
-      txt.welsh(0) mustBe Words("Welsh, Hello ")
+      txt.english(0) shouldBe Words("Hello ")
+      txt.welsh(0) shouldBe Words("Welsh, Hello ")
 
-      txt.english(1) mustBe Link("https://www.bbc.co.uk", "Blah Blah")
-      txt.welsh(1) mustBe Link("https://www.bbc.co.uk", "Blah Blah")
+      txt.english(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah")
+      txt.welsh(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah")
 
-      txt.english(2) mustBe Words(" ")
-      txt.welsh(2) mustBe Words(" ")
+      txt.english(2) shouldBe Words(" ")
+      txt.welsh(2) shouldBe Words(" ")
 
-      txt.english(3) mustBe Link("dummy-path/blah", "Blah Blah")
-      txt.welsh(3) mustBe Link("dummy-path/blah", "Blah Blah")
+      txt.english(3) shouldBe Link("dummy-path/blah", "Blah Blah")
+      txt.welsh(3) shouldBe Link("dummy-path/blah", "Blah Blah")
 
     }
 
@@ -118,14 +118,14 @@ class TextBuilderSpec extends BaseSpec {
   "TextBuilder answer processing" must {
     "return display answer text only when there is no hint" in new Test {
       val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithNoHint)
-      displayText mustBe Text(answerWithNoHint.langs)
-      hintText mustBe None
+      displayText shouldBe Text(answerWithNoHint.langs)
+      hintText shouldBe None
     }
 
     "return display answer text with hint" in new Test {
       val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithHint)
-      displayText mustBe answer
-      hintText mustBe Some(hint)
+      displayText shouldBe answer
+      hintText shouldBe Some(hint)
     }
   }
 }

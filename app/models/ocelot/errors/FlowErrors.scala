@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package services
+package models.ocelot.errors
 
 import models.ocelot.stanzas.Stanza
 
-trait FlowError
+sealed trait FlowError
 
 case class UnknownStanzaType(unknown: Stanza) extends FlowError
 case class StanzaNotFound(id: String) extends FlowError

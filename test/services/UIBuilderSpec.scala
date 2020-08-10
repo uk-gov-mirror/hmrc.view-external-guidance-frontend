@@ -302,25 +302,25 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert 1st Callout type Title to H1" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(1) mustBe models.ui.H1(Text(lang0))
+      uiPage.components(1) shouldBe models.ui.H1(Text(lang0))
     }
 
     "convert 2nd Callout type SubTitle to H2" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(2) mustBe models.ui.H2(Text(lang1))
+      uiPage.components(2) shouldBe models.ui.H2(Text(lang1))
     }
 
     "convert Callout type Lede to lede Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(3) mustBe models.ui.Paragraph(Text(lang2), true)
+      uiPage.components(3) shouldBe models.ui.Paragraph(Text(lang2), true)
     }
 
     "convert Simple instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(four) mustBe models.ui.Paragraph(Text(lang3), false)
+      uiPage.components(four) shouldBe models.ui.Paragraph(Text(lang3), false)
     }
 
     "convert Link instruction to Paragraph" in new Test {
@@ -328,67 +328,67 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val uiPage = uiBuilder.fromStanzaPage(page)
       val en = Link("dummy-path/blah", lang4(0))
       val cy = Link("dummy-path/blah", lang4(1))
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(en, cy), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(en, cy), false)
     }
 
     "convert page with instruction stanza containing a sequence of Text and Link items" in new Test {
 
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks)
-      uiPage.components(five) mustBe models.ui.Paragraph(textItems, false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(textItems, false)
     }
 
     "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks2)
-      uiPage.components(5) mustBe models.ui.Paragraph(textItems2, false)
+      uiPage.components(5) shouldBe models.ui.Paragraph(textItems2, false)
     }
 
     "convert page with instruction stanza text containing PageLinks and Text" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
-      uiPage.components(5) mustBe models.ui.Paragraph(pageLinkTextItems, false)
+      uiPage.components(5) shouldBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
     "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
       implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
       val pageMap = uiBuilder.pages(stanzaPages)
 
-      pageMap.keys.toList.length mustBe stanzaPages.length
+      pageMap.keys.toList.length shouldBe stanzaPages.length
 
       stanzaPages.foreach { p =>
-        pageMap.contains(p.url) mustBe true
+        pageMap.contains(p.url) shouldBe true
       }
     }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddAllLinks)
-      uiPage.components(five) mustBe models.ui.Paragraph(allLinksTextItems, false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(allLinksTextItems, false)
     }
 
     "convert page including a PageLink instruction stanza" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(page)
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(link3En, link3Cy), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3En, link3Cy), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(hyperLinkPage)
-      uiPage.components(five) mustBe models.ui.Paragraph(Text(link4En, link4Cy), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4En, link4Cy), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(questionPage)
 
-      uiPage.components.length mustBe 1
+      uiPage.components.length shouldBe 1
 
       uiPage.components.head match {
         case q: models.ui.Question =>
-          q.answers.length mustBe 3
+          q.answers.length shouldBe 3
 
-          q.body.length mustBe 2
+          q.body.length shouldBe 2
 
-          q.answers.head mustBe models.ui.Answer(Text(ans1), None, answerDestinationUrls.head)
+          q.answers.head shouldBe models.ui.Answer(Text(ans1), None, answerDestinationUrls.head)
 
-          q.answers(1) mustBe models.ui.Answer(Text(ans2), None, answerDestinationUrls(1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2), None, answerDestinationUrls(1))
 
-          q.answers(2) mustBe models.ui.Answer(Text(ans3), None, answerDestinationUrls(2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3), None, answerDestinationUrls(2))
 
         case _ => fail("Found non question UIComponent")
       }
@@ -397,19 +397,19 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     "convert a question page including answer hints into a Seq of a single Question UI object" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(questionPageWithHints)
 
-      uiPage.components.length mustBe 1
+      uiPage.components.length shouldBe 1
 
       uiPage.components.head match {
         case q: models.ui.Question =>
-          q.answers.length mustBe 3
+          q.answers.length shouldBe 3
 
-          q.body.length mustBe 2
+          q.body.length shouldBe 2
 
-          q.answers.head mustBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls.head)
+          q.answers.head shouldBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls.head)
 
-          q.answers(1) mustBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinationUrls(1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinationUrls(1))
 
-          q.answers(2) mustBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinationUrls(2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinationUrls(2))
 
         case _ => fail("Found non question UIComponent")
       }
@@ -434,7 +434,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
-      uiPage.components.length mustBe 1
+      uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
       val leadingTextItems: Text = Text(Words("My favourite sweets are"), Words("Fy hoff losin yw"))
@@ -445,12 +445,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case b: BulletPointList => {
 
-          b.text mustBe leadingTextItems
+          b.text shouldBe leadingTextItems
 
-          b.listItems.size mustBe 2
+          b.listItems.size shouldBe 2
 
-          b.listItems.head mustBe bulletPointOne
-          b.listItems.last mustBe bulletPointTwo
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems.last shouldBe bulletPointTwo
         }
         case _ => fail("Did not find bullet point list")
       }
@@ -485,7 +485,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
-      uiPage.components.length mustBe 1
+      uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
       val leadingTextItems: Text = Text(
@@ -499,12 +499,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case b: BulletPointList => {
 
-          b.text mustBe leadingTextItems
+          b.text shouldBe leadingTextItems
 
-          b.listItems.size mustBe 2
+          b.listItems.size shouldBe 2
 
-          b.listItems.head mustBe bulletPointOne
-          b.listItems.last mustBe bulletPointTwo
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems.last shouldBe bulletPointTwo
         }
         case _ => fail("Did not find bullet point list")
       }
@@ -549,7 +549,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
 
-      complexUiPage.components.size mustBe 6
+      complexUiPage.components.size shouldBe 6
 
       // Check contents of bullet point list
       val leadingTextItems: Text = Text("Today we have special", "Heddiw mae gennym")
@@ -561,13 +561,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       complexUiPage.components(four) match {
         case b: BulletPointList => {
 
-          b.text mustBe leadingTextItems
+          b.text shouldBe leadingTextItems
 
-          b.listItems.size mustBe 3
+          b.listItems.size shouldBe 3
 
-          b.listItems.head mustBe bulletPointOne
-          b.listItems(1) mustBe bulletPointTwo
-          b.listItems.last mustBe bulletPointThree
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems(1) shouldBe bulletPointTwo
+          b.listItems.last shouldBe bulletPointThree
         }
         case _ => fail("Did not find bullet point list")
       }
@@ -576,7 +576,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       complexUiPage.components(five) match {
         case p: Paragraph => {
-          p mustBe finalParagraph
+          p shouldBe finalParagraph
         }
         case _ => fail("The last components is not an instruction")
       }
@@ -615,7 +615,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
-      uiPage.components.length mustBe 1
+      uiPage.components.length shouldBe 1
 
       val leadingTextItems: Text = Text("You must have", "Rhaid")
 
@@ -630,16 +630,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
         case b: BulletPointList => {
 
-          b.text mustBe leadingTextItems
+          b.text shouldBe leadingTextItems
 
-          b.listItems.size mustBe 6
+          b.listItems.size shouldBe 6
 
-          b.listItems.head mustBe bulletPointOne
-          b.listItems(1) mustBe bulletPointTwo
-          b.listItems(2) mustBe bulletPointThree
-          b.listItems(3) mustBe bulletPointFour
-          b.listItems(four) mustBe bulletPointFive
-          b.listItems.last mustBe bulletPointSix
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems(1) shouldBe bulletPointTwo
+          b.listItems(2) shouldBe bulletPointThree
+          b.listItems(3) shouldBe bulletPointFour
+          b.listItems(four) shouldBe bulletPointFive
+          b.listItems.last shouldBe bulletPointSix
         }
         case _ => fail("Did not find bullet point list")
       }

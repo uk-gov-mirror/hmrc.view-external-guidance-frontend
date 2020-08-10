@@ -48,7 +48,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
       val response: RequestOutcome[Process] =
         await(gc.scratchProcess("683d9aa0-2a0e-4e28-9ac8-65ce453d2730")(hc, implicitly))
 
-      response mustBe Right(process)
+      response shouldBe Right(process)
     }
   }
 
@@ -63,7 +63,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
       val response: RequestOutcome[Process] =
         await(gc.publishedProcess("ext90002")(hc, implicitly))
 
-      response mustBe Right(process)
+      response shouldBe Right(process)
     }
   }
 
@@ -78,7 +78,7 @@ class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
       val response: RequestOutcome[Process] =
         await(gc.approvalProcess("ext90002")(hc, implicitly))
 
-      response mustBe Right(process)
+      response shouldBe Right(process)
     }
   }
 

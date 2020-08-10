@@ -25,9 +25,9 @@ import play.twirl.api.Html
 
 import scala.collection.JavaConverters._
 
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{Matchers, WordSpec}
 
-trait ViewSpec extends WordSpec with MustMatchers {
+trait ViewSpec extends WordSpec with Matchers {
 
   def getSingleElementByTag(markUp: Html, htmlTag: String): Element = {
 
@@ -47,7 +47,7 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
     val elements: Elements = document.getElementsByTag(htmlTag)
 
-    elements.size() mustBe 1
+    elements.size() shouldBe 1
 
     elements.first()
   }
@@ -56,7 +56,7 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
     val elements: Elements = document.getElementsByTag(htmlTag)
 
-    elements.size() mustBe expectedNumberOfElements
+    elements.size() shouldBe expectedNumberOfElements
 
     elements
   }
@@ -73,26 +73,26 @@ trait ViewSpec extends WordSpec with MustMatchers {
 
     val linkAttrs: Map[String, String] = link.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 
-    linkAttrs.contains("href") mustBe true
-    linkAttrs("href") mustBe destination
+    linkAttrs.contains("href") shouldBe true
+    linkAttrs("href") shouldBe destination
 
-    linkAttrs.contains("class") mustBe true
-    linkAttrs("class") mustBe "govuk-link"
+    linkAttrs.contains("class") shouldBe true
+    linkAttrs("class") shouldBe "govuk-link"
 
     if (targetBlank) {
 
-      linkAttrs.contains("target") mustBe true
-      linkAttrs("target") mustBe """"_blank""""
+      linkAttrs.contains("target") shouldBe true
+      linkAttrs("target") shouldBe """"_blank""""
 
     } else {
-      linkAttrs.contains("target") mustBe false
+      linkAttrs.contains("target") shouldBe false
     }
 
     val textNodes = link.textNodes().asScala
 
-    textNodes.size mustBe 1
+    textNodes.size shouldBe 1
 
-    textNodes.head.text().trim mustBe text
+    textNodes.head.text().trim shouldBe text
   }
 
 }
