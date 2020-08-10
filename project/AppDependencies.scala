@@ -16,7 +16,7 @@ object AppDependencies {
 
   val test = Seq(
     "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.13.0" % Test classifier "tests",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.14.0" % Test classifier "tests",
     "org.scalamock" %% "scalamock" % "4.4.0" % "test",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
     "org.jsoup" % "jsoup" % "1.13.1" % "test",
