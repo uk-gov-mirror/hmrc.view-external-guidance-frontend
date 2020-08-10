@@ -9,7 +9,9 @@ object AppDependencies {
     "uk.gov.hmrc" %% "play-language" % "4.3.0-play-26",
     "uk.gov.hmrc" %% "bootstrap-play-26" % "1.14.0",
     "uk.gov.hmrc" %% "play-frontend-govuk" % "0.49.0-play-26",
-    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.17.0-play-26"
+    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.17.0-play-26",
+    "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
+    "uk.gov.hmrc" %% "logback-json-logger" % "4.8.0"
   )
 
   val test = Seq(
