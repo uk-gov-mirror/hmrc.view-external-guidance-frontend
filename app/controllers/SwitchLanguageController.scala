@@ -40,7 +40,8 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
       if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
       else languageUtils.getCurrentLang
 
-    val redirectURL: String = request.headers.get(REFERER).find(_.startsWith(appConfig.baseHostUrl)).getOrElse(fallbackURL)
+    val redirectURL: String = request.headers.get(REFERER).find(r => r.startsWith(appConfig.hostBaseUrl) || 
+                                                                     r.startsWith(appConfig.adminHostBaseUrl)).getOrElse(fallbackURL)
 
     Redirect(redirectURL).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
   }

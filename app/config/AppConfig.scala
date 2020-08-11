@@ -44,7 +44,8 @@ trait AppConfig {
   def feedbackUrl(implicit request: RequestHeader): String
   val gtmContainer: String
   val baseUrl: String
-  val baseHostUrl: String
+  val hostBaseUrl: String
+  val adminHostBaseUrl: String
 }
 
 @Singleton
@@ -54,6 +55,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   private val assetsUrl = config.get[String]("assets.url")
   val serviceIdentifier = "EGVWR"
   lazy val host: String = servicesConfig.getString("host")
+  lazy val adminHost: String = servicesConfig.getString("adminHost")
   lazy val betaFeedback: String = servicesConfig.getString("betafeedback")
 
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
@@ -78,6 +80,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")
   lazy val timeoutWarningInSeconds: Int = config.get[Int]("session-timeout.warning")
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
-  lazy val baseHostUrl: String = s"$host$baseUrl"
+  lazy val hostBaseUrl: String = s"$host$baseUrl"
+  lazy val adminHostBaseUrl: String = s"$adminHost$baseUrl"
 
 }
