@@ -82,7 +82,7 @@ trait ViewSpec extends WordSpec with Matchers {
     if (targetBlank) {
 
       linkAttrs.contains("target") shouldBe true
-      linkAttrs("target") shouldBe """"_blank""""
+      linkAttrs("target") shouldBe "_blank"
 
     } else {
       linkAttrs.contains("target") shouldBe false

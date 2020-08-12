@@ -59,5 +59,5 @@ object Text {
   def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil, Nil)
 
-  def link(dest: String, phrase: Vector[String]): Text = Text(Link(dest, phrase(0)), Link(dest, phrase(1)))
+  def link(dest: String, phrase: Vector[String], window: Boolean = false): Text = Text(Link(dest, phrase(0), window), Link(dest, phrase(1), window))
 }
