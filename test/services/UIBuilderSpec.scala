@@ -283,6 +283,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzaPages = pageBuilder.pages(prototypeJson.as[Process]).right.get
     val prototypeUrlMap = stanzaPages.map(p => (p.id, p.url)).toMap
 
+    // Create pages for extra income V6 process
+    val extraIncomeStanzaPages = pageBuilder.pages(prototypeExtraIncomeV6Json.as[Process]).right.get
+    val extraIncomeUrlMap = extraIncomeStanzaPages.map(p =>(p.id, p.url)).toMap
+
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
 
@@ -644,6 +648,39 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Did not find bullet point list")
       }
 
+    }
+
+    "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
+
+      val uiPage = uiBuilder.fromStanzaPage(extraIncomeStanzaPages.head)(extraIncomeUrlMap)
+
+      val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
+                                         "Welsh: You've received income that you have not yet paid tax on from:")
+
+      val bulletPointOne: Text = Text( "a business you own or control (such as a partnership or limited company)",
+                                       "a business you own or control (such as a partnership or limited company)")
+
+      val bulletPointTwo: Text = Text("a business a relative owns or controls", "a business a relative owns or controls")
+
+      val bulletPointThree: Text = Text("your employer (for example for freelance services outside your normal contract hours)",
+                                        "your employer (for example for freelance services outside your normal contract hours)")
+
+      val bulletPointFour: Text = Text("the employer of your spouse or civil partner", "the employer of your spouse or civil partner")
+
+      uiPage.components.head match {
+        case b: BulletPointList =>
+
+          b.text mustBe leadingTextItems
+
+          b.listItems.size mustBe 4
+
+          b.listItems.head mustBe bulletPointOne
+          b.listItems(1) mustBe bulletPointTwo
+          b.listItems(2) mustBe bulletPointThree
+          b.listItems.last mustBe bulletPointFour
+
+        case  _ => fail("First component should be a bullet point list")
+      }
     }
 
   }
