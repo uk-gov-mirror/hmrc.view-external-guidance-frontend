@@ -670,14 +670,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case b: BulletPointList =>
 
-          b.text mustBe leadingTextItems
+          b.text shouldBe leadingTextItems
 
-          b.listItems.size mustBe 4
+          b.listItems.size shouldBe 4
 
-          b.listItems.head mustBe bulletPointOne
-          b.listItems(1) mustBe bulletPointTwo
-          b.listItems(2) mustBe bulletPointThree
-          b.listItems.last mustBe bulletPointFour
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems(1) shouldBe bulletPointTwo
+          b.listItems(2) shouldBe bulletPointThree
+          b.listItems.last shouldBe bulletPointFour
 
         case  _ => fail("First component should be a bullet point list")
       }
