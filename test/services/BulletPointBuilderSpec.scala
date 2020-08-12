@@ -859,8 +859,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
 
-          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
-          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
+          stanzas(1) shouldBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) shouldBe Instruction(instructionStanza2, phrase2, None)
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -889,8 +889,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
 
-          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
-          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
+          stanzas(1) shouldBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) shouldBe Instruction(instructionStanza2, phrase2, None)
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -924,7 +924,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(1) mustBe expectedInstructionGroup
+          stanzas(1) shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -958,7 +958,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(1) mustBe expectedInstructionGroup
+          stanzas(1) shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -989,9 +989,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
 
-          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
-          stanzas(2) mustBe Instruction(instructionStanza2, phrase2, None)
-          stanzas(3) mustBe Instruction(instructionStanza3, phrase3, None)
+          stanzas(1) shouldBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(2) shouldBe Instruction(instructionStanza2, phrase2, None)
+          stanzas(3) shouldBe Instruction(instructionStanza3, phrase3, None)
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1027,8 +1027,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(1) mustBe expectedInstructionGroup
-          stanzas(2) mustBe Instruction(instructionStanza3, phrase3, None)
+          stanzas(1) shouldBe expectedInstructionGroup
+          stanzas(2) shouldBe Instruction(instructionStanza3, phrase3, None)
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1059,14 +1059,14 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val stanzas: Seq[Stanza] = BulletPointBuilder.groupBulletPointInstructions(pages.head.stanzas, Nil)
 
-          stanzas(1) mustBe Instruction(instructionStanza1, phrase1, None)
+          stanzas(1) shouldBe Instruction(instructionStanza1, phrase1, None)
 
           val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None)
           val instruction3: Instruction = Instruction(instructionStanza3, phrase3, None)
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction2, instruction3))
 
-          stanzas(2) mustBe expectedInstructionGroup
+          stanzas(2) shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1103,7 +1103,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
 
-          stanzas(1) mustBe expectedInstructionGroup
+          stanzas(1) shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
