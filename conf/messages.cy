@@ -105,7 +105,7 @@ compliant.eight.p2.2=safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 
 ## section nine
 compliant.nine.heading=Sut gwnaethom brofi’r gwasanaeth hwn
 compliant.nine.p1=Cafodd y gwasanaeth ei brofi ddiwethaf ar 5 Awst 2020 a gwiriwyd ei fod yn cydymffurfio â safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 2.1.
-compliant.nine.p2.1=Adeiladwyd y gwasanaeth gan ddefnyddio rhannau a brofwyd gan y Ganolfan Hygyrchedd Digidol (
-compliant.nine.p2.2=Digital Accessibility Centre
-compliant.nine.p2.3=). Profwyd y gwasanaeth llawn gan CThEM, ac roedd y gwaith o brofi’r gwasanaeth yn cynnwys defnyddwyr anabl.
+compliant.nine.p2.1=Adeiladwyd y gwasanaeth gan ddefnyddio rhannau a brofwyd gan y Ganolfan Hygyrchedd Digidol
+compliant.nine.p2.2=(Digital Accessibility Centre)
+compliant.nine.p2.3= Profwyd y gwasanaeth llawn gan CThEM, ac roedd y gwaith o brofi’r gwasanaeth yn cynnwys defnyddwyr anabl.
 compliant.nine.p3=Paratowyd y dudalen hon ar 5 Awst 2020. Cafodd ei diweddaru ddiwethaf ar 5 Awst 2020.
