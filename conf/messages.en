@@ -105,5 +105,7 @@ compliant.nine.heading=How we tested this service
 compliant.nine.p1=The service was last tested on 5 August 2020 and was checked for compliance with WCAG 2.1 AA.
 compliant.nine.p2.1=The service was built using parts that were tested by the
 compliant.nine.p2.2=Digital Accessibility Centre
+complaint.nine.p2.4=
+compliant.nine.p2.5=
 compliant.nine.p2.3=The full service was tested by HMRC and included disabled users.
 compliant.nine.p3=This page was prepared on 5 August 2020. It was last updated on 5 August 2020.
