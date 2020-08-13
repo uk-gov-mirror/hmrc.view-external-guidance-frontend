@@ -69,6 +69,17 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
           .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/feeling-bad")
 
     }
+
+    "generate page with header using title of Guidance" in new Test {
+      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      val result: Future[Result] = controller.getPage(fakeRequest)
+      status(result) shouldBe Status.OK
+      val doc = asDocument(contentAsString(result))
+      doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
+          .fold(fail("Missing header link"))(a => a.text shouldBe process.title.langs(0))
+
+    }
+
   }
 
 }

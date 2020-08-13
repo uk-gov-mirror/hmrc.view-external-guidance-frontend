@@ -27,4 +27,4 @@ case class PageUrlEmptyOrInvalid(id: String) extends FlowError
 case class PhraseNotFound(index: Int) extends FlowError
 case class LinkNotFound(index: Int) extends FlowError
 case class DuplicatePageUrl(id: String, url: String) extends FlowError
-case class MissingWelshText(index: Int, english: String) extends FlowError
+case class MissingWelshText(id: String, english: String) extends FlowError

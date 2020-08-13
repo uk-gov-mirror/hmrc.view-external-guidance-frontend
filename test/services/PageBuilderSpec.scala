@@ -320,7 +320,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         Vector[Link]()
       )
       pageBuilder.pages(process) match {
-        case Left(MissingWelshText(1, "Some Text1")) => succeed
+        case Left(MissingWelshText("2", "Some Text1")) => succeed
         case Left(err) => fail(s"MissingWelshText error not detected, failed with $err")
         case _ => fail(s"MissingWelshText not detected")
       }

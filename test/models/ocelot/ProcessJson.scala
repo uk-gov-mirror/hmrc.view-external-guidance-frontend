@@ -33,7 +33,8 @@ trait ProcessJson {
       |    "lastAuthor": "000000",
       |    "lastUpdate": 1500298931016,
       |    "version": 4,
-      |    "filename": "oct90001.js"
+      |    "filename": "oct90001.js",
+      |    "titlePhrase": 8
       |  },
       |  "howto": [],
       |  "contacts": [],
@@ -73,7 +74,8 @@ trait ProcessJson {
       |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
       |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
       |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
-      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"]
+      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
+      |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
       |  ]
       |}
     """.stripMargin
