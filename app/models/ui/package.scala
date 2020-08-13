@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-package object controllers {
-  val StartUrlSessionKey: String = "GUIDANCE_START"  
+package models
+
+import models.ocelot.Phrase
+
+package object ui {
+  implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))  
 }

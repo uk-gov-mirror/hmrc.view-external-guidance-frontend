@@ -38,10 +38,12 @@ class GuidanceService @Inject() (
 ) {
   val logger = Logger(getClass)
 
+  def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
+
   def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    sessionRepository.get(sessionId).map {
+    getProcessContext(sessionId).map {
       case Right(ProcessContext(process, answers)) =>
         pageBuilder
           .pages(process)
@@ -60,7 +62,8 @@ class GuidanceService @Inject() (
                   Right(
                     PageContext(
                       uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
-                      s"${appConfig.baseUrl}${pages.head.url}",
+                      process.startUrl.map( url => s"${appConfig.baseUrl}${url}"),
+                      process.title,
                       answers.get(url)
                     )
                   )

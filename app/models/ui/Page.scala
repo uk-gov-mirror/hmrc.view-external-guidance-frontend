@@ -47,4 +47,4 @@ case class QuestionPage(val urlPath: String, question: Question) extends Page {
   val components: Seq[UIComponent] = Seq(question)
 }
 
-case class PageContext(page: Page, processStartUrl: String, answer: Option[String] = None)
+case class PageContext(page: Page, processStartUrl: Option[String], processTitle: Text, answer: Option[String] = None)

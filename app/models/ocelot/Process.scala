@@ -21,9 +21,12 @@ import play.api.libs.json.{Reads, Writes, __}
 import models.ocelot.stanzas._
 
 case class Process(meta: Meta, flow: Map[String, Stanza], phrases: Vector[Phrase], links: Vector[Link]) {
-
   lazy val phraseOption: Int => Option[Phrase] = phrases.lift
   lazy val linkOption: Int => Option[Link] = links.lift
+  lazy val title: Phrase = meta.titlePhrase.fold(Phrase(meta.title, meta.title)){
+    titleIndex => phraseOption(titleIndex).getOrElse(Phrase(meta.title, meta.title))
+  }
+  lazy val startUrl: Option[String] = flow.get(Process.StartStanzaId).collect{case ps: PageStanza => ps.url}
 }
 
 object Process {

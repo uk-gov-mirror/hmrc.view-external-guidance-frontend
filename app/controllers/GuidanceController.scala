@@ -23,12 +23,10 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.RequestOutcome
 import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import play.api.Logger
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 
@@ -42,7 +40,8 @@ class GuidanceController @Inject() (
     formProvider: NextPageFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
-) extends FrontendController(mcc)
+) extends FrontendController(mcc) 
+    with SessionFrontendController
     with I18nSupport {
 
   val logger = Logger(getClass)
@@ -52,12 +51,12 @@ class GuidanceController @Inject() (
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
-          case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl))
+          case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl, pageContext.processTitle))
           case page: QuestionPage =>
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(questionView(page, pageContext.processStartUrl, questionName(path), form))
+            Ok(questionView(page, pageContext.processStartUrl, pageContext.processTitle, questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -78,7 +77,7 @@ class GuidanceController @Inject() (
         withExistingSession[PageContext](service.getPageContext(s"/$path", _, Some(formData))).map {
           case Right(pageContext) =>
             pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, questionName(path), formWithErrors))
+              case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, pageContext.processTitle, questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.badRequestTemplate)
             }
           case Left(NotFoundError) =>
@@ -103,15 +102,6 @@ class GuidanceController @Inject() (
       }
     )
   }
-
-  private def withExistingSession[T](block: String => Future[RequestOutcome[T]])(implicit request: Request[_]): Future[RequestOutcome[T]] =
-    hc.sessionId.fold {
-      logger.error(s"Session Id missing from request when required")
-      Future.successful(Left(BadRequestError): RequestOutcome[T])
-    } { sessionId =>
-      logger.info(s"Found existing sessionId = $sessionId")
-      block(sessionId.value)
-    }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
 }

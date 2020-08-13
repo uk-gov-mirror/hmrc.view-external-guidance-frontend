@@ -49,6 +49,7 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
   def value(implicit lang: Lang): Seq[TextItem] = if (lang.code.equals("cy")) welsh else english
   def isEmpty(implicit lang: Lang): Boolean = if (lang.code.equals("cy")) welsh.isEmpty else english.isEmpty
   def toWords(implicit lang: Lang): Seq[String] = value(lang).flatMap(_.toWords)
+  def asString(implicit lang: Lang): String = toWords.mkString(" ")
   override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
   def +(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
 }

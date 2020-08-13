@@ -21,6 +21,7 @@ import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
+import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
 import models.ui.FormData
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,6 +48,12 @@ trait MockGuidanceService extends MockFactory {
       (mockGuidanceService
         .retrieveAndCacheApproval(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)
+    }
+
+    def getProcessContext(sessionId: String): CallHandler[Future[RequestOutcome[ProcessContext]]] = {
+      (mockGuidanceService
+        .getProcessContext(_: String))
+        .expects(sessionId)
     }
 
     def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {

@@ -102,7 +102,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
 
-      val doc = asDocument(standardPageView(simplePage, "/")(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, Some("/"), Text(Nil, Nil))(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -129,7 +129,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(standardPageView(simplePage, "/")(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, Some("/"), Text(Nil, Nil))(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -159,7 +159,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPage, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -188,14 +188,14 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Englsh title prefixed by Error: when errors are displayed" in new Test {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly whn error occurs" in new Test {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
@@ -205,7 +205,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPage, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPage, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -233,14 +233,14 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly when error occurs" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, "/here", "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), Text(Nil, Nil), "question", formProvider("url") )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
