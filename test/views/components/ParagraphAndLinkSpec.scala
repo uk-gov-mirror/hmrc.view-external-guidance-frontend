@@ -42,14 +42,14 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     val paraText2 = Text("World", "Welsh World")
 
     val ledePara = Paragraph(paraText1, lede = true)
-    val para = Paragraph(paraText1, lede = false)
+    val para = Paragraph(paraText1)
     val dest1 = "https://www.bbc.co.uk"
     val dest2 = "https://www.bbc.co.uk/news"
     val link1En = Link(dest1, "The BBC", window = true)
-    val link2En = Link(dest2, "BBC News", window = false)
+    val link2En = Link(dest2, "BBC News")
     val pageLinkEn = Link(dest2, "BBC News")
     val link1Cy = Link(dest1, "Welsh, The BBC", window = true)
-    val link2Cy = Link(dest2, "Welsh, BBC News", window = false)
+    val link2Cy = Link(dest2, "Welsh, BBC News")
     val pageLinkCy = Link(dest2, "Welsh, BBC News")
 
     val link1 = Text(link1En, link1Cy)
@@ -93,7 +93,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       links.length shouldBe 3
 
       val txtNodes = paras.first.textNodes().asScala
-      txtNodes.length shouldBe 4
+      txtNodes.length shouldBe 3
       txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
       txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
 
@@ -148,7 +148,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       links.length shouldBe 3
 
       val txtNodes = paras.first.textNodes().asScala
-      txtNodes.length shouldBe 4
+      txtNodes.length shouldBe 3
       txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
       txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
 

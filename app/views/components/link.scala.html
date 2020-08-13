@@ -17,10 +17,4 @@
 @import models.ui.Link
 
 @(link: Link)
-
 <a class="govuk-link" href="@link.dest" @if(link.window) {target="_blank"}>@link.text</a>
-
-@{
-     //$COVERAGE-OFF$
-}
-
