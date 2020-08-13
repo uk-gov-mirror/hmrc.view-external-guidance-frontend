@@ -103,7 +103,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link1Attrs.contains("class") shouldBe true
       link1Attrs("class") shouldBe "govuk-link"
       link1Attrs.contains("target") shouldBe true
-      link1Attrs("target") shouldBe """"_blank""""
+      link1Attrs("target") shouldBe "_blank"
 
       val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link2Attrs.contains("href") shouldBe true
@@ -158,7 +158,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link1Attrs.contains("class") shouldBe true
       link1Attrs("class") shouldBe "govuk-link"
       link1Attrs.contains("target") shouldBe true
-      link1Attrs("target") shouldBe """"_blank""""
+      link1Attrs("target") shouldBe "_blank"
 
       val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link2Attrs.contains("href") shouldBe true
