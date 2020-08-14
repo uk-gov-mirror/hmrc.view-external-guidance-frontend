@@ -18,20 +18,41 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import config.AppConfig
-import play.api.i18n.I18nSupport
+import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.Logger
+import repositories.ProcessContext
+import services.GuidanceService
+import config.ErrorHandler
+import models.errors.BadRequestError
 
 @Singleton
-class AccessibilityStatementController @Inject() (appConfig: AppConfig, mcc: MessagesControllerComponents, view: views.html.accessibility_statement)
-    extends FrontendController(mcc)
-    with I18nSupport {
+class AccessibilityStatementController @Inject() (
+  appConfig: AppConfig, 
+  mcc: MessagesControllerComponents, 
+  view: views.html.accessibility_statement, 
+  service: GuidanceService,
+  errorHandler: ErrorHandler
+) extends FrontendController(mcc)
+  with SessionFrontendController {
 
   implicit val config: AppConfig = appConfig
+  val logger: Logger = Logger(getClass)
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
-    val startOfGuidanceUrl: Option[String] = request.session.get(StartUrlSessionKey).map(startUrl =>s"${appConfig.baseUrl}$startUrl")
-    Future.successful(Ok(view(startOfGuidanceUrl)))
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    withExistingSession[ProcessContext](service.getProcessContext(_)).map {
+      case Right(processContext) => 
+        val title = models.ui.Text(processContext.process.title.langs)
+        Ok(view(title.asString(messages.lang), processContext.process.startUrl.map(url => s"${appConfig.baseUrl}$url")))
+      case Left(BadRequestError) =>
+        logger.warn(s"Accessibility used out of guidance")
+        Ok(view(messages("accessibility.defaultHeaderTitle"), None))
+      case Left(err) =>
+        logger.error(s"Request for ProcessContext returned $err, returning InternalServerError")
+        InternalServerError(errorHandler.internalServerErrorTemplate)
+    }
   }
 }

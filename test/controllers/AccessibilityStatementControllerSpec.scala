@@ -27,23 +27,30 @@ import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import base.ViewFns
 import scala.concurrent.Future
 import scala.collection.JavaConverters._
+import mocks._
+import repositories.ProcessContext
+import uk.gov.hmrc.http.SessionKeys
+import models.ocelot.{Process, ProcessJson}
 
 class AccessibilityStatementControllerSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
-  private trait Test {
-    val fakeRequest = FakeRequest("GET", "/").withSession((controllers.StartUrlSessionKey -> "/startOfGuidanceUrl"))
-
+  private trait Test extends MockGuidanceService with ProcessJson {
+    val fakeRequest = FakeRequest("GET", "/").withSession((SessionKeys.sessionId -> "sessionId"))
+    lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
     private val view = app.injector.instanceOf[views.html.accessibility_statement]
-    val controller = new AccessibilityStatementController(MockAppConfig, stubMessagesControllerComponents(), view)
+    val process: Process = validOnePageJson.as[Process]
+    val controller = new AccessibilityStatementController(MockAppConfig, stubMessagesControllerComponents(), view, mockGuidanceService, errorHandler)
   }
 
   "GET /accessibility" should {
     "return 200" in new Test {
+      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in new Test {
+      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
@@ -54,13 +61,25 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
 
   "GET /accessibility" should {
     "generate page with header link url pointing to nominated url" in new Test {
+      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
-          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/startOfGuidanceUrl")
+          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/feeling-bad")
 
     }
+
+    "generate page with header using title of Guidance" in new Test {
+      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      val result: Future[Result] = controller.getPage(fakeRequest)
+      status(result) shouldBe Status.OK
+      val doc = asDocument(contentAsString(result))
+      doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
+          .fold(fail("Missing header link"))(a => a.text shouldBe process.title.langs(0))
+
+    }
+
   }
 
 }

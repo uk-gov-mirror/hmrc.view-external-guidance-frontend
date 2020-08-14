@@ -30,7 +30,7 @@
         footer: components.govukFooter,
         timeoutDialog: HmrcTimeoutDialog)
 
-@(pageTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(pageTitle: String, processTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @beforeContentBlock = {
     @phaseBanner(PhaseBanner(
@@ -69,7 +69,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 @headerBlock = {
     @govUkHeader(Header(
         serviceUrl = startUrl,
-        serviceName = Some(messages("service.name"))
+        serviceName = Some(processTitle)
     ))
 }
 

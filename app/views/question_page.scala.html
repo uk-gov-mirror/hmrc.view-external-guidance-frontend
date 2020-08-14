@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.ui.QuestionPage
+@import models.ui.{Text, QuestionPage}
 
 @import controllers.routes._
 @import uk.gov.hmrc.govukfrontend.views.html.helpers._
@@ -24,14 +24,14 @@
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, startUrl: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, startUrl: Option [String], processTitle: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 @pageTitle(page: QuestionPage) = @{
-  val titleText = page.heading.toWords(messages.lang).mkString(" ")
+  val titleText = page.heading.asString(messages.lang)
   page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} $titleText""")
 }
 
-@layout(pageTitle(page), Some(startUrl)) {
+@layout(pageTitle(page), processTitle, startUrl) {
   
   @components.error_summary(page.question.text, page.question.errorMsgs)
 
