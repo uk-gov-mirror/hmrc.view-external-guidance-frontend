@@ -16,8 +16,8 @@
 
 package models.ocelot
 
-import play.api.libs.json._
 import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 case class Phrase(langs: Vector[String])
 

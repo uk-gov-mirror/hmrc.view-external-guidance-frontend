@@ -42,20 +42,18 @@ object CalloutType {
       case JsString("Error") => JsSuccess(Error, __)
       case JsString("Section") => JsSuccess(Section, __)
       case JsString("SubSection") => JsSuccess(SubSection, __)
-      case _ => JsError("Invalid Callout type")
+      case typeName: JsString => JsError(JsonValidationError(Seq("CalloutType"), typeName.value))
+      case unknown => JsError(JsonValidationError(Seq("CalloutType"), unknown.toString))
     }
 
-
   implicit val writes: Writes[CalloutType] = (calloutType: CalloutType) =>
+    calloutType match {
+      case Title => Json.toJson("Title")
+      case SubTitle => Json.toJson("SubTitle")
+      case Error => Json.toJson("Error")
+      case Lede => Json.toJson("Lede")
+      case Section => Json.toJson("Section")
+      case SubSection => Json.toJson("SubSection")
+    }
 
-      calloutType match {
-        case Title => Json.toJson("Title")
-        case SubTitle => Json.toJson("SubTitle")
-        case Error => Json.toJson("Error")
-        case Lede => Json.toJson("Lede")
-        case Section => Json.toJson("Section")
-        case SubSection => Json.toJson("SubSection")
-      }
-
-  }
-
+}
