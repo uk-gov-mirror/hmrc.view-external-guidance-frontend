@@ -1,4 +1,4 @@
-service.name = Interactive Guidance
+service.name = Guidance
 service.govuk = GOV.UK
 hello.world = Hello world!
 hello.world.currentLanguage = The current language setting is "{0}",
@@ -42,6 +42,7 @@ footer.links.terms_and_conditions.text=Terms and conditions
 # Compliance statement
 # ----------------------------------------------------------
 accessibility.title=Accessibility statement for HMRC Interactive Guidance
+accessibility.defaultHeaderTitle = Interactive Guidance
 
 ## section one
 compliant.one.heading=Accessibility statement for HMRC Interactive Guidance

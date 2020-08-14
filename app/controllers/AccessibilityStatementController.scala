@@ -49,7 +49,7 @@ class AccessibilityStatementController @Inject() (
         Ok(view(title.asString(messages.lang), processContext.process.startUrl.map(url => s"${appConfig.baseUrl}$url")))
       case Left(BadRequestError) =>
         logger.warn(s"Accessibility used out of guidance")
-        Ok(view(messages("service.name"), None))
+        Ok(view(messages("accessibility.defaultHeaderTitle"), None))
       case Left(err) =>
         logger.error(s"Request for ProcessContext returned $err, returning InternalServerError")
         InternalServerError(errorHandler.internalServerErrorTemplate)

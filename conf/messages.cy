@@ -44,6 +44,7 @@ footer.links.terms_and_conditions.text=Telerau ac Amodau
 # Compliance statement
 # ----------------------------------------------------------
 accessibility.title=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
+accessibility.defaultHeaderTitle = Welsh, Interactive Guidance
 
 ## section one
 compliant.one.heading=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
