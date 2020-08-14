@@ -1,4 +1,4 @@
-service.name = Welsh: Interactive Guidance
+service.name = Arweiniad Rhyngweithiol
 service.govuk = GOV.UK
 
 hello.world = Helo o''r cais view-external-guide-frontend!
@@ -44,7 +44,7 @@ footer.links.terms_and_conditions.text=Telerau ac Amodau
 # Compliance statement
 # ----------------------------------------------------------
 accessibility.title=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
-accessibility.defaultHeaderTitle = Welsh, Interactive Guidance
+accessibility.defaultHeaderTitle = Arweiniad Rhyngweithiol
 
 ## section one
 compliant.one.heading=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
