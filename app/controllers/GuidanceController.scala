@@ -18,7 +18,7 @@ package controllers
 
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.I18nSupport
+import play.api.i18n.Messages
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -41,22 +41,23 @@ class GuidanceController @Inject() (
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc) 
-    with SessionFrontendController
-    with I18nSupport {
+  with SessionFrontendController {
 
   val logger = Logger(getClass)
 
   def getPage(path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+
     withExistingSession[PageContext](service.getPageContext(s"/$path", _)).map {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
-          case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl, pageContext.processTitle))
+          case page: StandardPage => Ok(standardView(page, pageContext.processStartUrl, pageContext.processTitle.asString(messages.lang)))
           case page: QuestionPage =>
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(questionView(page, pageContext.processStartUrl, pageContext.processTitle, questionName(path), form))
+            Ok(questionView(page, pageContext.processStartUrl, pageContext.processTitle.asString(messages.lang), questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -71,13 +72,15 @@ class GuidanceController @Inject() (
   }
 
   def submitPage(path: String): Action[AnyContent] = Action.async { implicit request =>
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
         withExistingSession[PageContext](service.getPageContext(s"/$path", _, Some(formData))).map {
           case Right(pageContext) =>
             pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, pageContext.processTitle, questionName(path), formWithErrors))
+              case page: QuestionPage => BadRequest(questionView(page, pageContext.processStartUrl, pageContext.processTitle.asString(messages.lang), questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.badRequestTemplate)
             }
           case Left(NotFoundError) =>

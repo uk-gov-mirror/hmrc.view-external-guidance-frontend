@@ -18,9 +18,9 @@
 
 @this(layout: main_layout)
 
-@(processTitle: Text, startOfGuidanceUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
+@(processTitle: String, startOfGuidanceUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(messages("accessibility.title"), processTitle.asString(messages.lang), startOfGuidanceUrl) {
+@layout(messages("accessibility.title"), processTitle, startOfGuidanceUrl) {
     <h1 class="govuk-heading-xl">@messages("compliant.one.heading")</h1>
     <p class="govuk-body-l">@messages("compliant.one.lede")</p>
 

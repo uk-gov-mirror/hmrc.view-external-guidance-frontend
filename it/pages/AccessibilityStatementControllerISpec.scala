@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,30 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
+package pages
 
-@import models.ui.{Text, StandardPage}
+import play.api.http.Status
+import play.api.libs.ws.{WSRequest, WSResponse}
+import stubs.AuditStub
+import support.IntegrationSpec
 
-@this(layout: main_layout)
+class AccessibilityStatementControllerISpec extends IntegrationSpec {
 
-@(page: StandardPage, startUrl: Option[String], processTitle: String)(implicit request: Request[_], messages: Messages)
+  "calling the accessibility route" should {
 
-@layout(page.heading.asString(messages.lang), processTitle, startUrl) {
+    "return an OK response" in {
 
-  @components.render_components(page.components)
+      AuditStub.audit()
 
-}
-@{
-     //$COVERAGE-OFF$
+      val request: WSRequest = buildRequest("/guidance/accessibility")
+
+      val response: WSResponse = await(request.get())
+
+      response.status shouldBe Status.OK
+
+    }
+
+  }
+
 }

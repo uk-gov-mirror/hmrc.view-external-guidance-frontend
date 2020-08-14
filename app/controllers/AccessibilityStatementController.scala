@@ -18,7 +18,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import config.AppConfig
-import play.api.i18n.I18nSupport
+import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,18 +36,20 @@ class AccessibilityStatementController @Inject() (
   service: GuidanceService,
   errorHandler: ErrorHandler
 ) extends FrontendController(mcc)
-  with SessionFrontendController
-  with I18nSupport {
+  with SessionFrontendController {
 
   implicit val config: AppConfig = appConfig
   val logger: Logger = Logger(getClass)
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[ProcessContext](service.getProcessContext(_)).map {
-      case Right(processContext) => Ok(view(processContext.process.title, processContext.process.startUrl.map(url => s"${appConfig.baseUrl}$url")))
+      case Right(processContext) => 
+        val title = models.ui.Text(processContext.process.title.langs)
+        Ok(view(title.asString(messages.lang), processContext.process.startUrl.map(url => s"${appConfig.baseUrl}$url")))
       case Left(BadRequestError) =>
-        logger.warn(s"Request for ProcessContext returned BadRequest")
-        BadRequest(errorHandler.badRequestTemplate)
+        logger.warn(s"Accessibility used out of guidance")
+        Ok(view(messages("service.name"), None))
       case Left(err) =>
         logger.error(s"Request for ProcessContext returned $err, returning InternalServerError")
         InternalServerError(errorHandler.internalServerErrorTemplate)

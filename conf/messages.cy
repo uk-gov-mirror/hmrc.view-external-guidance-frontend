@@ -1,4 +1,4 @@
-service.name = Welsh: Guidance
+service.name = Welsh: Interactive Guidance
 service.govuk = GOV.UK
 
 hello.world = Helo o''r cais view-external-guide-frontend!
