@@ -19,13 +19,14 @@ package views.components
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
-import play.api.i18n.{Messages, MessagesApi, Lang}
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import models.ui.{H1, H2, H3, Paragraph, Text, Words}
+import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
+
 import scala.collection.JavaConverters._
 
 class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
@@ -109,5 +110,16 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       strong.size shouldBe 1
     }
 
+    "test links with text to ensure correct spacing" in new Test {
+      val link1 = Link("this/is/a/link", "Link Text")
+      val words1 = Words("this is the first section ")
+      val words2 = Words(", second section should follow link text.")
+      val phrases1 = Seq(words1, link1, words2)
+      val text = Text(phrases1, phrases1)
+      val doc = asDocument(paragraph(Paragraph(text)))
+      val pTag = doc.getElementsByTag("p")
+
+      pTag.text() shouldBe "this is the first section Link Text, second section should follow link text."
+    }
   }
 }
