@@ -160,6 +160,180 @@ trait ProcessJson {
     """.stripMargin
   )
 
+  val assortedParseErrorsJson: JsValue = Json.parse(
+    """
+      |{
+      |  "meta": {
+      |    "title": "Customer wants to make a cup of tea",
+      |    "id": "oct90001",
+      |    "ocelot": 1,
+      |    "lastAuthor": "000000",
+      |    "lastUpdate": 1500298931016,
+      |    "version": 4,
+      |    "filename": "oct90001.js",
+      |    "titlePhrase": 8
+      |  },
+      |  "howto": [],
+      |  "contacts": [],
+      |  "links": [],
+      |  "flow": {
+      |    "start": {
+      |      "type": "PageStanza",
+      |      "url": "/feeling-bad",
+      |      "next": ["3"],
+      |      "stack": true
+      |    },
+      |    "3": {
+      |      "type": "InstructionStanza",
+      |      "text": 1,
+      |      "next": [
+      |        "2"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "2": {
+      |      "type": "UnknownStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "3"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "3": {
+      |      "next": [
+      |        "end"
+      |      ],
+      |      "noteType": "UnknownType",
+      |      "stack": false,
+      |      "text": 59,
+      |      "type": "CalloutStanza"
+      |    },
+      |      
+      |    "end": {
+      |      "type": "EndStanza"
+      |    }
+      |  },
+      |  "phrases": [
+      |    ["Ask the customer if they have a tea bag"],
+      |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
+      |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
+      |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
+      |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
+      |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+      |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
+      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
+      |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
+      |  ]
+      |}
+    """.stripMargin
+  )
+
+  val duplicateUrlsJson: JsValue = Json.parse(
+    """
+      |{
+      |  "meta": {
+      |    "title": "Customer wants to make a cup of tea",
+      |    "id": "oct90001",
+      |    "ocelot": 1,
+      |    "lastAuthor": "000000",
+      |    "lastUpdate": 1500298931016,
+      |    "version": 4,
+      |    "filename": "oct90001.js",
+      |    "titlePhrase": 8
+      |  },
+      |  "howto": [],
+      |  "contacts": [],
+      |  "links": [],
+      |  "flow": {
+      |    "start": {
+      |      "type": "PageStanza",
+      |      "url": "/start",
+      |      "next": ["1"],
+      |      "stack": true
+      |    },
+      |    "1": {
+      |      "type": "InstructionStanza",
+      |      "text": 1,
+      |      "next": [
+      |        "2"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "2": {
+      |      "type": "PageStanza",
+      |      "url": "/feeling-bad",
+      |      "next": ["3"],
+      |      "stack": true
+      |    },
+      |    "3": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "4"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "4": {
+      |      "type": "PageStanza",
+      |      "url": "/feeling-good",
+      |      "next": ["5"],
+      |      "stack": true
+      |    },
+      |    "5": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "6"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "6": {
+      |      "type": "PageStanza",
+      |      "url": "/feeling-bad",
+      |      "next": ["7"],
+      |      "stack": true
+      |    },
+      |    "7": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "8"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "8": {
+      |      "type": "PageStanza",
+      |      "url": "/feeling-good",
+      |      "next": ["9"],
+      |      "stack": true
+      |    },
+      |    "9": {
+      |      "type": "InstructionStanza",
+      |      "text": 0,
+      |      "next": [
+      |        "end"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "end": {
+      |      "type": "EndStanza"
+      |    }
+      |  },
+      |  "phrases": [
+      |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
+      |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
+      |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
+      |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
+      |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
+      |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+      |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
+      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
+      |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
+      |  ]
+      |}
+    """.stripMargin
+  )
+
   // Ocelot Prototype process demonstrating range of Stanzas and range of relevant Stanza attributes
   val prototypeMetaSection: String =
     """
