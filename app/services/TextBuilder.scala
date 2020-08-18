@@ -50,19 +50,25 @@ object TextBuilder {
 
   private def placeholdersToItems(matches: List[Match])(implicit urlMap: Map[String, String]): List[TextItem] =
     matches.map { m =>
-      Option(m.group(1)).fold[TextItem](
-        if (OcelotLink.isLinkableStanzaId(m.group(3))) {
-          Link(urlMap(m.group(3)), m.group(2))
-        } else {
-          Link(m.group(3), m.group(2))
-        }
-      )(_ => Words(m.group(1), true))
+      Option(m.group(1)).fold[TextItem]({
+        val window: Boolean = Option(m.group(2)).fold(false)(modifier => modifier == "-tab")
+        val dest: String = if (OcelotLink.isLinkableStanzaId(m.group(4))) urlMap(m.group(4)) else m.group(4)
+        Link(dest, m.group(3), window)
+      })(txt => Words(txt, true))
     }
 
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
     (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
 
   def placeholderTxtsAndMatches(text: String): (List[String], List[Match]) = fromPattern(placeholdersPattern, text)
+
+  def flattenPlaceholders(text: String): Seq[String] = {
+    val (txts, matches) = fromPattern(placeholdersPattern, text)
+    merge[String, String](txts, matches.map(m => Option(m.group(1)).fold(m.group(3))(v => v)), Nil, _.isEmpty).filterNot(_.isEmpty)
+  }
+
+  // For BulletPointBuilder
+  def placeholderMatchText(m: Match): String = Option(m.group(1)).getOrElse(m.group(3))
 
   @tailrec
   def merge[A, B](txts: List[A], links: List[A], acc: Seq[A], isEmpty: A => Boolean): Seq[A] =
@@ -75,5 +81,5 @@ object TextBuilder {
     }
 
   val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
-  val placeholdersPattern: Regex = s"\\[bold:([^\\]]+)\\]|\\[link:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
+  val placeholdersPattern: Regex = s"\\[bold:([^\\]]+)\\]|\\[link(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
 }
