@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.errors.{Error => MainError, ProcessError}
 import models.ocelot.errors._
 import models.ocelot.stanzas._
-import models.ocelot.{Page, _}
+import models.ocelot._
 import play.api.libs.json._
 import utils.StanzaHelper
 
@@ -343,17 +343,17 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "detect UnknownCalloutType" in {
-      val processErrors: List[ProcessError] = List(ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"), 
-                                                   ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 3","3"), 
+      val processErrors: List[ProcessError] = List(ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
+                                                   ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 3","3"),
                                                    ProcessError("Unknown parse error error.minLength at location /phrases(0)",""))
       guidancePages(new PageBuilder(), assortedParseErrorsJson).fold(
         errs => errs match {
         case MainError(MainError.UnprocessableEntity, None,Some(errors)) if errors == processErrors => succeed
         case _ => fail(s"Failed with errors")
-        }, 
+        },
         _ => fail)
-      
-      
+
+
     }
 
   }

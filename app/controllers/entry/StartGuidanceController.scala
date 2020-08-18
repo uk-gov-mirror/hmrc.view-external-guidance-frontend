@@ -86,8 +86,8 @@ class StartGuidanceController @Inject() (
   }
 
   private def existingOrNewSessionId()(implicit request: Request[_]): (String, Option[String]) =
-    hc.sessionId.fold{
+    hc.sessionId.fold[(String, Option[String])]{
       val id = s"session-${java.util.UUID.randomUUID.toString}"
-      (id, Some(id)): (String, Option[String])
+      (id, Some(id))
     }(sessionId => (sessionId.value, None))
 }

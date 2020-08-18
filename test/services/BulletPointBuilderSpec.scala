@@ -44,63 +44,63 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
       val text = ""
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe text
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe text
     }
 
     "Return text unchanged when no bold text present" in {
 
       val text: String = "Today the weather is fine"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe text
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe text
     }
 
     "Return bold text only when normal text is not defined" in {
 
       val text: String = "[bold:Important]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Important"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Important"
     }
 
     "Return both normal and bold text for combination of leading text followed by bold text" in {
 
       val text: String = "This is [bold:Important]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "This is Important"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "This is Important"
     }
 
     "Return both normal text and bold text for combination of leading bold text followed by normal text" in {
 
       val text: String = "[bold:Important] do not do this"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Important do not do this"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Important do not do this"
     }
 
     "Return both normal and bold text for text with single embedded bold text" in {
 
       val text: String = "Hello from [bold:Team Ocelot] in Greenland"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Hello from Team Ocelot in Greenland"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Hello from Team Ocelot in Greenland"
     }
 
     "Return both normal and bold text with normal text embedded in bold text" in {
 
       val text: String = "[bold:Greetings from] our home in lovely [bold:Nova Scotia]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Greetings from our home in lovely Nova Scotia"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Greetings from our home in lovely Nova Scotia"
     }
 
     "Return both normal and bold text from mixed text starting with normal text" in {
 
       val text: String = "Today is [bold:Wednesday 10th May] and tomorrow is [bold:Thursday 11th May]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and bold text from mixed text staring with bold text" in {
 
       val text: String = "[bold:Here and now] we must all [bold:try] to be calm"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Here and now we must all try to be calm"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Here and now we must all try to be calm"
     }
   }
 
@@ -110,70 +110,70 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
       val text = ""
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe text
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe text
     }
 
     "Return text unchanged when no link text present" in {
 
       val text: String = "Today the weather is fine"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe text
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe text
     }
 
     "Return link text only when normal text is not defined" in {
 
       val text: String = "[link:View options:https://mydomain/options]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "View options"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "View options"
     }
 
     "Return both normal and link text for combination of leading text followed by link text" in {
 
       val text: String = "View instructions for [link:mending a broken axle:http://mechanicsAreUs/axles]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "View instructions for mending a broken axle"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "View instructions for mending a broken axle"
     }
 
     "Return both normal text and link text for combination of leading link text followed by normal text" in {
 
       val text: String = "[link:Click here:https://my.com/details] for information"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Click here for information"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Click here for information"
     }
 
     "Return both normal and link text for text with single embedded link" in {
 
       val text: String = "For details [link:click here:https://info.co.uk/details] and follow the instructions shown"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "For details click here and follow the instructions shown"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "For details click here and follow the instructions shown"
     }
 
     "Return both normal and link text with normal text embedded in links" in {
 
       val text: String = "[link:Link 1 text:http://link1] and [link:link 2 text:https://link2]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Link 1 text and link 2 text"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Link 1 text and link 2 text"
     }
 
     "Return both normal and link text from mixed text starting with normal text" in {
 
       val text: String = "Today is [link:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link:Thursday 11th May:http://my.com/calendar]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
     "Return both normal and link text from mixed text staring with link" in {
 
       val text: String = "[link:Here and now:http://thisyear/today] we must all [link:try:https://explain] to be calm"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "Here and now we must all try to be calm"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Here and now we must all try to be calm"
     }
 
     "Return correct text with back to back links" in {
 
       val text: String = "This should [link:be interesting:https://my.com/interesting?part=2] [link:and informative:http://my.com/inform]"
 
-      asString(BulletPointBuilder.fragmentsToDisplayAsSeq(text)) shouldBe "This should be interesting and informative"
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "This should be interesting and informative"
     }
 
   }
