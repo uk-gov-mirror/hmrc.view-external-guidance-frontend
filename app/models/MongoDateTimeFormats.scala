@@ -16,38 +16,22 @@
 
 package models
 
-import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
+import java.time.{Instant, ZonedDateTime}
 
 import play.api.libs.json._
 
 trait MongoDateTimeFormats {
 
+  val localZoneID = ZonedDateTime.now.getZone
+
   implicit val zonedDateTimeRead: Reads[ZonedDateTime] =
-    (__ \ "$date").read[Long].map {
-      millis =>
-        ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
-    }
+    (__ \ "$date").read[Long].map { millis => Instant.ofEpochMilli(millis).atZone(localZoneID)}
 
   implicit val zonedDateTimeWrite: Writes[ZonedDateTime] = new Writes[ZonedDateTime] {
-    def writes(dateTime: ZonedDateTime): JsValue = Json.obj(
-      "$date" -> dateTime.toInstant.toEpochMilli
-    )
-  }
-
-  implicit val localDateTimeRead: Reads[LocalDateTime] =
-    (__ \ "$date").read[Long].map {
-      millis =>
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
-    }
-
-  implicit val localDateTimeWrite: Writes[LocalDateTime] = new Writes[LocalDateTime] {
-    def writes(dateTime: LocalDateTime): JsValue = Json.obj(
-      "$date" -> dateTime.atZone(ZoneOffset.UTC).toInstant.toEpochMilli
-    )
+    def writes(dateTime: ZonedDateTime): JsValue = Json.obj("$date" -> dateTime.toInstant.toEpochMilli)
   }
 
   implicit val zonedFormats      = Format(zonedDateTimeRead, zonedDateTimeWrite)
-  implicit val localFormats      = Format(localDateTimeRead, localDateTimeWrite)  
 }
 
 object MongoDateTimeFormats extends MongoDateTimeFormats
