@@ -74,7 +74,6 @@ class StartGuidanceController @Inject() (
     retrieveAndCache(id, sessionId).map {
       case Right(url) =>
         val target = controllers.routes.GuidanceController.getPage(url.drop(1)).url
-
         logger.warn(s"Redirecting to begin viewing process $id at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
         egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId)))
       case Left(NotFoundError) =>
@@ -87,8 +86,8 @@ class StartGuidanceController @Inject() (
   }
 
   private def existingOrNewSessionId()(implicit request: Request[_]): (String, Option[String]) =
-    hc.sessionId.fold{
+    hc.sessionId.fold[(String, Option[String])]{
       val id = s"session-${java.util.UUID.randomUUID.toString}"
-      (id, Some(id)): (String, Option[String])
+      (id, Some(id))
     }(sessionId => (sessionId.value, None))
 }

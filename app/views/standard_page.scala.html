@@ -14,13 +14,13 @@
  * limitations under the License.
  *@
 
-@import models.ui.StandardPage
+@import models.ui.{Text, StandardPage}
 
 @this(layout: main_layout)
 
-@(page: StandardPage, startUrl: String)(implicit request: Request[_], messages: Messages)
+@(page: StandardPage, startUrl: Option[String], processTitle: String)(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.toWords(messages.lang).mkString(" "), Some(startUrl)) {
+@layout(page.heading.asString(messages.lang), processTitle, startUrl) {
 
   @components.render_components(page.components)
 

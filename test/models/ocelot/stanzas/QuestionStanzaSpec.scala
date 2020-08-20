@@ -73,7 +73,7 @@ class QuestionStanzaSpec extends BaseSpec {
 
       val twoAnswersQuestionStanza: QuestionStanza = twoAnswersQuestionStanzaJson.as[QuestionStanza]
 
-      twoAnswersQuestionStanza mustBe expectedTwoQuestionsQuestionStanza
+      twoAnswersQuestionStanza shouldBe expectedTwoQuestionsQuestionStanza
     }
 
     "reading a valid QuestionStanza with three answers should create an instance of the class QuestionStanza" in {
@@ -82,19 +82,19 @@ class QuestionStanzaSpec extends BaseSpec {
 
       val threeAnswersQuestionStanza: QuestionStanza = threeAnswersQuestionStanzaJson.as[QuestionStanza]
 
-      threeAnswersQuestionStanza mustBe expectedThreeAnswersQuestionStanza
+      threeAnswersQuestionStanza shouldBe expectedThreeAnswersQuestionStanza
     }
 
     "serialise to json" in {
       val stanza: QuestionStanza = QuestionStanza(0, Seq(1, 2), Seq("4", "5"), true)
       val expectedJson: String = """{"text":0,"answers":[1,2],"next":["4","5"],"stack":true}"""
-      Json.toJson(stanza).toString mustBe expectedJson
+      Json.toJson(stanza).toString shouldBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
       val stanza: Stanza = QuestionStanza(0, Seq(1, 2), Seq("4", "5"), true)
       val expectedJson: String = """{"next":["4","5"],"stack":true,"answers":[1,2],"text":0,"type":"QuestionStanza"}"""
-      Json.toJson(stanza).toString mustBe expectedJson
+      Json.toJson(stanza).toString shouldBe expectedJson
     }
 
     /** Test for missing properties in Json object */

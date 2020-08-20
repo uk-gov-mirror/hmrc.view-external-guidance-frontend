@@ -17,8 +17,8 @@
 package mocks
 
 import models.ocelot.{Page, Process}
-import services.{FlowError, PageBuilder}
-
+import services.PageBuilder
+import models.ocelot.errors.GuidanceError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 
@@ -28,7 +28,7 @@ trait MockPageBuilder extends MockFactory {
 
   object MockPageBuilder {
 
-    def pages(process: Process): CallHandler[Either[FlowError, Seq[Page]]] = {
+    def pages(process: Process): CallHandler[Either[List[GuidanceError], Seq[Page]]] = {
 
       (mockPageBuilder
         .pages(_: Process, _: String))

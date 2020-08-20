@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package services
+package models
 
-import models.ocelot.stanzas.Stanza
+package object ocelot {
 
-trait FlowError
-
-case class UnknownStanzaType(unknown: Stanza) extends FlowError
-case class StanzaNotFound(id: String) extends FlowError
-case class PageStanzaMissing(id: String) extends FlowError
-case class PageUrlEmptyOrInvalid(id: String) extends FlowError
-case class PhraseNotFound(index: Int) extends FlowError
-case class LinkNotFound(index: Int) extends FlowError
-case class DuplicatePageUrl(id: String, url: String) extends FlowError
+  def addTitlePhrase(process: Process): Process = 
+    process.copy(
+      meta = process.meta.copy(titlePhrase = Some(process.phrases.length)),
+      phrases = process.phrases :+ Phrase(process.meta.title, s"Welsh, ${process.meta.title}")
+    )
+}

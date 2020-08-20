@@ -16,15 +16,24 @@
 
 package models.ocelot.stanzas
 
-import play.api.libs.json._
-
-import scala.util.{Failure, Success, Try}
-
 import base.BaseSpec
+import models.ocelot.stanzas.CalloutStanza._
+import play.api.libs.json._
 
 class CalloutStanzaSpec extends BaseSpec {
 
-  val stanzaType: String = "CalloutStanza"
+  def getStanzaJson(calloutType: String): JsValue = Json.parse(
+    s"""|{
+        |    "type": "CalloutStanza",
+        |    "noteType": "$calloutType",
+        |    "text": 0,
+        |    "next": ["1"],
+        |    "stack": false
+        |}""".stripMargin
+  )
+
+  def buildCalloutStanza(calloutType: CalloutType): CalloutStanza =
+    CalloutStanza(calloutType, 0, Seq("1"), stack = false)
 
   val title: String = "Title"
   val subTitle: String = "SubTitle"
@@ -32,226 +41,118 @@ class CalloutStanzaSpec extends BaseSpec {
   val error: String = "Error"
   val section: String = "Section"
   val subSection: String = "SubSection"
-
-  val zero: Int = 0
-  val one: Int = 1
-  val two: Int = 2
-  val ten: Int = 10
-
-  val oneStr: String = "1"
-  val twoStr: String = "2"
-  val threeStr: String = "3"
-  val end: String = "end"
   val invalid: String = "invalid"
+  val ten: Int = 10
+  val end: String = "end"
 
   val stackFalse: Boolean = false
-  val stackTrue: Boolean = true
 
-  val titleCalloutStanzaInputJson: String =
-    s"""|{
-          |    "type": "$stanzaType",
-          |    "noteType": "$title",
-          |    "text": $zero,
-          |    "next": ["$oneStr"],
-          |    "stack": $stackFalse
-          |}""".stripMargin
+  val titleCalloutStanzaInputJson: JsValue = getStanzaJson(title)
+  val subTitleCalloutStanzaInputJson: JsValue = getStanzaJson(subTitle)
+  val ledeCalloutStanzaInputJson: JsValue = getStanzaJson(lede)
+  val errorCalloutStanzaInputJson: JsValue = getStanzaJson(error)
+  val sectionCalloutStanzaInputJson: JsValue = getStanzaJson(section)
+  val subSectionCalloutStanzaInputJson: JsValue = getStanzaJson(subSection)
+  val invalidCalloutStanzaInputJson: JsValue = getStanzaJson(invalid)
 
-  val subTitleCalloutStanzaInputJson: String =
-    s"""|{
-       |    "type": "$stanzaType",
-       |    "noteType": "$subTitle",
-       |    "text": $one,
-       |    "next": ["$twoStr"],
-       |    "stack": $stackTrue
-       |}""".stripMargin
+  val validCalloutStanzaAsJsObject: JsObject = titleCalloutStanzaInputJson.as[JsObject]
 
-  val ledeCalloutStanzaInputJson: String =
-    s"""|{
-        |    "type": "$stanzaType",
-        |    "noteType": "$lede",
-        |    "text": $two,
-        |    "next": ["$threeStr"],
-        |    "stack": $stackFalse
-        |}""".stripMargin
-
-  val errorCalloutStanzaInputJson =
-    s"""|{
-        |    "type": "$stanzaType",
-        |    "noteType": "$error",
-        |    "text": $ten,
-        |    "next": ["$end"],
-        |    "stack": $stackFalse
-        |}""".stripMargin
-
-  val sectionCalloutStanzaInputJson =
-    s"""|{
-        |    "type": "$stanzaType",
-        |    "noteType": "$section",
-        |    "text": $zero,
-        |    "next": ["$oneStr"],
-        |    "stack": $stackFalse
-        |}""".stripMargin
-
-  val subSectionCalloutStanzaInputJson =
-    s"""|{
-        |    "type": "$stanzaType",
-        |    "noteType": "$subSection",
-        |    "text": $zero,
-        |    "next": ["$oneStr"],
-        |    "stack": $stackFalse
-        |}""".stripMargin
-
-  val invalidCalloutStanzaInputJson =
-    s"""|{
-        |    "type": "$stanzaType",
-        |    "noteType": "$invalid",
-        |    "text": $zero,
-        |    "next": ["$oneStr"],
-        |    "stack": $stackFalse
-        |}""".stripMargin
-
-  val validCalloutStanzaAsJsObject: JsObject = Json.parse(titleCalloutStanzaInputJson).as[JsObject]
-
-  val expectedTitleCalloutStanza: CalloutStanza = CalloutStanza(Title, zero, Seq(oneStr), stackFalse)
-
-  val expectedSubTitleCalloutStanza: CalloutStanza = CalloutStanza(SubTitle, one, Seq(twoStr), stackTrue)
-
-  val expectedLedeCalloutStanza: CalloutStanza = CalloutStanza(Lede, two, Seq(threeStr), stackFalse)
-
+  val expectedTitleCalloutStanza: CalloutStanza = buildCalloutStanza(Title)
+  val expectedSubTitleCalloutStanza: CalloutStanza = buildCalloutStanza(SubTitle)
+  val expectedLedeCalloutStanza: CalloutStanza = buildCalloutStanza(Lede)
+  val expectedErrorCalloutStanza: CalloutStanza = buildCalloutStanza(Error)
+  val expectedSectionCalloutStanza: CalloutStanza = buildCalloutStanza(Section)
+  val expectedSubSectionCalloutStanza: CalloutStanza = buildCalloutStanza(SubSection)
   val expectedErrorCalloutStatus: CalloutStanza = CalloutStanza(Error, ten, Seq(end), stackFalse)
 
-  val expectedSectionCalloutStanza: CalloutStanza = CalloutStanza(Section, zero, Seq(oneStr), stackFalse)
+  val jsonToStanzaMappings: Map[JsValue, CalloutStanza] = Map(
+    titleCalloutStanzaInputJson -> expectedTitleCalloutStanza,
+    subTitleCalloutStanzaInputJson -> expectedSubTitleCalloutStanza,
+    ledeCalloutStanzaInputJson -> expectedLedeCalloutStanza,
+    errorCalloutStanzaInputJson -> expectedErrorCalloutStanza,
+    sectionCalloutStanzaInputJson -> expectedSectionCalloutStanza,
+    subSectionCalloutStanzaInputJson -> expectedSubSectionCalloutStanza
+  )
 
-  val expectedSubSectionCalloutStanza: CalloutStanza = CalloutStanza(SubSection, zero, Seq(oneStr), stackFalse)
+  jsonToStanzaMappings foreach { mapping =>
+    val (json, expectedStanza) = mapping
+    val jsonNoteType = (json \ "noteType").as[String]
 
-  "CalloutStanza" must {
-
-    "read valid Callout stanza of type Title should create a Callout stanza with a note type of Title" in {
-
-      val titleCalloutStanzaJson: JsValue = Json.parse(titleCalloutStanzaInputJson)
-
-      val titleCalloutStanza: CalloutStanza = titleCalloutStanzaJson.as[CalloutStanza]
-
-      titleCalloutStanza mustBe expectedTitleCalloutStanza
-    }
-
-    "read valid Callout stanza of type SubTitle should create a Callout stanza with a note type of SubTitle" in {
-
-      val subTitleCalloutStanzaJson: JsValue = Json.parse(subTitleCalloutStanzaInputJson)
-
-      val subTitleCalloutStanza: CalloutStanza = subTitleCalloutStanzaJson.as[CalloutStanza]
-
-      subTitleCalloutStanza mustBe expectedSubTitleCalloutStanza
-    }
-
-    "read valid Callout stanza of type Lede should create a Callout stanza with a note type of Lede" in {
-
-      val ledeCalloutStanzaJson: JsValue = Json.parse(ledeCalloutStanzaInputJson)
-
-      val ledeCalloutStanza: CalloutStanza = ledeCalloutStanzaJson.as[CalloutStanza]
-
-      ledeCalloutStanza mustBe expectedLedeCalloutStanza
-    }
-
-    "read valid Callout stanza of type Error should create a Callout stanza with a note type of Error" in {
-
-      val errorCalloutStanzaJson: JsValue = Json.parse(errorCalloutStanzaInputJson)
-
-      val errorCalloutStanza: CalloutStanza = errorCalloutStanzaJson.as[CalloutStanza]
-
-      errorCalloutStanza mustBe expectedErrorCalloutStatus
-    }
-
-    "read valid Callout stanza of type Section should create a Callout stanza with a note type of Section" in {
-
-      val stanzaJson: JsValue = Json.parse(sectionCalloutStanzaInputJson)
-
-      val stanza: CalloutStanza = stanzaJson.as[CalloutStanza]
-
-      stanza mustBe expectedSectionCalloutStanza
-    }
-
-    "read valid Callout stanza of type SubSection should create a Callout stanza with a note type of Error" in {
-
-      val stanzaJson: JsValue = Json.parse(subSectionCalloutStanzaInputJson)
-
-      val stanza: CalloutStanza = stanzaJson.as[CalloutStanza]
-
-      stanza mustBe expectedSubSectionCalloutStanza
-    }
-
-    "read Callout stanza with invalid note type should cause an exception to be raised" in {
-
-      val invalidCalloutStanzaJson = Json.parse(invalidCalloutStanzaInputJson)
-
-      Try {
-        invalidCalloutStanzaJson.as[CalloutStanza]
-      } match {
-        case Success(_) => fail("An instance of CalloutStanza should not be created when the note type is incorrect")
-        case Failure(failure) => succeed
+    s"Reading valid JSON for a $jsonNoteType Callout" should {
+      s"create a ${expectedStanza.noteType} Callout Stanza" in {
+        val calloutStanza: CalloutStanza = json.as[CalloutStanza]
+        calloutStanza shouldBe expectedStanza
       }
-
     }
-
-    "serialise to json with noteType Title" in {
-      Json.toJson(expectedTitleCalloutStanza).toString mustBe """{"noteType":"Title","text":0,"next":["1"],"stack":false}"""
-    }
-
-    "serialise to json noteType Title from a Stanza reference" in {
-      val stanza: Stanza = expectedTitleCalloutStanza
-      Json.toJson(stanza).toString mustBe """{"next":["1"],"noteType":"Title","stack":false,"text":0,"type":"CalloutStanza"}"""
-    }
-
-    "serialise to json with noteType SubTitle" in {
-      Json.toJson(expectedSubTitleCalloutStanza).toString mustBe """{"noteType":"SubTitle","text":1,"next":["2"],"stack":true}"""
-    }
-
-    "serialise to json noteType SubTitle from a Stanza reference" in {
-      val stanza: Stanza = expectedSubTitleCalloutStanza
-      Json.toJson(stanza).toString mustBe """{"next":["2"],"noteType":"SubTitle","stack":true,"text":1,"type":"CalloutStanza"}"""
-    }
-
-    "serialise to json with noteType Lede" in {
-      Json.toJson(expectedLedeCalloutStanza).toString mustBe """{"noteType":"Lede","text":2,"next":["3"],"stack":false}"""
-    }
-
-    "serialise to json noteType Lede from a Stanza reference" in {
-      val stanza: Stanza = expectedLedeCalloutStanza
-      Json.toJson(stanza).toString mustBe """{"next":["3"],"noteType":"Lede","stack":false,"text":2,"type":"CalloutStanza"}"""
-    }
-    "serialise to json with noteType Error" in {
-      Json.toJson(expectedErrorCalloutStatus).toString mustBe """{"noteType":"Error","text":10,"next":["end"],"stack":false}"""
-    }
-
-    "serialise to json noteType Error from a Stanza reference" in {
-      val stanza: Stanza = expectedErrorCalloutStatus
-      Json.toJson(stanza).toString mustBe """{"next":["end"],"noteType":"Error","stack":false,"text":10,"type":"CalloutStanza"}"""
-    }
-
-    "serialise to json with noteType Section" in {
-      Json.toJson(expectedSectionCalloutStanza).toString mustBe """{"noteType":"Section","text":0,"next":["1"],"stack":false}"""
-    }
-
-    "serialise to json noteType Section from a Stanza reference" in {
-      val stanza: Stanza = expectedSectionCalloutStanza
-      Json.toJson(stanza).toString mustBe """{"next":["1"],"noteType":"Section","stack":false,"text":0,"type":"CalloutStanza"}"""
-    }
-
-    "serialise to json with noteType SubSection" in {
-      Json.toJson(expectedSubSectionCalloutStanza).toString mustBe """{"noteType":"SubSection","text":0,"next":["1"],"stack":false}"""
-    }
-
-    "serialise to json noteType SubSection from a Stanza reference" in {
-      val stanza: Stanza = expectedSubSectionCalloutStanza
-      Json.toJson(stanza).toString mustBe """{"next":["1"],"noteType":"SubSection","stack":false,"text":0,"type":"CalloutStanza"}"""
-    }
-
-    /** Test for missing properties in Json object representing instruction stanzas */
-    missingJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
-
-    /** Test for properties of the wrong type in json object representing instruction stanzas */
-    incorrectPropertyTypeJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
-
   }
+
+  "Reading invalid JSON for a Callout" should {
+    "cause an exception to be raised" in {
+      invalidCalloutStanzaInputJson.validate[CalloutStanza] match {
+        case JsError(_) => succeed
+        case _ => fail("An instance of CalloutStanza should not be created when the note type is incorrect")
+      }
+    }
+  }
+
+
+  "serialise to json with noteType Title" in {
+    Json.toJson(expectedTitleCalloutStanza).toString shouldBe """{"noteType":"Title","text":0,"next":["1"],"stack":false}"""
+  }
+
+  "serialise to json noteType Title from a Stanza reference" in {
+    val stanza: Stanza = expectedTitleCalloutStanza
+    Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"Title","stack":false,"text":0,"type":"CalloutStanza"}"""
+  }
+
+  "serialise to json with noteType SubTitle" in {
+    Json.toJson(expectedSubTitleCalloutStanza).toString shouldBe """{"noteType":"SubTitle","text":0,"next":["1"],"stack":false}"""
+  }
+
+  "serialise to json noteType SubTitle from a Stanza reference" in {
+    val stanza: Stanza = expectedSubTitleCalloutStanza
+    Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"SubTitle","stack":false,"text":0,"type":"CalloutStanza"}"""
+  }
+
+  "serialise to json with noteType Lede" in {
+    Json.toJson(expectedLedeCalloutStanza).toString shouldBe """{"noteType":"Lede","text":0,"next":["1"],"stack":false}"""
+  }
+
+  "serialise to json noteType Lede from a Stanza reference" in {
+    val stanza: Stanza = expectedLedeCalloutStanza
+    Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"Lede","stack":false,"text":0,"type":"CalloutStanza"}"""
+  }
+  "serialise to json with noteType Error" in {
+    Json.toJson(expectedErrorCalloutStatus).toString shouldBe """{"noteType":"Error","text":10,"next":["end"],"stack":false}"""
+  }
+
+  "serialise to json noteType Error from a Stanza reference" in {
+    val stanza: Stanza = expectedErrorCalloutStatus
+    Json.toJson(stanza).toString shouldBe """{"next":["end"],"noteType":"Error","stack":false,"text":10,"type":"CalloutStanza"}"""
+  }
+
+  "serialise to json with noteType Section" in {
+    Json.toJson(expectedSectionCalloutStanza).toString shouldBe """{"noteType":"Section","text":0,"next":["1"],"stack":false}"""
+  }
+
+  "serialise to json noteType Section from a Stanza reference" in {
+    val stanza: Stanza = expectedSectionCalloutStanza
+    Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"Section","stack":false,"text":0,"type":"CalloutStanza"}"""
+  }
+
+  "serialise to json with noteType SubSection" in {
+    Json.toJson(expectedSubSectionCalloutStanza).toString shouldBe """{"noteType":"SubSection","text":0,"next":["1"],"stack":false}"""
+  }
+
+  "serialise to json noteType SubSection from a Stanza reference" in {
+    val stanza: Stanza = expectedSubSectionCalloutStanza
+    Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"SubSection","stack":false,"text":0,"type":"CalloutStanza"}"""
+  }
+
+  /** Test for missing properties in Json object representing instruction stanzas */
+  missingJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
+
+  /** Test for properties of the wrong type in json object representing instruction stanzas */
+  incorrectPropertyTypeJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))
 
 }

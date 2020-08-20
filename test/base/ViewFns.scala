@@ -24,5 +24,6 @@ import scala.collection.JavaConverters._
 
 trait ViewFns {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+  def asDocument(content: String): Document = Jsoup.parse(content)
   def elementAttrs(el: Element): Map[String, String] = el.attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
 }

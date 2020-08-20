@@ -59,13 +59,13 @@ class StanzaSpec extends BaseSpec {
 
       val stanza: Stanza = Json.parse("""{ "type": "EndStanza" }""").as[Stanza]
 
-      stanza mustBe EndStanza
+      stanza shouldBe EndStanza
     }
 
     "serialise EndStanza to json from a Stanza reference" in {
       val stanza: Stanza = EndStanza
       val expectedJson: String = """{"type":"EndStanza"}"""
-      Json.toJson(stanza).toString mustBe expectedJson
+      Json.toJson(stanza).toString shouldBe expectedJson
     }
 
     "generate an error when an unknown stanza type is encountered" in {
@@ -82,7 +82,7 @@ class StanzaSpec extends BaseSpec {
 
       val stanza: Stanza = validValueStanzaJson.as[Stanza]
 
-      stanza mustBe ValueStanza(List(Value(Scalar, pageNameLabel, pageName), Value(Scalar, pageUrlLabel, pageUrl)), Seq(next), false)
+      stanza shouldBe ValueStanza(List(Value(Scalar, pageNameLabel, pageName), Value(Scalar, pageUrlLabel, pageUrl)), Seq(next), false)
     }
 
   }

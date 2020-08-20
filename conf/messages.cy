@@ -1,4 +1,4 @@
-service.name = Welsh: Guidance
+service.name = Arweiniad Rhyngweithiol
 service.govuk = GOV.UK
 
 hello.world = Helo o''r cais view-external-guide-frontend!
@@ -43,67 +43,72 @@ footer.links.terms_and_conditions.text=Telerau ac Amodau
 
 # Compliance statement
 # ----------------------------------------------------------
-accessibility.title=Datganiad hygyrchedd ar gyfer Canllawiau Allanol - i'w Ddiffinio
+accessibility.title=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
+accessibility.defaultHeaderTitle = Arweiniad Rhyngweithiol
 
 ## section one
-compliant.one.heading=Datganiad hygyrchedd ar gyfer Canllawiau Allanol - i'w Ddiffinio
-compliant.one.lede=This accessibility statement explains how accessible this service is, what to do if you have difficulty using it, and how to report accessibility problems with the service.
-compliant.one.p1.1=This service is part of the wider GOV.UK website. There is a separate
-compliant.one.p1.2=accessibility statement
-compliant.one.p1.3=for the main GOV.UK website.
-compliant.one.p2=This page only contains information about the External Guidance service, available at www<to be defined>/guidance
+compliant.one.heading=Datganiad hygyrchedd ar gyfer Arweiniad Rhyngweithiol CThEM
+compliant.one.lede=Mae’r datganiad hygyrchedd hwn yn esbonio pa mor hygyrch yw’r gwasanaeth hwn, beth i’w wneud os ydych yn cael anhawster wrth ei ddefnyddio, a sut i roi gwybod am broblemau hygyrchedd gyda’r gwasanaeth.
+compliant.one.p1.1=Mae’r gwasanaeth hwn yn rhan o wefan ehangach GOV.UK. Mae
+compliant.one.p1.2=datganiad hygyrchedd
+compliant.one.p1.3=ar wahân ar gyfer prif wefan GOV.UK.
+compliant.one.p2.1=Mae’r dudalen hon yn cynnwys gwybodaeth am arweiniad rhyngweithiol CThEM yn unig, sydd ar gael yn
+compliant.one.p2.2= https://www.tax.service.gov.uk/
 
 ## section two
-compliant.two.heading=Using this service
-compliant.two.p1=Info on service will go here
-compliant.two.p2=This service is run by HM Revenue and Customs (HMRC). We want as many people as possible to be able to use this service. This means you should be able to:
-compliant.two.l1=change colours, contrast levels and fonts
-compliant.two.l2=zoom in up to 300% without the text spilling off the screen
-compliant.two.l3=get from the start of the service to the end using just a keyboard
-compliant.two.l4=get from the start of the service to the end using speech recognition software
-compliant.two.l5=listen to the service using a screen reader (including the most recent versions of JAWS, NVDA and VoiceOver)
-compliant.two.p3=We have also made the text in the service as simple as possible to understand.
-compliant.two.p4.0=
+compliant.two.heading=Defnyddio’r gwasanaeth hwn
+compliant.two.p1=Mae arweiniad rhyngweithiol CThEM yn rhoi gwybodaeth dargededig i ddefnyddwyr ar sail eu hatebion i gyfres o gwestiynau.
+compliant.two.p2=Mae’r gwasanaeth hwn yn cael ei redeg gan Gyllid a Thollau EM (CThEM). Rydym am i gymaint o bobl â phosibl allu defnyddio’r gwasanaeth hwn. Mae hyn yn golygu y dylech allu:
+compliant.two.l1=newid lliwiau, lefelau cyferbyniad a ffontiau
+compliant.two.l2=chwyddo’r sgrin hyd at 300% heb i’r testun ddisgyn oddi ar y sgrin
+compliant.two.l3=mynd o ddechrau’r gwasanaeth i’r diwedd gan ddefnyddio bysellfwrdd yn unig
+compliant.two.l4=mynd o ddechrau’r gwasanaeth i’r diwedd gan ddefnyddio meddalwedd adnabod lleferydd
+compliant.two.l5=gwrando ar y gwasanaeth drwy ddefnyddio darllenydd sgrin (gan gynnwys y fersiynau diweddaraf o JAWS, NVDA a VoiceOver)
+compliant.two.p3=Rydym hefyd wedi sicrhau bod y testun a ddefnyddir yn y gwasanaeth mor syml â phosibl i’w ddeall.
+compliant.two.p4.0=Mae gan
 compliant.two.p4.1=AbilityNet
-compliant.two.p4.2=has advice on making your device easier to use if you have a disability.
+compliant.two.p4.2=gyngor ar wneud eich dyfais yn haws i’w defnyddio os oes gennych anabledd.
 
 ## section three
-compliant.three.heading=How accessible this service is
-compliant.three.p1.1=This service is partially compliant with the
-compliant.three.p1.2=Web Content Accessibility Guidelines version 2.1 AA standard
-compliant.three.p1.3=We cannot be certain that it is fully compliant until it is fully tested, which will be within one week of its launch date of 20 April 2020.
+compliant.three.heading=Pa mor hygyrch yw’r gwasanaeth hwn
+compliant.three.p1.1=Mae’r gwasanaeth hwn yn cydymffurfio’n llawn â
+compliant.three.p1.2=safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 2.1
+compliant.three.p1.3=Nid oes unrhyw broblemau hygyrchedd hysbys yn y gwasanaeth hwn.
 
 ## section five
-compliant.five.heading=Reporting accessibility problems with this service
-compliant.five.p.1=We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, report the
-compliant.five.p.2=accessibility problem (opens in a new window or tab)
+compliant.five.heading=Rhoi gwybod am broblemau hygyrchedd gyda’r gwasanaeth hwn
+compliant.five.p.1=Rydym bob amser yn ceisio gwella hygyrchedd y gwasanaeth hwn. Os byddwch yn dod o hyd i unrhyw broblemau nad ydynt wedi’u rhestru ar y dudalen hon, neu os ydych o’r farn nad ydym yn bodloni gofynion hygyrchedd, rhowch wybod am y
+compliant.five.p.2=broblem hygyrchedd (yn agor ffenestr neu dab newydd)
 
 ## section six
-compliant.six.heading=What to do if you are not happy with how we respond to your complaint
-compliant.six.p.1=The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you are not happy with how we respond to your complaint,
-compliant.six.p.2=contact the Equality Advisory and Support Service
-compliant.six.p.3=(EASS), or the
-compliant.six.p.4=Equality Commission for Northern Ireland
-compliant.six.p.5=(ECNI) if you live in Northern Ireland.
+compliant.six.heading=Beth i’w wneud os nad ydych yn hapus â sut rydym yn ateb eich cwyn
+compliant.six.p.1=Mae’r Comisiwn Cydraddoldeb a Hawliau Dynol (EHRC) yn gyfrifol am orfodi Rheoliadau Hygyrchedd Cyrff Sector Cyhoeddus (Gwefannau a Chymwysiadau Symudol) (Rhif 2) 2018 (y ‘rheoliadau hygyrchedd’). Os nad ydych yn hapus â sut rydym yn ateb eich cwyn,
+compliant.six.p.2=cysylltwch â’r Gwasanaeth Cynghori a Chymorth Cydraddoldeb
+compliant.six.p.3=http://eass-ws.custhelp.com/app/home
+compliant.six.p.4=(EASS), neu’r
+compliant.six.p.5=Equality Commission for Northern Ireland
+compliant.six.p.6=(ECNI) os ydych yn byw yng Ngogledd Iwerddon.
 
 ## section seven
-compliant.seven.heading=Contacting us by phone or getting a visit from us in person
-compliant.seven.p1=We provide a text relay service if you are deaf, hearing impaired or have a speech impediment.
-compliant.seven.p2=We can provide a British Sign Language (BSL) interpreter, or you can arrange a visit from an HMRC advisor to help you complete the service.
-compliant.seven.p3.1=Find out how to
-compliant.seven.p3.2=contact us
+compliant.seven.heading=Cysylltu â ni dros y ffôn neu gael ymweliad personol gennym
+compliant.seven.p1=Rydym yn cynnig gwasanaeth text relay os ydych yn fyddar, â nam ar eich clyw neu os oes gennych nam ar eich lleferydd.
+compliant.seven.p2=Gallwn ddarparu dehonglydd Iaith Arwyddion Prydain (BSL), neu gallwch drefnu ymweliad gan ymgynghorydd CThEM i’ch helpu i gwblhau’r gwasanaeth.
+compliant.seven.p3.1=Gwybodaeth am sut i
+compliant.seven.p3.2=gysylltu â ni
+compliant.seven.p3.3=https://www.gov.uk/cael-help-cthem-cymorth-ychwanegol
 
 ## section eight
-compliant.eight.heading=Technical information about this service’s accessibility
-compliant.eight.p1=HMRC is committed to making this service accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
-compliant.eight.p2.1=This service is fully compliant with the
-compliant.eight.p2.2=Web Content Accessibility Guidelines version 2.1 AA standard
+compliant.eight.heading=Gwybodaeth dechnegol am hygyrchedd y gwasanaeth hwn
+compliant.eight.p1=Mae CThEM wedi ymrwymo i wneud y gwasanaeth hwn yn hygyrch, yn unol â Rheoliadau Hygyrchedd Cyrff Sector Cyhoeddus (Gwefannau a Chymwysiadau Symudol) (Rhif 2) 2018.
+compliant.eight.p2.1=Mae’r gwasanaeth hwn yn cydymffurfio’n llawn â
+compliant.eight.p2.2=safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 2.1
 
 ## section nine
-compliant.nine.heading=How we tested this service
-compliant.nine.p1=The service was launched on 20 April 2020 and checked for compliance with WCAG 2.1 AA.
-compliant.nine.p2.1=The service was built using parts that were tested by the
+compliant.nine.heading=Sut gwnaethom brofi’r gwasanaeth hwn
+compliant.nine.p1=Cafodd y gwasanaeth ei brofi ddiwethaf ar 5 Awst 2020 a gwiriwyd ei fod yn cydymffurfio â safon ‘AA’ Canllawiau Hygyrchedd Cynnwys y We, fersiwn 2.1.
+compliant.nine.p2.1=Adeiladwyd y gwasanaeth gan ddefnyddio rhannau a brofwyd gan y Ganolfan Hygyrchedd Digidol
 compliant.nine.p2.2=Digital Accessibility Centre
-compliant.nine.p2.3=The full service will be tested by HMRC within a week of the launch date. Tests will include disabled users.
-compliant.nine.p3=This page was prepared on 17 April 2020. It was last updated on 20 April 2020.
-
+complaint.nine.p2.4=(
+compliant.nine.p2.5=)
+compliant.nine.p2.3= Profwyd y gwasanaeth llawn gan CThEM, ac roedd y gwaith o brofi’r gwasanaeth yn cynnwys defnyddwyr anabl.
+compliant.nine.p3=Paratowyd y dudalen hon ar 5 Awst 2020. Cafodd ei diweddaru ddiwethaf ar 5 Awst 2020.

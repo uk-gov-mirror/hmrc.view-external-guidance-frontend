@@ -32,7 +32,7 @@ object BulletPointBuilder {
       case Nil => acc
       case x :: xs =>
         x match {
-          case i: Instruction if i.stack =>
+          case i: Instruction =>
             val matchedInstructions: Seq[Instruction] = groupMatchedInstructions(xs, Seq(i))
             if (matchedInstructions.size > 1) {
               groupBulletPointInstructions(xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
@@ -49,21 +49,10 @@ object BulletPointBuilder {
       case Nil => acc
       case x :: xs =>
         x match {
-          case i: Instruction if BulletPointBuilder.matchInstructions(acc.last, i) => groupMatchedInstructions(xs, acc :+ i)
+          case i: Instruction if(i.stack && BulletPointBuilder.matchInstructions(acc.last, i)) => groupMatchedInstructions(xs, acc :+ i)
           case _ => acc
         }
     }
-
-  def fragmentsToDisplayAsSeq(str: String): Seq[String] = {
-    val isEmpty: String => Boolean = _.isEmpty
-
-    val (txts, matches) = TextBuilder.placeholderTxtsAndMatches(str)
-    val matchTexts = matches.map(m => Option(m.group(1)).getOrElse(m.group(2)))
-
-    val mergedTexts: Seq[String] = TextBuilder.merge(txts, matchTexts, Nil, isEmpty)
-
-    mergedTexts.filter(_ != "")
-  }
 
   def determineMatchedLeadingText(instructionGroup: InstructionGroup, langIndex: Int): String = {
 
@@ -173,7 +162,7 @@ object BulletPointBuilder {
     if (matchesProcessed == inputMatches.size) {
       (wordsProcessed, outputTexts, outputMatches)
     } else {
-      val text: String = getMatchText(inputMatches(matchesProcessed))
+      val text: String = TextBuilder.placeholderMatchText(inputMatches(matchesProcessed))
       val noOfWords: Int = wordsInMatchText(text, inputTexts, textsProcessed)
       if (processNextText(noOfWordsToMatch, wordsProcessed, noOfWords, inputTexts, textsProcessed, text)) {
         locateTextsAndMatchesContainingLeadingText(
@@ -242,7 +231,7 @@ object BulletPointBuilder {
     if ((matches.size - matchesProcessed == 1) && (texts.size == textsProcessed)) {
       items :+ matches(matchesProcessed).toString
     } else {
-      val text: String = getMatchText(matches(matchesProcessed))
+      val text: String = TextBuilder.placeholderMatchText(matches(matchesProcessed))
       val noOfWords: Int = wordsInMatchText(text, texts, textsProcessed)
       constructLeadingText(
         wordLimit,
@@ -303,7 +292,7 @@ object BulletPointBuilder {
       matchesProcessed: Int
   ): String = {
 
-    val trailingText: Boolean = textTrailingMatchText(textsProcessed, texts, getMatchText(matches(matchesProcessed - 1)))
+    val trailingText: Boolean = textTrailingMatchText(textsProcessed, texts, TextBuilder.placeholderMatchText(matches(matchesProcessed - 1)))
 
     val updatedNoOfWords: Int = updateNoOfMatchedWords(trailingText, noOfMatchedWords)
 
@@ -324,8 +313,8 @@ object BulletPointBuilder {
   def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
 
     // Break instruction text into fragments
-    val text1FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsSeq(text1)
-    val text2FragmentsToDisplay: Seq[String] = fragmentsToDisplayAsSeq(text2)
+    val text1FragmentsToDisplay: Seq[String] = TextBuilder.flattenPlaceholders(text1)
+    val text2FragmentsToDisplay: Seq[String] = TextBuilder.flattenPlaceholders(text2)
 
     // Break fragments into a list of non-whitespace components
     val text1WordsToDisplay: Seq[String] = text1FragmentsToDisplay.mkString.split(' ')
@@ -335,8 +324,6 @@ object BulletPointBuilder {
 
     (text1WordsToDisplay.size, text2WordsToDisplay.size, matchedTextItems)
   }
-
-  def getMatchText(m: Match): String = Option(m.group(1)).getOrElse(m.group(2))
 
   def wordsInString(text: String): Int = notSpaceRegex.findAllMatchIn(text).toList.size
 
@@ -348,7 +335,7 @@ object BulletPointBuilder {
       wordsInText
     } else {
       // For text following after placeholder check if there is a gap between the placeholder text and the following text
-      if (!gapBetweenTextElements(getMatchText(matches(matchesProcessed - 1)), text)) {
+      if (!gapBetweenTextElements(TextBuilder.placeholderMatchText(matches(matchesProcessed - 1)), text)) {
         wordsInText - 1
       } else {
         wordsInText
@@ -413,7 +400,7 @@ object BulletPointBuilder {
 
   def textLeadingMatchText(textsProcessed: Int, texts: List[String], m: Match): Boolean = {
 
-    if (gapBetweenTextElements(texts(textsProcessed), getMatchText(m))) false else true
+    if (gapBetweenTextElements(texts(textsProcessed), TextBuilder.placeholderMatchText(m))) false else true
   }
 
   def textTrailingMatchText(textsProcessed: Int, texts: List[String], matchText: String): Boolean = {

@@ -49,15 +49,15 @@ class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
 
       val result: Future[Result] = target{ request => Results.Ok.withSession(request.session)}
                                     .onPageLoad()(FakeRequest("GET", path).withSession(SessionKeys.sessionId -> sessionId))
-      session(result).get(SessionKeys.sessionId) mustBe Some(sessionId)
-      status(result) mustBe Status.OK
+      session(result).get(SessionKeys.sessionId) shouldBe Some(sessionId)
+      status(result) shouldBe Status.OK
     }
 
     "Convert EG_NEW_SESSIONID into a sessionId" in new Test {
 
       target{ request =>
-        request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
-        request.session.data.get(SessionKeys.sessionId) mustBe Some(egSessionId)
+        request.session.data.get(sessionIdAction.EgNewSessionIdName) shouldBe None
+        request.session.data.get(SessionKeys.sessionId) shouldBe Some(egSessionId)
         Results.Ok.withSession(request.session)
       }.onPageLoad()(FakeRequest("GET", path).withSession(sessionIdAction.EgNewSessionIdName -> egSessionId))
       
@@ -66,8 +66,8 @@ class SessionIdActionSpec extends base.ViewSpec  with GuiceOneAppPerSuite {
     "Add nothing if neither sessionId or EG_NEW_SESSIONID found" in new Test {
 
       target{ request =>
-        request.session.data.get(sessionIdAction.EgNewSessionIdName) mustBe None
-        request.session.data.get(SessionKeys.sessionId) mustBe None
+        request.session.data.get(sessionIdAction.EgNewSessionIdName) shouldBe None
+        request.session.data.get(SessionKeys.sessionId) shouldBe None
         Results.Ok.withSession(request.session)
       }.onPageLoad()(FakeRequest("GET", path))
       

@@ -16,22 +16,22 @@
 
 package models.ocelot.stanzas
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
-import play.api.libs.json.Reads
 import models.ocelot.Phrase
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 case class QuestionStanza(text: Int, answers: Seq[Int], override val next: Seq[String], stack: Boolean) extends Stanza
 
 object QuestionStanza {
 
-  implicit val reads: Reads[QuestionStanza] =
+  implicit val questionReads: Reads[QuestionStanza] =
     ((JsPath \ "text").read[Int] and
       (JsPath \ "answers").read[Seq[Int]] and
-      (JsPath \ "next").read[Seq[String]](Reads.minLength[Seq[String]](1)) and
+      (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
       (JsPath \ "stack").read[Boolean])(QuestionStanza.apply _)
 
-  implicit val owrites: OWrites[QuestionStanza] =
+  implicit val questionWrites: OWrites[QuestionStanza] =
     (
       (JsPath \ "text").write[Int] and
         (JsPath \ "answers").write[Seq[Int]] and
