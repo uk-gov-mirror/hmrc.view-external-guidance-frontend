@@ -28,7 +28,7 @@ import models.RequestOutcome
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import java.time.{ZonedDateTime, Instant}
+import java.time.Instant
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +40,7 @@ object DefaultSessionRepository {
   final case class SessionProcess(id: String, processId: String, process: Process, answers: Map[String, String], lastAccessed: Instant)
 
   object SessionProcess {
-    implicit val dateFormat: Format[ZonedDateTime] = MongoDateTimeFormats.zonedFormats
+    implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
     implicit lazy val format: Format[SessionProcess] = ReactiveMongoFormats.mongoEntity { Json.format[SessionProcess] }
   }
 }
@@ -94,7 +94,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   }
 
   def get(key: String): Future[RequestOutcome[ProcessContext]] =
-    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli()))))
+    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli))))
       .map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
@@ -110,10 +110,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
-    logger.info(s"Saving process ${process.meta.id} using key $key to session repo")
-    val sessionDocument =
-      Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Instant.now))
-
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Instant.now))
     collection
       .update(false)
       .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
@@ -128,7 +125,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def saveAnswerToQuestion(key: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli()), s"answers.$url" -> answer))
+      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli), s"answers.$url" -> answer))
     ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
