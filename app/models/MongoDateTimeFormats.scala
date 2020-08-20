@@ -24,14 +24,9 @@ trait MongoDateTimeFormats {
 
   val localZoneID = ZonedDateTime.now.getZone
 
-  implicit val zonedDateTimeRead: Reads[ZonedDateTime] =
-    (__ \ "$date").read[Long].map { millis => Instant.ofEpochMilli(millis).atZone(localZoneID)}
-
-  implicit val zonedDateTimeWrite: Writes[ZonedDateTime] = new Writes[ZonedDateTime] {
-    def writes(dateTime: ZonedDateTime): JsValue = Json.obj("$date" -> dateTime.toInstant.toEpochMilli)
-  }
-
-  implicit val zonedFormats      = Format(zonedDateTimeRead, zonedDateTimeWrite)
+  implicit val zonedDateTimeRead: Reads[ZonedDateTime] =(__ \ "$date").read[Long].map(mi => Instant.ofEpochMilli(mi).atZone(localZoneID))
+  implicit val zonedDateTimeWrite: Writes[ZonedDateTime] = (zdt: ZonedDateTime) => Json.obj("$date" -> zdt.toInstant.toEpochMilli)
+  implicit val zonedFormats: Format[ZonedDateTime] = Format(zonedDateTimeRead, zonedDateTimeWrite)
 }
 
 object MongoDateTimeFormats extends MongoDateTimeFormats
