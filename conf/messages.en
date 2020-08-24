@@ -8,7 +8,7 @@ feedback.before = This is a new service - your
 feedback.linkLabel = feedback
 feedback.after = will help us to improve it.
 
-getpagehelp.linkText = Get help with this page (opens in a new window or tab)
+getpagehelp.linkText = Get help with this page (opens in new tab)
 
 site.continue = Continue
 
@@ -76,7 +76,7 @@ compliant.three.p1.3=There are no known accessibility issues within this service
 ## section five
 compliant.five.heading=Reporting accessibility problems with this service
 compliant.five.p.1=We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, report the
-compliant.five.p.2=accessibility problem (opens in a new window or tab)
+compliant.five.p.2=accessibility problem (opens in new tab)
 
 ## section six
 compliant.six.heading=What to do if you are not happy with how we respond to your complaint
