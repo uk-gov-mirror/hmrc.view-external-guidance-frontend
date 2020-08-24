@@ -27,6 +27,7 @@ sealed trait LinksError extends GuidanceError
 case class UnknownStanza(id: String, typeName: String) extends FlowError
 case class UnknownCalloutType(id: String, typeName: String) extends FlowError
 case class UnknownValueType(id: String, typeName: String) extends FlowError
+case class UnknownInputType(id: String, typeName: String) extends FlowError
 case class StanzaNotFound(id: String) extends FlowError
 case class PageStanzaMissing(id: String) extends FlowError
 case class PageUrlEmptyOrInvalid(id: String) extends FlowError
@@ -43,7 +44,7 @@ case class LinksParseError(msg: String) extends LinksError
 object GuidanceError {
 
   // Handle errors occuring at second level of JsPath which include an indentifying message
-  // added during the parse to indicate unsupported stanzas, callout or value types. All 
+  // added during the parse to indicate unsupported stanzas, callout or value types. All
   // other validation errors are converted to a general parse error containing the JsPath
   // and seq of JsonValidationError errors
   def fromJsonValidationError(err: (JsPath, Seq[JsonValidationError])): GuidanceError = {
@@ -53,11 +54,12 @@ object GuidanceError {
         case "CalloutType" => UnknownCalloutType(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case "Stanza" => UnknownStanza(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case "ValueType" => UnknownValueType(pth.toJsonString.drop(1), errs.head.args(0).toString)
+        case "InputType" => UnknownInputType(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case _ => ParseError(jsPath, errs)
       }
     })
   }
 
-  def fromJsonValidationErrors(jsErrors: Seq[(JsPath, Seq[JsonValidationError])]): List[GuidanceError] =  
+  def fromJsonValidationErrors(jsErrors: Seq[(JsPath, Seq[JsonValidationError])]): List[GuidanceError] =
     jsErrors.map(fromJsonValidationError).toList
 }
