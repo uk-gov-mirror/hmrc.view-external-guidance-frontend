@@ -17,7 +17,7 @@
 package controllers
 
 import play.api.mvc._
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import models.errors._
 import models.RequestOutcome
 import play.api.Logger

@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
 import services.GuidanceService
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import models.errors._
 import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider

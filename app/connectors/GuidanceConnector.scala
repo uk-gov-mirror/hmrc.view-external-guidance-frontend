@@ -19,7 +19,7 @@ package connectors
 import javax.inject.{Inject, Singleton}
 import models.ocelot._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 import config.AppConfig
 import models.RequestOutcome
 import scala.concurrent.{ExecutionContext, Future}

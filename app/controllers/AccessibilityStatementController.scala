@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import config.AppConfig
 import play.api.i18n.Messages
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Logger
 import repositories.ProcessContext
