@@ -75,7 +75,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, processId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -102,11 +102,11 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, processId)
 
       whenReady(result) { pageContext =>
         pageContext match {
-          case Right(PageContext(_, _, _, Some(answer))) => succeed
+          case Right(PageContext(_, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }
@@ -128,7 +128,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPageContext(url, processId)
+      private val result = target.getPageContext(processId, url, processId)
 
       whenReady(result) {
         _ shouldBe Left(BadRequestError)
