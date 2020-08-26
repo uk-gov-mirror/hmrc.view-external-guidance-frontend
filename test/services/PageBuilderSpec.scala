@@ -343,13 +343,14 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "detect UnknownCalloutType" in {
-      val processErrors: List[ProcessError] = List(ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
+      val processErrors: List[ProcessError] = List(ProcessError("Process Meta section parse error: error.path.missing at location ocelot",""),
                                                    ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 3","3"),
-                                                   ProcessError("Unknown parse error error.minLength at location /phrases(0)",""))
+                                                   ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
+                                                   ProcessError("Process Phrases section parse error: error.minLength at location 5",""))
       guidancePages(new PageBuilder(), assortedParseErrorsJson).fold(
         errs => errs match {
         case MainError(MainError.UnprocessableEntity, None,Some(errors)) if errors == processErrors => succeed
-        case _ => fail(s"Failed with errors")
+        case _ => fail(s"Failed with errors: $errs")
         },
         _ => fail)
 

@@ -29,7 +29,7 @@ class ChoiceStanzaSpec extends BaseSpec {
   val pageName = "Telling HMRC about extra income"
   val pageUrlLabel = "PageUrl"
   val pageUrl = "/rent/less-than-1000/do-you-want-to-use-the-rent-a-room-scheme"
-  val next = "40"
+  val next = Seq("40", "41")
   val stack = "false"
 
   val onePageJsonWithInvalidTestType: JsValue = Json.parse(
@@ -64,7 +64,7 @@ class ChoiceStanzaSpec extends BaseSpec {
       |          "right": "VAL-2"
       |        }],
       |      "next": [
-      |        "2"
+      |        "2", "3"
       |      ],
       |      "stack": true
       |    },
@@ -112,7 +112,7 @@ class ChoiceStanzaSpec extends BaseSpec {
       |      "right": "VAL-4"
       |    }
       |  ],
-      |  "next": ["${next}"],
+      |  "next": [${next.map(x => s""""$x"""").mkString(",")}],
       |  "stack": ${stack}
       |}
     """.stripMargin
@@ -135,7 +135,7 @@ class ChoiceStanzaSpec extends BaseSpec {
       |      "right": "VAL-4"
       |    }
       |  ],
-      |  "next": ["${next}"],
+      |  "next": [${next.map(x => s""""$x"""").mkString(",") }],
       |  "stack": ${stack}
       |}
     """.stripMargin
@@ -149,23 +149,23 @@ class ChoiceStanzaSpec extends BaseSpec {
       val stanza: ChoiceStanza = validChoiceStanzaJson.as[ChoiceStanza]
 
       stanza.stack shouldBe false
-      stanza.next.length shouldBe 1
-      stanza.next(0) shouldBe next
+      stanza.next.length shouldBe 2
+      stanza.next shouldBe next
       stanza.tests.length shouldBe 2
       stanza.tests(0) shouldBe ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2")
       stanza.tests(1) shouldBe ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")
     }
 
     "serialise to json" in {
-      val stanza: ChoiceStanza = ChoiceStanza(Seq(next), Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
-      val expectedJson: String = s"""{"next":["${next}"],"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"stack":false}"""
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val expectedJson: String = s"""{"next":[${next.map(x => s""""$x"""").mkString(",")}],"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"stack":false}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
-      val stanza: Stanza = ChoiceStanza(Seq(next), Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
-      val expectedJson: String = s"""{"next":["${next}"],"stack":false,"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"type":"ChoiceStanza"}"""
+      val stanza: Stanza = ChoiceStanza(next, Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val expectedJson: String = s"""{"next":[${next.map(x => s""""$x"""").mkString(",")}],"stack":false,"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"type":"ChoiceStanza"}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
@@ -220,9 +220,7 @@ class ChoiceStanzaSpec extends BaseSpec {
         case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
           case Nil => fail
           case UnknownTestType("3", "UnknownType") :: _ => succeed
-          case errs =>
-            println(errs)
-            fail
+          case errs => fail
         }
       }
 
