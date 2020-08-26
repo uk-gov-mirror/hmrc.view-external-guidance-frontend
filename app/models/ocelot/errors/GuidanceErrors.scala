@@ -27,6 +27,7 @@ sealed trait LinksError extends GuidanceError
 case class UnknownStanza(id: String, typeName: String) extends FlowError
 case class UnknownCalloutType(id: String, typeName: String) extends FlowError
 case class UnknownValueType(id: String, typeName: String) extends FlowError
+case class UnknownCalcOperationType(id: String, typeName: String) extends FlowError
 case class StanzaNotFound(id: String) extends FlowError
 case class PageStanzaMissing(id: String) extends FlowError
 case class PageUrlEmptyOrInvalid(id: String) extends FlowError
@@ -53,6 +54,7 @@ object GuidanceError {
         case "CalloutType" => UnknownCalloutType(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case "Stanza" => UnknownStanza(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case "ValueType" => UnknownValueType(pth.toJsonString.drop(1), errs.head.args(0).toString)
+        case "CalcOperationType" => UnknownCalcOperationType(pth.toJsonString.drop(1), errs.head.args(0).toString)
         case _ => ParseError(jsPath, errs)
       }
     })
