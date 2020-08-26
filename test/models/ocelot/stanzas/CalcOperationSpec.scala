@@ -17,8 +17,7 @@
 package models.ocelot.stanzas
 
 import base.BaseSpec
-import models.ocelot.stanzas.CalcOperation
-import models.ocelot.stanzas.CalcOperationType._
+
 import play.api.libs.json._
 
 class CalcOperationSpec extends BaseSpec {
@@ -27,19 +26,22 @@ class CalcOperationSpec extends BaseSpec {
 
   def getCalcOperationAsJsValue(calcOperationType: String): JsValue = Json.parse(
     s"""|{
-        | "left": "labelA",
+        | "left": "[label:inputA]",
         | "op": "$calcOperationType",
-        | "right": "labelB"
+        | "right": "[label:inputB]",
+        | "label": "result"
         |}""".stripMargin
   )
 
-  "Reading JSON representation of calculation operation" should {
+  val validCalcOperationAsJsObject: JsObject = getCalcOperationAsJsValue("add").as[JsObject]
+
+  "Reading a valid JSON representation of calculation operation" should {
 
     "deserialize valid addition operation" in {
       val additionOperation: JsValue = getCalcOperationAsJsValue("add")
 
       additionOperation.validate[CalcOperation] match {
-        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "labelA", Addition, "labelB")
+        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "[label:inputA]", Addition, "[label:inputB]", "result")
         case e: JsError => fail("Unable to parse valid addition operation")
       }
     }
@@ -48,7 +50,7 @@ class CalcOperationSpec extends BaseSpec {
       val subtractionOperation: JsValue = getCalcOperationAsJsValue("subtract")
 
       subtractionOperation.validate[CalcOperation] match {
-        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "labelA", Subtraction, "labelB")
+        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "[label:inputA]", Subtraction, "[label:inputB]", "result")
         case e: JsError => fail("Unable to parse valid subtraction operation")
       }
     }
@@ -66,6 +68,28 @@ class CalcOperationSpec extends BaseSpec {
       }
 
     }
+
+    /** Test for missing properties in Json object representing instruction stanzas */
+    missingJsObjectAttrTests[CalcOperation](validCalcOperationAsJsObject)
+
+    /** Test for properties of the wrong type in json object representing instruction stanzas */
+    incorrectPropertyTypeJsObjectAttrTests[CalloutStanza](validCalcOperationAsJsObject)
   }
+
+  "Writing instances of calculation operations to JSON" should {
+
+    "serialize addition operations" in {
+
+      Json.toJson(CalcOperation("[label:inputA]", Addition, "[label:inputB]", "result")).toString shouldBe
+      """{"left":"[label:inputA]","op":"add","right":"[label:inputB]","label":"result"}"""
+    }
+
+    "serialize subtraction operation" in {
+
+      Json.toJson(CalcOperation("[label:inputA]", Subtraction, "[label:inputB]", "result")).toString shouldBe
+      """{"left":"[label:inputA]","op":"subtract","right":"[label:inputB]","label":"result"}"""
+    }
+  }
+
 
 }

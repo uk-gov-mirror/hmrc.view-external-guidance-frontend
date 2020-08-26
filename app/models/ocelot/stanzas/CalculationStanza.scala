@@ -20,23 +20,21 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-case class CalcOperation(left:String, calcOperationType: CalcOperationType, right: String, label: String)
+case class CalculationStanza(calcs: Seq[CalcOperation], override val next: Seq[String], stack: Boolean) extends Stanza
 
-object CalcOperation {
+object CalculationStanza {
 
-  implicit val reads: Reads[CalcOperation] =
+  implicit val calculationReads: Reads[CalculationStanza] =
     (
-      (JsPath \ "left").read[String] and
-        (JsPath \ "op").read[CalcOperationType] and
-        (JsPath \ "right").read[String] and
-        (JsPath \ "label").read[String]
-    )(CalcOperation.apply _)
+      (JsPath \ "calcs").read[Seq[CalcOperation]](minLength[Seq[CalcOperation]](1)) and
+        (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and
+        (JsPath \ "stack").read[Boolean]
+    )(CalculationStanza.apply _)
 
-  implicit val writes: OWrites[CalcOperation] =
+  implicit val calculationWrites: OWrites[CalculationStanza] =
     (
-      (JsPath \ "left").write[String] and
-        (JsPath \ "op").write[CalcOperationType] and
-        (JsPath \ "right").write[String] and
-        (JsPath \ "label").write[String]
-    )(unlift(CalcOperation.unapply))
+      (JsPath \ "calcs").write[Seq[CalcOperation]] and
+        (JsPath \ "next").write[Seq[String]] and
+        (JsPath \ "stack").write[Boolean]
+      )(unlift(CalculationStanza.unapply))
 }
