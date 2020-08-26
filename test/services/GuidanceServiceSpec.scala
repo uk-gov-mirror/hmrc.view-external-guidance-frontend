@@ -52,7 +52,7 @@ class GuidanceServiceSpec extends BaseSpec {
       pageWithUrl("2", lastPageUrl)
     )
 
-    val processId = "ext90001"
+    val processId = "oct90001"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
@@ -64,7 +64,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a page for the process" in new Test {
 
       MockSessionRepository
-        .get(processId)
+        .get(sessionRepoId)
         .returns(Future.successful(Right(ProcessContext(process, Map()))))
 
       MockPageBuilder
@@ -75,7 +75,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processId, lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -89,9 +89,9 @@ class GuidanceServiceSpec extends BaseSpec {
   "Calling getPageContext against a previously answered Question page url" should {
 
     "retrieve a PageContext which includes the relevant answer" in new Test {
-
+      override val processId: String = "ext90002"
       MockSessionRepository
-        .get(processId)
+        .get(sessionRepoId)
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer")))))
 
       MockPageBuilder
@@ -102,7 +102,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processId, lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {

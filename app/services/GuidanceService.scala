@@ -38,13 +38,13 @@ class GuidanceService @Inject() (
 ) {
   val logger = Logger(getClass)
 
-  def getProcessContext(sessionId: String, processId: Option[String] = None): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
+  def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
   def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId, Some(processId)).map {
-      case Right(ProcessContext(process, answers)) =>
+    getProcessContext(sessionId).map {
+      case Right(ProcessContext(process, answers)) if process.meta.id == processId =>
         pageBuilder
           .pages(process)
           .fold(
@@ -70,6 +70,9 @@ class GuidanceService @Inject() (
                   )
                 }
           )
+      case Right(ProcessContext(process, answers)) =>
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processId $processId")
+        Left(InternalServerError)
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
         Left(err)
