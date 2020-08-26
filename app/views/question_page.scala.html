@@ -24,7 +24,7 @@
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, startUrl: Option [String], processTitle: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, startUrl: Option [String], processTitle: String, processId: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 @pageTitle(page: QuestionPage) = @{
   val titleText = page.heading.asString(messages.lang)
@@ -32,10 +32,10 @@
 }
 
 @layout(pageTitle(page), processTitle, startUrl) {
-  
+
   @components.error_summary(page.question.text, page.question.errorMsgs)
 
-  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(page.relativePath)) {
+  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(processId, page.relativePath)) {
 
     @components.question(page.question, questionName, form)
 

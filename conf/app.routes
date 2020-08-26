@@ -3,10 +3,9 @@ GET   /assets/*file                      controllers.Assets.versioned(path="/pub
 
 GET   /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
 
-GET   /published/:processId              controllers.entry.StartGuidanceController.published(processId)
-
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
 
+GET   /:processId                        controllers.entry.StartGuidanceController.published(processId: String)
 
-GET   /*path                             controllers.GuidanceController.getPage(path: String)
-POST  /*path                             controllers.GuidanceController.submitPage(path: String)
+GET   /:processId/*path                  controllers.GuidanceController.getPage(processId: String, path: String)
+POST  /:processId/*path                  controllers.GuidanceController.submitPage(processId: String, path: String)
