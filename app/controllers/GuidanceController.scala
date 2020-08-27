@@ -52,19 +52,12 @@ class GuidanceController @Inject() (
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
-          case page: StandardPage => Ok(standardView(page,
-                                                     pageContext.processStartUrl,
-                                                     pageContext.processTitle.asString(messages.lang)))
+          case page: StandardPage => Ok(standardView(page, pageContext))
           case page: QuestionPage =>
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(questionView(page,
-                            pageContext.processStartUrl,
-                            pageContext.processTitle.asString(messages.lang),
-                            processId,
-                            questionName(path),
-                            form))
+            Ok(questionView(page, pageContext, questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -86,12 +79,7 @@ class GuidanceController @Inject() (
         withExistingSession[PageContext](service.getPageContext(processId, s"/$path", _, Some(formData))).map {
           case Right(pageContext) =>
             pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page,
-                                                                 pageContext.processStartUrl,
-                                                                 pageContext.processTitle.asString(messages.lang),
-                                                                 processId,
-                                                                 questionName(path),
-                                                                 formWithErrors))
+              case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.badRequestTemplate)
             }
           case Left(NotFoundError) =>

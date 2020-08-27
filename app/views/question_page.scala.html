@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Text, QuestionPage}
+@import models.ui.{Text, QuestionPage, PageContext}
 
 @import controllers.routes._
 @import uk.gov.hmrc.govukfrontend.views.html.helpers._
@@ -24,18 +24,18 @@
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, startUrl: Option [String], processTitle: String, processId: String, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: QuestionPage, ctx: PageContext, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 @pageTitle(page: QuestionPage) = @{
   val titleText = page.heading.asString(messages.lang)
-  page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} $titleText""")
+  page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
 }
 
-@layout(pageTitle(page), processTitle, startUrl) {
+@layout(pageTitle(page), ctx.processTitle.asString(messages.lang), ctx.processStartUrl) {
 
   @components.error_summary(page.question.text, page.question.errorMsgs)
 
-  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(processId, page.relativePath)) {
+  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processId, page.relativePath)) {
 
     @components.question(page.question, questionName, form)
 
@@ -43,7 +43,6 @@
       @messages("site.continue")
     </button>
   }
-
 }
 
 @{

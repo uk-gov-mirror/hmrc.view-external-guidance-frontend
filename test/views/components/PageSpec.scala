@@ -25,7 +25,7 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
-import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage}
+import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage, PageContext}
 import org.jsoup.nodes.{Element, Document}
 import forms.NextPageFormProvider
 import scala.collection.JavaConverters._
@@ -92,6 +92,8 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
+    val pageContext = PageContext(simplePage, Some("/"), Text("Title", "Title"), "processId")
+    val questionPageContext = PageContext(questionPage, Some("/here"), Text("Title", "Title"), "processId")
   }
 
   trait WelshTest extends Test {
@@ -101,8 +103,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
   "Standard Page component" should {
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
-
-      val doc = asDocument(standardPageView(simplePage, Some("/"), "Title")(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, pageContext)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -129,7 +130,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(standardPageView(simplePage, Some("/"), "Title")(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, pageContext)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -159,7 +160,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(questionPageView(questionPage, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPage, pageContext, "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -188,14 +189,18 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Englsh title prefixed by Error: when errors are displayed" in new Test {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly whn error occurs" in new Test {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
@@ -205,7 +210,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPage, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPage, questionPageContext, "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -233,14 +238,18 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
     "set radios fieldset aria-describedby correctly when error occurs" in new WelshTest {
 
-      val doc = asDocument(questionPageView(questionPageWithErrors, Some("/here"), "Title", "question", "processId", formProvider("url") )(fakeRequest, messages))
+      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
+
+      val doc = asDocument(questionPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
