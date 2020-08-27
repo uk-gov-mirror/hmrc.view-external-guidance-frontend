@@ -144,12 +144,14 @@ class GuidanceServiceSpec extends BaseSpec {
         .scratchProcess(uuid)
         .returns(Future.successful(Right(process)))
 
+      val processWithUpdatedId = process.copy(meta = process.meta.copy( id = uuid))
+
       MockSessionRepository
-        .set(uuid, process)
+        .set(uuid, processWithUpdatedId)
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
-        .pages(process)
+        .pages(processWithUpdatedId)
         .returns(Right(pages))
 
       private val result = target.retrieveAndCacheScratch(uuid, uuid)

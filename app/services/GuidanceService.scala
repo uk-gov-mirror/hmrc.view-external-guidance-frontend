@@ -82,7 +82,12 @@ class GuidanceService @Inject() (
     sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(uuid, docId, connector.scratchProcess)
+    retrieveAndCache(uuid,
+                     docId,
+                     { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
+                        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
+                        case err @ Left(_) => err
+                      }})
 
   def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     retrieveAndCache(processId, docId, connector.publishedProcess)
