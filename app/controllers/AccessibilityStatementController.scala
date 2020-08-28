@@ -30,9 +30,9 @@ import models.errors.BadRequestError
 
 @Singleton
 class AccessibilityStatementController @Inject() (
-  appConfig: AppConfig, 
-  mcc: MessagesControllerComponents, 
-  view: views.html.accessibility_statement, 
+  appConfig: AppConfig,
+  mcc: MessagesControllerComponents,
+  view: views.html.accessibility_statement,
   service: GuidanceService,
   errorHandler: ErrorHandler
 ) extends FrontendController(mcc)
@@ -44,9 +44,10 @@ class AccessibilityStatementController @Inject() (
   val getPage: Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[ProcessContext](service.getProcessContext(_)).map {
-      case Right(processContext) => 
+      case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
-        Ok(view(title.asString(messages.lang), processContext.process.startUrl.map(url => s"${appConfig.baseUrl}$url")))
+        Ok(view(title.asString(messages.lang),
+                processContext.process.startUrl.map(url => s"${appConfig.baseUrl}/${processContext.process.meta.id}$url")))
       case Left(BadRequestError) =>
         logger.warn(s"Accessibility used out of guidance")
         Ok(view(messages("accessibility.defaultHeaderTitle"), None))

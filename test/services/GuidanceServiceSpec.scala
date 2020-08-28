@@ -52,7 +52,7 @@ class GuidanceServiceSpec extends BaseSpec {
       pageWithUrl("2", lastPageUrl)
     )
 
-    val processId = "ext90001"
+    val processId = "oct90001"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
@@ -64,7 +64,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a page for the process" in new Test {
 
       MockSessionRepository
-        .get(processId)
+        .get(sessionRepoId)
         .returns(Future.successful(Right(ProcessContext(process, Map()))))
 
       MockPageBuilder
@@ -75,7 +75,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -89,9 +89,9 @@ class GuidanceServiceSpec extends BaseSpec {
   "Calling getPageContext against a previously answered Question page url" should {
 
     "retrieve a PageContext which includes the relevant answer" in new Test {
-
+      override val processId: String = "ext90002"
       MockSessionRepository
-        .get(processId)
+        .get(sessionRepoId)
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer")))))
 
       MockPageBuilder
@@ -102,11 +102,11 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(lastPageUrl, processId)
+      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
-          case Right(PageContext(_, _, _, Some(answer))) => succeed
+          case Right(PageContext(_, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }
@@ -128,7 +128,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPageContext(url, processId)
+      private val result = target.getPageContext(processId, url, processId)
 
       whenReady(result) {
         _ shouldBe Left(BadRequestError)
@@ -144,12 +144,14 @@ class GuidanceServiceSpec extends BaseSpec {
         .scratchProcess(uuid)
         .returns(Future.successful(Right(process)))
 
+      val processWithUpdatedId = process.copy(meta = process.meta.copy( id = uuid))
+
       MockSessionRepository
-        .set(uuid, process)
+        .set(uuid, processWithUpdatedId)
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
-        .pages(process)
+        .pages(processWithUpdatedId)
         .returns(Right(pages))
 
       private val result = target.retrieveAndCacheScratch(uuid, uuid)

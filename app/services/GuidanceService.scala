@@ -40,11 +40,11 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getPageContext(url: String, sessionId: String, formData: Option[FormData] = None)(
+  def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId).map {
-      case Right(ProcessContext(process, answers)) =>
+      case Right(ProcessContext(process, answers)) if process.meta.id == processId =>
         pageBuilder
           .pages(process)
           .fold(
@@ -61,14 +61,18 @@ class GuidanceService @Inject() (
                 } { pge =>
                   Right(
                     PageContext(
-                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}${p.url}")).toMap),
-                      process.startUrl.map( url => s"${appConfig.baseUrl}${url}"),
+                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processId}${p.url}")).toMap),
+                      process.startUrl.map( url => s"${appConfig.baseUrl}/${processId}${url}"),
                       process.title,
+                      process.meta.id,
                       answers.get(url)
                     )
                   )
                 }
           )
+      case Right(ProcessContext(process, answers)) =>
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processId $processId")
+        Left(InternalServerError)
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
         Left(err)
@@ -78,7 +82,12 @@ class GuidanceService @Inject() (
     sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
-    retrieveAndCache(uuid, docId, connector.scratchProcess)
+    retrieveAndCache(uuid,
+                     docId,
+                     { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
+                        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
+                        case err @ Left(_) => err
+                      }})
 
   def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
     retrieveAndCache(processId, docId, connector.publishedProcess)
