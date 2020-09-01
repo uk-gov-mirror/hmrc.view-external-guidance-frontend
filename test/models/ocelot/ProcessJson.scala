@@ -166,7 +166,6 @@ trait ProcessJson {
       |  "meta": {
       |    "title": "Customer wants to make a cup of tea",
       |    "id": "oct90001",
-      |    "ocelot": 1,
       |    "lastAuthor": "000000",
       |    "lastUpdate": 1500298931016,
       |    "version": 4,
@@ -208,18 +207,18 @@ trait ProcessJson {
       |      "text": 59,
       |      "type": "CalloutStanza"
       |    },
-      |      
+      |
       |    "end": {
       |      "type": "EndStanza"
       |    }
       |  },
       |  "phrases": [
-      |    ["Ask the customer if they have a tea bag"],
+      |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
       |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
       |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
       |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
       |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
-      |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+      |    ["Do you have a cup?"],
       |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
       |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
       |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]

@@ -65,8 +65,9 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
+      val processId = process.meta.id
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
-          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/feeling-bad")
+          .fold(fail("Missing header link"))(elementAttrs(_)("href") shouldBe s"${MockAppConfig.baseUrl}/${processId}/feeling-bad")
 
     }
 

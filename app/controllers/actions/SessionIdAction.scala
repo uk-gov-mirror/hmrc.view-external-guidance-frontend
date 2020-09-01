@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.SessionKeys
 import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
-trait SessionIdAction extends ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request] {
+trait SessionIdAction extends ActionBuilder[Request, AnyContent] {
   val EgNewSessionIdName: String = "EG_NEW_SESSIONID"
 }
 
