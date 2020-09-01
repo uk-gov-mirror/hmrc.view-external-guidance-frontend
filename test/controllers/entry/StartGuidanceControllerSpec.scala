@@ -99,7 +99,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     "redirect the caller to the start page of the process" in new ScratchTestWithValidUUID {
-      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl$expectedUrl")
+      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$uuid$expectedUrl")
     }
 
   }
@@ -145,7 +145,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCachePublished(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.published(processId)(fakeRequest)
-      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl$expectedUrl")
+      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId$expectedUrl")
     }
 
   }
@@ -179,7 +179,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCacheApproval(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approval(processId)(fakeRequest)
-      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl$expectedUrl")
+      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId$expectedUrl")
     }
   }
 
@@ -214,7 +214,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .retrieveAndCacheApproval(processId, processId)
         .returns(Future.successful(Right(expectedUrl)))
       val result = target.approvalPage(processId, url)(fakeRequest)
-      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$url")
+      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId/$url")
     }
 
   }

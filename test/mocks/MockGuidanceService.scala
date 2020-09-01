@@ -56,10 +56,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId)
     }
 
-    def getPageContext(url: String, processId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
+    def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
       (mockGuidanceService
-        .getPageContext(_: String, _: String, _: Option[FormData])(_: ExecutionContext))
-        .expects(url, processId, formData, *)
+        .getPageContext(_: String, _: String, _: String, _: Option[FormData])(_: ExecutionContext))
+        .expects(processId, url, sessionId, formData, *)
     }
 
     def saveAnswerToQuestion(docId: String, url: String, answer: String): CallHandler[Future[RequestOutcome[Unit]]] = {

@@ -73,7 +73,7 @@ class StartGuidanceController @Inject() (
     logger.info(s"Calling Retrieve and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
     retrieveAndCache(id, sessionId).map {
       case Right(url) =>
-        val target = controllers.routes.GuidanceController.getPage(url.drop(1)).url
+        val target = controllers.routes.GuidanceController.getPage(id, url.drop(1)).url
         logger.warn(s"Redirecting to begin viewing process $id at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
         egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId)))
       case Left(NotFoundError) =>

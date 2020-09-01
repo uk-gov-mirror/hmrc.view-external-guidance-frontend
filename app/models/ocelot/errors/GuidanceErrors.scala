@@ -28,6 +28,7 @@ case class UnknownStanza(id: String, typeName: String) extends FlowError
 case class UnknownCalloutType(id: String, typeName: String) extends FlowError
 case class UnknownValueType(id: String, typeName: String) extends FlowError
 case class UnknownTestType(id: String, typeName: String) extends FlowError
+case class UnknownInputType(id: String, typeName: String) extends FlowError
 case class StanzaNotFound(id: String) extends FlowError
 case class PageStanzaMissing(id: String) extends FlowError
 case class PageUrlEmptyOrInvalid(id: String) extends FlowError
@@ -61,6 +62,7 @@ object GuidanceError {
                 case "Stanza" => UnknownStanza(id, arg)
                 case "ValueType" => UnknownValueType(id, arg)
                 case "TestType" => UnknownTestType(id, arg)
+                case "InputType" => UnknownInputType(id, arg)
               }.getOrElse(FlowParseError(id, msg, jsPath.toString))
             )
           case "/meta" => MetaParseError(id, msg, arg)

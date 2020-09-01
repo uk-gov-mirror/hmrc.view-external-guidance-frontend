@@ -47,6 +47,7 @@ class PageBuilder extends ProcessPopulation {
         case Right(c: Callout) => collectStanzas(c.next.head, acc :+ KeyedStanza(key, c), linkedAcc)
         case Right(v: ValueStanza) => collectStanzas(v.next.head, acc :+ KeyedStanza(key, v), linkedAcc)
         case Right(v: ChoiceStanza) => Left(UnknownStanza(key, "ChoiceStanza"))
+        case Right(i: InputStanza) => Left(UnknownStanza(key, "InputStanza"))
         case Left(err) => Left(err)
       }
 
