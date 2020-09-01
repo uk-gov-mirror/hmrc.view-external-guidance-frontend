@@ -44,6 +44,7 @@ package object services {
     case e: UnknownStanza => ProcessError(s"Unsupported stanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownCalloutType => ProcessError(s"Unsupported CalloutStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownValueType => ProcessError( s"Unsupported ValueStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
+    case e: UnknownCalcOperationType => ProcessError(s"Unsupported CalcOperationStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownTestType => ProcessError( s"Unsupported ChoiceStanza test type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownInputType => ProcessError( s"Unsupported InputStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: ParseError => ProcessError(s"Unknown parse error ${e.errs.map(_.messages.mkString(",")).mkString(",")} at location ${e.jsPath.toString}", "")

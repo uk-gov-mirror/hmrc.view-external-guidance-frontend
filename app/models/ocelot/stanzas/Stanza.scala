@@ -35,6 +35,7 @@ object Stanza {
       case "CalloutStanza" => js.validate[CalloutStanza]
       case "PageStanza" => js.validate[PageStanza]
       case "ValueStanza" => js.validate[ValueStanza]
+      case "CalculationStanza" => js.validate[CalculationStanza]
       case "ChoiceStanza" => js.validate[ChoiceStanza]
       case "InputStanza" => js.validate[InputStanza]
       case "EndStanza" => JsSuccess(EndStanza)
@@ -49,6 +50,7 @@ object Stanza {
       case c: CalloutStanza => Json.obj("type" -> "CalloutStanza") ++ Json.toJsObject[CalloutStanza](c)
       case p: PageStanza => Json.obj("type" -> "PageStanza") ++ Json.toJsObject[PageStanza](p)
       case v: ValueStanza => Json.obj("type" -> "ValueStanza") ++ Json.toJsObject[ValueStanza](v)
+      case c: CalculationStanza => Json.obj( "type" -> "CalculationStanza") ++ Json.toJsObject[CalculationStanza](c)
       case c: ChoiceStanza => Json.obj("type" -> "ChoiceStanza") ++ Json.toJsObject[ChoiceStanza](c)
       case i: InputStanza => Json.obj("type" -> "InputStanza") ++ Json.toJsObject[InputStanza](i)
       case EndStanza => Json.obj("type" -> "EndStanza")
