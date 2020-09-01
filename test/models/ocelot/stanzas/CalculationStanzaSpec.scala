@@ -17,6 +17,8 @@
 package models.ocelot.stanzas
 
 import base.BaseSpec
+import models.ocelot._
+import models.ocelot.errors.{GuidanceError, UnknownOpType}
 
 import play.api.libs.json._
 
@@ -98,6 +100,68 @@ class CalculationStanzaSpec extends BaseSpec {
       )
 
     val sqrt = "sqrt"
+
+    val onePageJsonWithInvalidOpType: JsValue = Json.parse(
+      """
+        |{
+        |  "meta": {
+        |    "title": "Customer wants to make a cup of tea",
+        |    "id": "oct90001",
+        |    "ocelot": 1,
+        |    "lastAuthor": "000000",
+        |    "lastUpdate": 1500298931016,
+        |    "version": 4,
+        |    "filename": "oct90001.js",
+        |    "titlePhrase": 8
+        |  },
+        |  "howto": [],
+        |  "contacts": [],
+        |  "links": [],
+        |  "flow": {
+        |    "start": {
+        |      "type": "PageStanza",
+        |      "url": "/feeling-bad",
+        |      "next": ["2"],
+        |      "stack": true
+        |    },
+        |    "3": {
+        |      "next": [ "end" ],
+        |      "stack": false,
+        |      "type": "CalculationStanza",
+        |      "calcs": [
+        |                  {  "left":"inputA",
+        |                     "op":"sqrt",
+        |                     "right":"inputB",
+        |                     "label":"result"
+        |                  }
+        |               ]
+        |    },
+        |    "2": {
+        |      "type": "InstructionStanza",
+        |      "text": 0,
+        |      "next": [
+        |        "3"
+        |      ],
+        |      "stack": true
+        |    },
+        |    "end": {
+        |      "type": "EndStanza"
+        |    }
+        |  },
+        |  "phrases": [
+        |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
+        |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
+        |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
+        |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
+        |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
+        |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+        |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
+        |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
+        |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
+        |  ]
+        |}
+    """.stripMargin
+    )
   }
 
   "Reading a valid calculation stanza" should {
@@ -193,6 +257,21 @@ class CalculationStanzaSpec extends BaseSpec {
       val actualResult: String = Json.toJson(stanza).toString()
 
       actualResult shouldBe expectedResult
+    }
+  }
+
+  "Page building" must {
+
+    "Raise an error for a invalid calculation operation type" in new Test {
+
+      onePageJsonWithInvalidOpType.as[JsObject].validate[Process] match {
+        case JsSuccess(_,_) => fail( "A process should not be created from invalid JSON")
+        case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
+          case Nil => fail("Nothing to match from guidance error convergence")
+          case UnknownOpType("3", "sqrt") :: _ => succeed
+          case errs => fail( "An error occurred processing Json validation errors")
+        }
+      }
     }
   }
 
