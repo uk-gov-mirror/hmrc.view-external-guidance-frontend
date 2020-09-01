@@ -29,7 +29,7 @@ class ChoiceStanzaSpec extends BaseSpec {
   val pageName = "Telling HMRC about extra income"
   val pageUrlLabel = "PageUrl"
   val pageUrl = "/rent/less-than-1000/do-you-want-to-use-the-rent-a-room-scheme"
-  val next = Seq("40", "41")
+  val next = Seq("40", "41", "50")
   val stack = "false"
 
   val onePageJsonWithInvalidTestType: JsValue = Json.parse(
@@ -149,7 +149,7 @@ class ChoiceStanzaSpec extends BaseSpec {
       val stanza: ChoiceStanza = validChoiceStanzaJson.as[ChoiceStanza]
 
       stanza.stack shouldBe false
-      stanza.next.length shouldBe 2
+      stanza.next.length shouldBe 3
       stanza.next shouldBe next
       stanza.tests.length shouldBe 2
       stanza.tests(0) shouldBe ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2")
@@ -182,6 +182,8 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     missingJsObjectAttrTests[ChoiceStanza](validChoiceStanzaJson, List("type"))
+
+    incorrectPropertyTypeJsObjectAttrTests[ChoiceStanza](validChoiceStanzaJson, List("type"))
 
   }
 
