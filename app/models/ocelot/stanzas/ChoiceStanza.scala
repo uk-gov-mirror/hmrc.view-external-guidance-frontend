@@ -50,7 +50,7 @@ object ChoiceStanza {
   implicit val reads: Reads[ChoiceStanza] =
     (
       (JsPath \ "next").read[Seq[String]](minLength[Seq[String]](2)) and
-      (JsPath \ "tests").read[Seq[ChoiceTest]] and
+      (JsPath \ "tests").read[Seq[ChoiceTest]](minLength[Seq[ChoiceTest]](1)) and
       (JsPath \ "stack").read[Boolean]
     )(ChoiceStanza.apply _)
 
