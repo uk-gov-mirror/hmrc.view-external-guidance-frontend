@@ -24,10 +24,10 @@ class CalcOperationSpec extends BaseSpec {
 
   val sqrt = "sqrt"
 
-  def getCalcOperationAsJsValue(calcOperationType: String): JsValue = Json.parse(
+  def getCalcOperationAsJsValue(opType: String): JsValue = Json.parse(
     s"""|{
         | "left": "[label:inputA]",
-        | "op": "$calcOperationType",
+        | "op": "$opType",
         | "right": "[label:inputB]",
         | "label": "result"
         |}""".stripMargin

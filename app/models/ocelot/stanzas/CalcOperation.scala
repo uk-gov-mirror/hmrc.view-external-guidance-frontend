@@ -20,14 +20,14 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-case class CalcOperation(left:String, calcOperationType: CalcOperationType, right: String, label: String)
+case class CalcOperation(left:String, opType: OpType, right: String, label: String)
 
 object CalcOperation {
 
   implicit val reads: Reads[CalcOperation] =
     (
       (JsPath \ "left").read[String] and
-        (JsPath \ "op").read[CalcOperationType] and
+        (JsPath \ "op").read[OpType] and
         (JsPath \ "right").read[String] and
         (JsPath \ "label").read[String]
     )(CalcOperation.apply _)
@@ -35,7 +35,7 @@ object CalcOperation {
   implicit val writes: OWrites[CalcOperation] =
     (
       (JsPath \ "left").write[String] and
-        (JsPath \ "op").write[CalcOperationType] and
+        (JsPath \ "op").write[OpType] and
         (JsPath \ "right").write[String] and
         (JsPath \ "label").write[String]
     )(unlift(CalcOperation.unapply))
