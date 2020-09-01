@@ -54,7 +54,7 @@ class InputStanzaSpec extends BaseSpec {
     val jsonType = (json \ "ipt_type").as[String]
 
     s"Reading valid JSON for a $jsonType Input" should {
-      s"create a ${expectedStanza.ipt_type} Callout Stanza" in {
+      s"create a ${expectedStanza.ipt_type} Input Stanza" in {
         val inputStanza: InputStanza = json.as[InputStanza]
         inputStanza shouldBe expectedStanza
       }
@@ -70,44 +70,44 @@ class InputStanzaSpec extends BaseSpec {
     }
   }
 
-  def toJsonFormat(typeName: String): String = s"""{"ipt_type":"$typeName","next":["1"],"name":0,"help":1,"label":"Price","placeholder":2,"stack":false}"""
-  def fromJsonFormat(typeName: String): String = s"""{"next":["1"],"help":1,"stack":false,"ipt_type":"$typeName","name":0,"label":"Price","placeholder":2,"type":"InputStanza"}"""
+  def inputStanzaJsonFormat(typeName: String): String = s"""{"ipt_type":"$typeName","next":["1"],"name":0,"help":1,"label":"Price","placeholder":2,"stack":false}"""
+  def stanzaJsonFormat(typeName: String): String = s"""{"next":["1"],"help":1,"stack":false,"ipt_type":"$typeName","name":0,"label":"Price","placeholder":2,"type":"InputStanza"}"""
 
   "serialise to json with ipt_type Currency" in {
-    Json.toJson(expectedCurrencyStanza).toString shouldBe toJsonFormat("Currency")
+    Json.toJson(expectedCurrencyStanza).toString shouldBe inputStanzaJsonFormat("Currency")
   }
 
   "serialise to json ipt_type Currency from a Stanza reference" in {
     val stanza: Stanza = expectedCurrencyStanza
-    Json.toJson(stanza).toString shouldBe fromJsonFormat("Currency")
+    Json.toJson(stanza).toString shouldBe stanzaJsonFormat("Currency")
   }
 
   "serialise to json with ipt_type Date" in {
-    Json.toJson(expectedDateStanza).toString shouldBe toJsonFormat("Date")
+    Json.toJson(expectedDateStanza).toString shouldBe inputStanzaJsonFormat("Date")
   }
 
   "serialise to json ipt_type Date from a Stanza reference" in {
     val stanza: Stanza = expectedDateStanza
-    Json.toJson(stanza).toString shouldBe fromJsonFormat("Date")
+    Json.toJson(stanza).toString shouldBe stanzaJsonFormat("Date")
   }
 
 
   "serialise to json with ipt_type Number" in {
-    Json.toJson(expectedNumberStanza).toString shouldBe toJsonFormat("Number")
+    Json.toJson(expectedNumberStanza).toString shouldBe inputStanzaJsonFormat("Number")
   }
 
   "serialise to json ipt_type Number from a Stanza reference" in {
     val stanza: Stanza = expectedNumberStanza
-    Json.toJson(stanza).toString shouldBe fromJsonFormat("Number")
+    Json.toJson(stanza).toString shouldBe stanzaJsonFormat("Number")
   }
 
   "serialise to json with ipt_type Text" in {
-    Json.toJson(expectedTextStanza).toString shouldBe toJsonFormat("Text")
+    Json.toJson(expectedTextStanza).toString shouldBe inputStanzaJsonFormat("Text")
   }
 
   "serialise to json ipt_type Text from a Stanza reference" in {
     val stanza: Stanza = expectedTextStanza
-    Json.toJson(stanza).toString shouldBe fromJsonFormat("Text")
+    Json.toJson(stanza).toString shouldBe stanzaJsonFormat("Text")
   }
 
   /** Test for missing properties in Json object representing instruction stanzas */
