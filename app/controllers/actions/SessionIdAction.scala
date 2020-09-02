@@ -26,6 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait SessionIdAction extends ActionBuilder[Request, AnyContent] {
   val EgNewSessionIdName: String = "EG_NEW_SESSIONID"
+  val EgRecoverSessionIdName: String = "EG_RECOVER_SESSIONID"
 }
 
 //
@@ -48,9 +49,12 @@ class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
   val logger: Logger = Logger(getClass)
 
   override def invokeBlock[A](request: Request[A], block:Request[A] => Future[Result]): Future[Result] = {
+    val egNewSessionIdLog = s"$EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}"
+    val egRecoverSessionIdLog = s"$EgRecoverSessionIdName ${request.session.data.get(EgRecoverSessionIdName)}"
+    val sessionIdLog = s"${request.session.data.get(SessionKeys.sessionId)}"
 
     logger.info(
-      s"SessionIdAction sessionId = ${request.session.data.get(SessionKeys.sessionId)}, $EgNewSessionIdName ${request.session.data.get(EgNewSessionIdName)}"
+      s"SessionIdAction sessionId = $sessionIdLog, $egNewSessionIdLog, $egRecoverSessionIdLog"
     )
     request.session.data.get(EgNewSessionIdName).fold(block(request)){egNewId =>
       val updatedSession = Session((request.session.data -- List(SessionKeys.sessionId, EgNewSessionIdName)) ++ List((SessionKeys.sessionId -> egNewId)))
