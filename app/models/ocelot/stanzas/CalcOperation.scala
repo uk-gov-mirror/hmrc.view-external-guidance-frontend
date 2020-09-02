@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-case class CalcOperation(left:String, calcOperationType: CalcOperationType, right: String, label: String)
+case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String)
 
 object CalcOperation {
 
