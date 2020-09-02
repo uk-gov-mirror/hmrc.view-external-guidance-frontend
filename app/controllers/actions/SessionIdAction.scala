@@ -53,7 +53,7 @@ class SessionIdActionImpl @Inject()(val parser: BodyParsers.Default)
     val egRecoverSessionIdLog = s"$EgRecoverSessionIdName ${request.session.data.get(EgRecoverSessionIdName)}"
     val sessionIdLog = s"${request.session.data.get(SessionKeys.sessionId)}"
 
-    logger.info(
+    logger.warn(
       s"SessionIdAction sessionId = $sessionIdLog, $egNewSessionIdLog, $egRecoverSessionIdLog"
     )
     request.session.data.get(EgNewSessionIdName).fold(block(request)){egNewId =>
