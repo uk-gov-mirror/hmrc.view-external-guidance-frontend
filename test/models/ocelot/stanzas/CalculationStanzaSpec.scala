@@ -18,7 +18,7 @@ package models.ocelot.stanzas
 
 import base.BaseSpec
 import models.ocelot._
-import models.ocelot.errors.{GuidanceError, UnknownOpType}
+import models.ocelot.errors.{GuidanceError, UnknownCalcOperationType}
 
 import play.api.libs.json._
 
@@ -101,7 +101,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
     val sqrt = "sqrt"
 
-    val onePageJsonWithInvalidOpType: JsValue = Json.parse(
+    val onePageJsonWithInvalidCalcOperationType: JsValue = Json.parse(
       """
         |{
         |  "meta": {
@@ -264,11 +264,11 @@ class CalculationStanzaSpec extends BaseSpec {
 
     "Raise an error for a invalid calculation operation type" in new Test {
 
-      onePageJsonWithInvalidOpType.as[JsObject].validate[Process] match {
+      onePageJsonWithInvalidCalcOperationType.as[JsObject].validate[Process] match {
         case JsSuccess(_,_) => fail( "A process should not be created from invalid JSON")
         case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
           case Nil => fail("Nothing to match from guidance error convergence")
-          case UnknownOpType("3", "sqrt") :: _ => succeed
+          case UnknownCalcOperationType("3", "sqrt") :: _ => succeed
           case errs => fail( "An error occurred processing Json validation errors")
         }
       }

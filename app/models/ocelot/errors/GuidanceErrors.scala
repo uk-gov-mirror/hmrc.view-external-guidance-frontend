@@ -27,7 +27,7 @@ sealed trait LinksError extends GuidanceError
 case class UnknownStanza(id: String, typeName: String) extends FlowError
 case class UnknownCalloutType(id: String, typeName: String) extends FlowError
 case class UnknownValueType(id: String, typeName: String) extends FlowError
-case class UnknownOpType(id: String, typeName: String) extends FlowError
+case class UnknownCalcOperationType(id: String, typeName: String) extends FlowError
 case class UnknownTestType(id: String, typeName: String) extends FlowError
 case class UnknownInputType(id: String, typeName: String) extends FlowError
 case class StanzaNotFound(id: String) extends FlowError
@@ -64,7 +64,7 @@ object GuidanceError {
                 case "ValueType" => UnknownValueType(id, arg)
                 case "TestType" => UnknownTestType(id, arg)
                 case "InputType" => UnknownInputType(id, arg)
-                case "OpType" => UnknownOpType(id, arg)
+                case "CalcOperationType" => UnknownCalcOperationType(id, arg)
               }.getOrElse(FlowParseError(id, msg, jsPath.toString))
             )
           case "/meta" => MetaParseError(id, msg, arg)

@@ -18,23 +18,23 @@ package models.ocelot.stanzas
 
 import play.api.libs.json._
 
-sealed trait OpType
+sealed trait CalcOperationType
 
-case object Addition extends OpType
-case object Subtraction extends OpType
+case object Addition extends CalcOperationType
+case object Subtraction extends CalcOperationType
 
-object OpType {
+object CalcOperationType {
 
-  implicit val reads: Reads[OpType] = (json: JsValue) =>
+  implicit val reads: Reads[CalcOperationType] = (json: JsValue) =>
   json match {
     case JsString("add") => JsSuccess(Addition, __)
     case JsString("subtract") => JsSuccess(Subtraction, __)
-    case typeName: JsString => JsError(JsonValidationError(Seq("OpType"), typeName.value))
-    case unexpectedJsType => JsError(JsonValidationError(Seq("OpType"), unexpectedJsType.toString()))
+    case typeName: JsString => JsError(JsonValidationError(Seq("CalcOperationType"), typeName.value))
+    case unexpectedJsType => JsError(JsonValidationError(Seq("CalcOperationType"), unexpectedJsType.toString()))
   }
 
-  implicit val writes: Writes[OpType] = (opType: OpType) =>
-  opType match {
+  implicit val writes: Writes[CalcOperationType] = (calcOperationType: CalcOperationType) =>
+  calcOperationType match {
     case Addition => Json.toJson("add")
     case Subtraction => Json.toJson("subtract")
   }
