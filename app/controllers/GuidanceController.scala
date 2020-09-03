@@ -50,7 +50,7 @@ class GuidanceController @Inject() (
 
     withExistingSession[PageContext](service.getPageContext(processId, s"/$path", _)).map {
       case Right(pageContext) =>
-        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
+        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
         pageContext.page match {
           case page: StandardPage => Ok(standardView(page, pageContext))
           case page: QuestionPage =>

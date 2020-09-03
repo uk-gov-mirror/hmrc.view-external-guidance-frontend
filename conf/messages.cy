@@ -1,13 +1,12 @@
 service.name = Arweiniad Rhyngweithiol
 service.govuk = GOV.UK
 
-hello.world = Helo o''r cais view-external-guide-frontend!
-hello.world.currentLanguage = Y gosodiad iaith cyfredol yw "{0}",
-
 service.phaseName = beta
 feedback.before = Gwasanaeth newydd yw hwn – bydd eich
 feedback.linkLabel = adborth
 feedback.after = yn ein helpu i'w wella.
+
+backlink.label = Yn ôl
 
 getpagehelp.linkText = Mynnwch help gyda'r dudalen hon (yn agor mewn ffenestr neu dab newydd)
 

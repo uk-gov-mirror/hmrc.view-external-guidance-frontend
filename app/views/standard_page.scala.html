@@ -18,9 +18,9 @@
 
 @this(layout: main_layout)
 
-@(page: StandardPage, ctx: PageContext)(implicit request: Request[_], messages: Messages)
+@(page: StandardPage, ctx: PageContext, backUrl: Option[String] = None)(implicit request: Request[_], messages: Messages)
 
-@layout(page.heading.asString(messages.lang), ctx.processTitle.asString(messages.lang), ctx.processStartUrl) {
+@layout(page.heading.asString(messages.lang), ctx.processTitle.asString(messages.lang), ctx.processStartUrl, ctx.backLink) {
 
   @components.render_components(page.components)
 

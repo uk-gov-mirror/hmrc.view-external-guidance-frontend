@@ -7,6 +7,7 @@ service.phaseName = beta
 feedback.before = This is a new service - your
 feedback.linkLabel = feedback
 feedback.after = will help us to improve it.
+backlink.label = Back
 
 getpagehelp.linkText = Get help with this page (opens in new tab)
 

@@ -37,7 +37,7 @@ import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONInteger
 
 object DefaultSessionRepository {
-  final case class SessionProcess(id: String, processId: String, process: Process, answers: Map[String, String], lastAccessed: Instant)
+  final case class SessionProcess(id: String, processId: String, process: Process, answers: Map[String, String], pageHistory: List[String], lastAccessed: Instant)
 
   object SessionProcess {
     implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
@@ -45,10 +45,10 @@ object DefaultSessionRepository {
   }
 }
 
-case class ProcessContext(process: Process, answers: Map[String, String])
+case class ProcessContext(process: Process, answers: Map[String, String], backLink: Option[String])
 
 trait SessionRepository {
-  def get(key: String): Future[RequestOutcome[ProcessContext]]
+  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
 }
@@ -93,15 +93,45 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String): Future[RequestOutcome[ProcessContext]] =
-    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli))))
+  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] =
+    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)), "$push" -> Json.obj("pageHistory" -> pageUrl)))
       .map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
             Left(NotFoundError): RequestOutcome[ProcessContext]
-          }(r => Right(ProcessContext(r.process, r.answers)))
+          }{ r =>
+            // Handle pageHistory
+            r.pageHistory.reverse match {
+              case Nil => Right(ProcessContext(r.process, r.answers, None))
+              case x :: (y :: xs) if y == pageUrl =>                              // Back
+                logger.warn(s"******************** BACK: pageUrl=$pageUrl, x=$x, xs=$xs")
+                // pageHistory becomes xs and backlink is head of xs
+                savePageHistory(key, (y :: xs).reverse)
+                logger.warn(s"******************** BACK: backLink=${xs.headOption}")
+                Right(ProcessContext(r.process, r.answers, xs.headOption))
+              case x :: (y :: xs) if x == pageUrl =>                              // Refresh
+                logger.warn(s"******************** REFRESH: pageUrl=$pageUrl, x=$x, xs=$xs")
+                // Rewrite r.pageHistory as current history (i.e. remove url added in findAndUpdate() above)
+                // Back link is x
+                savePageHistory(key, r.pageHistory)
+                logger.warn(s"******************** REFRESH: backLink=${Some(x)}")
+                Right(ProcessContext(r.process, r.answers, Some(x)))
+              case x :: Nil if x == pageUrl =>                              // Refresh
+                logger.warn(s"******************** REFRESH(One element): pageUrl=$pageUrl, x=$x")
+                // Rewrite r.pageHistory as current history (i.e. remove url added in findAndUpdate() above)
+                // Back link is x
+                savePageHistory(key, r.pageHistory)
+                logger.warn(s"******************** REFRESH(One element): backLink=None")
+                Right(ProcessContext(r.process, r.answers, None))
+              case x :: xs =>                                           // Forward
+                logger.warn(s"******************** FORWARD: pageUrl=$pageUrl, x=$x, xs=$xs")
+                // Back link x, pageHistory intact
+                logger.warn(s"******************** FORWARD: backLink=${Some(x)}")
+                Right(ProcessContext(r.process, r.answers, Some(x)))
+            }
+          }
       }
       .recover {
         case lastError =>
@@ -110,7 +140,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Instant.now))
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, Instant.now))
     collection
       .update(false)
       .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
@@ -131,7 +161,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(
-              s"Attempt to findAndUpdate session question answers using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+              s"Attempt to saveAnswerToQuestion using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
             )
             Left(NotFoundError): RequestOutcome[Unit]
           }(_ => Right({}))
@@ -139,6 +169,26 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       .recover {
         case lastError =>
           logger.error(s"Error $lastError while trying to update question answers within session repo with _id=$key, url: $url, answer: $answer")
+          Left(DatabaseError)
+      }
+
+  private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli), s"pageHistory" -> pageHistory))
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to savePageHistory using _id=$key eturned no result, lastError ${result.lastError}"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to savePageHistory to session repo with _id=$key")
           Left(DatabaseError)
       }
 

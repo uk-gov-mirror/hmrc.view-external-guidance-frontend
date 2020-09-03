@@ -43,7 +43,7 @@ class AccessibilityStatementController @Inject() (
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[ProcessContext](service.getProcessContext(_)).map {
+    withExistingSession[ProcessContext](service.getProcessContext(_, controllers.routes.AccessibilityStatementController.getPage.url)).map {
       case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
         Ok(view(title.asString(messages.lang),

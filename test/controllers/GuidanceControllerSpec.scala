@@ -428,4 +428,108 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   }
 
+  // "Invoking the back link method for a valid page" should {
+
+  //   trait Test extends MockGuidanceService with TestData {
+  //     lazy val fakeRequest = FakeRequest(GET, path).withSession(SessionKeys.sessionId -> processId).withCSRFToken
+
+  //     lazy val target =
+  //       new GuidanceController(
+  //         MockAppConfig,
+  //         fakeSessionIdAction,
+  //         errorHandler,
+  //         view,
+  //         questionView,
+  //         new NextPageFormProvider(),
+  //         mockGuidanceService,
+  //         stubMessagesControllerComponents()
+  //       )
+  //   }
+
+  //   "return a redirect and include a flash cookie with value of Y when back link found" in new Test {
+
+  //     MockGuidanceService
+  //       .getPageContext(processId, path, processId, None)
+  //       .returns(Future.successful(Right(PageContext(standardPage, Some("/hello"), Text(Nil, Nil), processId, backLink = Some("/guidance/start-url")))))
+
+  //     val result = target.backLink(processId, relativePath)(fakeRequest)
+  //     status(result) shouldBe Status.SEE_OTHER
+  //     val info: Flash = flash(result)
+  //     info.get("back-link")  match {
+  //       case Some(value) => value shouldBe "Y"
+  //       case None => fail(s"back-link cookie not found with expected value")
+  //     }
+  //   }
+
+  //   "return a redirect to same page and include a flash cookie with value of Y when no back link found" in new Test {
+
+  //     MockGuidanceService
+  //       .getPageContext(processId, path, processId, None)
+  //       .returns(Future.successful(Right(PageContext(standardPage, Some("/hello"), Text(Nil, Nil), processId, backLink = None))))
+
+  //     val result = target.backLink(processId, relativePath)(fakeRequest)
+  //     status(result) shouldBe Status.SEE_OTHER
+  //     val info: Flash = flash(result)
+  //     info.get("back-link")  match {
+  //       case Some(value) => value shouldBe "Y"
+  //       case None => fail(s"back-link cookie not found with expected value")
+  //     }
+  //     redirectLocation(result) shouldBe Some(s"/guidance/$processId/$relativePath")
+  //   }
+  // }
+
+  // "Invoking the back link method for a invalid page" should {
+
+  //   trait Test extends MockGuidanceService with TestData {
+  //     val unknownPath = "unknown/route"
+  //     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
+  //       FakeRequest().withSession(SessionKeys.sessionId -> processId)
+
+  //     lazy val target =
+  //       new GuidanceController(
+  //         MockAppConfig,
+  //         fakeSessionIdAction,
+  //         errorHandler,
+  //         view,
+  //         questionView,
+  //         new NextPageFormProvider(),
+  //         mockGuidanceService,
+  //         stubMessagesControllerComponents()
+  //       )
+  //   }
+
+  //   "return not found response with content type of html" in new Test {
+  //     MockGuidanceService
+  //       .getPageContext(processId, "/" + unknownPath, processId, None)
+  //       .returns(Future.successful(Left(NotFoundError)))
+
+  //     lazy val result = target.backLink(processId, unknownPath)(fakeRequest)
+
+  //     status(result) shouldBe Status.NOT_FOUND
+  //     contentType(result) shouldBe Some("text/html")
+  //   }
+
+  //   "return internal error response with content type of html" in new Test {
+  //     MockGuidanceService
+  //       .getPageContext(processId, path, processId, None)
+  //       .returns(Future.successful(Left(DatabaseError)))
+
+  //     lazy val result = target.backLink(processId, relativePath)(fakeRequest)
+
+  //     status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+  //     contentType(result) shouldBe Some("text/html")
+  //   }
+
+  //   "return bad error response with content type of html" in new Test {
+  //     MockGuidanceService
+  //       .getPageContext(processId, path, processId, None)
+  //       .returns(Future.successful(Left(BadRequestError)))
+
+  //     lazy val result = target.backLink(processId, relativePath)(fakeRequest)
+
+  //     status(result) shouldBe Status.BAD_REQUEST
+  //     contentType(result) shouldBe Some("text/html")
+  //   }
+  // }
+
 }

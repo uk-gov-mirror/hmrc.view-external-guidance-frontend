@@ -28,9 +28,14 @@
         appConfig: AppConfig,
         footerLinks: FooterLinks,
         footer: components.govukFooter,
-        timeoutDialog: HmrcTimeoutDialog)
+        timeoutDialog: HmrcTimeoutDialog,
+        govukBackLink : GovukBackLink)
 
-@(pageTitle: String, processTitle: String, startUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(pageTitle: String, processTitle: String, startUrl: Option[String] = None, backUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@optionalBackLink = @{
+    backUrl.map(url => govukBackLink(BackLink(href = url, content = Text(messages("backlink.label")), attributes = Map( "id" -> "back-link", "class" -> "app-back-link" ))))
+}
 
 @beforeContentBlock = {
     @phaseBanner(PhaseBanner(
@@ -44,6 +49,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
             En -> s"${appConfig.baseUrl}/language/english",
             Cy -> s"${appConfig.baseUrl}/language/cymraeg")
     )
+    @optionalBackLink
 }
 
 @head = {
