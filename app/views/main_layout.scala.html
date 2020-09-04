@@ -33,10 +33,6 @@
 
 @(pageTitle: String, processTitle: String, startUrl: Option[String] = None, backUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
-@optionalBackLink = @{
-    backUrl.map(url => govukBackLink(BackLink(href = url, content = Text(messages("backlink.label")), attributes = Map( "id" -> "back-link", "class" -> "app-back-link" ))))
-}
-
 @beforeContentBlock = {
     @phaseBanner(PhaseBanner(
         tag = Some(Tag(
@@ -49,7 +45,10 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
             En -> s"${appConfig.baseUrl}/language/english",
             Cy -> s"${appConfig.baseUrl}/language/cymraeg")
     )
-    @optionalBackLink
+    @backUrl.map(url =>
+      govukBackLink(BackLink(href = url,
+                             content = Text(messages("backlink.label")),
+                             attributes = Map( "id" -> "back-link", "class" -> "app-back-link" ))))
 }
 
 @head = {
