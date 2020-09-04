@@ -109,10 +109,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => {
-                val processIdentifier: String = process.meta.processCode.getOrElse(process.meta.id)
-                println( "**** Process code  is " + processIdentifier)
-                Right((pages.head.url, processIdentifier))})
+              }, pages => Right((pages.head.url, process.meta.processCode.getOrElse(process.meta.id))))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")
@@ -125,6 +122,7 @@ class GuidanceService @Inject() (
     }
 
   private def isCorrectProcess(process: Process, processCode: String ): Boolean = {
+
     val processCodeMatch: Boolean = process.meta.processCode match {
       case Some(code) if code == processCode => true
       case Some(_) => false

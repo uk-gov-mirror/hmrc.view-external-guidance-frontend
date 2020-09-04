@@ -74,7 +74,6 @@ class StartGuidanceController @Inject() (
     retrieveAndCache(id, sessionId).map {
       case Right((url, processCode)) =>
         val target = controllers.routes.GuidanceController.getPage(processCode, url.drop(1)).url
-        println( "**** Redirecting to " + target)
         logger.warn(s"Redirecting to begin viewing process $id/$processCode at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
         egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId),
                                                                                         (sessionIdAction.EgRecoverSessionIdName -> newId)))
