@@ -62,10 +62,14 @@ class GuidanceService @Inject() (
                   Right(
                     PageContext(
                       uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processId}${p.url}")).toMap),
-                      process.startUrl.map( url => s"${appConfig.baseUrl}/${processId}${url}"),
+                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processId}${startUrl}"),
                       process.title,
                       process.meta.id,
-                      backLink.map( url => s"${appConfig.baseUrl}/${processId}${url}"),
+                      backLink.map( backLinkUrl => backLinkUrl match {
+                        case "/accessibility" => s"${appConfig.baseUrl}${backLinkUrl}" // TODO: Create URL Builder
+                        case _ => s"${appConfig.baseUrl}/${processId}${backLinkUrl}"
+                      }
+                      ),
                       answers.get(url)
                     )
                   )
