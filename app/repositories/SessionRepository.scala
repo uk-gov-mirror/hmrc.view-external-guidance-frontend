@@ -94,42 +94,42 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   }
 
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] =
-    findAndUpdate(Json.obj("_id" -> key), Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)), "$push" -> Json.obj("pageHistory" -> pageUrl)))
-      .map { result =>
-        result
-          .result[DefaultSessionRepository.SessionProcess]
+    findAndUpdate(Json.obj("_id" -> key),
+                  Json.obj(
+                    "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
+                    "$push" -> Json.obj("pageHistory" -> pageUrl)
+                  ),
+                  fetchNewObject = false
+    ).flatMap { r =>
+          r.result[DefaultSessionRepository.SessionProcess]
           .fold {
-            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${result.lastError}")
-            Left(NotFoundError): RequestOutcome[ProcessContext]
-          }{ r =>
-            // Handle pageHistory
-            r.pageHistory.reverse match {
-              case Nil => Right(ProcessContext(r.process, r.answers, None))
-              case x :: (y :: xs) if y == pageUrl =>                              // Back
-                logger.warn(s"******************** BACK: pageUrl=$pageUrl, x=$x, xs=$xs")
-                // pageHistory becomes xs and backlink is head of xs
-                savePageHistory(key, (y :: xs).reverse)
-                logger.warn(s"******************** BACK: backLink=${xs.headOption}")
-                Right(ProcessContext(r.process, r.answers, xs.headOption))
-              case x :: (y :: xs) if x == pageUrl =>                              // Refresh
-                logger.warn(s"******************** REFRESH: pageUrl=$pageUrl, x=$x, xs=$xs")
-                // Rewrite r.pageHistory as current history (i.e. remove url added in findAndUpdate() above)
-                // Back link is x
-                savePageHistory(key, r.pageHistory)
-                logger.warn(s"******************** REFRESH: backLink=${Some(x)}")
-                Right(ProcessContext(r.process, r.answers, Some(x)))
-              case x :: Nil if x == pageUrl =>                              // Refresh
-                logger.warn(s"******************** REFRESH(One element): pageUrl=$pageUrl, x=$x")
-                // Rewrite r.pageHistory as current history (i.e. remove url added in findAndUpdate() above)
-                // Back link is x
-                savePageHistory(key, r.pageHistory)
-                logger.warn(s"******************** REFRESH(One element): backLink=None")
-                Right(ProcessContext(r.process, r.answers, None))
-              case x :: xs =>                                           // Forward
-                logger.warn(s"******************** FORWARD: pageUrl=$pageUrl, x=$x, xs=$xs")
-                // Back link x, pageHistory intact
-                logger.warn(s"******************** FORWARD: backLink=${Some(x)}")
-                Right(ProcessContext(r.process, r.answers, Some(x)))
+            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${r.lastError}")
+            Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
+          }{ sp =>
+            //
+            // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
+            //
+            sp.pageHistory.reverse match {
+              case Nil => Future.successful(Right(ProcessContext(sp.process, sp.answers, None)))
+              case x :: xs if x == pageUrl =>
+                // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
+                savePageHistory(key, sp.pageHistory).map {
+                  case Left(err) =>
+                    logger.error(s"Unable to save backlink history, error = $err")
+                    Right(ProcessContext(sp.process, sp.answers, xs.headOption))
+                  case _ => Right(ProcessContext(sp.process, sp.answers, xs.headOption))
+                }
+              case x :: y :: xs if y == pageUrl =>
+                // BACK: pageHistory becomes y :: xs and backlink is head of xs
+                savePageHistory(key, (y :: xs).reverse).map {
+                  case Left(err) =>
+                    logger.error(s"Unable to save backlink history, error = $err")
+                    Right(ProcessContext(sp.process, sp.answers, xs.headOption))
+                  case _ => Right(ProcessContext(sp.process, sp.answers, xs.headOption))
+                }
+              case x :: xs =>
+                // FORWARD: Back link x, pageHistory intact
+                Future.successful(Right(ProcessContext(sp.process, sp.answers, Some(x))))
             }
           }
       }

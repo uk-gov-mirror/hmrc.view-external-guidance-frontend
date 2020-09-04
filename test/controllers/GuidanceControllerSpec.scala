@@ -115,7 +115,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "Show the original answer selected" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId, None)
-        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, Some(answerUrl1)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, None, Some(answerUrl1)))))
 
       val result = target.getPage(processId, relativePath)(fakeRequest)
 

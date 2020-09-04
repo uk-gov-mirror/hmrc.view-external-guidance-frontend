@@ -44,13 +44,13 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
 
   "GET /accessibility" should {
     "return 200" in new Test {
-      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      MockGuidanceService.getProcessContext("sessionId", "/guidance/accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), None))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in new Test {
-      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      MockGuidanceService.getProcessContext("sessionId", "/guidance/accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), None))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
@@ -61,7 +61,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
 
   "GET /accessibility" should {
     "generate page with header link url pointing to nominated url" in new Test {
-      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      MockGuidanceService.getProcessContext("sessionId", "/guidance/accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), None))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
@@ -72,7 +72,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
     }
 
     "generate page with header using title of Guidance" in new Test {
-      MockGuidanceService.getProcessContext("sessionId").returns(Future.successful(Right(ProcessContext(process, Map()))))
+      MockGuidanceService.getProcessContext("sessionId", "/guidance/accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), None))))
       val result: Future[Result] = controller.getPage(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))

@@ -50,10 +50,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
-    def getProcessContext(sessionId: String): CallHandler[Future[RequestOutcome[ProcessContext]]] = {
+    def getProcessContext(sessionId: String, pageUrl: String): CallHandler[Future[RequestOutcome[ProcessContext]]] = {
       (mockGuidanceService
-        .getProcessContext(_: String))
-        .expects(sessionId)
+        .getProcessContext(_: String, _: String))
+        .expects(sessionId, pageUrl)
     }
 
     def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
