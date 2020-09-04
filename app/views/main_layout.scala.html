@@ -58,7 +58,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
             countdown = Some(appConfig.timeoutWarningInSeconds),
             keepAliveUrl = Some("#"),
             keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
-            signOutUrl = Some(appConfig.signOutUrl),
+            signOutUrl = Some(messages("timeout.dialog.signOutUrl")),
             signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
             title = Some(messages("timeout.dialog.title.text")),
             message = Some(messages("timeout.dialog.message.text"))

@@ -31,7 +31,7 @@ timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
 timeout.dialog.sign_out_button.text=Ewch i GOV.UK
 timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
 timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
-
+timeout.dialog.signOutUrl= http://www.gov.uk/gwirio-treth-incwm-ychwanegol
 
 # Footer Links
 # ----------------------------------------------------------
