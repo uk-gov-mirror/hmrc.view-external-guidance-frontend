@@ -56,9 +56,9 @@ class StartGuidanceController @Inject() (
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
-    def retrieveCacheAndRedirect(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[String]] =
+    def retrieveCacheAndRedirect(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[(String,String)]] =
       service.retrieveAndCacheApproval(processId, repositoryId).map {
-        case Right(_) => Right(startUrl)
+        case Right((_,processCode)) => Right((startUrl,processCode))
         case err @ Left(_) => err
       }
 
@@ -66,15 +66,16 @@ class StartGuidanceController @Inject() (
     retrieveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
   }
 
-  private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[String]])(
+  private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[(String,String)]])(
       implicit request: Request[_]
   ): Future[Result] = {
     val (sessionId, egNewSessionId) = existingOrNewSessionId()
     logger.info(s"Calling Retrieve and cache service for process $id using sessionId = $sessionId, EG = ${egNewSessionId}")
     retrieveAndCache(id, sessionId).map {
-      case Right(url) =>
-        val target = controllers.routes.GuidanceController.getPage(id, url.drop(1)).url
-        logger.warn(s"Redirecting to begin viewing process $id at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
+      case Right((url, processCode)) =>
+        val target = controllers.routes.GuidanceController.getPage(processCode, url.drop(1)).url
+        println( "**** Redirecting to " + target)
+        logger.warn(s"Redirecting to begin viewing process $id/$processCode at ${target} using sessionId $sessionId, EG_NEW_SESSIONID = $egNewSessionId")
         egNewSessionId.fold(Redirect(target))(newId => Redirect(target).addingToSession((sessionIdAction.EgNewSessionIdName -> newId),
                                                                                         (sessionIdAction.EgRecoverSessionIdName -> newId)))
       case Left(NotFoundError) =>

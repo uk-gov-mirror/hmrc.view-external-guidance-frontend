@@ -7,5 +7,5 @@ GET   /accessibility                     controllers.AccessibilityStatementContr
 
 GET   /:processId                        controllers.entry.StartGuidanceController.published(processId: String)
 
-GET   /:processId/*path                  controllers.GuidanceController.getPage(processId: String, path: String)
-POST  /:processId/*path                  controllers.GuidanceController.submitPage(processId: String, path: String)
+GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String)
+POST  /:processCode/*path                controllers.GuidanceController.submitPage(processCode: String, path: String)

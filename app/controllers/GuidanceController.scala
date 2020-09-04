@@ -45,10 +45,10 @@ class GuidanceController @Inject() (
 
   val logger = Logger(getClass)
 
-  def getPage(processId: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
+  def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
-    withExistingSession[PageContext](service.getPageContext(processId, s"/$path", _)).map {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).map {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}, answer = ${pageContext.answer}")
         pageContext.page match {
@@ -71,12 +71,12 @@ class GuidanceController @Inject() (
     }
   }
 
-  def submitPage(processId: String, path: String): Action[AnyContent] = Action.async { implicit request =>
+  def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     formProvider(questionName(path)).bindFromRequest.fold(
       formWithErrors => {
         val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withExistingSession[PageContext](service.getPageContext(processId, s"/$path", _, Some(formData))).map {
+        withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _, Some(formData))).map {
           case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
@@ -94,7 +94,7 @@ class GuidanceController @Inject() (
         }
       },
       nextPageUrl => {
-        val redirectLocation  = routes.GuidanceController.getPage(processId, nextPageUrl.url.drop(appConfig.baseUrl.length + processId.length + 2))
+        val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
         withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
           case Left(err) =>
             logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
