@@ -64,7 +64,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a page for the process" in new Test {
 
       MockSessionRepository
-        .get(sessionRepoId, lastPageUrl)
+        .get(sessionRepoId, s"$processId$lastPageUrl")
         .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
@@ -91,7 +91,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a PageContext which includes the relevant answer" in new Test {
       override val processId: String = "ext90002"
       MockSessionRepository
-        .get(sessionRepoId, lastPageUrl)
+        .get(sessionRepoId, s"$processId$lastPageUrl")
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), None))))
 
       MockPageBuilder
@@ -118,10 +118,10 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "not retrieve a page from the process" in new Test {
 
-      val url = "scooby"
+      val url = "/scooby"
 
       MockSessionRepository
-        .get(processId, url)
+        .get(processId, s"$processId$url")
         .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
