@@ -44,12 +44,12 @@ class AccessibilityStatementController @Inject() (
   val getPage: Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     val path = controllers.routes.AccessibilityStatementController.getPage.url.drop(appConfig.baseUrl.length +1)
-    withExistingSession[ProcessContext](service.getProcessContext(_, s"/$path")).map {
+    withExistingSession[ProcessContext](service.getProcessContext(_, path)).map {
       case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
         Ok(view(title.asString(messages.lang),
                 processContext.process.startUrl.map(url => s"${appConfig.baseUrl}/${processContext.process.meta.id}$url"),
-                processContext.backLink.map(url => s"${appConfig.baseUrl}/${processContext.process.meta.id}$url")))
+                processContext.backLink.map(url => s"${appConfig.baseUrl}/$url")))
       case Left(BadRequestError) =>
         logger.warn(s"Accessibility used out of guidance")
         Ok(view(messages("accessibility.defaultHeaderTitle"), None))

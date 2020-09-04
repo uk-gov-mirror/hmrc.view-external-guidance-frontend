@@ -43,7 +43,7 @@ class GuidanceService @Inject() (
   def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId, url).map {
+    getProcessContext(sessionId, s"$processId$url").map {
       case Right(ProcessContext(process, answers, backLink)) if process.meta.id == processId =>
         pageBuilder
           .pages(process)
@@ -65,11 +65,7 @@ class GuidanceService @Inject() (
                       process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processId}${startUrl}"),
                       process.title,
                       process.meta.id,
-                      backLink.map( backLinkUrl => backLinkUrl match {
-                        case "/accessibility" => s"${appConfig.baseUrl}${backLinkUrl}" // TODO: Create URL Builder
-                        case _ => s"${appConfig.baseUrl}/${processId}${backLinkUrl}"
-                      }
-                      ),
+                      backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )
                   )
