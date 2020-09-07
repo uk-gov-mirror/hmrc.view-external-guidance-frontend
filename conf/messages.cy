@@ -8,7 +8,7 @@ feedback.after = yn ein helpu i'w wella.
 
 backlink.label = Yn ôl
 
-getpagehelp.linkText = Help gyda'r dudalen hon (ynagor tab newydd)
+getpagehelp.linkText = Help gyda'r dudalen hon (yn agor tab newydd)
 
 site.continue = Yn eich blaen
 
