@@ -48,7 +48,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
     @backUrl.map(url =>
       govukBackLink(BackLink(href = url,
                              content = Text(messages("backlink.label")),
-                             attributes = Map( "id" -> "back-link", "class" -> "app-back-link" ))))
+                             attributes = Map( "id" -> "back-link", "class" -> "govuk-!-margin-top-0" ))))
 }
 
 @head = {
