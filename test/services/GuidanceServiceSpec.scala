@@ -38,6 +38,7 @@ class GuidanceServiceSpec extends BaseSpec {
     private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(EndStanza), Seq())
 
     val process: Process = validOnePageJson.as[Process]
+    val processWithProcessCode = validOnePageProcessWithProcessCodeJson.as[Process]
     val fullProcess: Process = prototypeJson.as[Process]
 
     val firstPageUrl = "/first-page"
@@ -53,6 +54,7 @@ class GuidanceServiceSpec extends BaseSpec {
     )
 
     val processId = "oct90001"
+    val processCode = "CupOfTea"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
@@ -106,7 +108,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       whenReady(result) { pageContext =>
         pageContext match {
-          case Right(PageContext(_, _, _, _, Some(answer))) => succeed
+          case Right(PageContext(_, _, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }
@@ -157,7 +159,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.retrieveAndCacheScratch(uuid, uuid)
 
       whenReady(result) { url =>
-        url shouldBe Right(firstPageUrl)
+        url shouldBe Right((firstPageUrl,uuid))
       }
     }
   }
@@ -168,20 +170,20 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .publishedProcess(processId)
-        .returns(Future.successful(Right(process)))
+        .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, process)
+        .set(sessionRepoId, processWithProcessCode)
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
-        .pages(process)
+        .pages(processWithProcessCode)
         .returns(Right(pages))
 
       private val result = target.retrieveAndCachePublished(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url shouldBe Right(firstPageUrl)
+        url shouldBe Right((firstPageUrl, processCode))
       }
     }
   }
@@ -192,20 +194,20 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockGuidanceConnector
         .approvalProcess(processId)
-        .returns(Future.successful(Right(process)))
+        .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, process)
+        .set(sessionRepoId, processWithProcessCode)
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
-        .pages(process)
+        .pages(processWithProcessCode)
         .returns(Right(pages))
 
       private val result = target.retrieveAndCacheApproval(processId, sessionRepoId)
 
       whenReady(result) { url =>
-        url shouldBe Right(firstPageUrl)
+        url shouldBe Right((firstPageUrl, processCode))
       }
     }
   }

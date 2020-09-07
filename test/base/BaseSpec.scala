@@ -63,4 +63,8 @@ trait BaseSpec extends WordSpec with Matchers with ScalaFutures {
     }
 
   }
+
+  def removeSpacesAndNewLines(s: String): String = {
+    s.replaceAll("\n","" ).replaceAll(" ", "")
+  }
 }
