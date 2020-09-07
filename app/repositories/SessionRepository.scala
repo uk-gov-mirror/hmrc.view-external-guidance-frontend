@@ -37,7 +37,12 @@ import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONInteger
 
 object DefaultSessionRepository {
-  final case class SessionProcess(id: String, processId: String, process: Process, answers: Map[String, String], pageHistory: List[String], lastAccessed: Instant)
+  final case class SessionProcess(id: String,
+                                  processId: String,
+                                  process: Process,
+                                  answers: Map[String, String],
+                                  pageHistory: List[String],
+                                  lastAccessed: Instant)
 
   object SessionProcess {
     implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
@@ -109,28 +114,15 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
             //
             // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
             //
-            sp.pageHistory.reverse match {
-              case Nil => Future.successful(Right(ProcessContext(sp.process, sp.answers, None)))
-              case x :: xs if x == pageUrl =>
-                // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
-                savePageHistory(key, sp.pageHistory).map {
-                  case Left(err) =>
-                    logger.error(s"Unable to save backlink history, error = $err")
-                    Right(ProcessContext(sp.process, sp.answers, xs.headOption))
-                  case _ => Right(ProcessContext(sp.process, sp.answers, xs.headOption))
-                }
-              case x :: y :: xs if y == pageUrl =>
-                // BACK: pageHistory becomes y :: xs and backlink is head of xs
-                savePageHistory(key, (y :: xs).reverse).map {
-                  case Left(err) =>
-                    logger.error(s"Unable to save backlink history, error = $err")
-                    Right(ProcessContext(sp.process, sp.answers, xs.headOption))
-                  case _ => Right(ProcessContext(sp.process, sp.answers, xs.headOption))
-                }
-              case x :: xs =>
-                // FORWARD: Back link x, pageHistory intact
-                Future.successful(Right(ProcessContext(sp.process, sp.answers, Some(x))))
-            }
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, sp.pageHistory)
+            historyUpdate.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, backLink))))(history =>
+              savePageHistory(key, history).map {
+                case Left(err) =>
+                  logger.error(s"Unable to save backlink history, error = $err")
+                  Right(ProcessContext(sp.process, sp.answers, backLink))
+                case _ => Right(ProcessContext(sp.process, sp.answers, backLink))
+              }
+            )
           }
       }
       .recover {
@@ -138,6 +130,19 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
+
+  private def backlinkAndHistory(pageUrl: String, priorHistory: List[String]): (Option[String], Option[List[String]]) =
+    priorHistory.reverse match {
+      // Initial page
+      case Nil => (None, None)
+      // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
+      case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
+      // BACK: pageHistory becomes y :: xs and backlink is head of xs
+      case x :: y :: xs if y == pageUrl => (xs.headOption, Some((y :: xs).reverse))
+      // FORWARD: Back link x, pageHistory intact
+      case x :: xs => (Some(x), None)
+    }
+
 
   def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, Instant.now))
@@ -181,7 +186,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(
-              s"Attempt to savePageHistory using _id=$key eturned no result, lastError ${result.lastError}"
+              s"Attempt to savePageHistory using _id=$key returned no result, lastError ${result.lastError}"
             )
             Left(NotFoundError): RequestOutcome[Unit]
           }(_ => Right({}))
