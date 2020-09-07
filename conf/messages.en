@@ -27,9 +27,10 @@ language.change.english = Change the language to English
 language.switcher = Language switcher
 
 timeout.dialog.keep_alive_button.text=Continue using guidance
-timeout.dialog.sign_out_button.text=Go to GOV.UK
+timeout.dialog.sign_out_button.text=Start again
 timeout.dialog.title.text=Your session is about to expire
 timeout.dialog.message.text=Your session will end in
+timeout.dialog.signOutUrl=https://www.gov.uk/check-additional-income-tax
 
 # Footer Links
 # ----------------------------------------------------------

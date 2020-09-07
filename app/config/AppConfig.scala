@@ -38,7 +38,6 @@ trait AppConfig {
   val privacy: String
   val termsConditions: String
   val govukHelp: String
-  val signOutUrl: String
   val timeoutInSeconds: Int
   val timeoutWarningInSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
@@ -76,7 +75,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
   lazy val gtmContainer: String = config.get[String]("gtm.container")
 
-  lazy val signOutUrl: String = config.get[String]("session-timeout.signOutUrl")
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")
   lazy val timeoutWarningInSeconds: Int = config.get[Int]("session-timeout.warning")
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
