@@ -8,9 +8,9 @@ feedback.after = yn ein helpu i'w wella.
 
 backlink.label = Yn ôl
 
-getpagehelp.linkText = Mynnwch help gyda'r dudalen hon (yn agor mewn ffenestr neu dab newydd)
+getpagehelp.linkText = Help gyda'r dudalen hon (ynagor tab newydd)
 
-site.continue = Parhewch
+site.continue = Yn eich blaen
 
 error.browser.title.prefix = Gwall:
 error.summary.title = Mae yna broblem
