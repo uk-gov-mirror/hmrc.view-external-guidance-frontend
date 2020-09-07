@@ -28,8 +28,6 @@ case class Process(meta: Meta, flow: Map[String, Stanza], phrases: Vector[Phrase
     titleIndex => phraseOption(titleIndex).getOrElse(Phrase(meta.title, meta.title))
   }
   lazy val startUrl: Option[String] = flow.get(Process.StartStanzaId).collect{case ps: PageStanza => ps.url}
-
-  def getProcessIdentifier(): String = meta.getProcessIdentifier()
 }
 
 object Process {
