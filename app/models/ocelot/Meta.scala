@@ -27,7 +27,10 @@ case class Meta(id: String,
                 version: Int,
                 fileName: String,
                 titlePhrase: Option[Int] = None,
-                processCode: Option[String] = None)
+                processCode: Option[String] = None) {
+
+  def getProcessIdentifier(): String = processCode.getOrElse(id)
+}
 
 object Meta {
 

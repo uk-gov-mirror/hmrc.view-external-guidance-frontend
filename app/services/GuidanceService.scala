@@ -44,7 +44,7 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId).map {
-      case Right(ProcessContext(process, answers)) if isCorrectProcess(process, processCode) =>
+      case Right(ProcessContext(process, answers)) if process.meta.processCode.fold(process.meta.id == processCode)(pc => pc == processCode) =>
         pageBuilder
           .pages(process)
           .fold(
@@ -64,6 +64,7 @@ class GuidanceService @Inject() (
                       uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
                       process.startUrl.map( url => s"${appConfig.baseUrl}/${processCode}${url}"),
                       process.title,
+                      process.meta.id,
                       processCode,
                       answers.get(url)
                     )
@@ -109,7 +110,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => Right((pages.head.url, process.meta.processCode.getOrElse(process.meta.id))))
+              }, pages => Right((pages.head.url, process.getProcessIdentifier())))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")
@@ -120,16 +121,5 @@ class GuidanceService @Inject() (
         logger.warn(s"Unable to find process using id $id, error")
         Future.successful(Left(err))
     }
-
-  private def isCorrectProcess(process: Process, processCode: String ): Boolean = {
-
-    val processCodeMatch: Boolean = process.meta.processCode match {
-      case Some(code) if code == processCode => true
-      case Some(_) => false
-      case None => false
-    }
-    // If process code is not defined in meta data process code should match process identifier
-    processCodeMatch || process.meta.id == processCode
-  }
 
 }
