@@ -29,10 +29,10 @@ trait MockSessionRepository extends MockFactory {
 
   object MockSessionRepository {
 
-    def get(key: String): CallHandler[Future[RequestOutcome[ProcessContext]]] =
+    def get(key: String, pageUrl: String): CallHandler[Future[RequestOutcome[ProcessContext]]] =
       (mockSessionRepository
-        .get(_: String))
-        .expects(key)
+        .get(_: String, _: String))
+        .expects(key, pageUrl)
 
     def set(key: String, process: Process): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository

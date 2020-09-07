@@ -38,13 +38,13 @@ class GuidanceService @Inject() (
 ) {
   val logger = Logger(getClass)
 
-  def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
+  def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
 
   def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId).map {
-      case Right(ProcessContext(process, answers)) if process.meta.processCode.fold(process.meta.id == processCode)(pc => pc == processCode) =>
+    getProcessContext(sessionId, s"${processCode}$url").map {
+      case Right(ProcessContext(process, answers, backLink)) if process.meta.processIdentifier == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -62,17 +62,18 @@ class GuidanceService @Inject() (
                   Right(
                     PageContext(
                       uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
-                      process.startUrl.map( url => s"${appConfig.baseUrl}/${processCode}${url}"),
+                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
                       process.title,
                       process.meta.id,
                       processCode,
+                      backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )
                   )
                 }
           )
-      case Right(ProcessContext(process, answers)) =>
-        logger.error(s"Referenced session ( $sessionId ) does not contain a process with process code $processCode")
+      case Right(ProcessContext(_,_,_)) =>
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")

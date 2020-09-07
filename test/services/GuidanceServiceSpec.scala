@@ -66,8 +66,8 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a page for the process" in new Test {
 
       MockSessionRepository
-        .get(sessionRepoId)
-        .returns(Future.successful(Right(ProcessContext(process, Map()))))
+        .get(sessionRepoId, s"$processId$lastPageUrl")
+        .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
         .pages(process)
@@ -93,8 +93,8 @@ class GuidanceServiceSpec extends BaseSpec {
     "retrieve a PageContext which includes the relevant answer" in new Test {
       override val processId: String = "ext90002"
       MockSessionRepository
-        .get(sessionRepoId)
-        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer")))))
+        .get(sessionRepoId, s"$processId$lastPageUrl")
+        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), None))))
 
       MockPageBuilder
         .pages(fullProcess)
@@ -108,7 +108,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       whenReady(result) { pageContext =>
         pageContext match {
-          case Right(PageContext(_, _, _, _, _, Some(answer))) => succeed
+          case Right(PageContext(_, _, _, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }
@@ -120,11 +120,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "not retrieve a page from the process" in new Test {
 
-      val url = "scooby"
+      val url = "/scooby"
 
       MockSessionRepository
-        .get(processId)
-        .returns(Future.successful(Right(ProcessContext(process, Map()))))
+        .get(processId, s"$processId$url")
+        .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
         .pages(process)
