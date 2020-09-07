@@ -46,7 +46,7 @@ class AccessibilityStatementController @Inject() (
     withExistingSession[ProcessContext](service.getProcessContext(_)).map {
       case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
-        val processIdentifier = processContext.process.meta.getProcessIdentifier
+        val processIdentifier = processContext.process.meta.processIdentifier
         Ok(view(title.asString(messages.lang),
                 processContext.process.startUrl.map(url => s"${appConfig.baseUrl}/$processIdentifier$url")))
       case Left(BadRequestError) =>

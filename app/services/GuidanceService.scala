@@ -110,7 +110,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => Right((pages.head.url, process.meta.getProcessIdentifier)))
+              }, pages => Right((pages.head.url, process.meta.processIdentifier)))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")
