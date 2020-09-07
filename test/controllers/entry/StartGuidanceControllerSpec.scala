@@ -90,7 +90,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       val repositoryId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
       MockGuidanceService
         .retrieveAndCacheScratch(uuid, repositoryId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl,uuid))))
       lazy val result = target.scratch(uuid)(fakeRequest)
     }
 
@@ -134,7 +134,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to another page" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl,processId))))
 
       val result = target.published(processId)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -143,7 +143,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to the start page of the process" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCachePublished(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl,processId))))
       val result = target.published(processId)(fakeRequest)
       redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId$expectedUrl")
     }
@@ -168,7 +168,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to another page" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl, processId))))
 
       val result = target.approval(processId)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -177,7 +177,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to the start page of the process" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl,processId))))
       val result = target.approval(processId)(fakeRequest)
       redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId$expectedUrl")
     }
@@ -203,7 +203,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to another page" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl, processId))))
 
       val result = target.approvalPage(processId, url)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -212,7 +212,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "redirect the caller to the start page of the process" in new ProcessTest {
       MockGuidanceService
         .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right(expectedUrl)))
+        .returns(Future.successful(Right((expectedUrl, processId))))
       val result = target.approvalPage(processId, url)(fakeRequest)
       redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId/$url")
     }

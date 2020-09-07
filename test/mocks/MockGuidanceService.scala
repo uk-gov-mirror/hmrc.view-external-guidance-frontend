@@ -32,19 +32,19 @@ trait MockGuidanceService extends MockFactory {
 
   object MockGuidanceService {
 
-    def retrieveAndCacheScratch(uuid: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+    def retrieveAndCacheScratch(uuid: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[(String,String)]]] = {
       (mockGuidanceService
         .retrieveAndCacheScratch(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(uuid, *, *, *)
     }
 
-    def retrieveAndCachePublished(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+    def retrieveAndCachePublished(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[(String,String)]]] = {
       (mockGuidanceService
         .retrieveAndCachePublished(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)
     }
 
-    def retrieveAndCacheApproval(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[String]]] = {
+    def retrieveAndCacheApproval(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[(String, String)]]] = {
       (mockGuidanceService
         .retrieveAndCacheApproval(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
         .expects(processId, *, *, *)

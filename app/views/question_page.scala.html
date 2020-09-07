@@ -35,7 +35,7 @@
 
   @components.error_summary(page.question.text, page.question.errorMsgs)
 
-  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processId, page.relativePath)) {
+  @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processCode, page.relativePath)) {
 
     @components.question(page.question, questionName, form)
 

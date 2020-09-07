@@ -40,11 +40,11 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
 
-  def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData] = None)(
+  def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId, s"$processId$url").map {
-      case Right(ProcessContext(process, answers, backLink)) if process.meta.id == processId =>
+    getProcessContext(sessionId, s"${processCode}$url").map {
+      case Right(ProcessContext(process, answers, backLink)) if process.meta.processIdentifier == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -61,10 +61,11 @@ class GuidanceService @Inject() (
                 } { pge =>
                   Right(
                     PageContext(
-                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processId}${p.url}")).toMap),
-                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processId}${startUrl}"),
+                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
+                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
                       process.title,
                       process.meta.id,
+                      processCode,
                       backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )
@@ -72,7 +73,7 @@ class GuidanceService @Inject() (
                 }
           )
       case Right(ProcessContext(_,_,_)) =>
-        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processId $processId")
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
@@ -82,7 +83,7 @@ class GuidanceService @Inject() (
   def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
     sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
-  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(uuid,
                      docId,
                      { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
@@ -90,15 +91,17 @@ class GuidanceService @Inject() (
                         case err @ Left(_) => err
                       }})
 
-  def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+  def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
+  Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.publishedProcess)
 
-  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[String]] =
+  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
+  Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
   private def retrieveAndCache(id: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
-  ): Future[RequestOutcome[String]] =
+  ): Future[RequestOutcome[(String,String)]] =
     retrieveProcessById(id).flatMap {
       case Right(process) =>
         sessionRepository.set(docId, process).map {
@@ -108,7 +111,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => Right(pages.head.url))
+              }, pages => Right((pages.head.url, process.meta.processIdentifier)))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")

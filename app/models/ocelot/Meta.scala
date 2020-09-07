@@ -19,7 +19,18 @@ package models.ocelot
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class Meta(id: String, title: String, ocelot: Int, lastAuthor: String, lastUpdate: Long, version: Int, fileName: String, titlePhrase: Option[Int] = None)
+case class Meta(id: String,
+                title: String,
+                ocelot: Int,
+                lastAuthor: String,
+                lastUpdate: Long,
+                version: Int,
+                fileName: String,
+                titlePhrase: Option[Int] = None,
+                processCode: Option[String] = None) {
+
+  lazy val processIdentifier: String = processCode.getOrElse(id)
+}
 
 object Meta {
 
@@ -31,7 +42,8 @@ object Meta {
       (__ \ "lastUpdate").read[Long] and
       (__ \ "version").read[Int] and
       (__ \ "filename").read[String] and
-      (__ \ "titlePhrase").readNullable[Int]
+      (__ \ "titlePhrase").readNullable[Int] and
+      (__ \ "processCode").readNullable[String]
   )(Meta.apply _)
 
   implicit val writes: Writes[Meta] = (
@@ -42,6 +54,7 @@ object Meta {
       (__ \ "lastUpdate").write[Long] and
       (__ \ "version").write[Int] and
       (__ \ "filename").write[String] and
-      (__ \ "titlePhrase").writeNullable[Int]
+      (__ \ "titlePhrase").writeNullable[Int] and
+      (__ \ "processCode").writeNullable[String]
   )(unlift(Meta.unapply))
 }
