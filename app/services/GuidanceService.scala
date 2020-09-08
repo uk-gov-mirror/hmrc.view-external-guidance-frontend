@@ -44,7 +44,7 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId, s"${processCode}$url").map {
-      case Right(ProcessContext(process, answers, backLink)) if process.meta.processIdentifier == processCode =>
+      case Right(ProcessContext(process, answers, backLink)) if process.meta.code == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -91,18 +91,18 @@ class GuidanceService @Inject() (
                         case err @ Left(_) => err
                       }})
 
-  def retrieveAndCachePublished(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
+  def retrieveAndCachePublished(processCode: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
   Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(processId, docId, connector.publishedProcess)
+    retrieveAndCache(processCode, docId, connector.publishedProcess)
 
   def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
   Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
-  private def retrieveAndCache(id: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
+  private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[(String,String)]] =
-    retrieveProcessById(id).flatMap {
+    retrieveProcessById(processIdentifier).flatMap {
       case Right(process) =>
         sessionRepository.set(docId, process).map {
           case Right(_) =>
@@ -111,7 +111,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => Right((pages.head.url, process.meta.processIdentifier)))
+              }, pages => Right((pages.head.url, process.meta.code)))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")
@@ -119,7 +119,7 @@ class GuidanceService @Inject() (
         }
 
       case Left(err) =>
-        logger.warn(s"Unable to find process using id $id, error")
+        logger.warn(s"Unable to find process using identifier $processIdentifier, error")
         Future.successful(Left(err))
     }
 
