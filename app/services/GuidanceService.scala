@@ -44,7 +44,7 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId, s"${processCode}$url").map {
-      case Right(ProcessContext(process, answers, backLink)) if process.meta.code == processCode =>
+      case Right(ProcessContext(process, answers, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -111,7 +111,7 @@ class GuidanceService @Inject() (
               .fold(err => {
                 logger.warn(s"Failed to parse process with error $err")
                 Left(InvalidProcessError)
-              }, pages => Right((pages.head.url, process.meta.code)))
+              }, pages => Right((pages.head.url, process.meta.processCode)))
 
           case Left(err) =>
             logger.error(s"Failed to store new parsed process in session respository, $err")
