@@ -29,7 +29,7 @@ case class Meta(id: String,
                 titlePhrase: Option[Int] = None,
                 processCode: Option[String] = None) {
 
-  lazy val processIdentifier: String = processCode.getOrElse(id)
+  lazy val code: String = processCode.getOrElse(id)
 }
 
 object Meta {

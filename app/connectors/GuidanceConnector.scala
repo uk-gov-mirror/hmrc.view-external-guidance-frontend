@@ -30,8 +30,8 @@ class GuidanceConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)
   def scratchProcess(uuid: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/scratch/$uuid")
 
-  def publishedProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
-    retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/published/$processId")
+  def publishedProcess(processCode: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
+    retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/published/$processCode")
 
   def approvalProcess(processId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[Process]] =
     retrieveProcess(appConfig.externalGuidanceBaseUrl + s"/external-guidance/approval/$processId")
