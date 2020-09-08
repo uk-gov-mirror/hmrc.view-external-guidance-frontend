@@ -20,13 +20,14 @@ import com.google.inject.{Inject, Singleton}
 import play.api.mvc._
 import play.api.i18n.Lang
 import config.AppConfig
+import play.api.Logger
 import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
 class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
     extends LanguageController(appConfig.config, languageUtils, cc) {
 
-
+  val logger = Logger(getClass)
   override def languageMap: Map[String, Lang] = appConfig.languageMap
   private val SwitchIndicatorKey = "switching-language"
   private val FlashWithSwitchIndicator = Flash(Map(SwitchIndicatorKey -> "true"))
@@ -39,10 +40,10 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
     val lang: Lang =
       if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
       else languageUtils.getCurrentLang
-
-    val redirectURL: String = request.headers.get(REFERER).find(r => r.startsWith(appConfig.hostBaseUrl) || 
-                                                                     r.startsWith(appConfig.adminHostBaseUrl)).getOrElse(fallbackURL)
-
+    val referrer = request.headers.get(REFERER)
+    val redirectURL: String = referrer.find(r => r.startsWith(appConfig.hostBaseUrl) ||
+                                                 r.startsWith(appConfig.adminHostBaseUrl)).getOrElse(fallbackURL)
+    logger.info(s"Redirecting to $redirectURL with referrer $referrer")
     Redirect(redirectURL).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
   }
 
