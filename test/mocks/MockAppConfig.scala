@@ -41,6 +41,8 @@ object MockAppConfig extends AppConfig {
   override def feedbackUrl(implicit request: RequestHeader): String = "somefeedbackUrl"
   override val gtmContainer: String = "someContainer"
   override val baseUrl: String = "/guidance"
-  override val hostBaseUrl: String = "http://localhost:9741/guidance"
-  override val adminHostBaseUrl: String = "http://adminhost/guidance"
+  override val host: String = "http://localhost:9741"
+  override val adminHost: String = "http://adminhost"
+  override val hostBaseUrl: String = s"${host}${baseUrl}"
+  override val adminHostBaseUrl: String = s"${adminHost}${baseUrl}"
 }

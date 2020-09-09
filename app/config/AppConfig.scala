@@ -42,6 +42,8 @@ trait AppConfig {
   val timeoutWarningInSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
   val gtmContainer: String
+  val host: String
+  val adminHost: String
   val baseUrl: String
   val hostBaseUrl: String
   val adminHostBaseUrl: String
