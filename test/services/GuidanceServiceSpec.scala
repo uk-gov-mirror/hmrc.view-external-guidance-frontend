@@ -65,8 +65,10 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "retrieve a page for the process" in new Test {
 
+      override val processCode = "cup-of-tea"
+
       MockSessionRepository
-        .get(sessionRepoId, s"$processId$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl")
         .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
@@ -77,7 +79,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -92,8 +94,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "retrieve a PageContext which includes the relevant answer" in new Test {
       override val processId: String = "ext90002"
+
+      override val processCode = "tell-hmrc"
+
       MockSessionRepository
-        .get(sessionRepoId, s"$processId$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl")
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), None))))
 
       MockPageBuilder
@@ -104,7 +109,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .fromStanzaPage(pages.last, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processId, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -121,16 +126,17 @@ class GuidanceServiceSpec extends BaseSpec {
     "not retrieve a page from the process" in new Test {
 
       val url = "/scooby"
+      override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(processId, s"$processId$url")
+        .get(processId, s"$processCode$url")
         .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
 
       MockPageBuilder
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPageContext(processId, url, processId)
+      private val result = target.getPageContext(processCode, url, processId)
 
       whenReady(result) {
         _ shouldBe Left(BadRequestError)
@@ -159,7 +165,7 @@ class GuidanceServiceSpec extends BaseSpec {
       private val result = target.retrieveAndCacheScratch(uuid, uuid)
 
       whenReady(result) { url =>
-        url shouldBe Right((firstPageUrl,uuid))
+        url shouldBe Right((firstPageUrl,"cup-of-tea"))
       }
     }
   }

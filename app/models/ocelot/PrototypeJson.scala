@@ -33,7 +33,8 @@ object PrototypeJson {
     "lastAuthor": "7903088",
     "lastUpdate": 1591002966651,
     "version": 7,
-    "filename": "trn90087.js"
+    "filename": "trn90087.js",
+    "processCode": "eg-auto-test"
   },
   "flow": {
     "34": {
@@ -551,7 +552,8 @@ object PrototypeJson {
         "lastAuthor": "7902560",
         "lastUpdate": 1582651445320,
         "version": 9,
-        "filename": "ext90002.js"
+        "filename": "ext90002.js",
+        "processCode": "tell-hmrc"
       },
       "flow": {
         "45": {
@@ -2295,7 +2297,8 @@ object PrototypeJson {
     "lastAuthor": "6018001",
     "lastUpdate": 1591965448141,
     "version": 4,
-    "filename": "ext90003.js"
+    "filename": "ext90003.js",
+    "processCode": "tell-hmrc"
   },
   "flow": {
     "45": {
