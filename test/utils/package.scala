@@ -15,19 +15,8 @@
  */
 
 import models.ocelot.{Phrase, Process}
-import models.ocelot.stanzas.{ValueStanza, PageStanza, PageUrlValueName}
 
 package object utils {
-
-  def migrateValueStanzaProcess(p: Process): Process =
-    p.copy(flow = p.flow.keys.map { k =>
-      val s = p.flow(k) match {
-        case v: ValueStanza => // Expects valid Process json
-          PageStanza(v.values.find(_.label.equals(PageUrlValueName.toString)).get.value, v.next, v.stack)
-        case s => s
-      }
-      (k, s)
-    }.toMap)
 
   def rewriteWithWelsh(p: Process): Process = p.copy(phrases = p.phrases.map(p => Phrase(Vector(p.langs(0), s"Welsh, ${p.langs(0)}"))))
 }
