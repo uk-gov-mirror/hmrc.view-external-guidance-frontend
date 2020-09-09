@@ -76,20 +76,30 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
   }
 
   "Lang switch" should {
-    "redirect to current page if referer is valid" in {
+    "redirect to referred page relatively if referrer is valid and includes the protocol and host name" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, s"${appConfig.hostBaseUrl}/somepage")))
-      redirectLocation(result) shouldBe Some(s"${appConfig.hostBaseUrl}/somepage")
+      redirectLocation(result) shouldBe Some(s"/guidance/somepage")
 
       val adminResult = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, s"${appConfig.adminHostBaseUrl}/somepage")))
-      redirectLocation(adminResult) shouldBe Some(s"${appConfig.adminHostBaseUrl}/somepage")
-      
+      redirectLocation(adminResult) shouldBe Some(s"/guidance/somepage")
+
     }
 
     "redirect to accessibility page if referer is bogus" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, "https://www.bbc.co.uk")))
       redirectLocation(result) shouldBe Some("/guidance/accessibility")
-      
+
     }
+
+    "redirect to accessibility page if referrer only service host or admin host" in {
+      val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, appConfig.host)))
+      redirectLocation(result) shouldBe Some("/guidance/accessibility")
+
+      val adminResult = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, appConfig.adminHost)))
+      redirectLocation(adminResult) shouldBe Some("/guidance/accessibility")
+
+    }
+
   }
 
 }

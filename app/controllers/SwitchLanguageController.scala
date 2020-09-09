@@ -28,11 +28,10 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
     extends LanguageController(appConfig.config, languageUtils, cc) {
 
   val logger = Logger(getClass)
+
   override def languageMap: Map[String, Lang] = appConfig.languageMap
   private val SwitchIndicatorKey = "switching-language"
   private val FlashWithSwitchIndicator = Flash(Map(SwitchIndicatorKey -> "true"))
-
-  // TODO requires suitable index like fallback URL
   override def fallbackURL: String = routes.AccessibilityStatementController.getPage().url
 
   override def switchToLanguage(language: String): Action[AnyContent] = Action { implicit request =>
@@ -40,11 +39,13 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
     val lang: Lang =
       if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
       else languageUtils.getCurrentLang
-    val referrer = request.headers.get(REFERER)
-    val redirectURL: String = referrer.find(r => r.startsWith(appConfig.hostBaseUrl) ||
-                                                 r.startsWith(appConfig.adminHostBaseUrl)).getOrElse(fallbackURL)
-    logger.info(s"Redirecting to $redirectURL with referrer $referrer")
-    Redirect(redirectURL).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
-  }
 
+    val relativeRedirectUrl: String = request.headers.get(REFERER).collect{
+      case url if url.startsWith(appConfig.hostBaseUrl) => url.drop(appConfig.host.length)
+      case url if url.startsWith(appConfig.adminHostBaseUrl) => url.drop(appConfig.adminHost.length)
+    }.getOrElse(fallbackURL)
+
+    logger.info(s"Redirecting to $relativeRedirectUrl")
+    Redirect(relativeRedirectUrl).withLang(Lang.apply(lang.code)).flashing(FlashWithSwitchIndicator)
+  }
 }
