@@ -91,15 +91,15 @@ class ValueStanzaSpec extends BaseSpec {
     }
 
     "serialise to json" in {
-      val stanza: ValueStanza = ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "/")), Seq("4"), true)
-      val expectedJson: String = """{"values":[{"type":"scalar","label":"PageUrl","value":"/"}],"next":["4"],"stack":true}"""
+      val stanza: ValueStanza = ValueStanza(List(Value(Scalar, "LabelName", "/")), Seq("4"), true)
+      val expectedJson: String = """{"values":[{"type":"scalar","label":"LabelName","value":"/"}],"next":["4"],"stack":true}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
-      val stanza: Stanza = ValueStanza(List(Value(Scalar, PageUrlValueName.toString, "/")), Seq("4"), true)
-      val expectedJson: String = """{"next":["4"],"stack":true,"values":[{"type":"scalar","label":"PageUrl","value":"/"}],"type":"ValueStanza"}"""
+      val stanza: Stanza = ValueStanza(List(Value(Scalar, "LabelName", "/")), Seq("4"), true)
+      val expectedJson: String = """{"next":["4"],"stack":true,"values":[{"type":"scalar","label":"LabelName","value":"/"}],"type":"ValueStanza"}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
