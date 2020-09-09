@@ -91,12 +91,6 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
     }
 
-    "redirect to referred page if referrer is valid and relative to current context root" in {
-      val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, "/guidance/somepage")))
-      redirectLocation(result) shouldBe Some("/guidance/somepage")
-
-    }
-
     "redirect to accessibility page if referrer only service host or admin host" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, appConfig.host)))
       redirectLocation(result) shouldBe Some("/guidance/accessibility")
