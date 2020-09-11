@@ -20,7 +20,9 @@ import play.api.libs.json._
 
 trait Stanza {
   val next: Seq[String] = Nil
-  val links: Seq[String] = Nil
+  val links: List[String] = Nil
+  val labels: List[String] = Nil
+  val labelRefs: List[String] = Nil
 }
 
 trait PopulatedStanza extends Stanza

@@ -16,6 +16,7 @@
 
 import models.errors.{Error, ProcessError, ValidationError}
 import models.ocelot.errors._
+import scala.util.matching.Regex
 import java.util.UUID
 import models.RequestOutcome
 import models.ocelot.{Page, Process}
@@ -23,8 +24,13 @@ import play.api.libs.json._
 
 package object services {
 
+  def plSingleGroupCaptures(regex: Regex, str: String): List[String] = regex.findAllMatchIn(str).map(_.group(1)).toList
+
   val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
-  def pageLinkIds(str: String): Seq[String] = pageLinkRegex.findAllMatchIn(str).map(_.group(1)).toList
+  def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str)
+
+  val labelRefRegex = s"\\[label:([0-9a-zA-Z]+)\\]".r
+  def labelRefs(str: String): List[String] = plSingleGroupCaptures(labelRefRegex, str)
 
   def validateUUID(id: String): Option[UUID] = {
     val format = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
