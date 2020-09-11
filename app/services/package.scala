@@ -23,6 +23,9 @@ import play.api.libs.json._
 
 package object services {
 
+  val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
+  def pageLinkIds(str: String): Seq[String] = pageLinkRegex.findAllMatchIn(str).map(_.group(1)).toList
+
   def validateUUID(id: String): Option[UUID] = {
     val format = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
     if (id.matches(format)) Some(UUID.fromString(id)) else None

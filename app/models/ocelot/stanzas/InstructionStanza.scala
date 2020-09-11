@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, OWrites, Reads}
 
-case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza
+case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza with NonPageTerminator
 
 object InstructionStanza {
 
@@ -41,16 +41,11 @@ object InstructionStanza {
 
 }
 
-case class Instruction(text: Phrase, override val next: Seq[String], link: Option[Link], stack: Boolean) extends PopulatedStanza {
-
-  val linkIds: Seq[String] = link
-    .map(lnk => Seq(lnk.dest.trim))
-    .filter(id => Link.isLinkableStanzaId(id.head))
-    .getOrElse(Nil)
-}
+case class Instruction(text: Phrase, override val next: Seq[String], link: Option[Link], stack: Boolean, override val links: Seq[String] = Nil) extends PopulatedStanza  with NonPageTerminator
 
 object Instruction {
-
-  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link]): Instruction =
-    Instruction(text, stanza.next, link, stanza.stack)
+  def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link], linkIds: Seq[String]): Instruction = {
+    val linkedPageids: Seq[String] = link.map(lnk => Seq(lnk.dest.trim)).filter(id => Link.isLinkableStanzaId(id.head)).getOrElse(Nil)
+    Instruction(text, stanza.next, link, stanza.stack, linkIds ++ linkedPageids)
+  }
 }

@@ -38,7 +38,7 @@ object Value {
 
 }
 
-case class ValueStanza(values: List[Value], override val next: Seq[String], stack: Boolean) extends Stanza
+case class ValueStanza(values: List[Value], override val next: Seq[String], stack: Boolean) extends Stanza with NonPageTerminator
 
 object ValueStanza {
 

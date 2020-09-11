@@ -56,8 +56,8 @@ trait ProcessPopulation {
         Left(_),
         text => {
           i.link match {
-            case Some(linkIndex) => link(linkIndex).fold(Left(_), link => Right(Instruction(i, text, Some(link))))
-            case None => Right(Instruction(i, text, None))
+            case Some(linkIndex) => link(linkIndex).fold(Left(_), link => Right(Instruction(i, text, Some(link), pageLinkIds(text.langs.head))))
+            case None => Right(Instruction(i, text, None, pageLinkIds(text.langs.head)))
           }
         }
       )

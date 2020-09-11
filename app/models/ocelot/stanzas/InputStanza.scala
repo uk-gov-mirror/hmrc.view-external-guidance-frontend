@@ -28,7 +28,7 @@ case class InputStanza(
   label: String,
   placeholder: Int,
   stack: Boolean
-) extends Stanza
+) extends Stanza with NonPageTerminator
 
 object InputStanza {
 

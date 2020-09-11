@@ -45,16 +45,16 @@ class UIBuilder {
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {
-      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) if OcelotLink.isLinkableStanzaId(dest) =>
+      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _, _) if OcelotLink.isLinkableStanzaId(dest) =>
         Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs, window))
-      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _) => Paragraph(Text.link(dest, txt.langs, window))
-      case Instruction(txt, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
+      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _, _) => Paragraph(Text.link(dest, txt.langs, window))
+      case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
   private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
       implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
-    
+
     @tailrec
     def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
       components match {
