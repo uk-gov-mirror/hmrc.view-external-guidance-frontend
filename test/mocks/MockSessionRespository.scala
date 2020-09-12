@@ -17,7 +17,7 @@
 package mocks
 
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.Process
+import models.ocelot.{Label, Process}
 import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -34,10 +34,10 @@ trait MockSessionRepository extends MockFactory {
         .get(_: String, _: String))
         .expects(key, pageUrl)
 
-    def set(key: String, process: Process): CallHandler[Future[RequestOutcome[Unit]]] =
+    def set(key: String, process: Process, labels: Map[String, Label]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
-        .set(_: String, _: Process))
-        .expects(key, process)
+        .set(_: String, _: Process, _: Map[String, Label]))
+        .expects(key, process, labels)
 
     def saveAnswerToQuestion(key: String, url: String, answer: String): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository

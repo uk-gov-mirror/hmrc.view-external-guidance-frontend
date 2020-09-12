@@ -44,7 +44,7 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId, s"${processCode}$url").map {
-      case Right(ProcessContext(process, answers, backLink)) if process.meta.processCode == processCode =>
+      case Right(ProcessContext(process, answers, labels, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -72,7 +72,7 @@ class GuidanceService @Inject() (
                   )
                 }
           )
-      case Right(ProcessContext(_,_,_)) =>
+      case Right(ProcessContext(_,_,_,_)) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
@@ -103,24 +103,21 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[(String,String)]] =
     retrieveProcessById(processIdentifier).flatMap {
-      case Right(process) =>
-        sessionRepository.set(docId, process).map {
-          case Right(_) =>
-            pageBuilder
-              .pages(process)
-              .fold(err => {
-                logger.warn(s"Failed to parse process with error $err")
-                Left(InvalidProcessError)
-              }, pages => Right((pages.head.url, process.meta.processCode)))
-
-          case Left(err) =>
-            logger.error(s"Failed to store new parsed process in session respository, $err")
-            Left(err)
-        }
-
       case Left(err) =>
         logger.warn(s"Unable to find process using identifier $processIdentifier, error")
         Future.successful(Left(err))
-    }
 
+      case Right(process) =>
+        pageBuilder.pages(process).fold(err => {
+            logger.warn(s"Failed to parse process with error $err")
+            Future.successful(Left(InvalidProcessError))
+        }, pages =>
+          sessionRepository.set(docId, process, uniqueLabels(pages).map(l => (l.name, l)).toMap).map {
+            case Right(_) => Right((pages.head.url, process.meta.processCode))
+            case Left(err) =>
+              logger.error(s"Failed to store new parsed process in session respository, $err")
+              Left(err)
+          }
+        )
+    }
 }
