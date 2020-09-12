@@ -16,12 +16,4 @@
 
 package models.ocelot
 
-import models.ocelot.stanzas.{InputType, Stanza}
-
-case class Page(id: String,
-                url: String,
-                stanzas: Seq[Stanza],
-                next: Seq[String],
-                linked: Seq[String] = Nil,
-                labels: List[(String, Option[InputType])] = Nil,
-                labelRefs: List[String] = Nil)
+case class Label(name: String, value: String, valueType: stanzas.InputType)

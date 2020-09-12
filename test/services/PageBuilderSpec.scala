@@ -97,7 +97,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect PageStanzaMissing error when stanza routes to page not starting with PageUrl ValueStanza" in {
+    "detect PageStanzaMissing error when stanza routes to page not starting with PageStanza" in {
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
@@ -120,8 +120,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       pageBuilder.pages(process) match {
         case Left(List(PageStanzaMissing("4"))) => succeed
-        case Left(err) => fail(s"Missing ValueStanza containing PageUrl value not detected, failed with $err")
-        case _ => fail(s"Missing ValueStanza containing PageUrl value not detected")
+        case Left(err) => fail(s"Missing PageStanza, failed with $err")
+        case x => fail(s"Missing PageStanza $x")
       }
     }
 
@@ -406,7 +406,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val process: Process = invalidOnePageJson.as[Process]
 
       pageBuilder.buildPage("start", process) match {
-        case Right(Page(_,url,_,_,_)) if url.startsWith("/") => succeed
+        case Right(Page(_,url,_,_,_,_,_)) if url.startsWith("/") => succeed
         case Right(_) => fail("Url should be prefixed with a / char")
         case Left(err) => fail(s"Url should be prefixed with a / char, failed with unexpected err $err")
       }

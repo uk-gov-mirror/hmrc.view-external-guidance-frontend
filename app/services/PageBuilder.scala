@@ -30,14 +30,13 @@ class PageBuilder extends ProcessPopulation {
   val logger: Logger = Logger(this.getClass)
 
   def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
-
     @tailrec
     def collectStanzas(key: String, acc: Seq[KeyedStanza], linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[String])] =
       stanza(key, process) match {
         case Right(s: PageStanza) if acc.nonEmpty => Right((acc, linkedAcc))
-        case Right(s: Question) => Right((acc :+ KeyedStanza(key, s), linkedAcc))
-        case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), linkedAcc))
         case Right(s: Stanza with NonPageTerminator) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc ++ s.links)
+        case Right(s: Question) => Right((acc :+ KeyedStanza(key, s), linkedAcc ++ s.links))
+        case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), linkedAcc))
         case Right(s: Stanza) => Left(UnknownStanza(key, s.toString))
         case Left(err) => Left(err)
       }
@@ -54,7 +53,6 @@ class PageBuilder extends ProcessPopulation {
   }
 
   def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] = {
-
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[GuidanceError, Seq[Page]] =
       keys match {
@@ -88,8 +86,6 @@ class PageBuilder extends ProcessPopulation {
       }
     )
   }
-
-  private val hintRegex = "\\[hint:([^\\]])+\\]".r
 
   def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =
     pages.toList.flatMap { page =>
