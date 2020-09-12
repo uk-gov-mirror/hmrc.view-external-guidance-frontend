@@ -121,39 +121,40 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageBuilder.pages(process) match {
         case Left(List(PageStanzaMissing("4"))) => succeed
         case Left(err) => fail(s"Missing PageStanza, failed with $err")
-        case x => fail(s"Missing PageStanza $x")
+        case x => fail(s"Missing PageStanza with $x")
       }
     }
 
-    "detect UnknownStanza error when currently unsupported stanza found" in {
+    // UNKNOWN STANZAS CAUGHT AT JSON PARSE STAGE
+    // "detect UnknownStanza error when currently unsupported stanza found" in {
 
-      case class MadeUpStanza(override val next: Seq[String]) extends Stanza
+    //   case class MadeUpStanza(override val next: Seq[String]) extends Stanza
 
-      val flow = Map(
-        Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
-        "1" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> MadeUpStanza(Seq("3")),
-        "3" -> InstructionStanza(0, Seq("end"), None, false),
-        "end" -> EndStanza
-      )
-      val process = Process(
-        metaSection,
-        flow,
-        Vector[Phrase](
-          Phrase(Vector("Some Text", "Welsh, Some Text")),
-          Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-        ),
-        Vector[Link]()
-      )
+    //   val flow = Map(
+    //     Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
+    //     "1" -> InstructionStanza(0, Seq("2"), None, false),
+    //     "2" -> MadeUpStanza(Seq("3")),
+    //     "3" -> InstructionStanza(0, Seq("end"), None, false),
+    //     "end" -> EndStanza
+    //   )
+    //   val process = Process(
+    //     metaSection,
+    //     flow,
+    //     Vector[Phrase](
+    //       Phrase(Vector("Some Text", "Welsh, Some Text")),
+    //       Phrase(Vector("Some Text1", "Welsh, Some Text1")),
+    //       Phrase(Vector("Some Text2", "Welsh, Some Text2")),
+    //       Phrase(Vector("Some Text3", "Welsh, Some Text3"))
+    //     ),
+    //     Vector[Link]()
+    //   )
 
-      pageBuilder.pages(process) match {
-        case Left(List(UnknownStanza("2", "MadeUpStanza(List(3))"))) => succeed
-        case Left(err) => fail(s"Failed with $err")
-        case x => fail(s"General failure with $x")
-      }
-    }
+    //   pageBuilder.pages(process) match {
+    //     case Left(List(UnknownStanza("2", "MadeUpStanza(List(3))"))) => succeed
+    //     case Left(err) => fail(s"Failed with $err")
+    //     case x => fail(s"General failure with $x")
+    //   }
+    // }
 
     "detect PageUrlEmptyOrInvalid error when PageValue is present but url is blank" in {
       val flow = Map(
