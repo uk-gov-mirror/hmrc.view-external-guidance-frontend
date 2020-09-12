@@ -390,6 +390,38 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   }
 
+  trait IhtTest extends Test with IhtJson {
+    val ihtProcess = ihtJsonShort.as[Process]
+  }
+
+  "services" must {
+    "determine unique set of labels from a collection of pages" in new IhtTest {
+      val labels = Seq(Label("Properties",Some("0"),None),
+                       Label("Money",Some("0"),None),
+                       Label("Household",Some("0"),None),
+                       Label("Motor Vehicles",Some("0"),None),
+                       Label("Private pension",Some("0"),None),
+                       Label("Trust",Some("0"),None),
+                       Label("Foreign assets",Some("0"),None),
+                       Label("Other assets",Some("0"),None),
+                       Label("Mortgage_debt",Some("0"),None),
+                       Label("funeral_expenses",Some("0"),None),
+                       Label("other_debts",Some("0"),None),
+                       Label("left to spouse",Some("0"),None),
+                       Label("registered charity",Some("0"),None),
+                       Label("nil rate band",Some("0"),None),
+                       Label("Value of Assets",None,None),
+                       Label("Value of Debts",None,None),
+                       Label("Additional Info",None,None),
+                       Label("IHT result",None,None))
+
+      pageBuilder.pages(ihtProcess, "start") match {
+        case Right(pages) => services.uniqueLabels(pages) shouldBe labels
+        case Left(err) => fail
+      }
+    }
+  }
+
   "PageBuilder" must {
 
     "be not buildable from non-existent key" in {

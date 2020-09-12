@@ -17,10 +17,11 @@
 package models.ocelot.stanzas
 
 import play.api.libs.json._
+import models.ocelot.Label
 
 trait Stanza {
   val next: Seq[String] = Nil
-  val labels: List[(String, Option[InputType])] = Nil
+  val labels: List[Label] = Nil
   val labelRefs: List[String] = Nil
 }
 

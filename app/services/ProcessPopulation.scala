@@ -63,6 +63,15 @@ trait ProcessPopulation {
       )
     }
 
+    def populateInput(i: InputStanza): Either[GuidanceError, Input] =
+      phrase(i.name).fold(ne => Left(ne), name =>
+        phrase(i.help).fold(he => Left(he), help =>
+          phrase(i.placeholder).fold(pe => Left(pe), placeholder =>
+            Right(Input(i, name, help, placeholder))
+          )
+        )
+      )
+
     stanza match {
       case q: QuestionStanza =>
         phrases(q.text +: q.answers, Nil) match {
@@ -70,6 +79,7 @@ trait ProcessPopulation {
           case Left(err) => Left(err)
         }
       case i: InstructionStanza => populateInstruction(i)
+      case i: InputStanza => populateInput(i)
       case c: CalloutStanza => phrase(c.text).fold(Left(_), text => Right(Callout(c, text)))
       case s: Stanza => Right(s)
     }

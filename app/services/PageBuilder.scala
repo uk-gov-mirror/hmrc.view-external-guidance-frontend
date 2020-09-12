@@ -19,7 +19,7 @@ package services
 import javax.inject.Singleton
 import models.ocelot.stanzas._
 import models.ocelot.errors._
-import models.ocelot.{Page, Process}
+import models.ocelot.{Label, Page, Process}
 import play.api.Logger
 import scala.annotation.tailrec
 
@@ -31,20 +31,23 @@ class PageBuilder extends ProcessPopulation {
 
   def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
     @tailrec
-    def collectStanzas(key: String, acc: Seq[KeyedStanza], linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[String])] =
+    def collectStanzas(key: String,
+                       acc: Seq[KeyedStanza],
+                       labelsAcc: Seq[Label],
+                       linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[Label], Seq[String])] =
       stanza(key, process) match {
-        case Right(s: PageStanza) if acc.nonEmpty => Right((acc, linkedAcc))
-        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), linkedAcc))
-        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc ++ s.links)
-        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc)
+        case Right(s: PageStanza) if acc.nonEmpty => Right((acc, labelsAcc, linkedAcc))
+        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), labelsAcc, linkedAcc))
+        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc ++ s.links)
+        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc)
         case Left(err) => Left(err)
       }
 
-    collectStanzas(key, Nil, Nil) match {
-      case Right((ks, linked)) =>
+    collectStanzas(key, Nil, Nil, Nil) match {
+      case Right((ks, labels, linked)) =>
         ks.head.stanza match {
           case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
-          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), ks.last.stanza.next, linked))
+          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), ks.last.stanza.next, linked, labels))
           case _ => Left(PageStanzaMissing(ks.head.key))
         }
       case Left(err) => Left(err)
