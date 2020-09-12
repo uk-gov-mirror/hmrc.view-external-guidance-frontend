@@ -20,14 +20,15 @@ import play.api.libs.json._
 
 trait Stanza {
   val next: Seq[String] = Nil
+}
+
+trait PopulatedStanza extends Stanza {
   val links: Seq[String] = Nil
 }
 
-trait PopulatedStanza extends Stanza
+trait PageTerminator
 
-trait NonPageTerminator
-
-case object EndStanza extends Stanza
+case object EndStanza extends Stanza  with PageTerminator
 
 object Stanza {
 

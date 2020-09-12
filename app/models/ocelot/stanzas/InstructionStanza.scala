@@ -21,7 +21,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, OWrites, Reads}
 
-case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza with NonPageTerminator
+case class InstructionStanza(text: Int, override val next: Seq[String], link: Option[Int], stack: Boolean) extends Stanza
 
 object InstructionStanza {
 
@@ -41,7 +41,7 @@ object InstructionStanza {
 
 }
 
-case class Instruction(text: Phrase, override val next: Seq[String], link: Option[Link], stack: Boolean, override val links: Seq[String] = Nil) extends PopulatedStanza  with NonPageTerminator
+case class Instruction(text: Phrase, override val next: Seq[String], link: Option[Link], stack: Boolean, override val links: Seq[String] = Nil) extends PopulatedStanza
 
 object Instruction {
   def apply(stanza: InstructionStanza, text: Phrase, link: Option[Link], linkIds: Seq[String]): Instruction = {

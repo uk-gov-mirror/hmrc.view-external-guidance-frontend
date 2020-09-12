@@ -43,7 +43,7 @@ case class ChoiceStanza(
   override val next: Seq[String],
   tests: Seq[ChoiceTest],
   stack: Boolean
-) extends Stanza with NonPageTerminator
+) extends Stanza
 
 object ChoiceStanza {
 

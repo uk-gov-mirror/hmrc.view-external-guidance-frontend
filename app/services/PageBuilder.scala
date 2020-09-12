@@ -35,10 +35,9 @@ class PageBuilder extends ProcessPopulation {
     def collectStanzas(key: String, acc: Seq[KeyedStanza], linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[String])] =
       stanza(key, process) match {
         case Right(s: PageStanza) if acc.nonEmpty => Right((acc, linkedAcc))
-        case Right(s: Question) => Right((acc :+ KeyedStanza(key, s), linkedAcc))
-        case Right(EndStanza) => Right((acc :+ KeyedStanza(key, EndStanza), linkedAcc))
-        case Right(s: Stanza with NonPageTerminator) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc ++ s.links)
-        case Right(s: Stanza) => Left(UnknownStanza(key, s.toString))
+        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), linkedAcc))
+        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc ++ s.links)
+        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), linkedAcc)
         case Left(err) => Left(err)
       }
 
