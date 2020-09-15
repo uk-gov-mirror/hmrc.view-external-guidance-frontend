@@ -241,7 +241,33 @@ trait ProcessJson {
       |    "start": {
       |      "type": "PageStanza",
       |      "url": "/feeling-bad",
-      |      "next": ["3"],
+      |      "next": ["33"],
+      |      "stack": true
+      |    },
+      |    "33": {
+      |      "type": "ValueStanza",
+      |      "values": [
+      |        {
+      |          "type": "AnUnknownType",
+      |          "label": "SomeLabel",
+      |          "value": "43"
+      |        }
+      |      ],
+      |      "next": [
+      |        "34"
+      |      ],
+      |      "stack": true
+      |    },
+      |    "34": {
+      |      "type": "InputStanza",
+      |      "ipt_type": "UnknownInputType",
+      |      "next": [
+      |        "23"
+      |      ],
+      |      "name": 1,
+      |      "help": 2,
+      |      "label": "LabelName",
+      |      "placeholder": 3,
       |      "stack": true
       |    },
       |    "3": {
