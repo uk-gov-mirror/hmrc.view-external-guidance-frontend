@@ -57,6 +57,7 @@ trait SessionRepository {
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
+  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
