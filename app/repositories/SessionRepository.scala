@@ -179,6 +179,27 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
+  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj("$set" -> Json.obj("labels" -> labels))
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to saveLabels using _id=$key returned no result, lastError ${result.lastError}"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
+          Left(DatabaseError)
+      }
+  }
+
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
