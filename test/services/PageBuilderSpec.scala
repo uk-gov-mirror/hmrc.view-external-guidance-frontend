@@ -402,6 +402,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "detect UnknownCalloutType" in {
       val processErrors: List[ProcessError] = List(ProcessError("Unsupported InputStanza type UnknownInputType found at stanza id 34","34"),
+                                                   ProcessError("Process Links section parse error: error.path.missing at location 0",""),
                                                    ProcessError("Process Phrases section parse error: error.minLength at location 5",""),
                                                    ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
                                                    ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 3","3"),
