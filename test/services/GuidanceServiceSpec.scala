@@ -69,7 +69,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl")
-        .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
 
       MockPageBuilder
         .pages(process)
@@ -99,7 +99,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl")
-        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), None))))
+        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), None))))
 
       MockPageBuilder
         .pages(fullProcess)
@@ -130,7 +130,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId, s"$processCode$url")
-        .returns(Future.successful(Right(ProcessContext(process, Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
 
       MockPageBuilder
         .pages(process)
@@ -155,7 +155,7 @@ class GuidanceServiceSpec extends BaseSpec {
       val processWithUpdatedId = process.copy(meta = process.meta.copy( id = uuid))
 
       MockSessionRepository
-        .set(uuid, processWithUpdatedId)
+        .set(uuid, processWithUpdatedId, Map())
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -179,7 +179,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode)
+        .set(sessionRepoId, processWithProcessCode, Map())
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -203,7 +203,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode)
+        .set(sessionRepoId, processWithProcessCode, Map())
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
