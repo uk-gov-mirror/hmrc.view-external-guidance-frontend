@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{Label, Phrase}
+import models.ocelot._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -63,7 +63,9 @@ case class Input(ipt_type: InputType,
                  help: Phrase,
                  label: String,
                  placeholder: Phrase,
-                 stack: Boolean) extends PopulatedStanza
+                 stack: Boolean) extends PopulatedStanza {
+  override val labelRefs: List[String] = labelReferences(name.langs(0)) ++ labelReferences(help.langs(0))
+}
 
 object Input {
   def apply(stanza: InputStanza, name: Phrase, help: Phrase, placeholder: Phrase): Input = {

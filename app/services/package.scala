@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import models.ocelot._
 import models.errors.{Error, ProcessError, ValidationError}
 import models.ocelot.errors._
-import scala.util.matching.Regex
 import java.util.UUID
 import models.RequestOutcome
 import models.ocelot.{Label, Page, Process}
@@ -25,14 +25,6 @@ import play.api.libs.json._
 package object services {
   val processIdformat = "^[a-z]{3}[0-9]{5}$"
   val uuidFormat = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-
-  val hintRegex = "\\[hint:([^\\]])+\\]".r
-  val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
-  val labelRefRegex = s"\\[label:([0-9a-zA-Z]+)\\]".r
-
-  def plSingleGroupCaptures(regex: Regex, str: String): List[String] = regex.findAllMatchIn(str).map(_.group(1)).toList
-  def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str)
-  def labelRefs(str: String): List[String] = plSingleGroupCaptures(labelRefRegex, str)
 
   def validateUUID(id: String): Option[UUID] = if (id.matches(uuidFormat)) Some(UUID.fromString(id)) else None
   def validateProcessId(id: String): Either[Error, String] = if (id.matches(processIdformat)) Right(id) else Left(ValidationError)
@@ -43,6 +35,8 @@ package object services {
     val withType = typed.distinct
     (withType ++ untyped.filterNot(u => withType.exists(t => t.name == u.name)))
   }
+
+  def uniqueLabelRefs(pages: Seq[Page]): Seq[String] = pages.flatMap(_.labelRefs)
 
   implicit def toProcessErr(err: GuidanceError): ProcessError = err match {
     case e: StanzaNotFound => ProcessError(s"Missing stanza at id = ${e.id}", e.id)

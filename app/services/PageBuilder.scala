@@ -17,6 +17,7 @@
 package services
 
 import javax.inject.Singleton
+import models.ocelot._
 import models.ocelot.stanzas._
 import models.ocelot.errors._
 import models.ocelot.{Label, Page, Process}
@@ -33,27 +34,28 @@ class PageBuilder extends ProcessPopulation {
     @tailrec
     def collectStanzas(key: String,
                        acc: Seq[KeyedStanza],
-                       labelsAcc: Seq[Label],
-                       linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[Label], Seq[String])] =
+                       labelAcc: Seq[Label],
+                       labelRefAcc: Seq[String],
+                       linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[Label], Seq[String], Seq[String])] =
       stanza(key, process) match {
-        case Right(s: PageStanza) if acc.nonEmpty => Right((acc, labelsAcc, linkedAcc))
+        case Right(s: PageStanza) if acc.nonEmpty => Right((acc, labelAcc, labelRefAcc, linkedAcc))
         // Partially enable Calculation and Choice stanzas to allow collection of labels, both will be ignore during build of UI
         // Calculation and Choice stanza will generate if found in the place of a PageStanza e.e. after a Question
-        case Right(s: CalculationStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc)
-        case Right(s: ChoiceStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc)
+        case Right(s: CalculationStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
+        case Right(s: ChoiceStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
         case Right(s: CalculationStanza) => Left(UnknownStanza(key, "CalculationStanza"))
         case Right(s: ChoiceStanza) => Left(UnknownStanza(key, "ChoiceStanza"))
-        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), labelsAcc, linkedAcc))
-        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc ++ s.links)
-        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelsAcc ++ s.labels, linkedAcc)
+        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), labelAcc, labelRefAcc, linkedAcc))
+        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc ++ s.links)
+        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
         case Left(err) => Left(err)
       }
 
-    collectStanzas(key, Nil, Nil, Nil) match {
-      case Right((ks, labels, linked)) =>
+    collectStanzas(key, Nil, Nil, Nil, Nil) match {
+      case Right((ks, labels, labelRefs, linked)) =>
         ks.head.stanza match {
           case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
-          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), ks.last.stanza.next, linked, labels))
+          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), ks.last.stanza.next, linked, labels, labelRefs.distinct))
           case _ => Left(PageStanzaMissing(ks.head.key))
         }
       case Left(err) => Left(err)

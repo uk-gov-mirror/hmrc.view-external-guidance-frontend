@@ -18,5 +18,11 @@ import models.ocelot.{Phrase, Process}
 
 package object utils {
 
+  def addTitlePhrase(process: Process): Process =
+    process.copy(
+      meta = process.meta.copy(titlePhrase = Some(process.phrases.length)),
+      phrases = process.phrases :+ Phrase(process.meta.title, s"Welsh, ${process.meta.title}")
+    )
+
   def rewriteWithWelsh(p: Process): Process = p.copy(phrases = p.phrases.map(p => Phrase(Vector(p.langs(0), s"Welsh, ${p.langs(0)}"))))
 }

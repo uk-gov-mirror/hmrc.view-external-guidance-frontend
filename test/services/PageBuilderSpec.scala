@@ -450,9 +450,41 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         case Left(err) => fail(s"Failed with $err")
       }
     }
+
+    "determine unique set of label references from a collection of pages" in new IhtTest {
+      val labelsReferenced = Seq("Properties",
+                                  "Money",
+                                  "Value of Assets",
+                                  "Household",
+                                  "Motor Vehicles",
+                                  "Private pension",
+                                  "Trust",
+                                  "Foreign assets",
+                                  "Other assets",
+                                  "Value of Debts",
+                                  "left to spouse",
+                                  "registered charity",
+                                  "Additional Info",
+                                  "nil rate band",
+                                  "IHT result")
+
+      pageBuilder.pages(ihtProcess, "start") match {
+        case Right(pages) => services.uniqueLabelRefs(pages) shouldBe labelsReferenced
+        case Left(err) => fail(s"Failed with $err")
+      }
+    }
   }
 
   "PageBuilder" must {
+
+    "Make it possible to validate label references across a sequence of pages" in new IhtTest {
+      pageBuilder.pages(ihtProcess, "start") match {
+        case Right(pages) =>
+          val labels = services.uniqueLabels(pages)
+          services.uniqueLabelRefs(pages).forall(lr => labels.exists(_.name == lr)) shouldBe true
+        case Left(err) => fail(s"Failed with $err")
+      }
+    }
 
     "be not buildable from non-existent key" in {
 
