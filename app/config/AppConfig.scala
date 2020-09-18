@@ -38,8 +38,12 @@ trait AppConfig {
   val privacy: String
   val termsConditions: String
   val govukHelp: String
+  val signOutUrl: String
+  val defaultSignOutUrl: String
   val timeoutInSeconds: Int
   val timeoutWarningInSeconds: Int
+  val toMilliSeconds: Int
+  val expiryErrorMarginInMilliSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
   val gtmContainer: String
   val host: String
@@ -77,8 +81,12 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
   lazy val gtmContainer: String = config.get[String]("gtm.container")
 
+  lazy val signOutUrl: String = config.get[String]("session-timeout.signOutUrl")
+  lazy val defaultSignOutUrl: String = config.get[String]("session-timeout.defaultSignOutUrl")
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")
   lazy val timeoutWarningInSeconds: Int = config.get[Int]("session-timeout.warning")
+  lazy val toMilliSeconds: Int = config.get[Int]("session-timeout.toMilliSeconds")
+  lazy val expiryErrorMarginInMilliSeconds: Int = config.get[Int]("session-timeout.expiryErrorMarginInMilliSeconds")
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
   lazy val hostBaseUrl: String = s"$host$baseUrl"
   lazy val adminHostBaseUrl: String = s"$adminHost$baseUrl"

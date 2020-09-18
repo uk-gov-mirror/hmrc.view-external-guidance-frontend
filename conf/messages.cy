@@ -32,6 +32,15 @@ timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
 timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
 timeout.dialog.signOutUrl= http://www.gov.uk/gwirio-treth-incwm-ychwanegol
 
+session.timeout.page.title=Welsh - Session timeout page for HMRC Interactive Guidance
+session.timeout.header.title=Welsh - Interactive Guidance
+session.timeout.delete.your.answers=Welsh - You deleted your answers
+session.timeout.session.has.expired=Welsh - Your session has ended
+session.timeout.delete.answers.after.error=Welsh - You deleted your answers after the service experienced difficulties
+session.timeout.after.error=Welsh - Your session has ended after the service experienced difficulties
+session.timeout.button.text=Welsh - Start Again
+session.timeout.after.error.button.text=Welsh - Some text for button where process code is not known
+
 # Footer Links
 # ----------------------------------------------------------
 footer.links.help_page.text=Help wrth ddefnyddio GOV.UK

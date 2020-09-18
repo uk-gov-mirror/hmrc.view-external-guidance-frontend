@@ -31,7 +31,19 @@
         timeoutDialog: HmrcTimeoutDialog,
         govukBackLink : GovukBackLink)
 
-@(pageTitle: String, processTitle: String, startUrl: Option[String] = None, backUrl: Option[String] = None)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+@(
+  pageTitle: String,
+  processTitle: String,
+  processCode: Option[String] = None,
+  startUrl: Option[String] = None,
+  backUrl: Option[String] = None
+)(contentBlock: Html)(implicit request: Request[_], messages: Messages)
+
+@getSignOutUrl(processCode: Option[String]) = @{
+    processCode.fold(s"${appConfig.baseUrl}${appConfig.signOutUrl}"){ pc =>
+        s"${appConfig.baseUrl}${appConfig.signOutUrl}/$pc"
+      }
+}
 
 @beforeContentBlock = {
     @phaseBanner(PhaseBanner(
@@ -63,7 +75,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
             countdown = Some(appConfig.timeoutWarningInSeconds),
             keepAliveUrl = Some("#"),
             keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
-            signOutUrl = Some(messages("timeout.dialog.signOutUrl")),
+            signOutUrl = Some(s"${getSignOutUrl(processCode)}"),
             signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
             title = Some(messages("timeout.dialog.title.text")),
             message = Some(messages("timeout.dialog.message.text"))

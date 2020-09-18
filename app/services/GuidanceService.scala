@@ -38,6 +38,8 @@ class GuidanceService @Inject() (
 ) {
   val logger = Logger(getClass)
 
+  def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
+
   def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
 
   def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(
@@ -98,6 +100,8 @@ class GuidanceService @Inject() (
   def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
   Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
+
+  def removeSession(id: String): Future[RequestOutcome[Unit]] = sessionRepository.removeSession(id)
 
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext

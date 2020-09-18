@@ -15,20 +15,23 @@
  *@
 
 @import config.AppConfig
-@import play.api.i18n.Lang
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@this(layout: main_layout,
-        hmrcHeading: HmrcPageHeading,
-        appConfig: AppConfig)
+@this(layout: main_layout, appConfig: AppConfig)
 
-@(pageTitle: String, heading: String, message: String, processCode: Option[String])(implicit request: Request[_], messages: Messages)
+@(pageTitleKey: String,
+  headerTitle: String,
+  titleKey: String,
+  processCode: Option[String],
+  startUrl: Option[String],
+  buttonTarget: String,
+  buttonTextKey: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle, messages("service.name"), processCode) {
- @hmrcHeading(PageHeading(heading))
- <p>@message</p>
+@layout(messages(pageTitleKey), headerTitle, processCode, startUrl){
+
+    <h1 class="govuk-heading-xl">@messages(titleKey)</h1>
+
+    <a id="startAgain" href="@buttonTarget" role="button" class="govuk-button" data-module="govuk-button">@messages(buttonTextKey)</a>
 }
-
 @{
-  //$COVERAGE-OFF$
+    //$COVERAGE-OFF$
 }

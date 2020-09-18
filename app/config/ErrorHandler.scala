@@ -17,8 +17,7 @@
 package config
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.Request
 import play.twirl.api.Html
 import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
@@ -28,5 +27,29 @@ import views.html.error_template
 class ErrorHandler @Inject() (val messagesApi: MessagesApi, view: error_template, implicit val appConfig: AppConfig) extends FrontendErrorHandler {
 
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
-    view(pageTitle, heading, message)
+    view(pageTitle, heading, message, None)
+
+  def standardErrorTemplate(pageTitle: String, heading: String, message: String, processCode: Option[String])(implicit request: Request[_]): Html =
+    view(pageTitle, heading, message, processCode)
+
+  def badRequestTemplateWithProcessCode(processCode: Option[String])(implicit request: Request[_]): Html =
+    standardErrorTemplate(
+      Messages("global.error.badRequest400.title"),
+      Messages("global.error.badRequest400.heading"),
+      Messages("global.error.badRequest400.message"),
+      processCode)
+
+  def notFoundTemplateWithProcessCode(processCode: Option[String])(implicit request: Request[_]): Html =
+    standardErrorTemplate(
+      Messages("global.error.pageNotFound404.title"),
+      Messages("global.error.pageNotFound404.heading"),
+      Messages("global.error.pageNotFound404.message"),
+      processCode)
+
+  def internalServerErrorTemplateWithProcessCode(processCode: Option[String])(implicit request: Request[_]): Html =
+    standardErrorTemplate(
+      Messages("global.error.InternalServerError500.title"),
+      Messages("global.error.InternalServerError500.heading"),
+      Messages("global.error.InternalServerError500.message"),
+      processCode)
 }

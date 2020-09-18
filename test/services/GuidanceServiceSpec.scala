@@ -238,4 +238,22 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
+  "Calling getProcessContext(key: String)" should {
+
+    "successfully retrieve a process context when the session contains a single process" in new Test {
+
+      val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), None)
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful((Right(expectedProcessContext))))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { processContext =>
+        processContext shouldBe Right(expectedProcessContext)
+      }
+    }
+  }
+
 }
