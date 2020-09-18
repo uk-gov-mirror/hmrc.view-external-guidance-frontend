@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot._
+import models.ocelot.{labelReferences, Link, Phrase}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, OWrites, Reads}
