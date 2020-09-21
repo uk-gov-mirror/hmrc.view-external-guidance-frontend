@@ -61,6 +61,17 @@ trait ViewSpec extends WordSpec with Matchers {
     elements
   }
 
+  def getSingleElementByClass(document: Document, clss: String): Element = {
+
+    val elements: Elements = document.getElementsByClass(clss)
+
+    elements.size() shouldBe 1
+
+    elements.first()
+  }
+
+  def getElementById(doc: Document, id: String) : Option[Element] = Option(doc.getElementById(id))
+
   def checkClassesForElement(element: Element, expectedClasses: List[String]): Unit = {
 
     for (expectedClass <- expectedClasses) {

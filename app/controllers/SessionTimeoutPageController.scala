@@ -97,16 +97,15 @@ class SessionTimeoutPageController @Inject()(
       }
       case Right(processContext) => {
         service.removeSession(sessionId.value).map {
-          case Right(_) => {
-            val title = Text(processContext.process.title.langs)
-            createDeleteYourAnswersResponse(title.asString(messages.lang), processCode)
-          }
-          case Left(err) => {
-            logger.error(s"Error $err occurred attempting to remove session ${sessionId.toString}")
-            InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode)))
-          }
+            case Left(err) => {
+              logger.error(s"Error $err occurred attempting to remove session ${sessionId.toString}")
+              InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode)))
+            }
+            case Right(_) => {
+              val title = Text(processContext.process.title.langs)
+              createDeleteYourAnswersResponse(title.asString(messages.lang), processCode)
+            }
         }
-
       }
       case Left(NotFoundError) => {
         // For some reason the timeout mechanism invokes the "getPage" method twice. In this case
@@ -161,17 +160,20 @@ class SessionTimeoutPageController @Inject()(
     * If last request update is available check if session has timed out
     *
     * @param session - Browser session
-    * @return Returns "true" if time since last update exceeds timeout limit
+    * @return Returns "true" if time since last update exceeds timeout limit or is very close to the limit
     */
   def hasSessionExpired(session: Session): Boolean = {
 
     session.get(lastRequestTimestamp).fold(false){tsStr =>
 
       val now = Instant.now.toEpochMilli
+      val ts = tsStr.toLong
 
-      val diff = (now - tsStr.toLong) - (appConfig.timeoutInSeconds * appConfig.toMilliSeconds)
+      val duration = now - ts
+      val timeout = appConfig.timeoutInSeconds * appConfig.toMilliSeconds
+      val diff = duration - timeout
 
-      if(diff.abs < appConfig.expiryErrorMarginInMilliSeconds) true else false
+      if((duration > timeout) || (diff.abs < appConfig.expiryErrorMarginInMilliSeconds)) true else false
     }
   }
 

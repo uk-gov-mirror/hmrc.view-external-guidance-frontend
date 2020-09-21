@@ -186,11 +186,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     find("_id" -> key).map { list =>
       list.size match {
         case 0 =>  Left(NotFoundError)
-        case 1 => Right(ProcessContext(list.head.process, list.head.answers, None))
-        case _ => {
-          logger.error(s"Error more than one set of session data returned for id $key")
-          Left(InternalServerError)
-        }
+        case _ => Right(ProcessContext(list.head.process, list.head.answers, None))
       }
     }.recover {
       case lastError =>

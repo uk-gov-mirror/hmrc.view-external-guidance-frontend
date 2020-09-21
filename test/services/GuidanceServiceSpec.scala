@@ -18,6 +18,7 @@ package services
 
 import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
+import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process, ProcessJson}
 import models.ui
@@ -240,18 +241,75 @@ class GuidanceServiceSpec extends BaseSpec {
 
   "Calling getProcessContext(key: String)" should {
 
-    "successfully retrieve a process context when the session contains a single process" in new Test {
+    "successfully retrieve a process context when the session data contains a single process" in new Test {
 
       val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), None)
 
       MockSessionRepository
         .get(sessionRepoId)
-        .returns(Future.successful((Right(expectedProcessContext))))
+        .returns(Future.successful(Right(expectedProcessContext)))
 
       private val result = target.getProcessContext(sessionRepoId)
 
       whenReady(result) { processContext =>
         processContext shouldBe Right(expectedProcessContext)
+      }
+    }
+
+    "return a not found error if the session data does not exist" in new Test {
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful(Left(NotFoundError)))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { err =>
+        err shouldBe Left(NotFoundError)
+      }
+    }
+
+    "return a database error if an error occurs retrieving the session data" in new Test {
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful(Left(DatabaseError)))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { err =>
+        err shouldBe Left(DatabaseError)
+      }
+
+    }
+  }
+
+  "Calling removeSession" should {
+
+    "return a response of type Unit if successful" in new Test {
+
+      MockSessionRepository
+        .removeSession(sessionRepoId)
+        .returns(Future.successful(Right(())))
+
+      private val result = target.removeSession(sessionRepoId)
+
+      whenReady(result) { response =>
+        response shouldBe Right(())
+      }
+
+    }
+
+    "return a database error if an error occurs deleting the session data" in new Test {
+
+      MockSessionRepository
+        .removeSession(sessionRepoId)
+        .returns(Future.successful(Left(DatabaseError)))
+
+      private val result = target.removeSession(sessionRepoId)
+
+      whenReady(result) { err =>
+        err shouldBe Left(DatabaseError)
       }
     }
   }

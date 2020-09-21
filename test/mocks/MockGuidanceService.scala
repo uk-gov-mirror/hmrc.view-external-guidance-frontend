@@ -56,6 +56,12 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId, pageUrl)
     }
 
+    def getProcessContext(sessionId: String): CallHandler[Future[RequestOutcome[ProcessContext]]] = {
+      (mockGuidanceService
+        .getProcessContext(_: String))
+        .expects(sessionId)
+    }
+
     def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
       (mockGuidanceService
         .getPageContext(_: String, _: String, _: String, _: Option[FormData])(_: ExecutionContext))
@@ -66,6 +72,12 @@ trait MockGuidanceService extends MockFactory {
       (mockGuidanceService
         .saveAnswerToQuestion(_: String, _: String, _: String))
         .expects(docId, url, answer)
+    }
+
+    def removeSession(id: String): CallHandler[Future[RequestOutcome[Unit]]] = {
+      (mockGuidanceService
+        .removeSession(_: String))
+        .expects(id)
     }
 
   }
