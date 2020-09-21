@@ -14,24 +14,29 @@
  * limitations under the License.
  */
 
+import models.ocelot._
 import models.errors.{Error, ProcessError, ValidationError}
 import models.ocelot.errors._
 import java.util.UUID
 import models.RequestOutcome
-import models.ocelot.{Page, Process}
+import models.ocelot.{Label, Page, Process}
 import play.api.libs.json._
 
 package object services {
+  val processIdformat = "^[a-z]{3}[0-9]{5}$"
+  val uuidFormat = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 
-  def validateUUID(id: String): Option[UUID] = {
-    val format = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-    if (id.matches(format)) Some(UUID.fromString(id)) else None
+  def validateUUID(id: String): Option[UUID] = if (id.matches(uuidFormat)) Some(UUID.fromString(id)) else None
+  def validateProcessId(id: String): Either[Error, String] = if (id.matches(processIdformat)) Right(id) else Left(ValidationError)
+
+  def uniqueLabels(pages: Seq[Page]):Seq[Label] = {
+    val (notype, typed) = pages.flatMap(p => p.labels).partition(_.valueType.isEmpty)
+    val untyped = notype.distinct
+    val withType = typed.distinct
+    (withType ++ untyped.filterNot(u => withType.exists(t => t.name == u.name)))
   }
 
-  def validateProcessId(id: String): Either[Error, String] = {
-    val format = "^[a-z]{3}[0-9]{5}$"
-    if (id.matches(format)) Right(id) else Left(ValidationError)
-  }
+  def uniqueLabelRefs(pages: Seq[Page]): Seq[String] = pages.flatMap(_.labelRefs)
 
   implicit def toProcessErr(err: GuidanceError): ProcessError = err match {
     case e: StanzaNotFound => ProcessError(s"Missing stanza at id = ${e.id}", e.id)
@@ -43,7 +48,7 @@ package object services {
     case e: MissingWelshText => ProcessError(s"Welsh text at index ${e.index} on stanza id = ${e.id} is empty", e.id)
     case e: UnknownStanza => ProcessError(s"Unsupported stanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownCalloutType => ProcessError(s"Unsupported CalloutStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
-    case e: UnknownValueType => ProcessError( s"Unsupported ValueStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
+    case e: UnknownValueType => ProcessError( s"Unsupported ValueStanza Value type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownCalcOperationType => ProcessError(s"Unsupported CalculationStanza operation type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownTestType => ProcessError( s"Unsupported ChoiceStanza test type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownInputType => ProcessError( s"Unsupported InputStanza type ${e.typeName} found at stanza id ${e.id}", e.id)

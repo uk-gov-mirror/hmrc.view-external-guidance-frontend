@@ -40,6 +40,7 @@ object DefaultSessionRepository {
   final case class SessionProcess(id: String,
                                   processId: String,
                                   process: Process,
+                                  labels: Map[String, Label],
                                   answers: Map[String, String],
                                   pageHistory: List[String],
                                   lastAccessed: Instant)
@@ -50,14 +51,15 @@ object DefaultSessionRepository {
   }
 }
 
-case class ProcessContext(process: Process, answers: Map[String, String], backLink: Option[String])
+case class ProcessContext(process: Process, answers: Map[String, String], labels: Map[String, Label], backLink: Option[String])
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
-  def set(key: String, process: Process): Future[RequestOutcome[Unit]]
+  def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
   def removeSession(key: String): Future[RequestOutcome[Unit]]
+  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -109,25 +111,26 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       ),
       fetchNewObject = false
     ).flatMap { r =>
-      r.result[DefaultSessionRepository.SessionProcess]
-        .fold {
-          logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${r.lastError}")
-          Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
-        } { sp =>
-          //
-          // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
-          //
-          val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, sp.pageHistory)
-          historyUpdate.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, backLink))))(history =>
-            savePageHistory(key, history).map {
-              case Left(err) =>
-                logger.error(s"Unable to save backlink history, error = $err")
-                Right(ProcessContext(sp.process, sp.answers, backLink))
-              case _ => Right(ProcessContext(sp.process, sp.answers, backLink))
-            }
-          )
-        }
-    }
+          r.result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${r.lastError}")
+            Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
+          }{ sp =>
+            //
+            // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
+            //
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, sp.pageHistory)
+            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, backLink)
+            historyUpdate.fold(Future.successful(Right(processContext)))(history =>
+              savePageHistory(key, history).map {
+                case Left(err) =>
+                  logger.error(s"Unable to save backlink history, error = $err")
+                  Right(processContext)
+                case _ => Right(processContext)
+              }
+            )
+          }
+      }
       .recover {
         case lastError =>
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
@@ -148,8 +151,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     }
 
 
-  def set(key: String, process: Process): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, Instant.now))
+  def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, labels, Map(), Nil, Instant.now))
     collection
       .update(false)
       .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
@@ -186,7 +189,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     find("_id" -> key).map { list =>
       list.size match {
         case 0 =>  Left(NotFoundError)
-        case _ => Right(ProcessContext(list.head.process, list.head.answers, None))
+        case _ => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, None))
       }
     }.recover {
       case lastError =>
@@ -198,13 +201,35 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   def removeSession(key: String): Future[RequestOutcome[Unit]] = {
 
-    remove( "_id" -> key).map { _ =>
+    remove("_id" -> key).map { _ =>
       Right({})
     }.recover {
       case lastError =>
-      logger.error(s"Error $lastError occurred attempting to delete repository document for session id $key")
-      Left(DatabaseError)
+        logger.error(s"Error $lastError occurred attempting to delete repository document for session id $key")
+        Left(DatabaseError)
     }
+  }
+
+  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj("$set" -> Json.obj("labels" -> labels))
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to saveLabels using _id=$key returned no result, lastError ${result.lastError}"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
+          Left(DatabaseError)
+      }
+
   }
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
