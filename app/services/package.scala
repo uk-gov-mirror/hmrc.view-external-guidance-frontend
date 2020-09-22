@@ -46,6 +46,7 @@ package object services {
     case e: LinkNotFound => ProcessError(s"Referenced link at index ${e.index} on stanza id = ${e.id} is missing", e.id)
     case e: DuplicatePageUrl => ProcessError(s"Duplicate page url ${e.url} found on stanza id = ${e.id}", e.id)
     case e: MissingWelshText => ProcessError(s"Welsh text at index ${e.index} on stanza id = ${e.id} is empty", e.id)
+    case e: VisualStanzasAfterQuestion => ProcessError(s"Visual stanzas found after Question stanza with id = ${e.id}", e.id)
     case e: UnknownStanza => ProcessError(s"Unsupported stanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownCalloutType => ProcessError(s"Unsupported CalloutStanza type ${e.typeName} found at stanza id ${e.id}", e.id)
     case e: UnknownValueType => ProcessError( s"Unsupported ValueStanza Value type ${e.typeName} found at stanza id ${e.id}", e.id)

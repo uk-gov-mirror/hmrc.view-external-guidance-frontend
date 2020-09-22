@@ -20,11 +20,8 @@ import javax.inject.Singleton
 import models.ocelot._
 import models.ocelot.stanzas._
 import models.ocelot.errors._
-import models.ocelot.{Label, Page, Process}
 import play.api.Logger
 import scala.annotation.tailrec
-
-case class KeyedStanza(key: String, stanza: Stanza)
 
 @Singleton
 class PageBuilder extends ProcessPopulation {
@@ -32,35 +29,71 @@ class PageBuilder extends ProcessPopulation {
 
   def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
     @tailrec
-    def collectStanzas(key: String,
-                       acc: Seq[KeyedStanza],
-                       labelAcc: Seq[Label],
-                       labelRefAcc: Seq[String],
-                       linkedAcc: Seq[String]): Either[GuidanceError, (Seq[KeyedStanza], Seq[Label], Seq[String], Seq[String])] =
-      stanza(key, process) match {
-        case Right(s: PageStanza) if acc.nonEmpty => Right((acc, labelAcc, labelRefAcc, linkedAcc))
-        // Partially enable Calculation and Choice stanzas to allow collection of labels, both will be ignore during build of UI
-        // Calculation and Choice stanza will generate if found in the place of a PageStanza e.e. after a Question
-        case Right(s: CalculationStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
-        case Right(s: ChoiceStanza) if acc.nonEmpty => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
-        case Right(s: CalculationStanza) => Left(UnknownStanza(key, "CalculationStanza"))
-        case Right(s: ChoiceStanza) => Left(UnknownStanza(key, "ChoiceStanza"))
-        case Right(s: Stanza with PageTerminator) => Right((acc :+ KeyedStanza(key, s), labelAcc, labelRefAcc, linkedAcc))
-        case Right(s: PopulatedStanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc ++ s.links)
-        case Right(s: Stanza) => collectStanzas(s.next.head, acc :+ KeyedStanza(key, s), labelAcc ++ s.labels, labelRefAcc ++ s.labelRefs, linkedAcc)
-        case Left(err) => Left(err)
+    def collectStanzas(keys: Seq[String],
+                       ids: Seq[String],
+                       stanzas: Seq[Stanza],
+                       next: Seq[String]): Either[GuidanceError, (Seq[String], Seq[Stanza], Seq[String])] =
+      keys match {
+        case Nil => Right((ids, stanzas, next))
+        case key :: Nil if ids.contains(key) => Right((ids, stanzas, next))                                // Already encountered this stanzas within page
+        case key :: xs if ids.contains(key) => collectStanzas(xs, ids, stanzas, next)                      // Already encountered but more paths to follow
+        case key :: xs =>
+          (stanza(key, process), xs ) match {
+            case (Right(s: PageStanza), Nil) if ids.nonEmpty => Right((ids, stanzas, key +: next))                // End of page
+            case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, ids, stanzas, key +: next)       // End of page but more paths to follow
+            case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next) // Beginning of page
+            case (Right(EndStanza), Nil) => Right((ids :+ key, stanzas :+ EndStanza, next))                // End of page
+            case (Right(EndStanza), _) => collectStanzas(xs, ids :+ key, stanzas :+ EndStanza, next)       // End of page but more paths to follow
+
+            case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next)
+            case (Left(err), _) => Left(err)
+          }
       }
 
-    collectStanzas(key, Nil, Nil, Nil, Nil) match {
-      case Right((ks, labels, labelRefs, linked)) =>
+    collectStanzas(List(key), Nil, Nil, Nil) match {
+      case Right((ids, stanzas, next)) =>
+        val ks: Seq[KeyedStanza] = ids.zip(stanzas).map(t => KeyedStanza(t._1, t._2))
         ks.head.stanza match {
           case p: PageStanza if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ks.head.key))
-          case p: PageStanza => Right(Page(ks.head.key, p.url, ks.map(_.stanza), ks.last.stanza.next, linked, labels, labelRefs.distinct))
+          case p: PageStanza => Right(Page(ks.head.key, p.url, ks, next))
           case _ => Left(PageStanzaMissing(ks.head.key))
         }
       case Left(err) => Left(err)
     }
   }
+
+  @tailrec
+  private def duplicateUrlErrors(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
+    pages match {
+      case Nil => errors
+      case x :: xs if xs.exists(_.url == x.url) => duplicateUrlErrors(xs, DuplicatePageUrl(x.id, x.url) :: errors)
+      case x :: xs => duplicateUrlErrors(xs, errors)
+    }
+
+  // private def validateQuestionPage(p: Seq[Stanza]): List[GuidanceError] = {
+
+  // }
+
+  // @tailrec
+  // private def checkForVisualStanzasAfterQuestions(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
+  //   pages match {
+  //     case Nil => errors
+  //     case x :: xs if x.stanzas.exists( s => s match {
+  //                     case q: Question => true
+  //                     case _ => false
+  //                   }
+  //                  ) => checkForVisualStanzasAfterQuestions(xs, validateQuestionPage(x.stanzas) :: errors )
+  //     case x :: xs => checkForVisualStanzasAfterQuestions(xs, errors)
+  //   }
+
+  def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
+    pages(process, start).fold[Either[List[GuidanceError], Seq[Page]]]( e => Left(e), pages => {
+        duplicateUrlErrors(pages.reverse, Nil) match {
+          case Nil => Right(pages)
+          case duplicates => Left(duplicates)
+        }
+      }
+    )
 
   def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] = {
     @tailrec
@@ -78,23 +111,10 @@ class PageBuilder extends ProcessPopulation {
         case _ :: xs => pagesByKeys(xs, acc)
       }
 
-    @tailrec
-    def duplicateUrlErrors(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
-      pages match {
-        case Nil => errors
-        case x :: xs if xs.exists(_.url == x.url) => duplicateUrlErrors(xs, DuplicatePageUrl(x.id, x.url) :: errors)
-        case x :: xs => duplicateUrlErrors(xs, errors)
-      }
-
-    pagesByKeys(List(start), Nil).fold(
-      err => Left(List(err)),
-      pages => {
-        duplicateUrlErrors(pages.reverse, Nil) match {
-          case Nil => Right(pages)
-          case duplicates => Left(duplicates)
-        }
-      }
-    )
+    pagesByKeys(List(start), Nil) match {
+      case Left(err) => Left(List(err))
+      case Right(pages) => Right(pages)
+    }
   }
 
   def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =

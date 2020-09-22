@@ -20,14 +20,16 @@ import play.api.libs.json._
 import models.ocelot.Label
 
 trait Stanza {
+  val isVisual: Boolean = true
   val next: Seq[String] = Nil
+  val links: List[String] = Nil
   val labels: List[Label] = Nil
   val labelRefs: List[String] = Nil
 }
 
-trait PopulatedStanza extends Stanza {
-  val links: List[String] = Nil
-}
+case class KeyedStanza(key: String, stanza: Stanza)
+
+trait PopulatedStanza extends Stanza
 
 trait PageTerminator
 

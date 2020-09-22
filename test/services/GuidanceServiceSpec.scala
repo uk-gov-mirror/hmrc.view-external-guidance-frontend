@@ -35,7 +35,7 @@ class GuidanceServiceSpec extends BaseSpec {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     implicit val stanzaIdToUrl: Map[String, String] = Map[String, String]()
 
-    private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(EndStanza), Seq())
+    private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(KeyedStanza("1", EndStanza)), Seq())
 
     val process: Process = validOnePageJson.as[Process]
     val processWithProcessCode = validOnePageProcessWithProcessCodeJson.as[Process]
