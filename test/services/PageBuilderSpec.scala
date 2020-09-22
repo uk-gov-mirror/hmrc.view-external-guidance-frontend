@@ -89,9 +89,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     )
 
     "detect StanzaNotFound error" in {
-      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+      implicit val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
 
-      pageBuilder.buildPage("4", process) match {
+      pageBuilder.buildPage("4") match {
         case Left(StanzaNotFound("4")) => succeed
         case _ => fail("Unknown stanza not detected")
       }
@@ -491,9 +491,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "be not buildable from non-existent key" in {
 
-      val process: Process = prototypeJson.as[Process]
+      implicit val process: Process = prototypeJson.as[Process]
 
-      pageBuilder.buildPage("unknown", process) match {
+      pageBuilder.buildPage("unknown") match {
         case Right(_) => fail("Invalid key should not return a page")
         case Left(err) => succeed
       }
@@ -501,9 +501,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Ensure all urls have a leading /" in {
 
-      val process: Process = invalidOnePageJson.as[Process]
+      implicit val process: Process = invalidOnePageJson.as[Process]
 
-      pageBuilder.buildPage("start", process) match {
+      pageBuilder.buildPage("start") match {
         case Right(Page(_,url,_,_)) if url.startsWith("/") => succeed
         case Right(_) => fail("Url should be prefixed with a / char")
         case Left(err) => fail(s"Url should be prefixed with a / char, failed with unexpected err $err")

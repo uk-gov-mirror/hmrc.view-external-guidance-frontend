@@ -27,28 +27,27 @@ import scala.annotation.tailrec
 class PageBuilder extends ProcessPopulation {
   val logger: Logger = Logger(this.getClass)
 
-  def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
-    @tailrec
-    def collectStanzas(keys: Seq[String],
-                       ids: Seq[String],
-                       stanzas: Seq[Stanza],
-                       next: Seq[String]): Either[GuidanceError, (Seq[String], Seq[Stanza], Seq[String])] =
-      keys match {
-        case Nil => Right((ids, stanzas, next))
-        case key :: Nil if ids.contains(key) => Right((ids, stanzas, next))                                // Already encountered this stanzas within page
-        case key :: xs if ids.contains(key) => collectStanzas(xs, ids, stanzas, next)                      // Already encountered but more paths to follow
-        case key :: xs =>
-          (stanza(key, process), xs ) match {
-            case (Right(s: PageStanza), Nil) if ids.nonEmpty => Right((ids, stanzas, key +: next))                // End of page
-            case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, ids, stanzas, key +: next)       // End of page but more paths to follow
-            case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next) // Beginning of page
-            case (Right(EndStanza), Nil) => Right((ids :+ key, stanzas :+ EndStanza, next))                // End of page
-            case (Right(EndStanza), _) => collectStanzas(xs, ids :+ key, stanzas :+ EndStanza, next)       // End of page but more paths to follow
+  @tailrec
+  private def collectStanzas(keys: Seq[String], ids: Seq[String], stanzas: Seq[Stanza], next: Seq[String])
+                            (implicit process: Process): Either[GuidanceError, (Seq[String], Seq[Stanza], Seq[String])] =
+    keys match {
+      case Nil => Right((ids, stanzas, next))
+      case key :: Nil if ids.contains(key) => Right((ids, stanzas, next))                                // Already encountered this stanzas within page
+      case key :: xs if ids.contains(key) => collectStanzas(xs, ids, stanzas, next)                      // Already encountered but more paths to follow
+      case key :: xs =>
+        (stanza(key, process), xs ) match {
+          case (Right(s: PageStanza), Nil) if ids.nonEmpty => Right((ids, stanzas, key +: next))         // End of page
+          case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, ids, stanzas, key +: next)// End of page but more paths to follow
+          case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next) // Beginning of page
+          case (Right(EndStanza), Nil) => Right((ids :+ key, stanzas :+ EndStanza, next))                // End of page
+          case (Right(EndStanza), _) => collectStanzas(xs, ids :+ key, stanzas :+ EndStanza, next)       // End of page but more paths to follow
 
-            case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next)
-            case (Left(err), _) => Left(err)
-          }
-      }
+          case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next)
+          case (Left(err), _) => Left(err)
+        }
+    }
+
+  def buildPage(key: String)(implicit process: Process): Either[GuidanceError, Page] = {
 
     collectStanzas(List(key), Nil, Nil, Nil) match {
       case Right((ids, stanzas, next)) =>
@@ -101,7 +100,7 @@ class PageBuilder extends ProcessPopulation {
       keys match {
         case Nil => Right(acc)
         case key :: xs if !acc.exists(_.id == key) =>
-          buildPage(key, process) match {
+          buildPage(key)(process) match {
             case Right(page) =>
               pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
             case Left(err) =>
