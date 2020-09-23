@@ -25,9 +25,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import base.ViewFns
+
 import scala.concurrent.Future
 import scala.collection.JavaConverters._
 import mocks._
+import models.errors.DatabaseError
 import repositories.ProcessContext
 import uk.gov.hmrc.http.SessionKeys
 import models.ocelot.{Process, ProcessJson}
@@ -56,6 +58,13 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       charset(result) shouldBe Some("utf-8")
 
     }
+
+    "return InternalServerError when a database error occurs" in new Test {
+      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Left(DatabaseError)))
+      val result: Future[Result] = controller.getPage(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
 
   }
 
