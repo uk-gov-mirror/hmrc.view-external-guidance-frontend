@@ -58,8 +58,7 @@ class GraphPageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       "16" -> InstructionStanza(3, Seq("161"), None, false),
       "161"-> ValueStanza(List(Value(Scalar, "error", "0")), Seq("10"), false),
       "10" -> InstructionStanza(2, Seq("100"), None, false),
-      "100" -> ChoiceStanza(Seq("161", "110", pageId5),Seq(choiceTest), false),
-      "110" -> InstructionStanza(2, Seq("end"), None, false),
+      "100" -> ChoiceStanza(Seq("161", pageId6, pageId5),Seq(choiceTest), false),
       pageId5 -> PageStanza("/this11", Seq("12"), false),
       "12" -> InstructionStanza(0, Seq("13"), None, false),
       "13" -> QuestionStanza(1, Seq(2, 3), Seq(pageId6, pageId2), false),
@@ -86,7 +85,7 @@ class GraphPageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "be extractable from a Process using key 'start''" in new GraphTest {
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
         case Right(pages) =>
           pages shouldNot be(Nil)
 
@@ -99,12 +98,12 @@ class GraphPageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "should contain the correct number of stanzas" in new GraphTest {
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
         case Right(pages) =>
           pages shouldNot be(Nil)
 
           pages(0).stanzas.length shouldBe 4
-          pages(1).stanzas.length shouldBe 7
+          pages(1).stanzas.length shouldBe 5
           pages(2).stanzas.length shouldBe 3
           pages(3).stanzas.length shouldBe 3
           pages(4).stanzas.length shouldBe 3
@@ -116,5 +115,45 @@ class GraphPageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     }
 
+    "create a set of pages with the correct next field" in new GraphTest {
+
+      pageBuilder.pagesWithValidation(process) match {
+        case Right(pages) =>
+
+          val pageIds = pages.map(_.id).sorted
+          val nexts = pages.flatMap(_.next).distinct.sorted
+
+          nexts.forall(n => pageIds.contains(n)) shouldBe true
+
+        case Left(err) => fail(s"GuidanceError $err")
+      }
+
+    }
+
+  }
+
+  trait Test extends ProcessJson {
+    val process = prototypeJson.as[Process]
+  }
+
+  "PageBuilding" must {
+    "create a set of pages with the correct next field" in new Test {
+
+      pageBuilder.pagesWithValidation(process) match {
+        case Right(pages) =>
+          pages shouldNot be(Nil)
+
+          pages.length shouldBe 28
+
+          val pageIds = pages.map(_.id).sorted
+          val nexts = pages.flatMap(_.next).distinct.sorted
+          nexts.forall(n => pageIds.contains(n)) shouldBe true
+
+          pageIds shouldBe nexts ++ List("start")
+
+        case Left(err) => fail(s"GuidanceError $err")
+      }
+
+    }
   }
 }

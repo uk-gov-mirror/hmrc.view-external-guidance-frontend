@@ -28,12 +28,16 @@ trait MockPageBuilder extends MockFactory {
 
   object MockPageBuilder {
 
-    def pages(process: Process): CallHandler[Either[List[GuidanceError], Seq[Page]]] = {
-
+    def pages(process: Process): CallHandler[Either[List[GuidanceError], Seq[Page]]] =
       (mockPageBuilder
         .pages(_: Process, _: String))
         .expects(process, *)
-    }
+
+    def pagesWithValidation(process: Process): CallHandler[Either[List[GuidanceError], Seq[Page]]] =
+      (mockPageBuilder
+        .pages(_: Process, _: String))
+        .expects(process, *)
+
   }
 
 }
