@@ -65,6 +65,6 @@ package object services {
   def guidancePages(pageBuilder: PageBuilder, jsValue: JsValue): RequestOutcome[(Process, Seq[Page])] =
     jsValue.validate[Process].fold(
       errs => Left(Error(GuidanceError.fromJsonValidationErrors(errs))),
-      process => pageBuilder.pages(process).fold(errs => Left(Error(errs)), p => Right((process, p)))
+      process => pageBuilder.pagesWithValidation(process).fold(errs => Left(Error(errs)), p => Right((process, p)))
     )
 }
