@@ -283,11 +283,11 @@ trait ProcessJson {
       |      "type": "UnknownStanza",
       |      "text": 0,
       |      "next": [
-      |        "3"
+      |        "4"
       |      ],
       |      "stack": true
       |    },
-      |    "3": {
+      |    "4": {
       |      "next": [
       |        "end"
       |      ],
@@ -296,7 +296,14 @@ trait ProcessJson {
       |      "text": 59,
       |      "type": "CalloutStanza"
       |    },
-      |
+      |    "5": {
+      |      "next": [
+      |        "end"
+      |      ],
+      |      "noteType": "Error",
+      |      "stack": false,
+      |      "text": 59
+      |    },
       |    "end": {
       |      "type": "EndStanza"
       |    }

@@ -27,27 +27,30 @@ import scala.annotation.tailrec
 class PageBuilder extends ProcessPopulation {
   val logger: Logger = Logger(this.getClass)
 
-  @tailrec
-  private def collectStanzas(keys: Seq[String], ids: Seq[String], stanzas: Seq[Stanza], next: Seq[String])
-                            (implicit process: Process): Either[GuidanceError, (Seq[String], Seq[Stanza], Seq[String])] =
-    keys match {
-      case Nil => Right((ids, stanzas, next))
-      case key :: Nil if ids.contains(key) => Right((ids, stanzas, next))                                // Already encountered this stanzas within page
-      case key :: xs if ids.contains(key) => collectStanzas(xs, ids, stanzas, next)                      // Already encountered but more paths to follow
-      case key :: xs =>
-        (stanza(key, process), xs ) match {
-          case (Right(s: PageStanza), Nil) if ids.nonEmpty => Right((ids, stanzas, key +: next))         // End of page
-          case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, ids, stanzas, key +: next)// End of page but more paths to follow
-          case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next) // Beginning of page
-          case (Right(EndStanza), Nil) => Right((ids :+ key, stanzas :+ EndStanza, next))                // End of page
-          case (Right(EndStanza), _) => collectStanzas(xs, ids :+ key, stanzas :+ EndStanza, next)       // End of page but more paths to follow
 
-          case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next)
-          case (Left(err), _) => Left(err)
-        }
-    }
+  def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
 
-  def buildPage(key: String)(implicit process: Process): Either[GuidanceError, Page] = {
+    @tailrec
+    def collectStanzas(keys: Seq[String],
+                       ids: Seq[String],
+                       stanzas: Seq[Stanza],
+                       next: Seq[String]): Either[GuidanceError, (Seq[String], Seq[Stanza], Seq[String])] =
+      keys match {
+        case Nil => Right((ids, stanzas, next))
+        case key :: Nil if ids.contains(key) => Right((ids, stanzas, next))                                // Already encountered this stanzas within page
+        case key :: xs if ids.contains(key) => collectStanzas(xs, ids, stanzas, next)                      // Already encountered but more paths to follow
+        case key :: xs =>
+          (stanza(key, process), xs ) match {
+            case (Right(s: PageStanza), Nil) if ids.nonEmpty => Right((ids, stanzas, key +: next))         // End of page
+            case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, ids, stanzas, key +: next)// End of page but more paths to follow
+            case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next) // Beginning of page
+            case (Right(EndStanza), Nil) => Right((ids :+ key, stanzas :+ EndStanza, next))                // End of page
+            case (Right(EndStanza), _) => collectStanzas(xs, ids :+ key, stanzas :+ EndStanza, next)       // End of page but more paths to follow
+            case (Right(s: Stanza), _) if ids.isEmpty => Left(PageStanzaMissing(key))
+            case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, ids :+ key, stanzas :+ s, next)
+            case (Left(err), _) => Left(err)
+          }
+      }
 
     collectStanzas(List(key), Nil, Nil, Nil) match {
       case Right((ids, stanzas, next)) =>
@@ -69,25 +72,35 @@ class PageBuilder extends ProcessPopulation {
       case x :: xs => duplicateUrlErrors(xs, errors)
     }
 
-  // private def validateQuestionPage(p: Seq[Stanza]): List[GuidanceError] = {
+  private def checkQuestionFollowers(p: Seq[String], keyedStanzas: Map[String, Stanza], seen: Seq[String]): List[GuidanceError] =
+    p match {
+      case Nil => Nil
+      case x :: xs if seen.contains(x) => checkQuestionFollowers(xs, keyedStanzas, seen)
+      case x :: xs if !keyedStanzas.contains(x) => checkQuestionFollowers(xs, keyedStanzas, seen)
+      case x :: xs if keyedStanzas.contains(x) && keyedStanzas(x).visual => List(VisualStanzasAfterQuestion(x))
+      case x :: xs => checkQuestionFollowers(keyedStanzas(x).next ++ xs, keyedStanzas, seen)
+    }
 
-  // }
-
-  // @tailrec
-  // private def checkForVisualStanzasAfterQuestions(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
-  //   pages match {
-  //     case Nil => errors
-  //     case x :: xs if x.stanzas.exists( s => s match {
-  //                     case q: Question => true
-  //                     case _ => false
-  //                   }
-  //                  ) => checkForVisualStanzasAfterQuestions(xs, validateQuestionPage(x.stanzas) :: errors )
-  //     case x :: xs => checkForVisualStanzasAfterQuestions(xs, errors)
-  //   }
+  @tailrec
+  private def checkQuestionPages(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
+    pages match {
+      case Nil => errors
+      case x :: xs =>
+        x.keyedStanzas.find(
+          _.stanza match {
+            case q: Question => true
+            case _ => false
+        }) match {
+          case None => checkQuestionPages(xs, errors)
+          case Some(q) =>
+            val anyErrors = checkQuestionFollowers(q.stanza.next, x.keyedStanzas.map(k => (k.key, k.stanza)).toMap, Nil)
+            checkQuestionPages(xs, anyErrors ++ errors)
+        }
+    }
 
   def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
     pages(process, start).fold[Either[List[GuidanceError], Seq[Page]]]( e => Left(e), pages => {
-        duplicateUrlErrors(pages.reverse, Nil) match {
+        (checkQuestionPages(pages, Nil) ++ duplicateUrlErrors(pages.reverse, Nil)) match {
           case Nil => Right(pages)
           case duplicates => Left(duplicates)
         }
@@ -100,7 +113,7 @@ class PageBuilder extends ProcessPopulation {
       keys match {
         case Nil => Right(acc)
         case key :: xs if !acc.exists(_.id == key) =>
-          buildPage(key)(process) match {
+          buildPage(key, process) match {
             case Right(page) =>
               pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
             case Left(err) =>

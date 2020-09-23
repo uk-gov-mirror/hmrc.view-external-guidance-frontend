@@ -89,102 +89,68 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     )
 
     "detect StanzaNotFound error" in {
-      implicit val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
+      val process = Process(metaSection, flow, Vector[Phrase](), Vector[Link]())
 
-      pageBuilder.buildPage("4") match {
+      pageBuilder.buildPage("4", process) match {
         case Left(StanzaNotFound("4")) => succeed
         case _ => fail("Unknown stanza not detected")
       }
     }
 
-    //
-    // TO BE RE-INTRODUCED
-    //
-    // "detect PageStanzaMissing error when stanza routes to page not starting with PageStanza" in {
-    //   val flow = Map(
-    //     Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
-    //     "1" -> InstructionStanza(0, Seq("2"), None, false),
-    //     "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
-    //     "4" -> InstructionStanza(0, Seq("end"), None, false),
-    //     "5" -> InstructionStanza(0, Seq("end"), None, false),
-    //     "end" -> EndStanza
-    //   )
-    //   val process = Process(
-    //     metaSection,
-    //     flow,
-    //     Vector[Phrase](
-    //       Phrase(Vector("Some Text", "Welsh, Some Text")),
-    //       Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-    //       Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-    //       Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-    //     ),
-    //     Vector[Link]()
-    //   )
+    "detect PageStanzaMissing error when stanza routes to page not starting with PageStanza" in {
+      val flow = Map(
+        Process.StartStanzaId -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(
+        metaSection,
+        flow,
+        Vector[Phrase](
+          Phrase(Vector("Some Text", "Welsh, Some Text")),
+          Phrase(Vector("Some Text1", "Welsh, Some Text1")),
+          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
+          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
+        ),
+        Vector[Link]()
+      )
 
-    //   pageBuilder.pages(process) match {
-    //     case Left(List(PageStanzaMissing("4"))) => succeed
-    //     case Left(err) => fail(s"Missing PageStanza, failed with $err")
-    //     case x => fail(s"Missing PageStanza with $x")
-    //   }
-    // }
+      pageBuilder.pages(process) match {
+        case Left(List(PageStanzaMissing("start"))) => succeed
+        case Left(err) => fail(s"Missing PageStanza, failed with $err")
+        case x => fail(s"Missing PageStanza with $x")
+      }
+    }
 
-    // "generate UnknownStanza when CalculationStanza stanza found at start of page (after a question)" in {
+    "detect VisualStanzasAfterQuestion error when Question stanzas followed by UI stanzas" in {
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/url", Seq("1"), true),
+        "1" -> InstructionStanza(0, Seq("2"), None, false),
+        "2" -> QuestionStanza(1, Seq(2, 3), Seq("4", "5"), false),
+        "4" -> InstructionStanza(0, Seq("end"), None, false),
+        "5" -> InstructionStanza(0, Seq("end"), None, false),
+        "end" -> EndStanza
+      )
+      val process = Process(
+        metaSection,
+        flow,
+        Vector[Phrase](
+          Phrase(Vector("Some Text", "Welsh, Some Text")),
+          Phrase(Vector("Some Text1", "Welsh, Some Text1")),
+          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
+          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
+        ),
+        Vector[Link]()
+      )
 
-    //   val flow = Map(
-    //     Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
-    //     "1" -> InstructionStanza(0, Seq("2"), None, false),
-    //     "2" -> QuestionStanza(1, Seq(2, 3), Seq("3", "4"), false),
-    //     "3" -> CalculationStanza(Seq.empty[CalcOperation], Seq("4"), false),
-    //     "4" -> InstructionStanza(0, Seq("end"), None, false),
-    //     "end" -> EndStanza
-    //   )
-    //   val process = Process(
-    //     metaSection,
-    //     flow,
-    //     Vector[Phrase](
-    //       Phrase(Vector("Some Text", "Welsh, Some Text")),
-    //       Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-    //       Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-    //       Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-    //     ),
-    //     Vector[Link]()
-    //   )
-
-    //   pageBuilder.pages(process) match {
-    //     case Left(List(UnknownStanza("3", "CalculationStanza"))) => succeed
-    //     case Left(err) => fail(s"Failed with $err")
-    //     case x => fail(s"General failure with $x")
-    //   }
-    // }
-
-    // "generate UnknownStanza when ChoiceStanza found at start of page (after a question)" in {
-
-    //   val flow = Map(
-    //     Process.StartStanzaId -> PageStanza("/blah", Seq("1"), false),
-    //     "1" -> InstructionStanza(0, Seq("2"), None, false),
-    //     "2" -> QuestionStanza(1, Seq(2, 3), Seq("3", "4"), false),
-    //     "3" -> ChoiceStanza(Seq("4"), Seq.empty[ChoiceTest], false),
-    //     "4" -> InstructionStanza(0, Seq("end"), None, false),
-    //     "end" -> EndStanza
-    //   )
-    //   val process = Process(
-    //     metaSection,
-    //     flow,
-    //     Vector[Phrase](
-    //       Phrase(Vector("Some Text", "Welsh, Some Text")),
-    //       Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-    //       Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-    //       Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-    //     ),
-    //     Vector[Link]()
-    //   )
-
-    //   pageBuilder.pages(process) match {
-    //     case Left(List(UnknownStanza("3", "ChoiceStanza"))) => succeed
-    //     case Left(err) => fail(s"Failed with $err")
-    //     case x => fail(s"General failure with $x")
-    //   }
-    // }
+      pageBuilder.pagesWithValidation(process) match {
+        case Left(List(VisualStanzasAfterQuestion("4"))) => succeed
+        case Left(err) => fail(s"Should generate VisualStanzasAfterQuestion, failed with $err")
+        case x => fail(s"Should generate VisualStanzasAfterQuestion, returned $x")
+      }
+    }
 
     "detect PageUrlEmptyOrInvalid error when PageValue is present but url is blank" in {
       val flow = Map(
@@ -404,23 +370,23 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "detect UnknownCalloutType" in {
-      val processErrors: List[ProcessError] = List(ProcessError("Unsupported InputStanza type UnknownInputType found at stanza id 34","34"),
-                                                   ProcessError("Process Links section parse error: error.path.missing at location 0",""),
-                                                   ProcessError("Process Phrases section parse error: error.minLength at location 5",""),
-                                                   ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
-                                                   ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 3","3"),
-                                                   ProcessError("Unsupported ValueStanza Value type AnUnknownType found at stanza id 33","33"),
-                                                   ProcessError("Process Meta section parse error: error.path.missing at location ocelot",""))
+      val processErrors: List[ProcessError] =
+        List(
+          ProcessError("Unsupported InputStanza type UnknownInputType found at stanza id 34","34"),
+          ProcessError("Process Links section parse error, reason: error.path.missing, index: 0",""),
+          ProcessError("Process Phrases section parse error, reason: error.minLength, index: 5",""),
+          ProcessError("Unsupported stanza type UnknownStanza found at stanza id 2","2"),
+          ProcessError("""Process Flow section parse error, reason: 'type' is undefined on object:"""+
+           """ {"next":["end"],"noteType":"Error","stack":false,"text":59}, stanzaId: 5, target: /flow/5""","5"),
+          ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 4","4"),
+          ProcessError("Unsupported ValueStanza Value type AnUnknownType found at stanza id 33","33"),
+          ProcessError("Process Meta section parse error, reason: error.path.missing, target: ocelot",""))
       guidancePages(new PageBuilder(), assortedParseErrorsJson).fold(
         errs => errs match {
-        case MainError(MainError.UnprocessableEntity, None,Some(errors)) if errors == processErrors => succeed
-        case _ => fail(s"Failed with errors: $errs")
-        },
-        _ => fail)
-
-
+          case MainError(MainError.UnprocessableEntity, None,Some(errors)) if errors == processErrors => succeed
+          case _ => fail(s"Failed with errors: $errs")
+        }, _ => fail)
     }
-
   }
 
   trait IhtTest extends Test with IhtJson {
@@ -491,9 +457,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "be not buildable from non-existent key" in {
 
-      implicit val process: Process = prototypeJson.as[Process]
+      val process: Process = prototypeJson.as[Process]
 
-      pageBuilder.buildPage("unknown") match {
+      pageBuilder.buildPage("unknown", process) match {
         case Right(_) => fail("Invalid key should not return a page")
         case Left(err) => succeed
       }
@@ -501,9 +467,9 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Ensure all urls have a leading /" in {
 
-      implicit val process: Process = invalidOnePageJson.as[Process]
+      val process: Process = invalidOnePageJson.as[Process]
 
-      pageBuilder.buildPage("start") match {
+      pageBuilder.buildPage("start", process) match {
         case Right(Page(_,url,_,_)) if url.startsWith("/") => succeed
         case Right(_) => fail("Url should be prefixed with a / char")
         case Left(err) => fail(s"Url should be prefixed with a / char, failed with unexpected err $err")
