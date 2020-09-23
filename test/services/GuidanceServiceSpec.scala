@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
 import models.ocelot.stanzas._
-import models.ocelot.{Page, Process, ProcessJson}
+import models.ocelot.{Page, KeyedStanza, Process, ProcessJson}
 import models.ui
 import uk.gov.hmrc.http.HeaderCarrier
 import repositories.ProcessContext
