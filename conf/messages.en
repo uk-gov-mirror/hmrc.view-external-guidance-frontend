@@ -33,14 +33,10 @@ timeout.dialog.title.text=Your session is about to expire
 timeout.dialog.message.text=Your session will end in
 timeout.dialog.signOutUrl=https://www.gov.uk/check-additional-income-tax
 
-session.timeout.page.title=Session timeout page for HMRC Interactive Guidance
 session.timeout.header.title=Interactive Guidance
 session.timeout.delete.your.answers=You deleted your answers
 session.timeout.session.has.expired=Your session has ended
-session.timeout.delete.answers.after.error=You deleted your answers after the service experienced difficulties
-session.timeout.after.error=Your session has ended after the service experienced difficulties
 session.timeout.button.text=Start Again
-session.timeout.after.error.button.text=Some text for button where process code is not known
 
 # Footer Links
 # ----------------------------------------------------------

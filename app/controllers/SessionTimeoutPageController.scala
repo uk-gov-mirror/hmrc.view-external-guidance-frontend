@@ -64,27 +64,6 @@ class SessionTimeoutPageController @Inject()(
       }
     }
 
-  val getPageAfterError: Action[AnyContent] = Action.async { implicit request =>
-
-    implicit val messages: Messages = mcc.messagesApi.preferred(request)
-
-    val sessionId: Option[SessionId] = hc.sessionId
-
-    sessionId match {
-      case Some(id) => {
-        service.removeSession(id.value).map {
-          case Right(_) => createDeleteYourAnswersAfterErrorResponse(messages("session.timeout.header.title"))
-          case Left(err) => {
-            logger.error(s"Error $err occurred attempting to remove session ${sessionId.toString}")
-            InternalServerError(errorHandler.internalServerErrorTemplate)}
-        }
-      }
-      case None => {
-        Future.successful(createYourSessionHasExpiredAfterErrorResponse(messages("session.timeout.header.title")))
-      }
-    }
-  }
-
   def manageDeleteYourAnswersRequest(sessionId: SessionId, processCode: String)(implicit request: Request[_]): Future[Result] = {
 
     // Refresh cache to remove answers
@@ -121,7 +100,7 @@ class SessionTimeoutPageController @Inject()(
   }
 
   def createDeleteYourAnswersResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result =
-    Ok(view("session.timeout.page.title",
+    Ok(view("session.timeout.delete.your.answers",
       processTitle,
       "session.timeout.delete.your.answers",
       Some(processCode),
@@ -130,31 +109,13 @@ class SessionTimeoutPageController @Inject()(
       "session.timeout.button.text"))
 
   def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result =
-    Ok(view("session.timeout.page.title",
+    Ok(view("session.timeout.session.has.expired",
       processTitle,
       "session.timeout.session.has.expired",
       Some(processCode),
       None,
       s"${appConfig.baseUrl}/$processCode",
       "session.timeout.button.text"))
-
-  def createDeleteYourAnswersAfterErrorResponse(processTitle: String)(implicit request: Request[_]): Result =
-    Ok(view("session.timeout.page.title",
-      processTitle,
-      "session.timeout.delete.answers.after.error",
-      None,
-      None,
-      appConfig.defaultSignOutUrl,
-      "session.timeout.after.error.button.text"))
-
-  def createYourSessionHasExpiredAfterErrorResponse(processTitle: String)(implicit request: Request[_]): Result =
-    Ok(view("session.timeout.page.title",
-      processTitle,
-      "session.timeout.after.error",
-      None,
-      None,
-      appConfig.defaultSignOutUrl,
-      "session.timeout.after.error.button.text"))
 
   /**
     * If last request update is available check if session has timed out
@@ -173,7 +134,7 @@ class SessionTimeoutPageController @Inject()(
       val timeout = appConfig.timeoutInSeconds * appConfig.toMilliSeconds
       val diff = duration - timeout
 
-      if((duration > timeout) || (diff.abs < appConfig.expiryErrorMarginInMilliSeconds)) true else false
+      (duration > timeout) || (diff.abs < appConfig.expiryErrorMarginInMilliSeconds)
     }
   }
 

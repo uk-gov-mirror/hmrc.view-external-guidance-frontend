@@ -188,39 +188,4 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
     }
   }
 
-  "SessionTimeoutPageController method getPageAfterError" should {
-
-    "return a success response after deleting the session data" in new Test {
-      val fakeRequest = FakeRequest("GET", "/").withSession(
-        SessionKeys.sessionId -> sessionId
-      )
-
-      MockGuidanceService.removeSession(sessionId).returns(Future.successful(Right({})))
-
-      val result: Future[Result] = target.getPageAfterError(fakeRequest)
-
-      status(result) shouldBe OK
-    }
-
-    "return an internal server error if an error occurs deleting the session data" in new Test {
-      val fakeRequest = FakeRequest("GET", "/").withSession(
-        SessionKeys.sessionId -> sessionId
-      )
-
-      MockGuidanceService.removeSession(sessionId).returns(Future.successful(Left(DatabaseError)))
-
-      val result: Future[Result] = target.getPageAfterError(fakeRequest)
-
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
-    "return a success result if the session has expired" in new Test {
-      val fakeRequest = FakeRequest("GET","/")
-
-      val result: Future[Result] = target.getPageAfterError(fakeRequest)
-
-      status(result) shouldBe Status.OK
-    }
-  }
-
 }

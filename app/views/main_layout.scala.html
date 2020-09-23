@@ -36,12 +36,13 @@
   processTitle: String,
   processCode: Option[String] = None,
   startUrl: Option[String] = None,
-  backUrl: Option[String] = None
+  backUrl: Option[String] = None,
+  enableTimeout: Boolean = true
 )(contentBlock: Html)(implicit request: Request[_], messages: Messages)
 
 @getSignOutUrl(processCode: Option[String]) = @{
     processCode.fold(s"${appConfig.baseUrl}${appConfig.signOutUrl}"){ pc =>
-        s"${appConfig.baseUrl}${appConfig.signOutUrl}/$pc"
+        s"${appConfig.baseUrl}/$pc${appConfig.signOutUrl}"
       }
 }
 
@@ -69,18 +70,20 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
     <!--[if gt IE 8]><!--> <link href='@controllers.routes.Assets.versioned("stylesheets/application.css")' media="screen" rel="stylesheet" type="text/css" />
         <!--<![endif]-->
 
-    @timeoutDialog(
-        TimeoutDialog(
-            timeout = Some(appConfig.timeoutInSeconds),
-            countdown = Some(appConfig.timeoutWarningInSeconds),
-            keepAliveUrl = Some("#"),
-            keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
-            signOutUrl = Some(s"${getSignOutUrl(processCode)}"),
-            signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
-            title = Some(messages("timeout.dialog.title.text")),
-            message = Some(messages("timeout.dialog.message.text"))
-        )
-    )
+  @if(enableTimeout) {
+      @timeoutDialog(
+          TimeoutDialog(
+              timeout = Some(appConfig.timeoutInSeconds),
+              countdown = Some(appConfig.timeoutWarningInSeconds),
+              keepAliveUrl = Some("#"),
+              keepAliveButtonText = Some(messages("timeout.dialog.keep_alive_button.text")),
+              signOutUrl = Some(s"${getSignOutUrl(processCode)}"),
+              signOutButtonText = Some(messages("timeout.dialog.sign_out_button.text")),
+              title = Some(messages("timeout.dialog.title.text")),
+              message = Some(messages("timeout.dialog.message.text"))
+          )
+      )
+  }
 }
 
 @headerBlock = {
