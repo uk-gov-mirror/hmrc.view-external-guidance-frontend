@@ -35,7 +35,7 @@ trait MockPageBuilder extends MockFactory {
 
     def pagesWithValidation(process: Process): CallHandler[Either[List[GuidanceError], Seq[Page]]] =
       (mockPageBuilder
-        .pages(_: Process, _: String))
+        .pagesWithValidation(_: Process, _: String))
         .expects(process, *)
 
   }

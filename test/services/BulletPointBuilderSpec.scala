@@ -851,7 +851,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -881,7 +881,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -911,7 +911,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -945,7 +945,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -981,7 +981,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -1014,7 +1014,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -1051,7 +1051,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
@@ -1089,7 +1089,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
       val process: Process =
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
 
-      pageBuilder.pages(process) match {
+      pageBuilder.pagesWithValidation(process) match {
 
         case Right(pages) =>
 
