@@ -23,7 +23,7 @@ package models.ocelot.stanzas
   * @param next - Identifier for next stanza in page
   * @param group - A group of instructions
   */
-case class InstructionGroup(override val next: Seq[String], group: Seq[Instruction]) extends Stanza with Populated
+case class InstructionGroup(override val next: Seq[String], group: Seq[Instruction]) extends VisualStanza with Populated
 
 object InstructionGroup {
 
