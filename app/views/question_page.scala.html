@@ -31,6 +31,8 @@
   page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
 }
 
+@implicitLabels = @{ctx.labels}
+
 @layout(pageTitle(page), ctx.processTitle.asString(messages.lang), ctx.processStartUrl, ctx.backLink) {
 
   @components.error_summary(page.question.text, page.question.errorMsgs)

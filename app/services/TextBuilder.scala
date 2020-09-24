@@ -26,7 +26,7 @@ object TextBuilder {
 
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
-  private object PL {
+  private object PL { // All the placeholder matching in one place
     val regex: Regex = s"\\[label:([A-Za-z0-9\\s]+)\\]|\\[bold:([^\\]]+)\\]|\\[link(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(2))

@@ -20,6 +20,8 @@
 
 @(page: StandardPage, ctx: PageContext)(implicit request: Request[_], messages: Messages)
 
+@implicitLabels = @{ctx.labels}
+
 @layout(page.heading.asString(messages.lang), ctx.processTitle.asString(messages.lang), ctx.processStartUrl, ctx.backLink) {
 
   @components.render_components(page.components)

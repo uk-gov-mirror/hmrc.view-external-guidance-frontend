@@ -66,6 +66,7 @@ class GuidanceService @Inject() (
                       process.title,
                       process.meta.id,
                       processCode,
+                      labels,
                       backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )

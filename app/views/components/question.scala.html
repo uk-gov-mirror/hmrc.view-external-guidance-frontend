@@ -18,7 +18,7 @@
 @import controllers.routes._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, labels: Map[String, models.ocelot.Label])
 
 @optionalAria(qu: Question) = @{
   Seq(qu.hint.map(_ => "question-hint"), qu.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
@@ -49,7 +49,7 @@
     @components.answers(q, name, form)
 
   </fieldset>
-  
+
 </div>
 
 @{
