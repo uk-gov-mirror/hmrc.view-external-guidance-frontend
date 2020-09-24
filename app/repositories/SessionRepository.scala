@@ -58,7 +58,6 @@ trait SessionRepository {
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
-  def removeSession(key: String): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
 }
 
@@ -197,17 +196,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  }
-
-  def removeSession(key: String): Future[RequestOutcome[Unit]] = {
-
-    remove("_id" -> key).map { _ =>
-      Right({})
-    }.recover {
-      case lastError =>
-        logger.error(s"Error $lastError occurred attempting to delete repository document for session id $key")
-        Left(DatabaseError)
-    }
   }
 
   def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {

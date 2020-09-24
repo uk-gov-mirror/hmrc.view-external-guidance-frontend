@@ -72,27 +72,11 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       MockGuidanceService.getProcessContext(sessionId).returns(Future.successful(Right(processContext)))
 
-      MockGuidanceService.removeSession(sessionId).returns(Future.successful(Right({})))
-
       val result: Future[Result] = target.getPage(processCode)(fakeRequest)
 
       status(result) shouldBe Status.OK
     }
 
-    "display delete your answers page if session data not found because of double invocation by timeout dialog" in new Test {
-
-      val now: String = Instant.now.toEpochMilli.toString
-
-      val fakeRequest = FakeRequest("GET", "/").withSession(
-        SessionKeys.sessionId -> sessionId,
-        SessionKeys.lastRequestTimestamp -> now)
-
-      MockGuidanceService.getProcessContext(sessionId).returns(Future.successful(Left(NotFoundError)))
-
-      val result: Future[Result] = target.getPage(processCode)(fakeRequest)
-
-      status(result) shouldBe Status.OK
-    }
 
     "return an internal server error if a database error occurs retrieving the session data" in new Test {
 
@@ -107,24 +91,6 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
       val result: Future[Result] = target.getPage(processCode)(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
-    "return an internal server error if a database error occurs when removing the session data" in new Test {
-
-      val now: String = Instant.now.toEpochMilli.toString
-
-      val fakeRequest = FakeRequest("GET", "/").withSession(
-        SessionKeys.sessionId -> sessionId,
-        SessionKeys.lastRequestTimestamp -> now)
-
-      MockGuidanceService.getProcessContext(sessionId).returns(Future.successful(Right(processContext)))
-
-      MockGuidanceService.removeSession(sessionId).returns(Future.successful(Left(DatabaseError)))
-
-      val result: Future[Result] = target.getPage(processCode)(fakeRequest)
-
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-
     }
 
     "return an internal server error if the process code in the session data does not match value of input argument" in new Test {

@@ -101,8 +101,6 @@ class GuidanceService @Inject() (
   Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
-  def removeSession(id: String): Future[RequestOutcome[Unit]] = sessionRepository.removeSession(id)
-
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[(String,String)]] =

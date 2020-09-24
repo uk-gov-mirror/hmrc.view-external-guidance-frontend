@@ -82,11 +82,9 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
-      whenReady(result) { pageContext =>
-        pageContext match {
-          case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
-          case Left(err) => fail(s"no PageContext found with error $err")
-        }
+      whenReady(result) {
+        case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
+        case Left(err) => fail(s"no PageContext found with error $err")
       }
     }
   }
@@ -112,12 +110,10 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
-      whenReady(result) { pageContext =>
-        pageContext match {
-          case Right(PageContext(_, _, _, _, _, _, Some(answer))) => succeed
-          case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
-          case Left(err) => fail(s"Previous answer missing from PageContext, $err")
-        }
+      whenReady(result) {
+        case Right(PageContext(_, _, _, _, _, _, Some(_))) => succeed
+        case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
+        case Left(err) => fail(s"Previous answer missing from PageContext, $err")
       }
     }
   }
@@ -281,36 +277,6 @@ class GuidanceServiceSpec extends BaseSpec {
         err shouldBe Left(DatabaseError)
       }
 
-    }
-  }
-
-  "Calling removeSession" should {
-
-    "return a response of type Unit if successful" in new Test {
-
-      MockSessionRepository
-        .removeSession(sessionRepoId)
-        .returns(Future.successful(Right(())))
-
-      private val result = target.removeSession(sessionRepoId)
-
-      whenReady(result) { response =>
-        response shouldBe Right(())
-      }
-
-    }
-
-    "return a database error if an error occurs deleting the session data" in new Test {
-
-      MockSessionRepository
-        .removeSession(sessionRepoId)
-        .returns(Future.successful(Left(DatabaseError)))
-
-      private val result = target.removeSession(sessionRepoId)
-
-      whenReady(result) { err =>
-        err shouldBe Left(DatabaseError)
-      }
     }
   }
 

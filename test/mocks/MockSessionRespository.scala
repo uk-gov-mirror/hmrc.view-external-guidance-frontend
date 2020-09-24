@@ -49,11 +49,6 @@ trait MockSessionRepository extends MockFactory {
         .get(_: String))
         .expects(key)
 
-    def removeSession(key: String): CallHandler[Future[RequestOutcome[Unit]]] =
-      (mockSessionRepository
-        .removeSession(_: String))
-      .expects(key)
-
     def saveLabels(key: String, labels: Map[String, Label]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
         .saveLabels(_: String, _: Map[String, Label]))

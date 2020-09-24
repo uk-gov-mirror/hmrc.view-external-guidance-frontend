@@ -74,12 +74,6 @@ trait MockGuidanceService extends MockFactory {
         .expects(docId, url, answer)
     }
 
-    def removeSession(id: String): CallHandler[Future[RequestOutcome[Unit]]] = {
-      (mockGuidanceService
-        .removeSession(_: String))
-        .expects(id)
-    }
-
   }
 
 }
