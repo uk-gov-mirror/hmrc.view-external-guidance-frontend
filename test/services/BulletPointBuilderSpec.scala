@@ -19,7 +19,6 @@ package services
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas._
-import scala.util.matching.Regex.Match
 
 class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -513,8 +512,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
         val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
 
-        val texts: List[String] = TextBuilder.placeholdersPattern.split(text1).toList
-        val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
+        val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(text1)
 
         // Test invocation
         val (wordsProcessed1, outputTexts1, outputMatches1) =
@@ -544,8 +542,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson {
 
       val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
 
-      val texts: List[String] = TextBuilder.placeholdersPattern.split(text1).toList
-      val matches: List[Match] = TextBuilder.placeholdersPattern.findAllMatchIn(text1).toList
+      val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(text1)
 
       // Test invocation
       val (wordsProcessed1, outputTexts1, outputMatches1) =

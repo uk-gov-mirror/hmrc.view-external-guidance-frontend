@@ -36,6 +36,12 @@ case class Words(s: String, bold: Boolean = false) extends TextItem {
   override def toString: String = s
 }
 
+case class LabelRef(name: String, value: Option[String] = None) extends TextItem {
+  def isEmpty: Boolean = value.isEmpty
+  def toWords: Seq[String] = name.split(" +").toSeq
+  override def toString: String = s"[label:${name}]"
+}
+
 case class Link(dest: String, text: String, window: Boolean = false) extends TextItem {
   override def toString: String = s"[link:$text:$dest:$window]"
   def isEmpty: Boolean = text.isEmpty
@@ -60,5 +66,6 @@ object Text {
   def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil, Nil)
 
+  def labelRef(name: String): Text = Text(LabelRef(name), LabelRef(name))
   def link(dest: String, phrase: Vector[String], window: Boolean = false): Text = Text(Link(dest, phrase(0), window), Link(dest, phrase(1), window))
 }
