@@ -16,22 +16,21 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
 import java.time.Instant
 
+import config.{AppConfig, ErrorHandler}
+import javax.inject.{Inject, Singleton}
+import models.ui.Text
 import play.api.Logger
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result, Session}
-import config.{AppConfig, ErrorHandler}
-import models.ui.Text
+import play.api.mvc._
 import services.GuidanceService
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.http.logging.SessionId
 import uk.gov.hmrc.http.SessionKeys._
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import views.html.session_timeout
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton
 class SessionTimeoutPageController @Inject()(
@@ -49,27 +48,21 @@ class SessionTimeoutPageController @Inject()(
 
       implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
-      val sessionId: Option[SessionId] = hc.sessionId
-
-      sessionId match {
-        case Some(id) =>
-          if(hasSessionExpired(request.session)) {
-            Future.successful(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode))
-          } else {
-            service.getProcessContext(id.value).flatMap {
-              case Right(processContext) if processCode != processContext.process.meta.processCode =>
-                logger.error(s"Unexpected process code encountered when removing session after timeout warning. " +
-                  s"Expected code $processCode; actual code ${processContext.process.meta.processCode}")
-                Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
-              case Right(processContext) =>
-                val title = Text(processContext.process.title.langs)
-                Future.successful(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode))
-              case Left(err) =>
-                logger.error(s"Error $err occurred retrieving process context for process $processCode when removing session")
-                Future.successful(InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode))))
-            }
+      hc.sessionId match {
+        case Some(id) if !hasSessionExpired(request.session) =>
+          service.getProcessContext(id.value).flatMap {
+            case Right(processContext) if processCode != processContext.process.meta.processCode =>
+              logger.error(s"Unexpected process code encountered when removing session after timeout warning. " +
+                s"Expected code $processCode; actual code ${processContext.process.meta.processCode}")
+              Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate).withNewSession)
+            case Right(processContext) =>
+              val title = Text(processContext.process.title.langs)
+              Future.successful(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode).withNewSession)
+            case Left(err) =>
+              logger.error(s"Error $err occurred retrieving process context for process $processCode when removing session")
+              Future.successful(InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode))).withNewSession)
           }
-        case None => Future.successful(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode))
+        case _ => Future.successful(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode).withNewSession)
       }
     }
 
@@ -82,7 +75,7 @@ class SessionTimeoutPageController @Inject()(
             s"${appConfig.baseUrl}/$processCode",
             "session.timeout.button.text"))
 
-  def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result =
+  def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result = {
     Ok(view("session.timeout.session.has.expired",
             processTitle,
             "session.timeout.session.has.expired",
@@ -90,6 +83,7 @@ class SessionTimeoutPageController @Inject()(
             None,
             s"${appConfig.baseUrl}/$processCode",
             "session.timeout.button.text"))
+  }
 
   /**
     * If last request update is available check if session has timed out
