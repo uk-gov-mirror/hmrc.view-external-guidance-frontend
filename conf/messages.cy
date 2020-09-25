@@ -29,13 +29,14 @@ language.switcher = Newid yr iaith
 timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
 timeout.dialog.sign_out_button.text=Dileu’ch atebion
 timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
-timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
+timeout.dialog.message.text=Er eich diogelwch, byddwn yn dileu eich atebion yn
 timeout.dialog.signOutUrl= http://www.gov.uk/gwirio-treth-incwm-ychwanegol
 
 session.timeout.header.title=Arweiniad Rhyngweithiol
 session.timeout.delete.your.answers=Gwnaethoch ddileu’ch atebion
 session.timeout.session.has.expired=Mae’ch sesiwn wedi dod i ben
 session.timeout.button.text=Dechrau eto
+session.timeout.session.has.expired.info=Er eich diogelwch, gwnaethom ddileu’ch atebion
 
 # Footer Links
 # ----------------------------------------------------------

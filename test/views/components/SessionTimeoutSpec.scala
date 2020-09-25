@@ -16,15 +16,15 @@
 
 package views.components
 
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.inject.Injector
-import play.api.i18n.{Lang, Messages, MessagesApi}
-import org.jsoup.nodes.{Document, Element}
-import org.jsoup.select.Elements
-import mocks.MockAppConfig
-import views.html.session_timeout
 import base.{BaseSpec, ViewFns, ViewSpec}
+import mocks.MockAppConfig
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.api.inject.Injector
 import play.api.test.FakeRequest
+import views.html.{delete_your_answers, session_timeout}
 
 class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceOneAppPerSuite {
 
@@ -35,23 +35,17 @@ class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceO
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 
     def sessionTimeout: session_timeout = injector.instanceOf[session_timeout]
+    def deleteYourAnswers: delete_your_answers = injector.instanceOf[delete_your_answers]
 
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
 
     val fakeRequest = FakeRequest("GET", "/")
 
-    val pageTitleKey = "session.timeout.page.title"
-    val pageTitleKeyAfterError = "session.timeout.after.error"
     val processTitle = "How to make a cup of tea"
     val defaultProcessTitle = "Interactive Guidance"
-    val titleKey = "session.timeout.delete.your.answers"
-    val titleKeyAfterError = "session.timeout.after.error"
     val processCode = "cup-of-tea"
     val startUrl = s"${MockAppConfig.baseUrl}/$processCode"
     val buttonTarget = s"$startUrl/page-1"
-    val buttonTargetAfterError = MockAppConfig.defaultSignOutUrl
-    val buttonTextKey = "session.timeout.button.text"
-    val buttonTextKeyAfterError = "session.timeout.after.error"
   }
 
   "The session timeout view" should {
@@ -59,17 +53,14 @@ class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceO
     "render timeout page correctly when all input arguments are defined" in new Test {
 
       val doc = asDocument(sessionTimeout(
-        pageTitleKey,
         processTitle,
-        titleKey,
         Some(processCode),
         Some(startUrl),
-        buttonTarget,
-        buttonTextKey)(fakeRequest, messages))
+        buttonTarget)(fakeRequest, messages))
 
       val pageTitleElement: Element = getSingleElementByTag(doc, "title")
 
-      pageTitleElement.text shouldBe s"${messages(pageTitleKey)} - ${messages("service.name")} - ${messages("service.govuk")}"
+      pageTitleElement.text shouldBe s"${messages("session.timeout.session.has.expired")} - ${messages("service.name")} - ${messages("service.govuk")}"
 
       val htmlHeaderDivElement: Element = getSingleElementByClass(doc, "govuk-header__content")
 
@@ -90,38 +81,38 @@ class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceO
 
       pageHeadings.size shouldBe 1
 
-      pageHeadings.first.text shouldBe messages(titleKey)
+      pageHeadings.first.text shouldBe messages("session.timeout.session.has.expired")
 
       val startAgainLinkElement: Option[Element] = getElementById(doc, "startAgain")
 
       startAgainLinkElement match {
-        case Some(linkElement) => {
+        case Some(linkElement) =>
           val attrs: Map[String, String] = elementAttrs(linkElement)
 
           attrs.contains("href") shouldBe true
           attrs("href") shouldBe buttonTarget
 
-          linkElement.text shouldBe messages(buttonTextKey)
-        }
+          linkElement.text shouldBe messages("session.timeout.button.text")
         case None => fail( "Unable to locate start again link")
       }
 
     }
 
-    "render timeout page correctly when processCode and startUrl are not defined" in new Test {
+  }
 
-      val doc = asDocument(sessionTimeout(
-        pageTitleKeyAfterError,
-        defaultProcessTitle,
-        titleKeyAfterError,
-        None,
-        None,
-        buttonTargetAfterError,
-        buttonTextKeyAfterError)(fakeRequest, messages))
+  "The delete your answers view" should {
+
+    "render correctly when all input arguments are defined" in new Test {
+
+      val doc = asDocument(deleteYourAnswers(
+        processTitle,
+        Some(processCode),
+        Some(startUrl),
+        buttonTarget)(fakeRequest, messages))
 
       val pageTitleElement: Element = getSingleElementByTag(doc, "title")
 
-      pageTitleElement.text shouldBe s"${messages(pageTitleKeyAfterError)} - ${messages("service.name")} - ${messages("service.govuk")}"
+      pageTitleElement.text shouldBe s"${messages("session.timeout.delete.your.answers")} - ${messages("service.name")} - ${messages("service.govuk")}"
 
       val htmlHeaderDivElement: Element = getSingleElementByClass(doc, "govuk-header__content")
 
@@ -129,12 +120,12 @@ class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceO
 
       htmlHeaderLinks.size() shouldBe 1
 
-      htmlHeaderLinks.first.text shouldBe defaultProcessTitle
+      htmlHeaderLinks.first.text shouldBe processTitle
 
       val htmlHeaderLinkAttrs: Map[String, String] = elementAttrs(htmlHeaderLinks.first)
 
       htmlHeaderLinkAttrs.contains("href") shouldBe true
-      htmlHeaderLinkAttrs("href") shouldBe ""
+      htmlHeaderLinkAttrs("href") shouldBe startUrl
 
       val pageHeaderDivElement: Element = getSingleElementByClass(doc, "govuk-!-margin-bottom-6")
 
@@ -142,25 +133,22 @@ class SessionTimeoutSpec extends BaseSpec with ViewFns with ViewSpec with GuiceO
 
       pageHeadings.size shouldBe 1
 
-      pageHeadings.first.text shouldBe messages(titleKeyAfterError)
+      pageHeadings.first.text shouldBe messages("session.timeout.delete.your.answers")
 
       val startAgainLinkElement: Option[Element] = getElementById(doc, "startAgain")
 
       startAgainLinkElement match {
-        case Some(linkElement) => {
+        case Some(linkElement) =>
           val attrs: Map[String, String] = elementAttrs(linkElement)
 
           attrs.contains("href") shouldBe true
-          attrs("href") shouldBe buttonTargetAfterError
+          attrs("href") shouldBe buttonTarget
 
-          linkElement.text shouldBe messages(buttonTextKeyAfterError)
-        }
+          linkElement.text shouldBe messages("session.timeout.button.text")
         case None => fail( "Unable to locate start again link")
       }
 
     }
 
-
   }
-
 }
