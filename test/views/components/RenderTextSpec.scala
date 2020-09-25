@@ -35,8 +35,8 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Map[String, models.ocelot.Label] = Map("BLAH" -> Label("BLAH", Some("a value")),
-                                                                "A-LABEL" -> Label("A-LABEL", Some("33.99")))
+    implicit val labels: Map[String, models.ocelot.Label] = Map("Blah" -> Label("Blah", Some("a value")),
+                                                                "A-Label" -> Label("A-Label", Some("33.99")))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
@@ -55,7 +55,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   "render_text component" should {
 
-    "generate English html containing text with case insensitive label references" in new Test {
+    "generate English html containing text with case sensitive label references" in new Test {
       val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, labels))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price £33.99"
@@ -91,7 +91,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       strong.size shouldBe 1
     }
 
-    "generate welsh html containing text with case insensitive label references" in new WelshTest {
+    "generate welsh html containing text with case sensitive label references" in new WelshTest {
       val doc = asDocument(paragraph(Paragraph(textWithLabelRef)))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price £33.99"

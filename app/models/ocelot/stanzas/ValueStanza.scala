@@ -40,7 +40,7 @@ object Value {
 }
 
 case class ValueStanza(values: List[Value], override val next: Seq[String], stack: Boolean) extends Stanza {
-  override val labels: List[Label] = values.map(v => Label(v.label.toUpperCase, Some(v.value)))
+  override val labels: List[Label] = values.map(v => Label(v.label, Some(v.value)))
   override val labelRefs: List[String] = values.flatMap(v => labelReferences(v.value))
 }
 

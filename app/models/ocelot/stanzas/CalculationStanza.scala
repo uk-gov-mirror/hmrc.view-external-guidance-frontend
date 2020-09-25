@@ -22,7 +22,7 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 
 case class CalculationStanza(calcs: Seq[CalcOperation], override val next: Seq[String], stack: Boolean) extends Stanza {
-  override val labels: List[Label] = calcs.map(op => Label(op.label.toUpperCase)).toList
+  override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
   override val labelRefs: List[String] = calcs.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
 }
 

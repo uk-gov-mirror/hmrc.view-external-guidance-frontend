@@ -24,7 +24,7 @@
     case w: Words if w.bold => s"<strong>$w</strong>"
     case w: Words => w
     case l: Link => components.link(l)
-    case lr: LabelRef => labels(lr.name.toUpperCase).value.getOrElse("")
+    case lr: LabelRef => labels(lr.name).value.getOrElse("")
   }.mkString
 )
 @{
