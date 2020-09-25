@@ -4,11 +4,11 @@ service.govuk = GOV.UK
 service.phaseName = beta
 feedback.before = Gwasanaeth newydd yw hwn – bydd eich
 feedback.linkLabel = adborth
-feedback.after = yn ein helpu i'w wella.
+feedback.after = yn ein helpu i’w wella.
 
 backlink.label = Yn ôl
 
-getpagehelp.linkText = Help gyda'r dudalen hon (yn agor tab newydd)
+getpagehelp.linkText = Help gyda’r dudalen hon (yn agor tab newydd)
 
 site.continue = Yn eich blaen
 
@@ -27,14 +27,14 @@ language.change.english = Newid yr iaith i Saesneg
 language.switcher = Newid yr iaith
 
 timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
-timeout.dialog.sign_out_button.text=Dileu''ch atebion
+timeout.dialog.sign_out_button.text=Dileu’ch atebion
 timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
 timeout.dialog.message.text=Bydd eich sesiwn yn gorffen
 timeout.dialog.signOutUrl= http://www.gov.uk/gwirio-treth-incwm-ychwanegol
 
 session.timeout.header.title=Arweiniad Rhyngweithiol
 session.timeout.delete.your.answers=Gwnaethoch ddileu’ch atebion
-session.timeout.session.has.expired=Mae''ch sesiwn wedi dod i ben
+session.timeout.session.has.expired=Mae’ch sesiwn wedi dod i ben
 session.timeout.button.text=Dechrau eto
 
 # Footer Links
