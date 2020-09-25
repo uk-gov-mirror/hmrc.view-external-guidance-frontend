@@ -26,8 +26,8 @@ object TextBuilder {
 
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
-  private object PL { // All the placeholder matching in one place
-    val regex: Regex = s"\\[label:([A-Za-z0-9\\s\\-]+)\\]|\\[bold:([^\\]]+)\\]|\\[link(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
+  private object Placeholders { // All the placeholder matching in one place
+    val plregex: Regex = s"\\[label:([A-Za-z0-9\\s\\-_]+)\\]|\\[bold:([^\\]]+)\\]|\\[link(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(2))
     def linkTypeOpt(m: Match): Option[String] = Option(m.group(3))
@@ -36,16 +36,18 @@ object TextBuilder {
     def linkDest(m: Match): String = m.group(5)
   }
 
+  import Placeholders._
+
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
     (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
 
   private def placeholdersToItems(matches: List[Match])(implicit urlMap: Map[String, String]): List[TextItem] =
     matches.map { m =>
-      PL.labelNameOpt(m).fold[TextItem]({
-        PL.boldTextOpt(m).fold[TextItem]({
-          val window: Boolean = PL.linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
-          val dest: String = if (OcelotLink.isLinkableStanzaId(PL.linkDest(m))) urlMap(PL.linkDest(m)) else PL.linkDest(m)
-          Link(dest, PL.linkText(m), window)
+      labelNameOpt(m).fold[TextItem]({
+        boldTextOpt(m).fold[TextItem]({
+          val window: Boolean = linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
+          val dest: String = if (OcelotLink.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
+          Link(dest, linkText(m), window)
         })(txt => Words(txt, true))
       })(labelName => LabelRef(labelName))
     }
@@ -53,8 +55,8 @@ object TextBuilder {
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty
 
-    val (enTexts, enMatches) = fromPattern(PL.regex, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(PL.regex, txt.langs(1))
+    val (enTexts, enMatches) = fromPattern(plregex, txt.langs(0))
+    val (cyTexts, cyMatches) = fromPattern(plregex, txt.langs(1))
 
     val en = merge(enTexts.map(Words(_)), placeholdersToItems(enMatches), Nil, isEmpty)
     val cy = merge(cyTexts.map(Words(_)), placeholdersToItems(cyMatches), Nil, isEmpty)
@@ -87,10 +89,10 @@ object TextBuilder {
   //
   // Following used by BulletPointBuilder
   //
-  def placeholderMatchText(m: Match): String = PL.boldTextOpt(m).getOrElse(PL.linkTextOpt(m).getOrElse(""))
-  def placeholderTxtsAndMatches(text: String): (List[String], List[Match]) = fromPattern(PL.regex, text)
+  def placeholderMatchText(m: Match): String = boldTextOpt(m).getOrElse(linkTextOpt(m).getOrElse(""))
+  def placeholderTxtsAndMatches(text: String): (List[String], List[Match]) = fromPattern(plregex, text)
   def flattenPlaceholders(text: String): Seq[String] = {
-    val (txts, matches) = fromPattern(PL.regex, text)
-    merge[String, String](txts, matches.map(m => PL.boldTextOpt(m).fold(PL.linkTextOpt(m).getOrElse(""))(v => v)), Nil, _.isEmpty).filterNot(_.isEmpty)
+    val (txts, matches) = fromPattern(plregex, text)
+    merge[String, String](txts, matches.map(m => boldTextOpt(m).fold(linkTextOpt(m).getOrElse(""))(v => v)), Nil, _.isEmpty).filterNot(_.isEmpty)
   }
 }
