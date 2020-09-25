@@ -24,7 +24,8 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words}
+import models.ocelot.Label
+import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words, LabelRef}
 import org.jsoup.nodes.{Document, Element}
 
 import scala.collection.JavaConverters._
@@ -34,7 +35,8 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: Map[String, models.ocelot.Label] = Map("Blah" -> Label("Blah", Some("a value")),
+                                                                "A-Label" -> Label("A-Label", Some("33.99")))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
@@ -43,6 +45,8 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val boldText = Text(Words("Hello", true), Words("Welsh Hello", true))
     val normalText = Text(Words("Hello", false), Words("Welsh Hello", false))
 
+    val textWithLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price £"), LabelRef("A-Label")),
+                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"),Words(" , price £"),LabelRef("A-Label")))
   }
 
   trait WelshTest extends Test {
@@ -50,6 +54,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   }
 
   "render_text component" should {
+
+    "generate English html containing text with label references" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, labels))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "A label must have a value , price £33.99"
+    }
 
     "generate English html containing normal text" in new Test {
       val doc = asDocument(paragraph(Paragraph(normalText)))
@@ -79,6 +89,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(boldText)))
       val strong = doc.getElementsByTag("strong")
       strong.size shouldBe 1
+    }
+
+    "generate welsh html containing text with label references" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textWithLabelRef)))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "Welsh A label must have a value , price £33.99"
     }
 
     "generate Welsh html containing normal text" in new WelshTest {
