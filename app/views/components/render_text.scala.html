@@ -14,15 +14,17 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Text => OcelotText, Link, Words, TextItem}
+@import models.ui.{Text => OcelotText, Link, Words, LabelRef, TextItem}
 @import play.twirl.api.StringInterpolation
+@import models.ocelot.Label
 
-@(txt: OcelotText)(implicit messages: Messages)
+@(txt: OcelotText)(implicit messages: Messages, labels: Map[String, Label])
 @Html(
   txt.value(messages.lang).map{
     case w: Words if w.bold => s"<strong>$w</strong>"
     case w: Words => w
     case l: Link => components.link(l)
+    case lr: LabelRef => labels(lr.name).value.getOrElse("")
   }.mkString
 )
 @{

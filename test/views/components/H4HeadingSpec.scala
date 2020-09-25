@@ -30,7 +30,7 @@ import views.html.components.h4_heading
 class H4HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-
+    implicit val labels: Map[String, models.ocelot.Label] = Map()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

@@ -110,10 +110,12 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
-      whenReady(result) {
-        case Right(PageContext(_, _, _, _, _, _, Some(_))) => succeed
-        case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
-        case Left(err) => fail(s"Previous answer missing from PageContext, $err")
+      whenReady(result) { pageContext =>
+        pageContext match {
+          case Right(PageContext(_, _, _, _, _, _, _, Some(answer))) => succeed
+          case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
+          case Left(err) => fail(s"Previous answer missing from PageContext, $err")
+        }
       }
     }
   }

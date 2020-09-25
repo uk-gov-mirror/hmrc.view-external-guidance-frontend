@@ -15,8 +15,9 @@
  *@
 
 @import models.ui.{Text, ErrorMsg}
+@import models.ocelot.Label
 
-@(errors: Seq[ErrorMsg])(implicit messages: Messages)
+@(errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Map[String, Label])
 
 @for(err <- errors) {
 
@@ -24,7 +25,7 @@
     <span class="govuk-visually-hidden">@messages("error.browser.title.prefix")</span>
     @components.render_text(err.text)
   </span>
-    
+
 }
 
 @{

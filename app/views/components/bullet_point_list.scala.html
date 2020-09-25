@@ -15,11 +15,12 @@
  *@
 
 @import models.ui.{Paragraph, BulletPointList}
+@import models.ocelot.Label
 
-@(bulletPointList: BulletPointList)( implicit messages: Messages )
+@(bulletPointList: BulletPointList)( implicit messages: Messages, labels: Map[String, Label] )
 
 @components.paragraph(Paragraph(bulletPointList.text))
-<ul class="govuk-list--bullet govuk-list">    
+<ul class="govuk-list--bullet govuk-list">
   @for( listItem <- bulletPointList.listItems ){
     <li>@components.render_text( listItem )</li>
   }

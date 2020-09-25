@@ -29,7 +29,7 @@ import base.ViewSpec
 class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-
+    implicit val labels: Map[String, models.ocelot.Label] = Map()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

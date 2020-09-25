@@ -293,6 +293,22 @@ class UIComponentsSpec extends BaseSpec {
       Link("4", en).toString shouldBe s"[link:${en}:4:false]"
     }
 
+    "use LabelRef components which correctly support isEmpty" in {
+      LabelRef("Blah").isEmpty shouldBe false
+    }
+
+    "use LabelRef components which correctly support toString" in {
+      LabelRef("BLAH").toString shouldBe s"[label:BLAH]"
+    }
+
+    "use LabelRef components which correctly support toWords" in {
+      LabelRef("This is a label").toWords shouldBe List("This", "is", "a", "label")
+    }
+
+    "allow creation of Text object containing a simple LabelRef with labelRef() helper" in {
+      Text.labelRef("BLAH") shouldBe Text(Seq(LabelRef("BLAH")), Seq(LabelRef("BLAH")))
+    }
+
     "build a complete page" in {
 
       // Define page title

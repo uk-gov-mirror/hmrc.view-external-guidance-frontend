@@ -52,5 +52,6 @@ case class PageContext(page: Page,
                        processTitle: Text,
                        processId: String,
                        processCode: String,
+                       labels: Map[String, models.ocelot.Label] = Map(),
                        backLink: Option[String] = None,
                        answer: Option[String] = None)
