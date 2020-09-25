@@ -34,6 +34,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
+    implicit val labels: Map[String, models.ocelot.Label] = Map()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))

@@ -15,8 +15,9 @@
  *@
 
 @import models.ui.{Text, ErrorMsg}
+@import models.ocelot.Label
 
-@(heading: Text, errors: Seq[ErrorMsg])(implicit messages: Messages)
+@(heading: Text, errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Map[String, Label])
 
 @if(!errors.isEmpty) {
 
@@ -38,7 +39,7 @@
       </ul>
     </div>
   </div>
-    
+
 }
 
 @{

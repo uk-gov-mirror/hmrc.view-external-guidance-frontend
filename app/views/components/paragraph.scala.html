@@ -15,8 +15,9 @@
  *@
 
 @import models.ui.Paragraph
+@import models.ocelot.Label
 
-@(para: Paragraph)(implicit messages: Messages)
+@(para: Paragraph)(implicit messages: Messages, labels: Map[String, Label])
 
 @pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body}}
 

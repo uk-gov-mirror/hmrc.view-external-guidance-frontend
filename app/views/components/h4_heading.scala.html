@@ -15,8 +15,9 @@
  *@
 
 @import ui.H4
+@import models.ocelot.Label
 
-@( h4: H4 )( implicit messages: Messages )
+@( h4: H4 )( implicit messages: Messages, labels: Map[String, Label] )
 
 <h4 class="govuk-heading-s">@components.render_text(h4.text)</h4>
 

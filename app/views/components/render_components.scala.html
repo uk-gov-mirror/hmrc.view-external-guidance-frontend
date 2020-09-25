@@ -16,8 +16,9 @@
 
 @import models.ui._
 @import controllers.routes._
+@import models.ocelot.Label
 
-@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages)
+@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, labels: Map[String, Label])
 
 @for(cmp <- elements) {
   @{cmp match {
