@@ -29,14 +29,15 @@ language.switcher = Language switcher
 
 timeout.dialog.keep_alive_button.text=Continue using guidance
 timeout.dialog.sign_out_button.text=Delete your answers
-timeout.dialog.title.text=Your session is about to expire
-timeout.dialog.message.text=Your session will end in
+timeout.dialog.title.text=Your session is about to end
+timeout.dialog.message.text=For your security, we will delete your answers in
 timeout.dialog.signOutUrl=https://www.gov.uk/check-additional-income-tax
 
 session.timeout.header.title=Interactive Guidance
 session.timeout.delete.your.answers=You deleted your answers
 session.timeout.session.has.expired=Your session has ended
 session.timeout.button.text=Start Again
+session.timeout.session.has.expired.info=For your security, we deleted your answers
 
 # Footer Links
 # ----------------------------------------------------------

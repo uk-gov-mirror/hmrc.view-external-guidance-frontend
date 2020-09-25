@@ -28,7 +28,7 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.http.SessionKeys._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import views.html.session_timeout
+import views.html.{delete_your_answers, session_timeout}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -38,7 +38,9 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
                                              service: GuidanceService,
                                              errorHandler: ErrorHandler,
                                              mcc: MessagesControllerComponents,
-                                             view: session_timeout)
+                                             session_timeout_view: session_timeout,
+                                             delete_answers_view: delete_your_answers
+                                             )
     extends FrontendController(mcc)
     with I18nSupport {
 
@@ -67,22 +69,18 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
     }
 
   def createDeleteYourAnswersResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Html =
-    view("session.timeout.delete.your.answers",
-            processTitle,
-            "session.timeout.delete.your.answers",
-            Some(processCode),
-            None,
-            s"${appConfig.baseUrl}/$processCode",
-            "session.timeout.button.text")
+    delete_answers_view(
+      processTitle,
+      Some(processCode),
+      None,
+      s"${appConfig.baseUrl}/$processCode")
 
   def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Html =
-    view("session.timeout.session.has.expired",
-            processTitle,
-            "session.timeout.session.has.expired",
-            Some(processCode),
-            None,
-            s"${appConfig.baseUrl}/$processCode",
-            "session.timeout.button.text")
+    session_timeout_view(
+      processTitle,
+      Some(processCode),
+      None,
+      s"${appConfig.baseUrl}/$processCode")
 
   /**
     * If last request update is available check if session has timed out
