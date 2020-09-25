@@ -30,7 +30,7 @@ case class InputStanza(
   placeholder: Int,
   stack: Boolean
 ) extends Stanza {
-  override val labels = List(Label(label, None, Some(ipt_type)))
+  override val labels = List(Label(label.toUpperCase, None, Some(ipt_type)))
 }
 
 object InputStanza {

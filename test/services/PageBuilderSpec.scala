@@ -415,9 +415,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         },
         _ => fail)
 
-
     }
-
   }
 
   trait IhtTest extends Test with IhtJson {
@@ -425,25 +423,25 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   }
 
   "services" must {
-    "determine unique set of labels from a collection of pages" in new IhtTest {
-      val labels = Seq(Label("Properties",Some("0"),None),
-                       Label("Money",Some("0"),None),
-                       Label("Household",Some("0"),None),
-                       Label("Motor Vehicles",Some("0"),None),
-                       Label("Private pension",Some("0"),None),
-                       Label("Trust",Some("0"),None),
-                       Label("Foreign assets",Some("0"),None),
-                       Label("Other assets",Some("0"),None),
-                       Label("Mortgage_debt",Some("0"),None),
-                       Label("funeral_expenses",Some("0"),None),
-                       Label("other_debts",Some("0"),None),
-                       Label("left to spouse",Some("0"),None),
-                       Label("registered charity",Some("0"),None),
-                       Label("nil rate band",Some("0"),None),
-                       Label("Value of Assets",None,None),
-                       Label("Value of Debts",None,None),
-                       Label("Additional Info",None,None),
-                       Label("IHT result",None,None))
+    "determine unique set of case insensitive labels from a collection of pages" in new IhtTest {
+      val labels = Seq(Label("PROPERTIES",Some("0"),None),
+                       Label("MONEY",Some("0"),None),
+                       Label("HOUSEHOLD",Some("0"),None),
+                       Label("MOTOR VEHICLES",Some("0"),None),
+                       Label("PRIVATE PENSION",Some("0"),None),
+                       Label("TRUST",Some("0"),None),
+                       Label("FOREIGN ASSETS",Some("0"),None),
+                       Label("OTHER ASSETS",Some("0"),None),
+                       Label("MORTGAGE_DEBT",Some("0"),None),
+                       Label("FUNERAL_EXPENSES",Some("0"),None),
+                       Label("OTHER_DEBTS",Some("0"),None),
+                       Label("LEFT TO SPOUSE",Some("0"),None),
+                       Label("REGISTERED CHARITY",Some("0"),None),
+                       Label("NIL RATE BAND",Some("0"),None),
+                       Label("VALUE OF ASSETS",None,None),
+                       Label("VALUE OF DEBTS",None,None),
+                       Label("ADDITIONAL INFO",None,None),
+                       Label("IHT RESULT",None,None))
 
       pageBuilder.pages(ihtProcess, "start") match {
         case Right(pages) => services.uniqueLabels(pages) shouldBe labels
@@ -452,7 +450,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "determine unique set of label references from a collection of pages" in new IhtTest {
-      val labelsReferenced = Seq("Properties",
+     val labelsReferenced = Seq("Properties",
                                   "Money",
                                   "Value of Assets",
                                   "Household",
@@ -469,7 +467,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
                                   "IHT result")
 
       pageBuilder.pages(ihtProcess, "start") match {
-        case Right(pages) => services.uniqueLabelRefs(pages) shouldBe labelsReferenced
+        case Right(pages) =>
+          services.uniqueLabelRefs(pages) shouldBe labelsReferenced
         case Left(err) => fail(s"Failed with $err")
       }
     }
@@ -481,7 +480,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageBuilder.pages(ihtProcess, "start") match {
         case Right(pages) =>
           val labels = services.uniqueLabels(pages)
-          services.uniqueLabelRefs(pages).forall(lr => labels.exists(_.name == lr)) shouldBe true
+          services.uniqueLabelRefs(pages).forall(lr => labels.exists(_.name == lr.toUpperCase)) shouldBe true
         case Left(err) => fail(s"Failed with $err")
       }
     }
