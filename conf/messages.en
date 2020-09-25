@@ -28,10 +28,15 @@ language.change.english = Change the language to English
 language.switcher = Language switcher
 
 timeout.dialog.keep_alive_button.text=Continue using guidance
-timeout.dialog.sign_out_button.text=Start again
+timeout.dialog.sign_out_button.text=Delete your answers
 timeout.dialog.title.text=Your session is about to expire
 timeout.dialog.message.text=Your session will end in
 timeout.dialog.signOutUrl=https://www.gov.uk/check-additional-income-tax
+
+session.timeout.header.title=Interactive Guidance
+session.timeout.delete.your.answers=You deleted your answers
+session.timeout.session.has.expired=Your session has ended
+session.timeout.button.text=Start Again
 
 # Footer Links
 # ----------------------------------------------------------

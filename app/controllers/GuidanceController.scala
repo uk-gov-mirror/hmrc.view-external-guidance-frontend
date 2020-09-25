@@ -63,10 +63,10 @@ class GuidanceController @Inject() (
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
-        NotFound(errorHandler.notFoundTemplate)
+        NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
       case Left(BadRequestError) =>
         logger.warn(s"Request for PageContext at /$path returned BadRequest")
-        BadRequest(errorHandler.badRequestTemplate)
+        BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
         InternalServerError(errorHandler.internalServerErrorTemplate)
@@ -82,14 +82,14 @@ class GuidanceController @Inject() (
           case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
-              case _ => BadRequest(errorHandler.badRequestTemplate)
+              case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
             }
           case Left(NotFoundError) =>
             logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
-            NotFound(errorHandler.notFoundTemplate)
+            NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
           case Left(BadRequestError) =>
             logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
-            BadRequest(errorHandler.badRequestTemplate)
+            BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
           case Left(err) =>
             logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
             InternalServerError(errorHandler.internalServerErrorTemplate)

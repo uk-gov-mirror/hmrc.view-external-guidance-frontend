@@ -38,6 +38,8 @@ class GuidanceService @Inject() (
 ) {
   val logger = Logger(getClass)
 
+  def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
+
   def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
 
   def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(

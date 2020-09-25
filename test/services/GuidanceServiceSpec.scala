@@ -18,6 +18,7 @@ package services
 
 import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
+import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
 import models.ocelot.{Page, Process, ProcessJson}
 import models.ui
@@ -81,11 +82,9 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
-      whenReady(result) { pageContext =>
-        pageContext match {
-          case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
-          case Left(err) => fail(s"no PageContext found with error $err")
-        }
+      whenReady(result) {
+        case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
+        case Left(err) => fail(s"no PageContext found with error $err")
       }
     }
   }
@@ -111,12 +110,10 @@ class GuidanceServiceSpec extends BaseSpec {
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
 
-      whenReady(result) { pageContext =>
-        pageContext match {
-          case Right(PageContext(_, _, _, _, _, _, Some(answer))) => succeed
-          case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
-          case Left(err) => fail(s"Previous answer missing from PageContext, $err")
-        }
+      whenReady(result) {
+        case Right(PageContext(_, _, _, _, _, _, Some(_))) => succeed
+        case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
+        case Left(err) => fail(s"Previous answer missing from PageContext, $err")
       }
     }
   }
@@ -235,6 +232,51 @@ class GuidanceServiceSpec extends BaseSpec {
       whenReady(result) { ret =>
         ret shouldBe Right({})
       }
+    }
+  }
+
+  "Calling getProcessContext(key: String)" should {
+
+    "successfully retrieve a process context when the session data contains a single process" in new Test {
+
+      val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), Map(), None)
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful(Right(expectedProcessContext)))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { processContext =>
+        processContext shouldBe Right(expectedProcessContext)
+      }
+    }
+
+    "return a not found error if the session data does not exist" in new Test {
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful(Left(NotFoundError)))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { err =>
+        err shouldBe Left(NotFoundError)
+      }
+    }
+
+    "return a database error if an error occurs retrieving the session data" in new Test {
+
+      MockSessionRepository
+        .get(sessionRepoId)
+        .returns(Future.successful(Left(DatabaseError)))
+
+      private val result = target.getProcessContext(sessionRepoId)
+
+      whenReady(result) { err =>
+        err shouldBe Left(DatabaseError)
+      }
+
     }
   }
 
