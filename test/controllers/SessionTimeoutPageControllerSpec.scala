@@ -24,12 +24,11 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-
 import config.ErrorHandler
 import models.errors._
 import models.ocelot.{Process, ProcessJson}
 import repositories.ProcessContext
-import views.html.session_timeout
+import views.html.{delete_your_answers, session_timeout}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import play.api.mvc.Result
@@ -42,6 +41,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
     lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
     lazy val view = app.injector.instanceOf[session_timeout]
+    lazy val delete_answers_view = app.injector.instanceOf[delete_your_answers]
 
     lazy val processCode = "cup-of-tea"
     lazy val sessionId = "sessionId"
@@ -56,7 +56,8 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
       mockGuidanceService,
       errorHandler,
       stubMessagesControllerComponents(),
-      view)
+      view,
+      delete_answers_view)
 
   }
 
