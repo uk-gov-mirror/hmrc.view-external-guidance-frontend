@@ -45,16 +45,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
 
     val stanzas = Seq(
-      PageStanza("/blah", Seq("1"), false),
-      Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false),
-      Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false),
-      Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false)
+      KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+      KeyedStanza("1", Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
 
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionPhrase, answers, answerDestinations, false), Seq(""), Nil)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, false)), Seq.empty)
 
     val pageWithQuestionHint =
-      Page(Process.StartStanzaId, "/test-page", stanzas :+ Question(questionWithHintPhrase, answers, answerDestinations, false), Seq(""), Nil)
+      Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, false)), Seq.empty)
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
@@ -224,39 +224,39 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
 
     val initialStanza = Seq(
-      PageStanza("/blah", Seq("1"), false),
-      Instruction(Phrase(lang2), Seq("2"), None, false),
-      Callout(Title, Phrase(lang0), Seq("3"), false),
-      Callout(SubTitle, Phrase(lang1), Seq("4"), false),
-      Callout(Lede, Phrase(lang2), Seq("5"), false),
-      Instruction(Phrase(lang3), Seq("end"), None, false)
+      KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+      KeyedStanza("1", Instruction(Phrase(lang2), Seq("2"), None, false)),
+      KeyedStanza("2", Callout(Title, Phrase(lang0), Seq("3"), false)),
+      KeyedStanza("3", Callout(SubTitle, Phrase(lang1), Seq("4"), false)),
+      KeyedStanza("4", Callout(Lede, Phrase(lang2), Seq("5"), false)),
+      KeyedStanza("5", Instruction(Phrase(lang3), Seq("end"), None, false))
     )
 
     val stanzasWithQuestion = Seq(
-      PageStanza("/blah", Seq("1"), false),
-      Instruction(Phrase(lang2), Seq("2"), None, false),
-      Instruction(Phrase(lang3), Seq("3"), None, false),
-      question
+      KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+      KeyedStanza("1", Instruction(Phrase(lang2), Seq("2"), None, false)),
+      KeyedStanza("2", Instruction(Phrase(lang3), Seq("3"), None, false)),
+      KeyedStanza("3", question)
     )
 
     val stanzasWithQuestionAndHints = Seq(
-      PageStanza("/blah", Seq("1"), false),
-      Instruction(Phrase(lang2), Seq("2"), None, false),
-      Instruction(Phrase(lang3), Seq("3"), None, false),
-      questionWithAnswerHints
+      KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+      KeyedStanza("1", Instruction(Phrase(lang2), Seq("2"), None, false)),
+      KeyedStanza("2", Instruction(Phrase(lang3), Seq("3"), None, false)),
+      KeyedStanza("3", questionWithAnswerHints)
     )
 
-    val questionPage = Page(Process.StartStanzaId, "/blah", stanzasWithQuestion, Seq(""), Nil)
-    val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq(""), Nil)
+    val questionPage = Page(Process.StartStanzaId, "/blah", stanzasWithQuestion, Seq.empty)
+    val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq.empty)
 
-    val stanzas = initialStanza ++ Seq(linkInstructionStanza, EndStanza)
-    val stanzasWithHyperLink = initialStanza ++ Seq(hyperLinkInstructionStanza, EndStanza)
-    val stanzasWithEmbeddedLinks = initialStanza ++ Seq(embeddedLinkInstructionStanza, EndStanza)
-    val stanzasWithEmbeddedLinks2 = initialStanza ++ Seq(embeddedLinkInstructionStanza2, EndStanza)
-    val stanzasWithEmbeddedPageLinks = initialStanza ++ Seq(embeddedPageLinkInstructionStanza, EndStanza)
-    val stanzasWithEmbeddedAllLinks = initialStanza ++ Seq(embeddedAllLinkInstructionStanza, EndStanza)
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq(""), Nil)
-    val hyperLinkPage = Page(Process.StartStanzaId, "/test-page", stanzasWithHyperLink, Seq(""), Nil)
+    val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza), KeyedStanza("2", EndStanza))
+    val stanzasWithHyperLink: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", hyperLinkInstructionStanza), KeyedStanza("7", EndStanza))
+    val stanzasWithEmbeddedLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza), KeyedStanza("7", EndStanza))
+    val stanzasWithEmbeddedLinks2: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza2), KeyedStanza("7", EndStanza))
+    val stanzasWithEmbeddedPageLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedPageLinkInstructionStanza), KeyedStanza("7", EndStanza))
+    val stanzasWithEmbeddedAllLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedAllLinkInstructionStanza), KeyedStanza("7", EndStanza))
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
+    val hyperLinkPage = Page(Process.StartStanzaId, "/test-page", stanzasWithHyperLink, Seq.empty)
 
     val textItems = ltxt1 +
       Text(link1En, link1Cy) +
@@ -272,10 +272,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       ltxt3
     val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy) + Text(startLinkEn, startLinkCy)
 
-    val pageWithEmbeddLinks = page.copy(stanzas = stanzasWithEmbeddedLinks)
-    val pageWithEmbeddLinks2 = page.copy(stanzas = stanzasWithEmbeddedLinks2)
-    val pageWithEmbeddPageLinks = page.copy(stanzas = stanzasWithEmbeddedPageLinks)
-    val pageWithEmbeddAllLinks = page.copy(stanzas = stanzasWithEmbeddedAllLinks)
+    val pageWithEmbeddLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
+    val pageWithEmbeddLinks2 = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks2, Seq.empty)
+    val pageWithEmbeddPageLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedPageLinks, Seq.empty)
+    val pageWithEmbeddAllLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedAllLinks, Seq.empty)
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     // for multi page testing
@@ -430,11 +430,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        PageStanza("/blah", Seq("1"), false),
-        instructionGroup
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+        KeyedStanza("1", instructionGroup)
       )
 
-      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -481,11 +481,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
       val bulletPointListStanzas = Seq(
-        PageStanza("/blah", Seq("1"), false),
-        instructionGroup
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+        KeyedStanza("1", instructionGroup)
       )
 
-      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 
@@ -540,16 +540,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       // Build sequence of stanzas
       val stanzaSeq = Seq(
-        PageStanza("/blah", Seq("1"), false),
-        titleCallout,
-        instruction1,
-        subTitleCallout,
-        instruction2,
-        instructionGroup,
-        instruction3
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+        KeyedStanza("1", titleCallout),
+        KeyedStanza("2", instruction1),
+        KeyedStanza("3", subTitleCallout),
+        KeyedStanza("4", instruction2),
+        KeyedStanza("5", instructionGroup),
+        KeyedStanza("6", instruction3)
       )
 
-      val complexPage = Page(Process.StartStanzaId, "/blah", stanzaSeq, Seq(""), Nil)
+      val complexPage = Page(Process.StartStanzaId, "/blah", stanzaSeq, Seq.empty)
 
       val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
 
@@ -613,9 +613,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         )
       )
 
-      val bulletPointStanzas = Seq(PageStanza("/page-1", Seq("1"), false), instructionGroup)
+      val bulletPointStanzas = Seq(KeyedStanza("start", PageStanza("/page-1", Seq("1"), false)),
+                                   KeyedStanza("1", instructionGroup))
 
-      val bulletPointListPage = Page(Process.StartStanzaId, "/page-1", bulletPointStanzas, Seq(""), Nil)
+      val bulletPointListPage = Page(Process.StartStanzaId, "/page-1", bulletPointStanzas, Seq.empty)
 
       val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
 

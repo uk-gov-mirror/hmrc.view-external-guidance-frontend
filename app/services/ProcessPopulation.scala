@@ -46,8 +46,10 @@ trait ProcessPopulation {
     def populateInput(i: InputStanza): Either[GuidanceError, Input] =
       phrase(i.name, id, process).fold(ne => Left(ne), name =>
         phrase(i.help, id, process).fold(he => Left(he), help =>
-          phrase(i.placeholder, id, process).fold(pe => Left(pe), placeholder =>
-            Right(Input(i, name, help, placeholder))
+          i.placeholder.fold[Either[GuidanceError, Input]](Right(Input(i, name, help, None)))( ph =>
+            phrase(ph, id, process).fold(pe => Left(pe), placeholder =>
+              Right(Input(i, name, help, Some(placeholder)))
+            )
           )
         )
       )
