@@ -20,7 +20,7 @@ import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
 import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
-import models.ocelot.{Page, Process, ProcessJson}
+import models.ocelot.{Page, KeyedStanza, Process, ProcessJson}
 import models.ui
 import uk.gov.hmrc.http.HeaderCarrier
 import repositories.ProcessContext
@@ -36,7 +36,7 @@ class GuidanceServiceSpec extends BaseSpec {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     implicit val stanzaIdToUrl: Map[String, String] = Map[String, String]()
 
-    private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(EndStanza), Seq())
+    private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(KeyedStanza("1", EndStanza)), Seq())
 
     val process: Process = validOnePageJson.as[Process]
     val processWithProcessCode = validOnePageProcessWithProcessCodeJson.as[Process]
