@@ -18,6 +18,7 @@ package controllers
 
 import java.time.Instant
 
+import play.twirl.api.Html
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import models.ui.Text
@@ -33,12 +34,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class SessionTimeoutPageController @Inject()(
-                                              appConfig: AppConfig,
-                                              service: GuidanceService,
-                                              errorHandler: ErrorHandler,
-                                              mcc: MessagesControllerComponents,
-                                              view: session_timeout)
+class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
+                                             service: GuidanceService,
+                                             errorHandler: ErrorHandler,
+                                             mcc: MessagesControllerComponents,
+                                             view: session_timeout)
     extends FrontendController(mcc)
     with I18nSupport {
 
@@ -57,33 +57,32 @@ class SessionTimeoutPageController @Inject()(
               Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate).withNewSession)
             case Right(processContext) =>
               val title = Text(processContext.process.title.langs)
-              Future.successful(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode).withNewSession)
+              Future.successful(Ok(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode)).withNewSession)
             case Left(err) =>
               logger.error(s"Error $err occurred retrieving process context for process $processCode when removing session")
               Future.successful(InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode))).withNewSession)
           }
-        case _ => Future.successful(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode).withNewSession)
+        case _ => Future.successful(Ok(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode)).withNewSession)
       }
     }
 
-  def createDeleteYourAnswersResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result =
-    Ok(view("session.timeout.delete.your.answers",
+  def createDeleteYourAnswersResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Html =
+    view("session.timeout.delete.your.answers",
             processTitle,
             "session.timeout.delete.your.answers",
             Some(processCode),
             None,
             s"${appConfig.baseUrl}/$processCode",
-            "session.timeout.button.text"))
+            "session.timeout.button.text")
 
-  def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Result = {
-    Ok(view("session.timeout.session.has.expired",
+  def createYourSessionHasExpiredResponse(processTitle: String, processCode: String)(implicit request: Request[_]): Html =
+    view("session.timeout.session.has.expired",
             processTitle,
             "session.timeout.session.has.expired",
             Some(processCode),
             None,
             s"${appConfig.baseUrl}/$processCode",
-            "session.timeout.button.text"))
-  }
+            "session.timeout.button.text")
 
   /**
     * If last request update is available check if session has timed out
