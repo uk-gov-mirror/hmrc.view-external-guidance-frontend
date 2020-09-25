@@ -54,6 +54,7 @@ object DefaultSessionRepository {
 case class ProcessContext(process: Process, answers: Map[String, String], labels: Map[String, Label], backLink: Option[String])
 
 trait SessionRepository {
+  def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
@@ -100,13 +101,14 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] =
+  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = {
+
     findAndUpdate(Json.obj("_id" -> key),
-                  Json.obj(
-                    "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
-                    "$push" -> Json.obj("pageHistory" -> pageUrl)
-                  ),
-                  fetchNewObject = false
+      Json.obj(
+        "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
+        "$push" -> Json.obj("pageHistory" -> pageUrl)
+      ),
+      fetchNewObject = false
     ).flatMap { r =>
           r.result[DefaultSessionRepository.SessionProcess]
           .fold {
@@ -133,6 +135,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
+  }
 
   private def backlinkAndHistory(pageUrl: String, priorHistory: List[String]): (Option[String], Option[List[String]]) =
     priorHistory.reverse match {
@@ -180,6 +183,21 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
+  def get(key:String): Future[RequestOutcome[ProcessContext]] = {
+
+    find("_id" -> key).map { list =>
+      list.size match {
+        case 0 =>  Left(NotFoundError)
+        case _ => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, None))
+      }
+    }.recover {
+      case lastError =>
+      logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
+      Left(DatabaseError)
+    }
+
+  }
+
   def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
     findAndUpdate(
       Json.obj("_id" -> key),
@@ -199,6 +217,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
           Left(DatabaseError)
       }
+
   }
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
