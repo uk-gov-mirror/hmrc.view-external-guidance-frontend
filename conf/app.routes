@@ -5,6 +5,8 @@ GET   /language/:lang                    controllers.SwitchLanguageController.sw
 
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
 
+GET   /:processCode/session-timeout      controllers.SessionTimeoutPageController.getPage(processCode: String)
+
 GET   /:processCode                      controllers.entry.StartGuidanceController.published(processCode: String)
 
 GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String)

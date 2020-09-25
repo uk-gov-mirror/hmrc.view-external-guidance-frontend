@@ -15,20 +15,20 @@
  *@
 
 @import config.AppConfig
-@import play.api.i18n.Lang
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@this(layout: main_layout,
-        hmrcHeading: HmrcPageHeading,
-        appConfig: AppConfig)
+@this(layout: main_layout, appConfig: AppConfig)
 
-@(pageTitle: String, heading: String, message: String, processCode: Option[String])(implicit request: Request[_], messages: Messages)
+@(headerTitle: String,
+  processCode: Option[String],
+  startUrl: Option[String],
+  buttonTarget: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle, messages("service.name"), processCode, enableTimeout = false) {
- @hmrcHeading(PageHeading(heading))
- <p>@message</p>
+@layout(messages("session.timeout.delete.your.answers"), headerTitle, processCode, startUrl, enableTimeout = false){
+
+    <h1 class="govuk-heading-xl">@messages("session.timeout.delete.your.answers")</h1>
+
+    <a id="startAgain" href="@buttonTarget" role="button" class="govuk-button" data-module="govuk-button">@messages("session.timeout.button.text")</a>
 }
-
 @{
-  //$COVERAGE-OFF$
+    //$COVERAGE-OFF$
 }

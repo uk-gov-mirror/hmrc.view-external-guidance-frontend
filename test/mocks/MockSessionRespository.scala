@@ -44,6 +44,11 @@ trait MockSessionRepository extends MockFactory {
         .saveAnswerToQuestion(_: String, _: String, _: String))
         .expects(key, url, answer)
 
+    def get(key: String): CallHandler[Future[RequestOutcome[ProcessContext]]] =
+      (mockSessionRepository
+        .get(_: String))
+        .expects(key)
+
     def saveLabels(key: String, labels: Map[String, Label]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
         .saveLabels(_: String, _: Map[String, Label]))

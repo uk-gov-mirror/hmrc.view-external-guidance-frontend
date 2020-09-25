@@ -43,17 +43,18 @@ class AccessibilityStatementController @Inject() (
 
   val getPage: Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    val path = controllers.routes.AccessibilityStatementController.getPage.url.drop(appConfig.baseUrl.length +1)
+    val path = controllers.routes.AccessibilityStatementController.getPage.url.drop(appConfig.baseUrl.length + 1)
     withExistingSession[ProcessContext](service.getProcessContext(_, path)).map {
       case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
         val processCode = processContext.process.meta.processCode
         Ok(view(title.asString(messages.lang),
+                Some(processCode),
                 processContext.process.startUrl.map(url => s"${appConfig.baseUrl}/${processCode}${url}"),
                 processContext.backLink.map(url => s"${appConfig.baseUrl}/${url}")))
       case Left(BadRequestError) =>
         logger.warn(s"Accessibility used out of guidance")
-        Ok(view(messages("accessibility.defaultHeaderTitle"), None))
+        Ok(view(messages("accessibility.defaultHeaderTitle")))
       case Left(err) =>
         logger.error(s"Request for ProcessContext returned $err, returning InternalServerError")
         InternalServerError(errorHandler.internalServerErrorTemplate)
