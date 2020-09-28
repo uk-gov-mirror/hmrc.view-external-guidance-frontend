@@ -17,7 +17,7 @@
 package models.ocelot.stanzas
 
 import play.api.libs.json._
-import models.ocelot.Label
+import models.ocelot.{LabelCache, Label}
 
 trait Stanza {
   val visual: Boolean = false
@@ -32,6 +32,10 @@ trait VisualStanza extends Stanza {
 }
 
 trait Populated
+
+trait Evaluate {
+  def eval(labels: LabelCache): (Seq[String], LabelCache)
+}
 
 case object EndStanza extends Stanza
 

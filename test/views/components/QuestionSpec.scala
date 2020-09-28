@@ -25,6 +25,7 @@ import play.twirl.api.Html
 import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
+import models.ocelot.LabelCache
 import forms.NextPageFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
@@ -74,7 +75,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
     val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithHintAndErrors = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers, Seq(errorMsg))
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
 
   }
 

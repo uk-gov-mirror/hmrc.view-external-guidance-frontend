@@ -15,9 +15,9 @@
  *@
 
 @import models.ui.{Paragraph, BulletPointList}
-@import models.ocelot.Label
+@import models.ocelot.Labels
 
-@(bulletPointList: BulletPointList)( implicit messages: Messages, labels: Map[String, Label] )
+@(bulletPointList: BulletPointList)( implicit messages: Messages, labels: Labels )
 
 @components.paragraph(Paragraph(bulletPointList.text))
 <ul class="govuk-list--bullet govuk-list">

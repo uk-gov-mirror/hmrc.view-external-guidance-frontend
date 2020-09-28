@@ -16,6 +16,7 @@
 
 package models.ocelot.stanzas
 
+import models.ocelot.LabelCache
 import models.ocelot.labelReferences
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
@@ -64,4 +65,10 @@ object ChoiceStanza {
       (JsPath \ "stack").write[Boolean]
     )(unlift(ChoiceStanza.unapply))
 
+}
+
+
+case class Choice(stanza: ChoiceStanza) extends Stanza with Evaluate {
+  // TODO
+  def eval(labels: LabelCache): (Seq[String], LabelCache) = (stanza.next, labels)
 }

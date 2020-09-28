@@ -18,6 +18,7 @@ package views.components
 
 import base.ViewSpec
 import models.ui.{H4, Text}
+import models.ocelot.LabelCache
 import org.jsoup.nodes.Element
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{Lang, Messages, MessagesApi}
@@ -30,7 +31,7 @@ import views.html.components.h4_heading
 class H4HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 
