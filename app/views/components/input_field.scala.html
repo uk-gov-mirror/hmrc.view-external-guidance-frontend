@@ -27,16 +27,16 @@
   }
 }
 <div class="govuk-form-group">
-    <h1 class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="@name">
-        @components.render_text(input.text)
-      </label>
-    </h1>
-    @input.hint.map{ hintText =>
-        <span id="@name-hint" class="govuk-hint">
-        @components.render_text(hintText)
-        </span>
-    }
+@*    <h1 class="govuk-label-wrapper">*@
+@*      <label class="govuk-label govuk-label--l" for="@name">*@
+@*        @components.render_text(input.text)*@
+@*      </label>*@
+@*    </h1>*@
+@*    @input.hint.map{ hintText =>*@
+@*        <span id="@name-hint" class="govuk-hint">*@
+@*        @components.render_text(hintText)*@
+@*        </span>*@
+@*    }*@
     <div class="hmrc-currency-input__wrapper">
         <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
         <input class="govuk-input" id="@name" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>

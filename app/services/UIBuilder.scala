@@ -136,9 +136,11 @@ class UIBuilder {
 
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    val (input, hint) = TextBuilder.singleTextWithOptionalHint(i.name)
-    println(s"************************ This is the hint:$hint for name ${i.name}")
-    Input(input, hint, uiElements, errorMsgs)
+    // Strip out any hint from name as handled by the help attribute
+    val (input, _) = TextBuilder.singleTextWithOptionalHint(i.name)
+    val hint = TextBuilder.fromPhrase(i.help)
+
+    Input(input, Some(hint), uiElements, errorMsgs)
   }
 
 
