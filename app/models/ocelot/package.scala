@@ -21,9 +21,11 @@ import scala.util.matching.Regex
 package object ocelot {
   val hintRegex = "\\[hint:([^\\]])+\\]".r
   val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
-  val labelRefRegex = s"\\[label:([0-9a-zA-Z\\s+]+)\\]".r
+  val labelRefRegex = s"\\[label:([0-9a-zA-Z\\s+_]+)\\]".r
 
   def plSingleGroupCaptures(regex: Regex, str: String): List[String] = regex.findAllMatchIn(str).map(_.group(1)).toList
+  def plSingleGroupCapture(regex: Regex, str: String): Option[String] = regex.findFirstIn(str)
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str)
   def labelReferences(str: String): List[String] = plSingleGroupCaptures(labelRefRegex, str)
+  def labelReference(str: String): Option[String] = plSingleGroupCapture(labelRefRegex, str)
 }

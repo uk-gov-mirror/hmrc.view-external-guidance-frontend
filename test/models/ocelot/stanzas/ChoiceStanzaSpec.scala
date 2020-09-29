@@ -152,19 +152,19 @@ class ChoiceStanzaSpec extends BaseSpec {
       stanza.next.length shouldBe 3
       stanza.next shouldBe next
       stanza.tests.length shouldBe 2
-      stanza.tests(0) shouldBe ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2")
-      stanza.tests(1) shouldBe ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")
+      stanza.tests(0) shouldBe ChoiceStanzaTest("VAL-1", LessThanOrEquals, "VAL-2")
+      stanza.tests(1) shouldBe ChoiceStanzaTest("VAL-3", LessThanOrEquals, "VAL-4")
     }
 
     "serialise to json" in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceStanzaTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
       val expectedJson: String = s"""{"next":[${next.map(x => s""""$x"""").mkString(",")}],"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"stack":false}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
 
     "serialise to json from a Stanza reference" in {
-      val stanza: Stanza = ChoiceStanza(next, Seq(ChoiceTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val stanza: Stanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceStanzaTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
       val expectedJson: String = s"""{"next":[${next.map(x => s""""$x"""").mkString(",")}],"stack":false,"tests":[{"left":"VAL-1","test":"lessThanOrEquals","right":"VAL-2"},{"left":"VAL-3","test":"lessThanOrEquals","right":"VAL-4"}],"type":"ChoiceStanza"}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
@@ -187,11 +187,11 @@ class ChoiceStanzaSpec extends BaseSpec {
 
   }
 
-  "ChoiceTest" must {
+  "ChoiceStanzaTest" must {
 
     "Detect unknown test type strings at json parse level" in {
       val invalidChoiceStanzaJson: JsObject = Json.parse(s"""{"left": "VAL-1","test": "UnknownType","right": "VAL-2"}""").as[JsObject]
-      invalidChoiceStanzaJson.validate[ChoiceTest] match {
+      invalidChoiceStanzaJson.validate[ChoiceStanzaTest] match {
         case JsError(errTuple :: _) => errTuple match {
           case (_, err +: _) if err.messages(0) == "TestType" && err.args.contains("UnknownType") => succeed
           case _ => fail
@@ -203,7 +203,7 @@ class ChoiceStanzaSpec extends BaseSpec {
 
     "Detect all unknown test types at json parse level" in {
       val invalidChoiceStanzaJson: JsObject = Json.parse(s"""{"left": "VAL-1","test": 44,"right": "VAL-2"}""").as[JsObject]
-      invalidChoiceStanzaJson.validate[ChoiceTest] match {
+      invalidChoiceStanzaJson.validate[ChoiceStanzaTest] match {
         case JsError(errTuple :: _) => errTuple match {
           case (_, err +: _) if err.messages(0) == "TestType" && err.args.contains("44") => succeed
           case _ => fail

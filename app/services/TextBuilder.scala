@@ -24,7 +24,7 @@ import scala.annotation.tailrec
 
 object TextBuilder {
   // Ocelot data entry validation regex for use by input stanzas
-  // private val currencyRegex = "\\d+(\\.(\\d{2})?)?".r // From Ocelot
+  val currencyRegex = "\\d+(\\.(\\d{2})?)?".r // From Ocelot
   // private val dateRegex = "\\d{2}/\\d{2}/\\d{4}"      // From Ocelot
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
