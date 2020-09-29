@@ -16,13 +16,11 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.Labels
+import models.ocelot.{isCurrency, Labels}
 import models.ocelot.{labelReference, labelReferences}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import services.TextBuilder
-
 
 case class ChoiceStanzaTest(left: String, test: TestType, right: String)
 
@@ -42,11 +40,7 @@ object ChoiceStanzaTest {
     )(unlift(ChoiceStanzaTest.unapply))
 }
 
-case class ChoiceStanza(
-  override val next: Seq[String],
-  tests: Seq[ChoiceStanzaTest],
-  stack: Boolean
-) extends Stanza {
+case class ChoiceStanza(override val next: Seq[String], tests: Seq[ChoiceStanzaTest], stack: Boolean) extends Stanza {
   override val labelRefs: List[String]  = tests.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
 }
 
@@ -78,7 +72,6 @@ sealed trait ChoiceTest {
       case (x, y) if isCurrency(x) && isCurrency(y) => f(BigDecimal(x), BigDecimal(y))
       case (x, y) => g(x, y)
     }
-  def isCurrency(str: String): Boolean = TextBuilder.currencyRegex.findFirstIn(str).fold(false)(_=> true)
 }
 
 case class EqualsTest(left: String, right: String) extends ChoiceTest {

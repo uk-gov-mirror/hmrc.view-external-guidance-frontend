@@ -189,7 +189,7 @@ class ChoiceStanzaSpec extends BaseSpec {
 
   "Choice" must {
     "be creatable from a ChoiceStanza " in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceStanzaTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"), ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
       val choice = Choice(stanza)
       choice.next shouldBe stanza.next
       choice.tests.zipWithIndex.foreach{
@@ -198,8 +198,100 @@ class ChoiceStanzaSpec extends BaseSpec {
 
       }
     }
+
+    "Evaluate to correct result when one of the tests succeed" in {
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"), ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
+      val choice = Choice(stanza)
+      val lc = LabelCache()
+      val expectedResult = (Seq("41"), lc)
+      choice.eval(lc) shouldBe expectedResult
+    }
+
+    "Evaluate to correct result when no tests succeed" in {
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"), ChoiceStanzaTest("3", MoreThan, "4")), false)
+      val choice = Choice(stanza)
+      val lc = LabelCache()
+      val expectedResult = (Seq("50"), lc)
+      choice.eval(lc) shouldBe expectedResult
+    }
+
+    "Evaluate to correct result when one of the tests succeed referencing labels" in {
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"), ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
+      val choice = Choice(stanza)
+      val labels = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("44")))
+      val lc = LabelCache(labels)
+      val expectedResult = (Seq("40"), lc)
+      choice.eval(lc) shouldBe expectedResult
+    }
+
+    "Evaluate to correct result when no tests succeed referencing labels" in {
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"), ChoiceStanzaTest("3", Equals, "4")), false)
+      val choice = Choice(stanza)
+      val labels = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")))
+      val lc = LabelCache(labels)
+      val expectedResult = (Seq("50"), lc)
+      choice.eval(lc) shouldBe expectedResult
+    }
+
   }
 
+  "ChoiceTest" must {
+    "provide support to EqualsTest" in {
+      EqualsTest("5", "5").eval(LabelCache()) shouldBe true
+
+      EqualsTest("4", "5").eval(LabelCache()) shouldBe false
+
+      EqualsTest("hello", "hello").eval(LabelCache()) shouldBe true
+
+      EqualsTest("4", "hello").eval(LabelCache()) shouldBe false
+    }
+
+    "provide support to NotEqualsTest" in {
+      NotEqualsTest("5", "5").eval(LabelCache()) shouldBe false
+
+      NotEqualsTest("4", "5").eval(LabelCache()) shouldBe true
+
+      NotEqualsTest("hello", "hello").eval(LabelCache()) shouldBe false
+
+      NotEqualsTest("4", "hello").eval(LabelCache()) shouldBe true
+    }
+
+    "provide support to MoreThanTest" in {
+      MoreThanTest("5", "5").eval(LabelCache()) shouldBe false
+
+      MoreThanTest("4", "5").eval(LabelCache()) shouldBe false
+
+      MoreThanTest("4", "3").eval(LabelCache()) shouldBe true
+
+      MoreThanTest("hello", "hello").eval(LabelCache()) shouldBe false
+
+      MoreThanTest("4", "hello").eval(LabelCache()) shouldBe false
+    }
+
+    "provide support to MoreThanOrEqualsTest" in {
+      MoreThanOrEqualsTest("5", "5").eval(LabelCache()) shouldBe true
+
+      MoreThanOrEqualsTest("4", "5").eval(LabelCache()) shouldBe false
+
+      MoreThanOrEqualsTest("4", "3").eval(LabelCache()) shouldBe true
+
+      MoreThanOrEqualsTest("hello", "hello").eval(LabelCache()) shouldBe true
+
+      MoreThanOrEqualsTest("4", "hello").eval(LabelCache()) shouldBe false
+    }
+
+    "provide support to LessThanOrEqualsTest" in {
+      LessThanOrEqualsTest("5", "5").eval(LabelCache()) shouldBe true
+
+      LessThanOrEqualsTest("4", "5").eval(LabelCache()) shouldBe true
+
+      LessThanOrEqualsTest("4", "3").eval(LabelCache()) shouldBe false
+
+      LessThanOrEqualsTest("hello", "hello").eval(LabelCache()) shouldBe true
+
+      LessThanOrEqualsTest("4", "hello").eval(LabelCache()) shouldBe true
+    }
+  }
 
   "ChoiceStanzaTest" must {
 
