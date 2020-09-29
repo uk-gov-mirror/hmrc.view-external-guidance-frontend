@@ -104,16 +104,17 @@ case class Choice(override val next: Seq[String], tests: Seq[ChoiceTest]) extend
 }
 
 object Choice {
-  def apply(stanza: ChoiceStanza): Choice = {
-    val choiceTests = stanza.tests.map{ t =>
-      t.test match {
-        case Equals => EqualsTest(t.left, t.right)
-        case NotEquals => NotEqualsTest(t.left, t.right)
-        case MoreThan => MoreThanTest(t.left, t.right)
-        case MoreThanOrEquals => MoreThanOrEqualsTest(t.left, t.right)
-        case LessThanOrEquals => LessThanOrEqualsTest(t.left, t.right)
+  def apply(stanza: ChoiceStanza): Choice =
+    Choice(
+      stanza.next,
+      stanza.tests.map{ t =>
+        t.test match {
+          case Equals => EqualsTest(t.left, t.right)
+          case NotEquals => NotEqualsTest(t.left, t.right)
+          case MoreThan => MoreThanTest(t.left, t.right)
+          case MoreThanOrEquals => MoreThanOrEqualsTest(t.left, t.right)
+          case LessThanOrEquals => LessThanOrEqualsTest(t.left, t.right)
+        }
       }
-    }
-    Choice(stanza.next, choiceTests)
-  }
+    )
 }

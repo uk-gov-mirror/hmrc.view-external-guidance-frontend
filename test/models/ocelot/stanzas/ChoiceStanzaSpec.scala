@@ -187,6 +187,20 @@ class ChoiceStanzaSpec extends BaseSpec {
 
   }
 
+  "Choice" must {
+    "be creatable from a ChoiceStanza " in {
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("VAL-1", LessThanOrEquals, "VAL-2"), ChoiceStanzaTest("VAL-3", LessThanOrEquals, "VAL-4")), false)
+      val choice = Choice(stanza)
+      choice.next shouldBe stanza.next
+      choice.tests.zipWithIndex.foreach{
+        case (LessThanOrEqualsTest(_,_), index) if stanza.tests(index).test == LessThanOrEquals => succeed
+        case x => fail
+
+      }
+    }
+  }
+
+
   "ChoiceStanzaTest" must {
 
     "Detect unknown test type strings at json parse level" in {
