@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, _}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink, Page => OcelotPage}
 import models.ui._
 import play.api.Logger
@@ -39,6 +39,7 @@ class UIBuilder {
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
              case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case in: OcelotInput => Seq(fromInput(in, formData, acc))
              case _ => acc
            }
          })
@@ -120,4 +121,25 @@ class UIBuilder {
 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
+
+  private def fromInput(i: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
+    implicit stanzaIdToUrlMap: Map[String, String]
+  ): UIComponent = {
+
+    @tailrec
+    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+      components match {
+        case Nil => (errors.reverse, others.reverse)
+        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+        case x :: xs => partitionComponents(xs, errors, x +: others)
+      }
+
+    // Split out an Error callouts from body components
+    val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+    val (input, hint) = TextBuilder.singleTextWithOptionalHint(i.name)
+    println(s"************************ This is the hint:$hint for name ${i.name}")
+    Input(input, hint, uiElements, errorMsgs)
+  }
+
+
 }

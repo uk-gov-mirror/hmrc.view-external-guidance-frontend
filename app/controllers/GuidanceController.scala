@@ -23,10 +23,11 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
+import models.ui.{FormData, InputPage, PageContext, QuestionPage, StandardPage}
 import forms.NextPageFormProvider
-import views.html.{standard_page, question_page}
+import views.html.{input_page, question_page, standard_page}
 import play.api.Logger
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 
@@ -37,6 +38,7 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
+    inputView: input_page,
     formProvider: NextPageFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
@@ -60,6 +62,11 @@ class GuidanceController @Inject() (
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
             Ok(questionView(page, pageContext, questionName(path), form))
+          case page: InputPage =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
+              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            }
+            Ok(inputView(page, pageContext, questionName(path), form))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
