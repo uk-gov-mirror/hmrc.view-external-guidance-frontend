@@ -55,6 +55,18 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
     }
 
+    "Return an empty string if label has no assigned value" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("Y") shouldBe Some("")
+    }
+
+    "Return None if referenced label does not exist" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("Z") shouldBe None
+    }
+
     "Allow the current value of the label to be updated" in {
       val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
