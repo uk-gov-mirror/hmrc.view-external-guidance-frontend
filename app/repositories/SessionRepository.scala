@@ -101,8 +101,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = {
-
+  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
@@ -135,7 +134,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
-  }
 
   private def backlinkAndHistory(pageUrl: String, priorHistory: List[String]): (Option[String], Option[List[String]]) =
     priorHistory.reverse match {
@@ -183,8 +181,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  def get(key:String): Future[RequestOutcome[ProcessContext]] = {
-
+  def get(key:String): Future[RequestOutcome[ProcessContext]] =
     find("_id" -> key).map { list =>
       list.size match {
         case 0 =>  Left(NotFoundError)
@@ -196,9 +193,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  }
-
-  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
+  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj("$set" -> Json.obj("labels" -> labels))
@@ -217,8 +212,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
           Left(DatabaseError)
       }
-
-  }
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(

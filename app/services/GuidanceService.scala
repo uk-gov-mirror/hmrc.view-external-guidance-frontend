@@ -34,6 +34,7 @@ class GuidanceService @Inject() (
     connector: GuidanceConnector,
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
+    pageRenderer: PageRenderer,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
@@ -46,7 +47,7 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
     getProcessContext(sessionId, s"${processCode}$url").map {
-      case Right(ProcessContext(process, answers, labels, backLink)) if process.meta.processCode == processCode =>
+      case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
           .fold(
@@ -61,14 +62,15 @@ class GuidanceService @Inject() (
                   logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
                   Left(BadRequestError): RequestOutcome[PageContext]
                 } { pge =>
+                  val (visualStanzas, labels) = pageRenderer.renderPage(pge, LabelCache(labelsMap))
                   Right(
                     PageContext(
-                      uiBuilder.fromStanzaPage(pge, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
+                      uiBuilder.fromStanzas(pge.url, visualStanzas, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
                       process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
                       process.title,
                       process.meta.id,
                       processCode,
-                      LabelCache(labels),
+                      labels,
                       backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )
@@ -82,6 +84,10 @@ class GuidanceService @Inject() (
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
         Left(err)
     }
+
+  def submitPageContext(processCode: String, url: String, sessionId: String, answer: String)(
+        implicit context: ExecutionContext
+    ): Future[RequestOutcome[Unit]] = Future.successful(Right({}))
 
   def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
     sessionRepository.saveAnswerToQuestion(docId, url, answer)

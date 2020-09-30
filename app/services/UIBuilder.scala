@@ -31,6 +31,18 @@ class UIBuilder {
   def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
+def fromStanzas(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+    Page(url,
+         BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+           stanza match {
+             case i: Instruction => acc :+ fromInstruction(i)
+             case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
+             case c: Callout => acc ++ fromCallout(c, formData)
+             case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case _ => acc
+           }
+         })
+
   def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(pge.url,
          BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
