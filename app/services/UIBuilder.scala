@@ -140,7 +140,8 @@ class UIBuilder {
     val (input, _) = TextBuilder.singleTextWithOptionalHint(i.name)
     val hint = TextBuilder.fromPhrase(i.help)
 
-    Input(input, Some(hint), uiElements, errorMsgs)
+    def nextPageUrl: Option[NextPageUrl] = if (stanzaIdToUrlMap contains i.next.head) Some(NextPageUrl(stanzaIdToUrlMap(i.next.head))) else None
+    Input(input, Some(hint), uiElements, errorMsgs, nextPageUrl)
   }
 
 

@@ -16,4 +16,5 @@
 
 package models.ui
 
-case class Input(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends UIComponent
+case class Input(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil, nextPageUrl: Option[NextPageUrl] = None)
+  extends UIComponent

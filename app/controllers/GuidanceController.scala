@@ -23,13 +23,15 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.ui.{FormData, InputPage, PageContext, QuestionPage, StandardPage}
+import models.ui.{FormData, InputPage, NextPageUrl, PageContext, QuestionPage, StandardPage}
 import forms.NextPageFormProvider
 import views.html.{input_page, question_page, standard_page}
 import play.api.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
+
+import scala.concurrent.Future
 
 @Singleton
 class GuidanceController @Inject() (
@@ -89,6 +91,7 @@ class GuidanceController @Inject() (
           case Right(pageContext) =>
             pageContext.page match {
               case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
+              case page: InputPage => BadRequest(inputView(page, pageContext, questionName(path), formWithErrors))
               case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
             }
           case Left(NotFoundError) =>
@@ -103,12 +106,37 @@ class GuidanceController @Inject() (
         }
       },
       nextPageUrl => {
-        val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
-        withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
+        withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _, None)).flatMap {
+          case Right(pageContext) =>
+            pageContext.page match {
+              case _: QuestionPage =>
+                val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
+                withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
+                  case Left(err) =>
+                    logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
+                    Redirect(redirectLocation)
+                  case Right(_) => Redirect(redirectLocation)
+                }
+              case page: InputPage =>
+                val url = page.input.nextPageUrl.fold(pageContext.processStartUrl.get)(next => next.url)
+                val redirectLocation  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
+                withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
+                  case Left(err) =>
+                    logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
+                    Redirect(redirectLocation)
+                  case Right(_) => Redirect(redirectLocation)
+                }
+              case _ => Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
+            }
+          case Left(NotFoundError) =>
+            logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
+            Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
+          case Left(BadRequestError) =>
+            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
+            Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
           case Left(err) =>
-            logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
-            Redirect(redirectLocation)
-          case Right(_) => Redirect(redirectLocation)
+            logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
+            Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
         }
       }
     )
