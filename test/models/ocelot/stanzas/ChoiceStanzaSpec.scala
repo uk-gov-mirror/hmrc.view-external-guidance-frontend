@@ -200,7 +200,8 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     "Evaluate to correct result when one of the tests succeed" in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"), ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"),
+                                                        ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
       val choice = Choice(stanza)
       val lc = LabelCache()
       val expectedResult = (Seq("41"), lc)
@@ -208,7 +209,8 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     "Evaluate to correct result when no tests succeed" in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"), ChoiceStanzaTest("3", MoreThan, "4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("4", LessThanOrEquals, "3"),
+                                                        ChoiceStanzaTest("3", MoreThan, "4")), false)
       val choice = Choice(stanza)
       val lc = LabelCache()
       val expectedResult = (Seq("50"), lc)
@@ -216,7 +218,9 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     "Evaluate to correct result when one of the tests succeed referencing labels" in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"), ChoiceStanzaTest("3", LessThanOrEquals, "4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"),
+                                                        ChoiceStanzaTest("3", LessThanOrEquals, "4"),
+                                                        ChoiceStanzaTest("3", NotEquals, "4")), false)
       val choice = Choice(stanza)
       val labels = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("44")))
       val lc = LabelCache(labels)
@@ -225,7 +229,10 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     "Evaluate to correct result when no tests succeed referencing labels" in {
-      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"), ChoiceStanzaTest("3", Equals, "4")), false)
+      val stanza: ChoiceStanza = ChoiceStanza(next, Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "[label:Y]"),
+                                                        ChoiceStanzaTest("3", Equals, "4"),
+                                                        ChoiceStanzaTest("3", MoreThanOrEquals, "4")),
+                                                        false)
       val choice = Choice(stanza)
       val labels = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")))
       val lc = LabelCache(labels)
