@@ -302,6 +302,71 @@ class ChoiceStanzaSpec extends BaseSpec {
 
   "ChoiceStanzaTest" must {
 
+    val lte = """{"left": "VAL-1","test": "lessThanOrEquals","right": "VAL-2"}"""
+    val e = """{"left": "VAL-3","test": "equals","right": "VAL-4"}"""
+    val ne = """{"left": "VAL-3","test": "notEquals","right": "VAL-4"}"""
+    val m = """{"left": "VAL-3","test": "moreThan","right": "VAL-4"}"""
+    val me = """{"left": "VAL-3","test": "moreThanOrEquals","right": "VAL-4"}"""
+    def choiceStanzaJson(t1: String, t2: String) = s"""{"type": "ChoiceStanza","tests": [${t1},${t2}],"next": ["1", "2", "3"],"stack": true}"""
+
+    "DeSerialise EqualsTest" in {
+      Json.parse(choiceStanzaJson(e,e)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe EqualsTest("VAL-3", "VAL-4")
+        choice.tests(1) shouldBe EqualsTest("VAL-3", "VAL-4")
+      }
+      )
+    }
+
+    "DeSerialise NotEqualsTest" in {
+      Json.parse(choiceStanzaJson(ne,ne)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe NotEqualsTest("VAL-3", "VAL-4")
+        choice.tests(1) shouldBe NotEqualsTest("VAL-3", "VAL-4")
+      }
+      )
+    }
+    "DeSerialise LessThanOrEqualsTest" in {
+      Json.parse(choiceStanzaJson(lte,lte)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe LessThanOrEqualsTest("VAL-1", "VAL-2")
+        choice.tests(1) shouldBe LessThanOrEqualsTest("VAL-1", "VAL-2")
+      }
+      )
+    }
+    "DeSerialise MoreThanTest" in {
+      Json.parse(choiceStanzaJson(m,m)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe MoreThanTest("VAL-3", "VAL-4")
+        choice.tests(1) shouldBe MoreThanTest("VAL-3", "VAL-4")
+      }
+      )
+    }
+    "DeSerialise MoreThanOrEqualsTest" in {
+      Json.parse(choiceStanzaJson(me,me)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe MoreThanOrEqualsTest("VAL-3", "VAL-4")
+        choice.tests(1) shouldBe MoreThanOrEqualsTest("VAL-3", "VAL-4")
+      }
+      )
+    }
+
+    "Serialise EqualsTest" in {
+      Json.toJson(ChoiceStanzaTest("3", Equals, "4")).toString shouldBe """{"left":"3","test":"equals","right":"4"}"""
+    }
+    "Serialise NotEqualsTest" in {
+      Json.toJson(ChoiceStanzaTest("3", NotEquals, "4")).toString shouldBe """{"left":"3","test":"notEquals","right":"4"}"""
+    }
+    "Serialise LessThanOrEqualsTest" in {
+      Json.toJson(ChoiceStanzaTest("3", LessThanOrEquals, "4")).toString shouldBe """{"left":"3","test":"lessThanOrEquals","right":"4"}"""
+    }
+    "Serialise MoreThanTest" in {
+      Json.toJson(ChoiceStanzaTest("3", MoreThan, "4")).toString shouldBe """{"left":"3","test":"moreThan","right":"4"}"""
+    }
+    "Serialise MoreThanOrEqualsTest" in {
+      Json.toJson(ChoiceStanzaTest("3", MoreThanOrEquals, "4")).toString shouldBe """{"left":"3","test":"moreThanOrEquals","right":"4"}"""
+    }
+
     "Detect unknown test type strings at json parse level" in {
       val invalidChoiceStanzaJson: JsObject = Json.parse(s"""{"left": "VAL-1","test": "UnknownType","right": "VAL-2"}""").as[JsObject]
       invalidChoiceStanzaJson.validate[ChoiceStanzaTest] match {
@@ -325,7 +390,6 @@ class ChoiceStanzaSpec extends BaseSpec {
         case JsSuccess(_, _) => fail
       }
     }
-
   }
 
   "Page buiding" must {
