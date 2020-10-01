@@ -15,9 +15,9 @@
  *@
 
 @import models.ui.{Text, ErrorMsg}
-@import models.ocelot.Label
+@import models.ocelot.Labels
 
-@(errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Map[String, Label])
+@(errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Labels)
 
 @for(err <- errors) {
 

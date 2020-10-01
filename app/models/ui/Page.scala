@@ -16,6 +16,8 @@
 
 package models.ui
 
+import models.ocelot.{Labels, LabelCache}
+
 sealed trait Page {
   val heading: Text
   val urlPath: String
@@ -52,6 +54,6 @@ case class PageContext(page: Page,
                        processTitle: Text,
                        processId: String,
                        processCode: String,
-                       labels: Map[String, models.ocelot.Label] = Map(),
+                       labels: Labels = LabelCache(),
                        backLink: Option[String] = None,
                        answer: Option[String] = None)

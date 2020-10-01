@@ -25,6 +25,7 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, ErrorMsg}
+import models.ocelot.LabelCache
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -46,7 +47,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "error_summary" must {
 
     "render error header and list of messages" in new Test {
-      val doc = asDocument(components.error_summary(heading, errorMsgs)(messages, Map()))
+      val doc = asDocument(components.error_summary(heading, errorMsgs)(messages, LabelCache()))
       val head = doc.getElementById("error-summary-title")
 
       head.text() shouldBe messages("error.summary.title")
@@ -62,7 +63,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "error_message" must {
 
     "render error message" in new Test {
-      val doc = asDocument(components.error_message(errorMsgs)(messages, Map()))
+      val doc = asDocument(components.error_message(errorMsgs)(messages, LabelCache()))
       val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "id-error")
 
       span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorStrings(0)
@@ -70,7 +71,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render hidden text with error message" in new Test {
 
-      val doc = asDocument(components.error_message(errorMsgs)(messages, Map()))
+      val doc = asDocument(components.error_message(errorMsgs)(messages, LabelCache()))
       val hidden = doc.getElementsByClass("govuk-visually-hidden").asScala.toList
 
       hidden(0).text() shouldBe messages("error.browser.title.prefix")
