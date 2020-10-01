@@ -59,7 +59,7 @@ class GuidanceServiceSpec extends BaseSpec {
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
 
-    lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockUIBuilder)
+    lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, new PageRenderer(MockAppConfig), mockUIBuilder)
   }
 
   "Calling getPageContext with a valid URL" should {

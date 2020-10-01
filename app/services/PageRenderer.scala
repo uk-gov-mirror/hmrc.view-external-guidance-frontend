@@ -18,6 +18,7 @@ package services
 
 import config.AppConfig
 import javax.inject.{Inject, Singleton}
+import scala.annotation.tailrec
 // import models.ui.{FormData, PageContext}
 // import play.api.Logger
 // import models.errors._
@@ -25,26 +26,29 @@ import javax.inject.{Inject, Singleton}
 // import uk.gov.hmrc.http.HeaderCarrier
 // import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.stanzas.VisualStanza
+import models.ocelot.stanzas.{Stanza, VisualStanza}
 import models.ocelot.{Page, Labels}
 import models.ocelot.KeyedStanza
 
 @Singleton
-class PageRenderer @Inject() (
-    appConfig: AppConfig,
-    sessionRepository: SessionRepository,
-    uiBuilder: UIBuilder
-) {
+class PageRenderer @Inject() (appConfig: AppConfig) {
 
-  def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels) = {
-    // @tailrec
-    // def evaluateStanzas(stanzas: Seq[KeyedStanza], visualStanzas: Seq[VisualStanza]): Seq[VisualStanza] =
-    //   stanzas match {
-    //     case Nil => visualStanzas
-    //     case (e: Evaluate) :: xs => e.ev
-    //   }
+  def renderPage(page: Page, originalLabels: Labels): (Seq[VisualStanza], Labels) = {
+    //@tailrec
+    def evaluateStanzas(stanza: Stanza, stanzas: Map[String, Stanza], labels: Labels, visualStanzas: Seq[VisualStanza]): (Seq[VisualStanza], Labels) =
+      (Nil, labels)
+      // stanzas match {
+      //   case Nil => visualStanzas
+      //   case (e: Evaluate) :: xs => e.ev
+      // }
 
-    (Nil, labels)
+    val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    val initialStanzaId = stanzaMap(page.id).next(0)
+    evaluateStanzas(stanzaMap(initialStanzaId), stanzaMap, originalLabels, Nil)
   }
+
+  def renderPagePostSubmit(keyedStanzas: Seq[KeyedStanza], originalLabels: Labels): (Seq[VisualStanza], Labels) = {
+    (Nil, originalLabels)
+    }
 
 }
