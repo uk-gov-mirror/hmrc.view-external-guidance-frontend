@@ -17,10 +17,10 @@
 package services
 
 import base.BaseSpec
-import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockSessionRepository, MockUIBuilder}
+import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockPageRenderer, MockSessionRepository, MockUIBuilder}
 import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
-import models.ocelot.{Page, KeyedStanza, Process, ProcessJson}
+import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache}
 import models.ui
 import uk.gov.hmrc.http.HeaderCarrier
 import repositories.ProcessContext
@@ -31,7 +31,7 @@ import models.ui.PageContext
 
 class GuidanceServiceSpec extends BaseSpec {
 
-  private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with MockUIBuilder with ProcessJson {
+  private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with MockPageRenderer with MockUIBuilder with ProcessJson {
 
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     implicit val stanzaIdToUrl: Map[String, String] = Map[String, String]()
@@ -58,8 +58,9 @@ class GuidanceServiceSpec extends BaseSpec {
     val processCode = "CupOfTea"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
+    val labels = LabelCache()
 
-    lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, new PageRenderer(MockAppConfig), mockUIBuilder)
+    lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockPageRenderer, mockUIBuilder)
   }
 
   "Calling getPageContext with a valid URL" should {
@@ -76,8 +77,12 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(process)
         .returns(Right(pages))
 
+      MockPageRenderer
+        .renderPage(pages(2), labels)
+        .returns((pages(2).stanzas, labels))
+
       MockUIBuilder
-        .fromStanzaPage(pages.last, None)
+        .fromStanzas(lastPageUrl, pages.last.stanzas, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
@@ -104,8 +109,12 @@ class GuidanceServiceSpec extends BaseSpec {
         .pages(fullProcess)
         .returns(Right(pages))
 
+      MockPageRenderer
+        .renderPage(pages(2), labels)
+        .returns((pages(2).stanzas, labels))
+
       MockUIBuilder
-        .fromStanzaPage(pages.last, None)
+        .fromStanzas(lastPageUrl, pages.last.stanzas, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)

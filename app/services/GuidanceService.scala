@@ -21,12 +21,12 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.{FormData, PageContext}
 import play.api.Logger
-import models.errors._
+import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.{LabelCache, Process}
+import models.ocelot.{LabelCache, Labels, Process}
 
 @Singleton
 class GuidanceService @Inject() (
@@ -87,7 +87,10 @@ class GuidanceService @Inject() (
 
   def submitPageContext(processCode: String, url: String, sessionId: String, answer: String)(
         implicit context: ExecutionContext
-    ): Future[RequestOutcome[Unit]] = Future.successful(Right({}))
+    ): Future[RequestOutcome[Unit]] = ??? // TODO
+
+  def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
+    sessionRepository.saveLabels(docId, labels)
 
   def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
     sessionRepository.saveAnswerToQuestion(docId, url, answer)

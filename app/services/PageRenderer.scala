@@ -19,36 +19,30 @@ package services
 import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-// import models.ui.{FormData, PageContext}
-// import play.api.Logger
-// import models.errors._
-// import models.RequestOutcome
-// import uk.gov.hmrc.http.HeaderCarrier
-// import scala.concurrent.{ExecutionContext, Future}
-import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.stanzas.{Stanza, VisualStanza}
+import models.ocelot.stanzas.{EndStanza, Stanza, Question, Input, Evaluate}
 import models.ocelot.{Page, Labels}
-import models.ocelot.KeyedStanza
 
 @Singleton
 class PageRenderer @Inject() (appConfig: AppConfig) {
 
-  def renderPage(page: Page, originalLabels: Labels): (Seq[VisualStanza], Labels) = {
-    //@tailrec
-    def evaluateStanzas(stanza: Stanza, stanzas: Map[String, Stanza], labels: Labels, visualStanzas: Seq[VisualStanza]): (Seq[VisualStanza], Labels) =
-      (Nil, labels)
-      // stanzas match {
-      //   case Nil => visualStanzas
-      //   case (e: Evaluate) :: xs => e.ev
-      // }
-
+  def renderPage(page: Page, originalLabels: Labels): (Seq[Stanza], Labels) = {
     val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    val initialStanzaId = stanzaMap(page.id).next(0)
-    evaluateStanzas(stanzaMap(initialStanzaId), stanzaMap, originalLabels, Nil)
+
+    @tailrec
+    def evaluateStanzas(stanza: Stanza, labels: Labels, visualStanzas: Seq[Stanza]): (Seq[Stanza], Labels) =
+      stanza match {
+        case EndStanza => (visualStanzas :+ EndStanza, labels)
+        case q: Question => (visualStanzas :+ q, labels)
+        case i: Input => (visualStanzas :+ i, labels)
+        case e: Stanza with Evaluate =>
+          val (next, updatedLabels) = e.eval(labels)
+          evaluateStanzas(stanzaMap(next(0)), updatedLabels, visualStanzas)
+        case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
+      }
+
+    evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
   }
 
-  def renderPagePostSubmit(keyedStanzas: Seq[KeyedStanza], originalLabels: Labels): (Seq[VisualStanza], Labels) = {
-    (Nil, originalLabels)
-    }
+  def renderPagePostSubmit(page: Page, originalLabels: Labels): (Seq[String], Labels) = ???
 
 }

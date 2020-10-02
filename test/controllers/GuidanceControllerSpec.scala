@@ -270,6 +270,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .getPageContext(processId, path, processId, None)
         .returns(Future.successful(Right(PageContext(standardPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
 
+      MockGuidanceService
+        .saveLabels(processId, LabelCache())
+        .returns(Future.successful(Right({})))
+
       lazy val target =
         new GuidanceController(
           MockAppConfig,

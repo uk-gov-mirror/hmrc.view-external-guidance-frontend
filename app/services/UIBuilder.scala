@@ -31,7 +31,7 @@ class UIBuilder {
   def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
     stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
-def fromStanzas(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
          BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
            stanza match {
@@ -86,7 +86,6 @@ def fromStanzas(url: String, stanzas: Seq[VisualStanza], formData: Option[FormDa
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-
   private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
       case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
@@ -94,6 +93,7 @@ def fromStanzas(url: String, stanzas: Seq[VisualStanza], formData: Option[FormDa
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
+      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
       // Ignore error messages if no errors exist within form data
       case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
       case Error =>

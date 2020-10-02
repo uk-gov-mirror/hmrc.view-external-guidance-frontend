@@ -24,6 +24,7 @@ import services.GuidanceService
 import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
 import models.ui.FormData
+import models.ocelot.Labels
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MockGuidanceService extends MockFactory {
@@ -72,6 +73,12 @@ trait MockGuidanceService extends MockFactory {
       (mockGuidanceService
         .saveAnswerToQuestion(_: String, _: String, _: String))
         .expects(docId, url, answer)
+    }
+
+    def saveLabels(docId: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] = {
+      (mockGuidanceService
+        .saveLabels(_: String, _: Labels))
+        .expects(docId, *)
     }
 
   }

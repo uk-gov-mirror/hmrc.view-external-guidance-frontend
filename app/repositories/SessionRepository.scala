@@ -58,7 +58,7 @@ trait SessionRepository {
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
-  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
+  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -193,10 +193,10 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  def saveLabels(key: String, labels: Map[String, Label]): Future[RequestOutcome[Unit]] =
+  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj("labels" -> labels))
+      Json.obj("$set" -> Json.obj("labels" -> labels.updatedLabels))
     ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
