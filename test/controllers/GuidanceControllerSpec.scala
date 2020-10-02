@@ -21,7 +21,7 @@ import mocks.{MockAppConfig, MockGuidanceService}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc._
-import play.api.mvc.{BodyParsers,AnyContentAsEmpty}
+import play.api.mvc.{AnyContentAsEmpty, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
@@ -31,8 +31,10 @@ import models.ui._
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
 import models.errors._
+
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
+import views.html._
 
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
@@ -69,8 +71,9 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
 
     lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-    lazy val view = app.injector.instanceOf[views.html.standard_page]
-    lazy val questionView = app.injector.instanceOf[views.html.question_page]
+    lazy val view = app.injector.instanceOf[standard_page]
+    lazy val questionView = app.injector.instanceOf[question_page]
+    lazy val inputView = app.injector.instanceOf[input_page]
 
   }
 
@@ -85,6 +88,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
+      inputView,
       new NextPageFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -148,6 +152,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
 
       MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
         .saveAnswerToQuestion(processId, path, "/guidance/hello")
         .returns(Future.successful(Right({})))
 
@@ -162,6 +170,10 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
         .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
 
       MockGuidanceService
@@ -253,6 +265,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         errorHandler,
         view,
         questionView,
+        inputView,
         new NextPageFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
@@ -276,6 +289,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new NextPageFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -309,6 +323,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new NextPageFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -343,6 +358,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new NextPageFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -376,6 +392,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new NextPageFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -412,6 +429,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new NextPageFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()

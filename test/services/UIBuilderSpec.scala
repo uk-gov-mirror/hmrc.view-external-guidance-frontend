@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, H3, Paragraph, Text, Words, FormData, QuestionPage}
+import models.ui.{BulletPointList, FormData, H3, InputPage, Link, Paragraph, QuestionPage, Text, Words}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -685,5 +685,83 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
   }
+
+  trait InputTest {
+
+    implicit val urlMap: Map[String, String] =
+      Map(
+        Process.StartStanzaId -> "/blah",
+        "3" -> "dummy-path",
+        "4" -> "dummy-path/input",
+        "5" -> "dummy-path/blah",
+        "6" -> "dummy-path/anotherinput",
+        "34" -> "dummy-path/next"
+      )
+    val inputNext = Seq("4")
+    val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+    val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
+
+    val stanzas = Seq(
+      KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+      KeyedStanza("1", Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
+    )
+    val input1 = models.ocelot.stanzas.Input(Currency, inputNext, inputPhrase, helpPhrase, label ="input1", None, stack = false)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
+
+    val uiBuilder: UIBuilder = new UIBuilder()
+
+    val four: Int = 4
+  }
+  "UIBuilder Input processing" must {
+
+    "Ignore Error Callouts when there are no errors" in new InputTest {
+      uiBuilder.fromStanzaPage(page, None)(urlMap) match {
+        case s: InputPage if s.input.errorMsgs.isEmpty => succeed
+        case _: InputPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Include Error messages when there are errors" in new QuestionTest {
+      val formError = new FormError("test-page", List("error.required"))
+      val formData = Some(FormData("test-page", Map(), List(formError)))
+
+      uiBuilder.fromStanzaPage(page, formData)(urlMap) match {
+        case s: InputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: InputPage => succeed
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Maintain order of components within an Input" in new QuestionTest {
+      uiBuilder.fromStanzaPage(page, None) match {
+        case i: InputPage =>
+          i.input.body(0) match {
+            case _: H3 => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+          i.input.body(1) match {
+            case _: Paragraph => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+
+        case x => fail(s"Should return InputPage: found $x")
+      }
+
+    }
+
+    "Include a page hint appended to the input text" in new QuestionTest {
+      uiBuilder.fromStanzaPage(page)(urlMap) match {
+        case i: InputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: InputPage => fail("No hint found within Input")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+  }
+
+
 
 }
