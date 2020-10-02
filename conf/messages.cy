@@ -26,10 +26,10 @@ language.english = English
 language.change.english = Newid yr iaith i Saesneg
 language.switcher = Newid yr iaith
 
-timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio canllawiau
+timeout.dialog.keep_alive_button.text=Parhewch i ddefnyddio’r arweiniad
 timeout.dialog.sign_out_button.text=Dileu’ch atebion
 timeout.dialog.title.text=Mae eich sesiwn ar fin dod i ben
-timeout.dialog.message.text=Er eich diogelwch, byddwn yn dileu eich atebion yn
+timeout.dialog.message.text=Er eich diogelwch, byddwn yn dileu eich atebion mewn
 timeout.dialog.signOutUrl= http://www.gov.uk/gwirio-treth-incwm-ychwanegol
 
 session.timeout.header.title=Arweiniad Rhyngweithiol
