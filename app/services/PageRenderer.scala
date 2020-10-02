@@ -43,6 +43,9 @@ class PageRenderer @Inject() (appConfig: AppConfig) {
     evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
   }
 
-  def renderPagePostSubmit(page: Page, originalLabels: Labels): (Seq[String], Labels) = ???
+  def renderPagePostSubmit(page: Page, originalLabels: Labels): (Seq[String], Labels) = {
+    val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    (Nil, originalLabels)
+  }
 
 }

@@ -52,7 +52,7 @@ trait MockSessionRepository extends MockFactory {
     def saveLabels(key: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
         .saveLabels(_: String, _: Labels))
-        .expects(key, labels)
+        .expects(key, *)
   }
 
 }

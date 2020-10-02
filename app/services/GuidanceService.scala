@@ -46,43 +46,47 @@ class GuidanceService @Inject() (
   def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId, s"${processCode}$url").map {
+    getProcessContext(sessionId, s"${processCode}$url").flatMap {
       case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
           .fold(
             err => {
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
-              Left(InvalidProcessError)
+              Future.successful(Left(InvalidProcessError))
             },
             pages =>
               pages
                 .find(_.url == url)
-                .fold {
+                .fold[Future[RequestOutcome[PageContext]]] {
                   logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
-                  Left(BadRequestError): RequestOutcome[PageContext]
+                  Future.successful(Left(BadRequestError))
                 } { pge =>
                   val (visualStanzas, labels) = pageRenderer.renderPage(pge, LabelCache(labelsMap))
-                  Right(
-                    PageContext(
-                      uiBuilder.fromStanzas(pge.url, visualStanzas, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
-                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
-                      process.title,
-                      process.meta.id,
-                      processCode,
-                      labels,
-                      backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
-                      answers.get(url)
+                  sessionRepository.saveLabels(sessionId, labels).map{ _.fold[RequestOutcome[PageContext]](
+                    err => Left(err),
+                     _ =>
+                    Right(
+                      PageContext(
+                        uiBuilder.fromStanzas(pge.url, visualStanzas, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
+                        process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                        process.title,
+                        process.meta.id,
+                        processCode,
+                        labels,
+                        backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
+                        answers.get(url)
+                      )
                     )
                   )
                 }
-          )
+              })
       case Right(ProcessContext(_,_,_,_)) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
-        Left(InternalServerError)
+        Future.successful(Left(InternalServerError))
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
-        Left(err)
+        Future.successful(Left(err))
     }
 
   def submitPageContext(processCode: String, url: String, sessionId: String, answer: String)(

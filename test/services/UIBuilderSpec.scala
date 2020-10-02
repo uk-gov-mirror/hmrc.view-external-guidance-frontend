@@ -42,7 +42,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val answers =
       Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
-    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
+    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
@@ -51,10 +51,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
 
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, false)), Seq.empty)
+    val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, None, false)), Seq.empty)
 
     val pageWithQuestionHint =
-      Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, false)), Seq.empty)
+      Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
@@ -220,8 +220,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
-    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, false)
-    val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, false)
+    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+    val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, None, false)
 
     val initialStanza = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),

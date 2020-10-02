@@ -81,6 +81,10 @@ class GuidanceServiceSpec extends BaseSpec {
         .renderPage(pages(2), labels)
         .returns((pages(2).stanzas, labels))
 
+      MockSessionRepository
+        .saveLabels(sessionRepoId, LabelCache())
+        .returns(Future.successful(Right({})))
+
       MockUIBuilder
         .fromStanzas(lastPageUrl, pages.last.stanzas, None)
         .returns(lastUiPage)
@@ -112,6 +116,10 @@ class GuidanceServiceSpec extends BaseSpec {
       MockPageRenderer
         .renderPage(pages(2), labels)
         .returns((pages(2).stanzas, labels))
+
+      MockSessionRepository
+        .saveLabels(sessionRepoId, LabelCache())
+        .returns(Future.successful(Right({})))
 
       MockUIBuilder
         .fromStanzas(lastPageUrl, pages.last.stanzas, None)

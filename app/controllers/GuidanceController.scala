@@ -27,7 +27,6 @@ import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import play.api.Logger
-import play.twirl.api.Html
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 
@@ -49,26 +48,19 @@ class GuidanceController @Inject() (
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
-    withExistingSession[Html]{sessionId =>
-      service.getPageContext(processCode, s"/$path", sessionId).map {
-        case Right(pageContext) =>
-          logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
-                      s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).map {
+      case Right(pageContext) =>
+        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
+                    s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
-          pageContext.page match {
-            case page: StandardPage =>
-              service.saveLabels(sessionId, pageContext.labels)
-              Right(standardView(page, pageContext))
-            case page: QuestionPage =>
-              val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
-                formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-              }
-              Right(questionView(page, pageContext, questionName(path), form))
-          }
-        case Left(err) => Left(err)
-      }
-    }.map{
-      case Right(view) => Ok(view)
+        pageContext.page match {
+          case page: StandardPage => Ok(standardView(page, pageContext))
+          case page: QuestionPage =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
+              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            }
+            Ok(questionView(page, pageContext, questionName(path), form))
+        }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
         NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
