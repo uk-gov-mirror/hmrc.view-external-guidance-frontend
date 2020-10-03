@@ -43,8 +43,21 @@ class PageRenderer @Inject() (appConfig: AppConfig) {
     evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
   }
 
-  def renderPagePostSubmit(page: Page, originalLabels: Labels): (Seq[String], Labels) = {
+  def renderPagePostSubmit(postInputStanzaId: String, page: Page, originalLabels: Labels): (Seq[String], Labels) = {
     val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+
+    // @tailrec
+    // def findPostInputStanza(stanza: Stanza, labels: Labels): Option[Stanza] =
+    //   stanza match {
+    //     case EndStanza => (visualStanzas :+ EndStanza, labels)
+    //     case q: Question => (visualStanzas :+ q, labels)
+    //     case i: Input => (visualStanzas :+ i, labels)
+    //     case e: Stanza with Evaluate =>
+    //       val (next, updatedLabels) = e.eval(labels)
+    //       evaluateStanzas(stanzaMap(next(0)), updatedLabels, visualStanzas)
+    //     case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
+    //   }
+
     (Nil, originalLabels)
   }
 
