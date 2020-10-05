@@ -36,7 +36,7 @@ class PageRenderer @Inject() (appConfig: AppConfig) {
         case i: Input => (visualStanzas :+ i, labels)
         case e: Stanza with Evaluate =>
           val (next, updatedLabels) = e.eval(labels)
-          evaluateStanzas(stanzaMap(next(0)), updatedLabels, visualStanzas)
+          evaluateStanzas(stanzaMap(next), updatedLabels, visualStanzas)
         case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
       }
 

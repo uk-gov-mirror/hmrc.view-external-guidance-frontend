@@ -34,7 +34,7 @@ trait VisualStanza extends Stanza {
 trait Populated
 
 trait Evaluate {
-  def eval(labels: Labels): (Seq[String], Labels)
+  def eval(labels: Labels): (String, Labels)
 }
 
 case object EndStanza extends Stanza
