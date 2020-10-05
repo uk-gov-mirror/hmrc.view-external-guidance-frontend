@@ -16,7 +16,7 @@
 
 package models.ui
 
-import models.ocelot.{Labels, LabelCache}
+import models.ocelot.{Labels, LabelCache, Page => OcelotPage}
 
 sealed trait Page {
   val heading: Text
@@ -49,6 +49,16 @@ case class QuestionPage(val urlPath: String, question: Question) extends Page {
   val components: Seq[UIComponent] = Seq(question)
 }
 
+case class PageEvaluationContext(page: OcelotPage,
+                                 stanzaIdToUrlMap: Map[String, String],
+                                 processStartUrl: Option[String],
+                                 processTitle: Text,
+                                 processId: String,
+                                 processCode: String,
+                                 labels: Labels = LabelCache(),
+                                 backLink: Option[String] = None,
+                                 answer: Option[String] = None)
+
 case class PageContext(page: Page,
                        processStartUrl: Option[String],
                        processTitle: Text,
@@ -57,3 +67,17 @@ case class PageContext(page: Page,
                        labels: Labels = LabelCache(),
                        backLink: Option[String] = None,
                        answer: Option[String] = None)
+
+object PageContext {
+  def apply(pec: PageEvaluationContext, page: Page, updatedLabels: Labels): PageContext =
+    PageContext(
+      page,
+      pec.processStartUrl,
+      pec.processTitle,
+      pec.processId,
+      pec.processCode,
+      updatedLabels,
+      pec.backLink,
+      pec.answer
+    )
+}

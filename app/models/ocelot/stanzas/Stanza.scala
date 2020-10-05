@@ -37,6 +37,10 @@ trait Evaluate {
   def eval(labels: Labels): (String, Labels)
 }
 
+trait DataInput {
+  def eval(value: String, labels: Labels): (String, Labels)
+}
+
 case object EndStanza extends Stanza
 
 object Stanza {

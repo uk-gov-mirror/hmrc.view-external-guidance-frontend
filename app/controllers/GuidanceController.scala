@@ -23,12 +23,13 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.ui.{PageContext, StandardPage, QuestionPage, FormData}
+import models.ui.{PageEvaluationContext, StandardPage, QuestionPage, FormData}
 import forms.NextPageFormProvider
 import views.html.{standard_page, question_page}
 import play.api.Logger
 import play.twirl.api.Html
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import controllers.actions.SessionIdAction
 
 @Singleton
@@ -54,7 +55,6 @@ class GuidanceController @Inject() (
         case Right(pageContext) =>
           logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                       s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
-
           pageContext.page match {
             case page: StandardPage =>
               service.saveLabels(sessionId, pageContext.labels)
@@ -84,36 +84,50 @@ class GuidanceController @Inject() (
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    formProvider(questionName(path)).bindFromRequest.fold(
-      formWithErrors => {
-        val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _, Some(formData))).map {
-          case Right(pageContext) =>
-            pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
-              case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+    withExistingSession[Result]{sessionId =>
+      service.getPageEvaluationContext(processCode, s"/$path", sessionId).flatMap {
+        case Right(evalContext) =>
+          formProvider(questionName(path)).bindFromRequest.fold(
+            formWithErrors => {
+              val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
+              val pageContext = service.getPageContext(evalContext, Some(formData))
+              pageContext.page match {
+                case page: QuestionPage => Future.successful(Right(BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))))
+                case _ => Future.successful(Right(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))))
+              }
+            },
+            nextPageUrl => {
+              // nextPageUrl will become the value of the question or the input field data
+              // Get the page context and process the Question or Input stanzas amd any following stanzas with the nextPageUrl value
+              // If this processing indicates a return to a stanza seen before the question or input, it implies a reshowing of the
+              // current page
+              val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
+              service.saveAnswerToQuestion(sessionId, s"/$path", nextPageUrl.url).map{
+                case Left(err) =>
+                  logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
+                  Right(Redirect(redirectLocation))
+                case Right(_) => Right(Redirect(redirectLocation))
+              }
             }
-          case Left(NotFoundError) =>
-            logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
-            NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
-          case Left(BadRequestError) =>
-            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
-            BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
-          case Left(err) =>
-            logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
-            InternalServerError(errorHandler.internalServerErrorTemplate)
-        }
-      },
-      nextPageUrl => {
-        val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
-        withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
-          case Left(err) =>
-            logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
-            Redirect(redirectLocation)
-          case Right(_) => Redirect(redirectLocation)
-        }
+          )
+
+        case Left(NotFoundError) =>
+          logger.warn(s"Request for PageEvaluationContext at /$path returned NotFound during form submission, returning NotFound")
+          Future.successful(Right(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))))
+        case Left(BadRequestError) =>
+          logger.warn(s"Request for PageEvaluationContext at /$path returned BadRequest during form submission, returning BadRequest")
+          Future.successful(Right(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))))
+        case Left(err) =>
+          logger.error(s"Request for PageEvaluationContext at /$path returned $err during form submission, returning InternalServerError")
+          Future.successful(Right(InternalServerError(errorHandler.internalServerErrorTemplate)))
       }
-    )
+    }.map{
+      case Right(result) => result
+      case Left(err) =>
+        logger.warn(s"Request for PageEvaluationContext at /$path returned BadRequest during form submission, returning BadRequest")
+        BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+    }
+
   }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

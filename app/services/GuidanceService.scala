@@ -19,7 +19,7 @@ package services
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.{FormData, PageContext}
+import models.ui.{FormData, PageContext, PageEvaluationContext}
 import play.api.Logger
 import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
 import models.RequestOutcome
@@ -43,50 +43,61 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
 
-  def getPageContext(processCode: String, url: String, sessionId: String, formData: Option[FormData] = None)(
+  def getPageEvaluationContext(processCode: String, url: String, sessionId: String)(
       implicit context: ExecutionContext
-  ): Future[RequestOutcome[PageContext]] =
-    getProcessContext(sessionId, s"${processCode}$url").flatMap {
+  ): Future[RequestOutcome[PageEvaluationContext]] =
+    getProcessContext(sessionId, s"${processCode}$url").map {
       case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
           .fold(
             err => {
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
-              Future.successful(Left(InvalidProcessError))
+              Left(InvalidProcessError)
             },
             pages =>
               pages
                 .find(_.url == url)
-                .fold[Future[RequestOutcome[PageContext]]] {
+                .fold {
                   logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
-                  Future.successful(Left(BadRequestError))
+                  Left(BadRequestError): RequestOutcome[PageEvaluationContext]
                 } { pge =>
-                  val (visualStanzas, labels) = pageRenderer.renderPage(pge, LabelCache(labelsMap))
-                  sessionRepository.saveLabels(sessionId, labels).map{ _.fold[RequestOutcome[PageContext]](
-                    err => Left(err),
-                     _ =>
-                    Right(
-                      PageContext(
-                        uiBuilder.fromStanzas(pge.url, visualStanzas, formData)(pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap),
-                        process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
-                        process.title,
-                        process.meta.id,
-                        processCode,
-                        labels,
-                        backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
-                        answers.get(url)
-                      )
+                  Right(
+                    PageEvaluationContext(
+                      pge,
+                      pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap,
+                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                      process.title,
+                      process.meta.id,
+                      processCode,
+                      LabelCache(labelsMap),
+                      backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
+                      answers.get(url)
                     )
                   )
                 }
-              })
+          )
       case Right(ProcessContext(_,_,_,_)) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
-        Future.successful(Left(InternalServerError))
+        Left(InternalServerError)
       case Left(err) =>
         logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
-        Future.successful(Left(err))
+        Left(err)
+    }
+
+  def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
+    val (visualStanzas, labels) = pageRenderer.renderPage(pec.page, pec.labels)
+    PageContext(
+      pec,
+      uiBuilder.fromStanzas(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap),
+      labels
+    )
+  }
+
+  def getPageContext(processCode: String, url: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+    getPageEvaluationContext(processCode, url, sessionId).map{
+      case Right(evalContext) => Right(getPageContext(evalContext))
+      case Left(err) => Left(err)
     }
 
   def submitPageContext(processCode: String, url: String, sessionId: String, answer: String)(

@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{labelReferences, Phrase, Label}
+import models.ocelot.{labelReferences, Phrase, Label, Labels}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -47,13 +47,18 @@ case class Question(text: Phrase,
                     answers: Seq[Phrase],
                     override val next: Seq[String],
                     label: Option[String],
-                    stack: Boolean) extends VisualStanza with Populated {
+                    stack: Boolean) extends VisualStanza with Populated with DataInput {
   override val labelRefs: List[String] = labelReferences(text.langs(0)) ++ answers.flatMap(a => labelReferences(a.langs(0)))
   override val labels = label.fold[List[Label]](Nil)(l => List(Label(l, None, None)))
+
+  def eval(value: String, labels: Labels): (String, Labels) = {
+    val updatedLabels = label.fold(labels)(labels.update(_, value))
+    answers.zipWithIndex.find{case (x ,y) => x.langs(0) == value || x.langs(1) == value}
+                        .fold((next(0), updatedLabels)){case (ans, index) => (next(index), updatedLabels)}
+  }
 }
 
 object Question {
-
   def apply(stanza: QuestionStanza, text: Phrase, answers: Seq[Phrase]): Question =
     Question(text, answers, stanza.next, stanza.label, stanza.stack)
 }

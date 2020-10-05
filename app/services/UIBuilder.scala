@@ -38,7 +38,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
-             case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
@@ -50,7 +50,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
-             case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
@@ -63,7 +63,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
+  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent])(
       implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
 

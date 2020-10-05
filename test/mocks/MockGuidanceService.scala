@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.ui.PageContext
+import models.ui.{PageEvaluationContext, PageContext}
 import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
@@ -63,10 +63,22 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId)
     }
 
-    def getPageContext(processId: String, url: String, sessionId: String, formData: Option[FormData]): CallHandler[Future[RequestOutcome[PageContext]]] = {
+    def getPageContext(pec: PageEvaluationContext, formData: Option[FormData]): CallHandler[PageContext] = {
       (mockGuidanceService
-        .getPageContext(_: String, _: String, _: String, _: Option[FormData])(_: ExecutionContext))
-        .expects(processId, url, sessionId, formData, *)
+        .getPageContext(_: PageEvaluationContext, _: Option[FormData]))
+        .expects(pec, formData)
+    }
+
+    def getPageContext(processId: String, url: String, sessionId: String): CallHandler[Future[RequestOutcome[PageContext]]] = {
+      (mockGuidanceService
+        .getPageContext(_: String, _: String, _: String)(_: ExecutionContext))
+        .expects(processId, url, sessionId, *)
+    }
+
+    def getPageEvaluationContext(processId: String, url: String, sessionId: String): CallHandler[Future[RequestOutcome[PageEvaluationContext]]] = {
+      (mockGuidanceService
+        .getPageEvaluationContext(_: String, _: String, _: String)(_: ExecutionContext))
+        .expects(processId, url, sessionId, *)
     }
 
     def saveAnswerToQuestion(docId: String, url: String, answer: String): CallHandler[Future[RequestOutcome[Unit]]] = {
