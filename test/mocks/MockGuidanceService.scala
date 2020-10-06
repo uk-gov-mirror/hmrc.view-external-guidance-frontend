@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.ui.{PageEvaluationContext, PageContext}
+import models.{PageEvaluationContext, PageContext}
 import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory

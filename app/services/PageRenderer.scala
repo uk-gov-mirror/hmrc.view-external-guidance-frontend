@@ -19,7 +19,7 @@ package services
 import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-import models.ocelot.stanzas.{EndStanza, Stanza, Question, Input, Evaluate}
+import models.ocelot.stanzas.{EndStanza, Stanza, Evaluate, DataInput}
 import models.ocelot.{Page, Labels}
 
 @Singleton
@@ -32,10 +32,9 @@ class PageRenderer @Inject() (appConfig: AppConfig) {
     def evaluateStanzas(stanza: Stanza, labels: Labels, visualStanzas: Seq[Stanza]): (Seq[Stanza], Labels) =
       stanza match {
         case EndStanza => (visualStanzas :+ EndStanza, labels)
-        case q: Question => (visualStanzas :+ q, labels)
-        case i: Input => (visualStanzas :+ i, labels)
-        case e: Stanza with Evaluate =>
-          val (next, updatedLabels) = e.eval(labels)
+        case s: Stanza with DataInput => (visualStanzas :+ s, labels)
+        case s: Stanza with Evaluate =>
+          val (next, updatedLabels) = s.eval(labels)
           evaluateStanzas(stanzaMap(next), updatedLabels, visualStanzas)
         case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
       }
@@ -43,22 +42,35 @@ class PageRenderer @Inject() (appConfig: AppConfig) {
     evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
   }
 
-  def renderPagePostSubmit(postInputStanzaId: String, page: Page, originalLabels: Labels): (Seq[String], Labels) = {
+  def renderPagePostSubmit(page: Page, labels: Labels, answer: String): Option[(String, Labels)] = {
     val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    val pageIds = page.keyedStanzas.map( _.key)
 
-    // @tailrec
-    // def findPostInputStanza(stanza: Stanza, labels: Labels): Option[Stanza] =
-    //   stanza match {
-    //     case EndStanza => (visualStanzas :+ EndStanza, labels)
-    //     case q: Question => (visualStanzas :+ q, labels)
-    //     case i: Input => (visualStanzas :+ i, labels)
-    //     case e: Stanza with Evaluate =>
-    //       val (next, updatedLabels) = e.eval(labels)
-    //       evaluateStanzas(stanzaMap(next(0)), updatedLabels, visualStanzas)
-    //     case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
-    //   }
+    @tailrec
+    def findDataInputStanza(stanzaId: String, seen: Seq[String]): Option[(Seq[String], DataInput)] =
+      stanzaMap(stanzaId) match {
+        case EndStanza => None
+        case s: Stanza with DataInput  => Some((seen :+ stanzaId, s))
+        case s: Stanza => findDataInputStanza(s.next(0), seen :+ stanzaId)
+      }
 
-    (Nil, originalLabels)
+    @tailrec
+    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): Option[(String, Labels)] =
+      if (!pageIds.contains(next)) Some((next, labels))
+      else if (seen.contains(next)) None
+      else stanzaMap(next) match {
+        case EndStanza => Some((next, labels))
+        case s: Stanza with Evaluate =>
+          val (next, updatedLabels) = s.eval(labels)
+          evaluatePostInputStanzas(next, updatedLabels, seen)
+      }
+
+    findDataInputStanza(stanzaMap(page.id).next(0), Nil)
+      .fold[Option[(String, Labels)]](None){ case (seen, dataInputStanza) => {
+          val (next, updatedLabels) = dataInputStanza.eval(answer, labels)
+          evaluatePostInputStanzas(next, updatedLabels, seen)
+        }
+      }
   }
 
 }

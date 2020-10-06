@@ -28,11 +28,10 @@ trait MockPageRenderer extends MockFactory {
 
   object MockPageRenderer {
 
-    def renderPage(page: Page, labels: Labels): CallHandler[(Seq[Stanza], Labels)] =
+    def renderPage(page: Page, labels: Labels): CallHandler[(Seq[Stanza], Seq[Stanza], Labels)] =
       (mockPageRenderer
         .renderPage(_: Page, _: Labels))
         .expects(page, *)
-
 
   }
 

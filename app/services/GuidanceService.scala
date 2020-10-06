@@ -19,7 +19,8 @@ package services
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.{FormData, PageContext, PageEvaluationContext}
+import models.ui.FormData
+import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
 import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
 import models.RequestOutcome
@@ -65,6 +66,7 @@ class GuidanceService @Inject() (
                   Right(
                     PageEvaluationContext(
                       pge,
+                      sessionId,
                       pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap,
                       process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
                       process.title,
@@ -87,11 +89,8 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels) = pageRenderer.renderPage(pec.page, pec.labels)
-    PageContext(
-      pec,
-      uiBuilder.fromStanzas(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap),
-      labels
-    )
+    val uiPage = uiBuilder.fromStanzas(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
+    PageContext(pec, uiPage, labels)
   }
 
   def getPageContext(processCode: String, url: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
@@ -100,9 +99,28 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def submitPageContext(processCode: String, url: String, sessionId: String, answer: String)(
+  def submitPage(evalContext: PageEvaluationContext, url: String, answer: String)(
         implicit context: ExecutionContext
-    ): Future[RequestOutcome[Unit]] = ??? // TODO
+    ): Future[RequestOutcome[Option[String]]] =
+    saveAnswerToQuestion(evalContext.sessionId, url, answer).flatMap{
+      case Left(err) =>
+        logger.error(s"Failed to saved answers, error = $err")
+        Future.successful(Left(InternalServerError))
+      case Right(_) =>
+        pageRenderer
+          .renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
+          .fold[Future[RequestOutcome[Option[String]]]](Future.successful(Right(None))){
+            case (next, updateLabels) =>
+              logger.info(s"Next page found at stanzaId: $next")
+              saveLabels(evalContext.sessionId, updateLabels).map{
+                case Left(err) =>
+                  logger.error(s"Failed to save updated labels, error = $err")
+                  Left(InternalServerError)
+                case Right(_) => Right(Some(next))
+              }
+          }
+
+    }
 
   def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     sessionRepository.saveLabels(docId, labels)
@@ -111,12 +129,14 @@ class GuidanceService @Inject() (
     sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(uuid,
-                     docId,
-                     { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
-                        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
-                        case err @ Left(_) => err
-                      }})
+    retrieveAndCache(
+      uuid,
+      docId,
+      { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
+        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
+        case err @ Left(_) => err
+      }}
+    )
 
   def retrieveAndCachePublished(processCode: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
   Future[RequestOutcome[(String,String)]] =

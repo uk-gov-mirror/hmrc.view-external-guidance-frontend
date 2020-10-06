@@ -27,7 +27,7 @@ import repositories.ProcessContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.errors.BadRequestError
-import models.ui.PageContext
+import models.PageContext
 
 class GuidanceServiceSpec extends BaseSpec {
 
@@ -79,7 +79,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels))
+        .returns((pages(2).stanzas, Nil, labels))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, LabelCache())
@@ -115,7 +115,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels))
+        .returns((pages(2).stanzas, Nil, labels))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, LabelCache())
