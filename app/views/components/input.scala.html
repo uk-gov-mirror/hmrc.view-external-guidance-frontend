@@ -22,7 +22,7 @@
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, labels: Map[String, Label])
 
 @optionalAria() = @{
-  Seq(input.hint.map(_ => "question-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+  Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
     case l => ariaDescribedBy(l.mkString(" "))
   }
@@ -33,7 +33,7 @@
   @if(input.body.isEmpty) {
     <fieldset class="govuk-fieldset" @optionalAria()>
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">@components.h1_heading(H1(input.text))</legend>
-      @{input.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
 
   } else {
     @components.h1_heading(H1(input.text))
@@ -42,7 +42,7 @@
 
     <fieldset class="govuk-fieldset" @optionalAria()>
       <legend class="govuk-fieldset__legend govuk-visually-hidden">@components.render_text(input.text)</legend>
-      @{input.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
   }
 
     @components.error_message(input.errorMsgs)

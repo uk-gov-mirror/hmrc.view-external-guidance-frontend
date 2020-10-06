@@ -182,7 +182,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -253,6 +253,192 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
+  }
+
+  trait InputTest extends MockGuidanceService with TestData {
+
+    override lazy val expectedPage: Page = InputPage(
+      path,
+      Input(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+    )
+    val enteredValue = "12000"
+    val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+
+    val formError = new FormError(relativePath, List("error.required"))
+
+    val target = new GuidanceController(
+      MockAppConfig,
+      fakeSessionIdAction,
+      errorHandler,
+      view,
+      questionView,
+      inputView,
+      new NextPageFormProvider(),
+      mockGuidanceService,
+      stubMessagesControllerComponents()
+    )
+  }
+
+  "Calling a valid URL path to an Input page in a process" should {
+
+    "return an OK response" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode))))
+
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "be a HTML response" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode))))
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+      contentType(result) shouldBe Some("text/html")
+    }
+  }
+
+  "Returning to an input page in a process" should {
+
+    "Show the original value entered" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode, Map(), None, Some(enteredValue)))))
+
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      // Probably not the right place to test this
+      contentAsString(result).contains(enteredValue) shouldBe true
+    }
+  }
+
+  "Submitting a blank Input page form" should {
+
+    "return a BadRequest response" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode))))
+
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+  }
+
+  "Submitting an Input page form with a value" should {
+
+    "return a SeeOther response" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Right({})))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "return a SeeOther response whether the saving of the input succeeds or not" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, Some(FormData(relativePath, Map(), List())))
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .saveAnswerToQuestion(processId, path, "/guidance/hello")
+        .returns(Future.successful(Left(DatabaseError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "return a INTERNAL_SERVER_ERROR response if submitting to a Process containing errors is referenced" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(Future.successful(Left(InvalidProcessError)))
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a NOT_FOUND response if trying to submit to a non-existent page" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Left(NotFoundError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "return a InternalServerError response when an unexpected error returned from service call" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Left(DatabaseError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a BAD_REQUEST response when a bad request error returned from service call" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Left(BadRequestError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return a BAD_REQUEST response when submitted page is not an input or question" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId, None)
+        .returns(Future.successful(Right(PageContext(standardPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
   }
 
   trait ProcessTest extends MockGuidanceService with TestData {

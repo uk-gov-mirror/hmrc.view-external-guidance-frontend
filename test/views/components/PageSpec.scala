@@ -25,12 +25,12 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
-import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage, PageContext}
-import org.jsoup.nodes.{Element, Document}
+import models.ui.{Answer, BulletPointList, ErrorMsg, H1, Input, InputPage, Page, PageContext, Paragraph, Question, QuestionPage, StandardPage, Text}
+import org.jsoup.nodes.{Document, Element}
 import forms.NextPageFormProvider
+
 import scala.collection.JavaConverters._
 import play.api.data.FormError
-import models.ui.ErrorMsg
 import base.ViewFns
 
 class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
@@ -43,6 +43,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     val standardPageView = app.injector.instanceOf[views.html.standard_page]
     val questionPageView = app.injector.instanceOf[views.html.question_page]
+    val inputPageView = app.injector.instanceOf[views.html.input_page]
     val title = Text("Telling HMRC about extra income", "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
 
     val openingPara = Text(
@@ -78,6 +79,15 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val questionPage = QuestionPage("root", question)
     val questionPageWithErrors = QuestionPage("root", questionWithErrors)
 
+    val i1 = Vector("What is value of your house?", "Welsh, What is value of your house?")
+    val inputText = Text(i1)
+    val i1Hint = Vector("use market value", "Welsh, use market value?")
+    val inputHint = Text(i1Hint)
+    val input = Input(inputText, Some(inputHint), Seq(para, bulletPointList))
+    val inputWithErrors = Input(inputText, Some(inputHint), Seq(para, bulletPointList), Seq(errorMsg))
+    val inputPage = InputPage("root", input)
+    val inputPageWithErrors = InputPage("root", inputWithErrors)
+
     def expectedTitleText(h1Text: String, section: Option[String] = None): String =
       section.fold(s"${h1Text} - ${messages("service.name")} - ${messages("service.govuk")}"){s =>
         s"${h1Text} - ${s} - ${messages("service.name")} - ${messages("service.govuk")}"
@@ -94,6 +104,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     val pageContext = PageContext(simplePage, Some("/"), Text("Title", "Title"), "processId", "processCode")
     val questionPageContext = PageContext(questionPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
+    val inputPageContext = PageContext(inputPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
   }
 
   trait WelshTest extends Test {
@@ -250,6 +261,109 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
 
       val doc = asDocument(questionPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
+
+      val fieldset: Element = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){fset =>
+        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      }
+    }
+
+  }
+
+  "Input Page component" should {
+
+    "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
+
+      val doc = asDocument(inputPageView(inputPage, pageContext, "input", formProvider("12000") )(fakeRequest, messages))
+
+      checkTitle(doc)
+
+      val h1s = doc.getElementsByTag("h1")
+      h1s.size shouldBe 1
+      h1s.first.text shouldBe inputText.english.head.toString
+
+      val paras = doc.select("main.govuk-main-wrapper p")
+
+      paras.size shouldBe 2
+
+      val firstPara = paras.eq(0)
+      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+
+      val secondPara = paras.eq(1)
+      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
+
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
+      actualListItems.size shouldBe 3
+
+      val expectedListItems: List[String] =
+        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
+
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+    "generate English title prefixed by Error: when errors are displayed" in new Test {
+
+      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
+
+      val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+
+      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
+    }
+
+    "set input fieldset aria-describedby correctly when error occurs" in new Test {
+
+      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
+
+      val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+
+      val fieldset: Element = doc.getElementsByTag("fieldset").first
+      Option(fieldset).fold(fail("Missing fieldset")){fset =>
+        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      }
+    }
+
+    "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
+
+      val doc = asDocument(inputPageView(inputPage, pageContext, "input", formProvider("12000") )(fakeRequest, messages))
+
+      checkTitle(doc)
+
+      val h1s = doc.getElementsByTag("h1")
+      h1s.size shouldBe 1
+      h1s.first.text shouldBe inputText.welsh.head.toString
+
+      val paras = doc.select("main.govuk-main-wrapper p")
+
+      paras.size shouldBe 2
+
+      val firstPara = paras.eq(0)
+      firstPara.first.text shouldBe openingPara.welsh.head.toString
+
+      val secondPara = paras.eq(1)
+      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
+
+      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
+      actualListItems.size shouldBe 3
+
+      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
+
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+    "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
+
+      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
+
+      val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+
+      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
+    }
+
+    "set Welsh input fieldset aria-describedby correctly when error occurs" in new WelshTest {
+
+      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
+
+      val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
