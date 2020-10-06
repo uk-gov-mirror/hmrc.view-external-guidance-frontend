@@ -27,7 +27,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import forms.NextPageFormProvider
-import models.PageContext
+import models.{PageContext, PageEvaluationContext}
 import models.ui._
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
@@ -98,7 +98,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "return an OK response" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode))))
 
       val result = target.getPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -107,7 +107,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "be a HTML response" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode))))
       val result = target.getPage(processId, relativePath)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
     }
@@ -118,7 +118,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "Show the original answer selected" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(answerUrl1)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(answerUrl1)))))
 
       val result = target.getPage(processId, relativePath)(fakeRequest)
 
@@ -129,19 +129,19 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     }
   }
 
-//   "Submitting a blank Question page form" should {
+  // "Submitting a blank Question page form" should {
 
-// //, Some(FormData(relativePath, Map(), List(formError)))
-//     "return a BadRequest response" in new QuestionTest {
-//       MockGuidanceService
-//         .getPageEvaluationContext(processId, path, processId)
-//         .returns(Future.successful(Right(PageEvaluationContext(Page("",Nil), Map(), Some("/"), Text(Nil, Nil), processId, processCode))))
+  //   val page =
+  //   "return a BadRequest response" in new QuestionTest {
+  //     MockGuidanceService
+  //       .getPageEvaluationContext(processId, path, processId)
+  //       .returns(Future.successful(Right(PageEvaluationContext(models.ocelot.Page("",Nil), processId, Map(), Some("/"), Text(Nil, Nil), processId, processCode))))
 
-//       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
-//       val result = target.submitPage(processId, relativePath)(fakeRequest)
-//       status(result) shouldBe Status.BAD_REQUEST
-//     }
-//   }
+  //     override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+  //     val result = target.submitPage(processId, relativePath)(fakeRequest)
+  //     status(result) shouldBe Status.BAD_REQUEST
+  //   }
+  // }
 
   // "Submitting an answered Question page form" should {
 
@@ -244,7 +244,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   //     status(result) shouldBe Status.INTERNAL_SERVER_ERROR
   //   }
 
-  //}
+  // }
 
   trait ProcessTest extends MockGuidanceService with TestData {
     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
@@ -270,7 +270,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(standardPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(standardPage, processId, Some("/hello"), Text(Nil, Nil), processId, processCode))))
 
       MockGuidanceService
         .saveLabels(processId, LabelCache())
@@ -374,7 +374,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/hello"), Text(Nil, Nil), processId, processCode))))
 
       lazy val target =
         new GuidanceController(

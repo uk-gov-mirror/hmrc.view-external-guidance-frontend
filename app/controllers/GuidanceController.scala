@@ -92,18 +92,21 @@ class GuidanceController @Inject() (
           },
           nextPageUrl => {
             // nextPageUrl will become the value of the question or the input field data
-            // Get the page context and process the Question or Input stanzas and any following stanzas with the nextPageUrl value
-            // If this processing indicates a return to a stanza seen before the question or input, it implies a reshowing of the
-            // current page
+            // Using the page evaluation context submit the page, this will return None if the page needs to be redisplayed
+            // val pageContext = service.getPageContext(evalContext)
+            // BadRequest(questionView(page, pageContext, questionName(path)))
+            // Alternatively a Some(stanzaId) return should redirect to url = evalContext.stanzaIdMap(stanzaId).url
             val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
             service.submitPage(evalContext, s"/$path", nextPageUrl.url).map{
               case Left(err) =>
                 logger.error(s"Page submission failed: $err")
                 InternalServerError(errorHandler.internalServerErrorTemplate)
               case Right(None) =>
+                // None here indeicates there is no valid next page id because the guidance redirect back to a redisplay of page
                 logger.info(s"Post submit page evaluation indicates guidance detected input error")
                 Redirect(redirectLocation)
               case Right(Some(stanzaId)) =>
+                // Some(stanzaId) here idicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
                 logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId")
                 Redirect(redirectLocation)
             }

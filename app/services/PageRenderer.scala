@@ -16,14 +16,13 @@
 
 package services
 
-import config.AppConfig
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
 import models.ocelot.stanzas.{EndStanza, Stanza, Evaluate, DataInput}
 import models.ocelot.{Page, Labels}
 
 @Singleton
-class PageRenderer @Inject() (appConfig: AppConfig) {
+class PageRenderer @Inject() () {
 
   def renderPage(page: Page, originalLabels: Labels): (Seq[Stanza], Labels) = {
     val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap

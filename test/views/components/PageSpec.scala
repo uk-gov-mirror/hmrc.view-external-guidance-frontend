@@ -93,8 +93,8 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageContext = PageContext(simplePage, Some("/"), Text("Title", "Title"), "processId", "processCode")
-    val questionPageContext = PageContext(questionPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
+    val pageContext = PageContext(simplePage, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
+    val questionPageContext = PageContext(questionPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
   }
 
   trait WelshTest extends Test {
