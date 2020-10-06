@@ -50,10 +50,10 @@ class CalculationStanzaSpec extends BaseSpec {
   trait Test {
 
     def getSingleCalcCalculationStanzaAsJsValue(
-        left: String,
-        calcOperationType: String,
-        right: String,
-        label: String): JsValue = Json.parse(
+                                                 left: String,
+                                                 calcOperationType: String,
+                                                 right: String,
+                                                 label: String): JsValue = Json.parse(
       s"""|{
           | "next": [ "1" ],
           | "stack": false,
@@ -82,86 +82,108 @@ class CalculationStanzaSpec extends BaseSpec {
     val c1Right: String = "[label:input1B"
     val c1Label: String = "outputA"
 
-    val c1CalcAdd: CalcOperation = CalcOperation( c1Left, Addition, c1Right, c1Label)
-    val c1CalcSub: CalcOperation = CalcOperation( c1Left, Subtraction, c1Right, c1Label)
+    val c1CalcAdd: CalcOperation = CalcOperation(c1Left, Addition, c1Right, c1Label)
+    val c1CalcSub: CalcOperation = CalcOperation(c1Left, Subtraction, c1Right, c1Label)
 
     val expectedSingleAdditionCalculationStanza: CalculationStanza =
-      CalculationStanza(Seq(c1CalcAdd), Seq( "1" ), stack = false)
+      CalculationStanza(Seq(c1CalcAdd), Seq("1"), stack = false)
 
     val expectedSingleSubtractionCalcCalculationStanza: CalculationStanza =
-      CalculationStanza(Seq(c1CalcSub), Seq( "1" ), stack = false)
+      CalculationStanza(Seq(c1CalcSub), Seq("1"), stack = false)
 
     val expectedMultipleCalcCalculationStanza: CalculationStanza =
       CalculationStanza(
         Seq(CalcOperation("[label:inputA]", Addition, "[label:inputB]", "outputA"),
-          CalcOperation("[label:outputA]", Subtraction, "[label:inputC]", "outputB" )),
-        Seq( "21"),
+          CalcOperation("[label:outputA]", Subtraction, "[label:inputC]", "outputB")),
+        Seq("21"),
         stack = true
       )
 
     val sqrt = "sqrt"
 
-    val onePageJsonWithInvalidCalcOperationType: JsValue = Json.parse(
-      """
-        |{
-        |  "meta": {
-        |    "title": "Customer wants to make a cup of tea",
-        |    "id": "oct90001",
-        |    "ocelot": 1,
-        |    "lastAuthor": "000000",
-        |    "lastUpdate": 1500298931016,
-        |    "version": 4,
-        |    "filename": "oct90001.js",
-        |    "titlePhrase": 8
-        |  },
-        |  "howto": [],
-        |  "contacts": [],
-        |  "links": [],
-        |  "flow": {
-        |    "start": {
-        |      "type": "PageStanza",
-        |      "url": "/feeling-bad",
-        |      "next": ["2"],
-        |      "stack": true
-        |    },
-        |    "3": {
-        |      "next": [ "end" ],
-        |      "stack": false,
-        |      "type": "CalculationStanza",
-        |      "calcs": [
-        |                  {  "left":"inputA",
-        |                     "op":"sqrt",
-        |                     "right":"inputB",
-        |                     "label":"result"
-        |                  }
-        |               ]
-        |    },
-        |    "2": {
-        |      "type": "InstructionStanza",
-        |      "text": 0,
-        |      "next": [
-        |        "3"
-        |      ],
-        |      "stack": true
-        |    },
-        |    "end": {
-        |      "type": "EndStanza"
-        |    }
-        |  },
-        |  "phrases": [
-        |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
-        |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
-        |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
-        |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
-        |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
-        |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
-        |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
-        |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
-        |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
-        |  ]
-        |}
+    val onePageJsonWithInvalidCalcOperationType: String =
+      s"""
+         |{
+         |  "meta": {
+         |    "title": "Customer wants to make a cup of tea",
+         |    "id": "oct90001",
+         |    "ocelot": 1,
+         |    "lastAuthor": "000000",
+         |    "lastUpdate": 1500298931016,
+         |    "version": 4,
+         |    "filename": "oct90001.js",
+         |    "titlePhrase": 8,
+         |    "processCode": "CupOfTea"
+         |  },
+         |  "howto": [],
+         |  "contacts": [],
+         |  "links": [],
+         |  "flow": {
+         |    "start": {
+         |      "type": "PageStanza",
+         |      "url": "/feeling-bad",
+         |      "next": ["2"],
+         |      "stack": true
+         |    },
+         |    <calcStanza>,
+         |    "2": {
+         |      "type": "InstructionStanza",
+         |      "text": 0,
+         |      "next": [
+         |        "3"
+         |      ],
+         |      "stack": true
+         |    },
+         |    "end": {
+         |      "type": "EndStanza"
+         |    }
+         |  },
+         |  "phrases": [
+         |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
+         |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
+         |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
+         |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
+         |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
+         |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
+         |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
+         |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
+         |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
+         |  ]
+         |}
     """.stripMargin
+
+    val calculationStanzaWithUnknownOperationType: String =
+      """|"3": {
+         |"next": [ "end" ],
+         |"stack": false,
+         |"type": "CalculationStanza",
+         |"calcs": [
+         |{  "left":"inputA",
+         |   "op":"sqrt",
+         |   "right":"inputB",
+         | "label":"result"
+         |}
+         |]
+         |}""".stripMargin
+
+    val calculationStanzaWithIncorrectType: String =
+      """|"3": {
+         |"next": [ "end" ],
+         |"stack": false,
+         |"type": "CalculationStanza",
+         |"calcs": [
+         |{  "left":"inputA",
+         |   "op":false,
+         |   "right":"inputB",
+         | "label":"result"
+         |}
+         |]
+         |}""".stripMargin
+
+    def getOnePageJsonWithInvalidCalcOperationType(flowDef: String, calcStanzaDef: String): JsValue = Json.parse(
+      flowDef.replaceAll("<calcStanza>", calcStanzaDef)
     )
+
   }
 
   "Reading a valid calculation stanza" should {
@@ -220,10 +242,10 @@ class CalculationStanzaSpec extends BaseSpec {
       }
     }
 
-    /** Test for missing properties in Json object representing instruction stanzas */
+    /** Test for missing properties in Json object representing calculation stanza */
     missingJsObjectAttrTests[CalculationStanza](validCalculationStanzaAsJsObject, List("type"))
 
-    /** Test for properties of the wrong type in json object representing instruction stanzas */
+    /** Test for properties of the wrong type in json object representing calculation stanza */
     incorrectPropertyTypeJsObjectAttrTests[CalculationStanza](validCalculationStanzaAsJsObject, List("type"))
   }
 
@@ -262,14 +284,34 @@ class CalculationStanzaSpec extends BaseSpec {
 
   "Page building" must {
 
-    "Raise an error for a invalid calculation operation type" in new Test {
+    "Raise an error for a unknown calculation operation type" in new Test {
 
-      onePageJsonWithInvalidCalcOperationType.as[JsObject].validate[Process] match {
+      getOnePageJsonWithInvalidCalcOperationType(
+        onePageJsonWithInvalidCalcOperationType,
+        calculationStanzaWithUnknownOperationType
+      ).as[JsObject].validate[Process] match {
         case JsSuccess(_,_) => fail( "A process should not be created from invalid JSON")
         case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
-          case Nil => fail("Nothing to match from guidance error convergence")
+          case Nil => fail("Nothing to match from guidance error conversion")
           case UnknownCalcOperationType("3", "sqrt") :: _ => succeed
           case errs => fail( "An error occurred processing Json validation errors")
+        }
+      }
+    }
+
+    "Raise an error when the calculation operation is of the wrong JsValue type" in new Test {
+
+      getOnePageJsonWithInvalidCalcOperationType(
+        onePageJsonWithInvalidCalcOperationType,
+        calculationStanzaWithIncorrectType
+      ).as[JsObject].validate[Process] match {
+        case JsSuccess(_,_) => fail("A process should not be created from invalid JSON")
+        case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
+          case Nil => fail("Nothing to match from guidance error conversion")
+          case UnknownCalcOperationType("3", "false") :: _ => {
+            succeed
+          }
+          case errs => fail("An error occurred processing Json validation errors")
         }
       }
     }
