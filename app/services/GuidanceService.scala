@@ -26,7 +26,7 @@ import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.Process
+import models.ocelot.{LabelCache, Process}
 
 @Singleton
 class GuidanceService @Inject() (
@@ -68,7 +68,7 @@ class GuidanceService @Inject() (
                       process.title,
                       process.meta.id,
                       processCode,
-                      labels,
+                      LabelCache(labels),
                       backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                       answers.get(url)
                     )

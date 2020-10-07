@@ -28,13 +28,13 @@ import models.ui.{H3, Text}
 import views.html.components.h3_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
+import models.ocelot.LabelCache
 import base.ViewSpec
 
 class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

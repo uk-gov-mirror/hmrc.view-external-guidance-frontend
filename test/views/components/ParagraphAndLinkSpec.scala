@@ -27,13 +27,14 @@ import views.html.components.paragraph
 import models.ui.{Paragraph, Text, Link}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
+import models.ocelot.LabelCache
 
 class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))

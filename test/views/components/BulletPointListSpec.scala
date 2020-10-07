@@ -25,6 +25,7 @@ import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import models.ui._
+import models.ocelot.LabelCache
 import views.html.components.bullet_point_list
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import base.ViewSpec
@@ -34,7 +35,7 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
 
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

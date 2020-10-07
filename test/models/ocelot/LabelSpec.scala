@@ -45,4 +45,50 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
   }
 
+  "LabelCache" must {
+    "Allow reference to the current value of a label" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("X") shouldBe Some("33.5")
+
+      labels.value("Name") shouldBe Some("Coltrane")
+
+    }
+
+    "Return an empty string if label has no assigned value" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("Y") shouldBe Some("")
+    }
+
+    "Return None if referenced label does not exist" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("Z") shouldBe None
+    }
+
+    "Allow the current value of the label to be updated" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("X") shouldBe Some("33.5")
+
+      val updatedLabels = labels.update("Name", "Miles")
+
+      updatedLabels.value("Name") shouldBe Some("Miles")
+
+    }
+
+    "Allow a new label to be added to the cache" in {
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
+      val labels = LabelCache(labelsMap)
+      labels.value("X") shouldBe Some("33.5")
+
+      val updatedLabels = labels.update("Location", "Here")
+
+      updatedLabels.value("Location") shouldBe Some("Here")
+
+    }
+
+  }
+
 }
