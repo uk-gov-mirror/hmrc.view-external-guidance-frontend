@@ -90,12 +90,6 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
 
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
-    val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                      KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
-                      KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
-                      KeyedStanza("2", InstructionStanza(3, Seq("3"), None, false)),
-                      KeyedStanza("3", question)
-                    )
 
     // val stanzas = Seq(
     //   KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
@@ -104,19 +98,46 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
     //   KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("5"), None, false)),
     //   KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, None, false))
     // )
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
   }
 
   "PageRenderer" must {
     "Determine the correct sequence of stanzas within a page" in new Test {
-      //val page = Page("start", "/start", pageStanzas, Seq("4", "9"))
+      val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+      val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "4")), Seq("22"), true)),
+                        KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("2", instructionStanza),
+                        KeyedStanza("3", questionStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
-      val (visualStanzas, labels) = renderer.renderPage(page, LabelCache())
-      println(visualStanzas)
-      visualStanzas.length shouldBe 2
-      labels.updatedLabels.keys.toList.length shouldBe 0
+      val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache())
+      visualStanzas shouldBe List(instructionStanza, questionStanza)
+
+      dataInput shouldBe Some(questionStanza)
+
+      labels.updatedLabels.keys.toList.length shouldBe 1
     }
+
+    "Determine the correct sequence of stanzas within a page involving Choice" in new Test {
+      val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+      val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("2", instructionStanza),
+                        KeyedStanza("3", questionStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
+
+      val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache())
+      visualStanzas shouldBe List(questionStanza)
+      dataInput shouldBe Some(questionStanza)
+      labels.updatedLabels.keys.toList.length shouldBe 1
+    }
+
   }
 
   // "PageBuilder error handling" must {

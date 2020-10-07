@@ -79,7 +79,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels))
+        .returns((pages(2).stanzas, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, LabelCache())
@@ -115,7 +115,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels))
+        .returns((pages(2).stanzas, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, LabelCache())

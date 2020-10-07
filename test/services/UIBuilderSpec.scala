@@ -351,16 +351,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components(5) shouldBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
-    "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
-      implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
-      val pageMap = uiBuilder.pages(stanzaPages)
+    // "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
+    //   implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
+    //   val pageMap = uiBuilder.pages(stanzaPages)
 
-      pageMap.keys.toList.length shouldBe stanzaPages.length
+    //   pageMap.keys.toList.length shouldBe stanzaPages.length
 
-      stanzaPages.foreach { p =>
-        pageMap.contains(p.url) shouldBe true
-      }
-    }
+    //   stanzaPages.foreach { p =>
+    //     pageMap.contains(p.url) shouldBe true
+    //   }
+    // }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
       val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddAllLinks)

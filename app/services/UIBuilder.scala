@@ -28,8 +28,8 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
-    stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
+  // def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
+  //   stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
 
 def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
@@ -43,6 +43,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
            }
          })
 
+  @deprecated("fromStanzaPage() is deprecated, replace with fromStanzas()", "current")
   def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(pge.url,
          BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
