@@ -21,6 +21,8 @@ import models.errors.{Error => MainError, ProcessError}
 import models.ocelot.errors._
 import models.ocelot.stanzas._
 import models.ocelot._
+import models.ui.Text
+import models.PageEvaluationContext
 import play.api.libs.json._
 import utils.StanzaHelper
 
@@ -123,6 +125,27 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       labels.updatedLabels.keys.toList.length shouldBe 0
     }
 
+    "Determine the correct sequence of stanzas within the final page of guidance" in new Test {
+      val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
+      val callout1 = Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
+      val callout2 = Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", callout1),
+                        KeyedStanza("3", callout2),
+                        KeyedStanza("4", instructionStanza),
+                        KeyedStanza("5", EndStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq("5"))
+
+      val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache())
+
+      visualStanzas shouldBe List(callout1, callout2, instructionStanza, EndStanza)
+
+      dataInput shouldBe None
+
+      labels.updatedLabels.keys.toList.length shouldBe 0
+    }
 
     "Determine the correct sequence of stanzas within a Question page" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
@@ -159,6 +182,45 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       dataInput shouldBe Some(questionStanza)
       labels.updatedLabels.keys.toList.length shouldBe 1
     }
+
+    "Evaluate the stanzas after user input to determine the id of th next page" in new Test {
+
+      val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+      val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("2", instructionStanza),
+                        KeyedStanza("3", questionStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
+      val labels = LabelCache()
+
+      renderer.renderPagePostSubmit(page, labels, "Some Text").fold(fail){ case (next, newLabels) =>
+        next shouldBe answerDestinations(0)
+        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      }
+    }
+
+    // "Evaluate the stanzas after user input to determine the id of th next page" in new Test {
+    //   val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+    //   val questionStanza = Question(questionPhrase, answers, Seq("22","22","22"), None, false)
+    //   val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+    //                     KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+    //                     KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+    //                     KeyedStanza("2", instructionStanza),
+    //                     KeyedStanza("3", questionStanza),
+    //                     KeyedStanza("22", Choice(ChoiceStanza(Seq("1","5"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false)))
+    //                   )
+    //   val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
+
+    //   val labels = LabelCache()
+
+    //   renderer.renderPagePostSubmit(page, labels, "Some Text").fold(fail){ case (next, newLabels) =>
+    //     next shouldBe answerDestinations(0)
+    //     newLabels.updatedLabels shouldBe Map()
+    //   }
+    // }
 
   }
 

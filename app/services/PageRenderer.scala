@@ -24,37 +24,31 @@ import models.ocelot.{Page, Labels}
 @Singleton
 class PageRenderer @Inject() () {
 
+  @tailrec
+   private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[Stanza], seen: Seq[String])
+                              (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], Option[DataInput]) =
+    if (!ids.contains(stanzaId)) (visualStanzas, labels, seen, None)
+    else
+    stanzaMap(stanzaId) match {
+      case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, None)
+      case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, Some(s))
+      case s: Stanza with Evaluate =>
+        val (next, updatedLabels) = s.eval(labels)
+        evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
+      case s: Stanza => evaluateStanzas(s.next(0), labels, visualStanzas :+ s, seen :+ stanzaId)
+    }
+
   def renderPage(page: Page, originalLabels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
-    val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    val ids = page.keyedStanzas.map(_.key)
+    implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    implicit val ids = page.keyedStanzas.map(_.key)
 
-    @tailrec
-    def evaluateStanzas(stanza: Stanza, labels: Labels, visualStanzas: Seq[Stanza]): (Seq[Stanza], Labels, Option[DataInput]) =
-      stanza match {
-        case EndStanza => (visualStanzas :+ EndStanza, labels, None)
-        case s: Stanza with DataInput => (visualStanzas :+ s, labels, Some(s))
-        case s: Stanza with Evaluate =>
-          val (next, updatedLabels) = s.eval(labels)
-          evaluateStanzas(stanzaMap(next), updatedLabels, visualStanzas)
-        case s: Stanza if ids.contains(s.next(0)) => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
-        case s: Stanza => (visualStanzas :+ s, labels, None)
-      }
-
-    evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
+    val (visualStanzas, labels, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), originalLabels, Nil, Nil)
+    (visualStanzas, labels, optionalInput)
   }
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): Option[(String, Labels)] = {
-    val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    val ids = page.keyedStanzas.map( _.key)
-
-    @tailrec
-    def findDataInputStanza(stanzaId: String, seen: Seq[String]): Option[(Seq[String], DataInput)] =
-      if (!ids.contains(stanzaId)) None
-      else stanzaMap(stanzaId) match {
-        case EndStanza => None
-        case s: Stanza with DataInput  => Some((seen :+ stanzaId, s))
-        case s: Stanza => findDataInputStanza(s.next(0), seen :+ stanzaId)
-      }
+    implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    implicit val ids = page.keyedStanzas.map( _.key)
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): Option[(String, Labels)] =
@@ -67,12 +61,12 @@ class PageRenderer @Inject() () {
           evaluatePostInputStanzas(next, updatedLabels, seen)
       }
 
-    findDataInputStanza(stanzaMap(page.id).next(0), Nil)
-      .fold[Option[(String, Labels)]](None){ case (seen, dataInputStanza) => {
-          val (next, updatedLabels) = dataInputStanza.eval(answer, labels)
-          evaluatePostInputStanzas(next, updatedLabels, seen)
-        }
-      }
+    val (visualStanzas, updatedLabels, seen, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
+
+    optionalInput.fold[Option[(String, Labels)]](None){dataInputStanza =>
+      val (next, postInputLabels) = dataInputStanza.eval(answer, updatedLabels)
+      evaluatePostInputStanzas(next, postInputLabels, seen)
+    }
   }
 
 }
