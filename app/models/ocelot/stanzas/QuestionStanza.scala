@@ -21,7 +21,11 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
-case class QuestionStanza(text: Int, answers: Seq[Int], override val next: Seq[String], label: Option[String], stack: Boolean) extends VisualStanza
+case class QuestionStanza(text: Int,
+                          answers: Seq[Int],
+                          override val next: Seq[String],
+                          label: Option[String],
+                          stack: Boolean) extends VisualStanza
 
 object QuestionStanza {
 

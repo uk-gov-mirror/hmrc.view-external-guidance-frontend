@@ -26,6 +26,7 @@ class PageRenderer @Inject() () {
 
   def renderPage(page: Page, originalLabels: Labels): (Seq[Stanza], Labels) = {
     val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    val ids = page.keyedStanzas.map(_.key)
 
     @tailrec
     def evaluateStanzas(stanza: Stanza, labels: Labels, visualStanzas: Seq[Stanza]): (Seq[Stanza], Labels) =
@@ -35,7 +36,8 @@ class PageRenderer @Inject() () {
         case s: Stanza with Evaluate =>
           val (next, updatedLabels) = s.eval(labels)
           evaluateStanzas(stanzaMap(next), updatedLabels, visualStanzas)
-        case s: Stanza => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
+        case s: Stanza if ids.contains(s.next(0)) => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
+        case s: Stanza => (visualStanzas, labels)
       }
 
     evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
