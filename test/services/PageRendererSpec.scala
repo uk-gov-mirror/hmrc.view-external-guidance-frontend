@@ -102,7 +102,29 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
   }
 
   "PageRenderer" must {
-    "Determine the correct sequence of stanzas within a page" in new Test {
+    "Determine the correct sequence of stanzas within a page with no user input" in new Test {
+      val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
+      val callout1 = Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
+      val callout2 = Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", callout1),
+                        KeyedStanza("3", callout2),
+                        KeyedStanza("4", instructionStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq("5"))
+
+      val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache())
+
+      visualStanzas shouldBe List(callout1, callout2, instructionStanza)
+
+      dataInput shouldBe None
+
+      labels.updatedLabels.keys.toList.length shouldBe 0
+    }
+
+
+    "Determine the correct sequence of stanzas within a Question page" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
@@ -121,7 +143,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       labels.updatedLabels.keys.toList.length shouldBe 1
     }
 
-    "Determine the correct sequence of stanzas within a page involving Choice" in new Test {
+    "Determine the correct sequence of stanzas within a Question page involving Choice" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),

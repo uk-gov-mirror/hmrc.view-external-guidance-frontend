@@ -37,7 +37,7 @@ class PageRenderer @Inject() () {
           val (next, updatedLabels) = s.eval(labels)
           evaluateStanzas(stanzaMap(next), updatedLabels, visualStanzas)
         case s: Stanza if ids.contains(s.next(0)) => evaluateStanzas(stanzaMap(s.next(0)), labels, visualStanzas :+ s)
-        case s: Stanza => (visualStanzas, labels, None)
+        case s: Stanza => (visualStanzas :+ s, labels, None)
       }
 
     evaluateStanzas(stanzaMap(stanzaMap(page.id).next(0)), originalLabels, Nil)
