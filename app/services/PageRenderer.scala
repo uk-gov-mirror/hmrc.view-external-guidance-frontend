@@ -26,24 +26,25 @@ class PageRenderer @Inject() () {
 
   @tailrec
    private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[Stanza], seen: Seq[String])
-                              (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], Option[DataInput]) =
-    if (!ids.contains(stanzaId)) (visualStanzas, labels, seen, None)
+                              (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
+    if (!ids.contains(stanzaId)) (visualStanzas, labels, seen, stanzaId, None)
     else
     stanzaMap(stanzaId) match {
-      case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, None)
-      case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, Some(s))
+      case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, stanzaId, None)
+      case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
       case s: Stanza with Evaluate =>
         val (next, updatedLabels) = s.eval(labels)
         evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
       case s: Stanza => evaluateStanzas(s.next(0), labels, visualStanzas :+ s, seen :+ stanzaId)
     }
 
-  def renderPage(page: Page, originalLabels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
+  def renderPage(page: Page, labels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
     implicit val ids = page.keyedStanzas.map(_.key)
 
-    val (visualStanzas, labels, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), originalLabels, Nil, Nil)
-    (visualStanzas, labels, optionalInput)
+    val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
+
+    (visualStanzas, newLabels, optionalInput)
   }
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): Option[(String, Labels)] = {
@@ -61,10 +62,9 @@ class PageRenderer @Inject() () {
           evaluatePostInputStanzas(next, updatedLabels, seen)
       }
 
-    val (visualStanzas, updatedLabels, seen, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
-
-    optionalInput.fold[Option[(String, Labels)]](None){dataInputStanza =>
-      val (next, postInputLabels) = dataInputStanza.eval(answer, updatedLabels)
+    val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
+    optionalInput.fold[Option[(String, Labels)]](Some((nextPageId, newLabels))){dataInputStanza =>
+      val (next, postInputLabels) = dataInputStanza.eval(answer, newLabels)
       evaluatePostInputStanzas(next, postInputLabels, seen)
     }
   }

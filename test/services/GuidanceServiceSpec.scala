@@ -234,26 +234,6 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
-  "Calling saveAnswerToQuestion" should {
-
-    "store the answer in the local repo" in new Test {
-
-      MockSessionRepository
-        .saveAnswerToQuestion(sessionRepoId, firstPageUrl, lastPageUrl)
-        .returns(Future.successful(Right(())))
-
-      MockPageBuilder
-        .pages(process)
-        .returns(Right(pages))
-
-      private val result = target.saveAnswerToQuestion(sessionRepoId, firstPageUrl, lastPageUrl)
-
-      whenReady(result) { ret =>
-        ret shouldBe Right({})
-      }
-    }
-  }
-
   "Calling getProcessContext(key: String)" should {
 
     "successfully retrieve a process context when the session data contains a single process" in new Test {

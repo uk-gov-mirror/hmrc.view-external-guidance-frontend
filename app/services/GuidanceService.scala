@@ -99,34 +99,23 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def submitPage(evalContext: PageEvaluationContext, url: String, answer: String)(
-        implicit context: ExecutionContext
-    ): Future[RequestOutcome[Option[String]]] =
-    saveAnswerToQuestion(evalContext.sessionId, url, answer).flatMap{
-      case Left(err) =>
-        logger.error(s"Failed to saved answers, error = $err")
-        Future.successful(Left(InternalServerError))
-      case Right(_) =>
-        pageRenderer
-          .renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
-          .fold[Future[RequestOutcome[Option[String]]]](Future.successful(Right(None))){
-            case (next, updateLabels) =>
-              logger.info(s"Next page found at stanzaId: $next")
-              saveLabels(evalContext.sessionId, updateLabels).map{
-                case Left(err) =>
-                  logger.error(s"Failed to save updated labels, error = $err")
-                  Left(InternalServerError)
-                case Right(_) => Right(Some(next))
-              }
+  def submitPage(evalContext: PageEvaluationContext, url: String, answer: String)
+                (implicit context: ExecutionContext): Future[RequestOutcome[Option[String]]] =
+    pageRenderer
+      .renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
+      .fold[Future[RequestOutcome[Option[String]]]](Future.successful(Right(None))){
+        case (next, updateLabels) =>
+          logger.info(s"Next page found at stanzaId: $next")
+          sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, answer, updateLabels).map{
+            case Left(err) =>
+              logger.error(s"Failed to save updated labels, error = $err")
+              Left(InternalServerError)
+            case Right(_) => Right(Some(next))
           }
-
-    }
+      }
 
   def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     sessionRepository.saveLabels(docId, labels)
-
-  def saveAnswerToQuestion(docId: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
-    sessionRepository.saveAnswerToQuestion(docId, url, answer)
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(

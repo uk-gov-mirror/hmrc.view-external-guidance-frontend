@@ -57,7 +57,7 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
-  def saveAnswerToQuestion(key: String, url: String, answers: String): Future[RequestOutcome[Unit]]
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]]
 }
 
@@ -161,10 +161,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveAnswerToQuestion(key: String, url: String, answer: String): Future[RequestOutcome[Unit]] =
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli), s"answers.$url" -> answer))
+      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli),
+                                  s"answers.$url" -> answer,
+                                  "labels" -> labels.updatedLabels))
     ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
