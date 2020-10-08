@@ -41,6 +41,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   trait TestData {
     val answerUrl1 = "/hello"
     val answerUrl2 = "/world"
+    val ansIndexZero = "0"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val path = "/some-path"
     lazy val relativePath = path.drop(1)
@@ -118,7 +119,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "Show the original answer selected" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(answerUrl1)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(ansIndexZero)))))
 
       val result = target.getPage(processId, relativePath)(fakeRequest)
 

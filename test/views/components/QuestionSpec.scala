@@ -53,6 +53,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ans1Hint = Vector("You agree with the assertion", "Welsh, You agree with the assertion")
     val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
     val ans3Hint = Vector("You dont know", "Welsh, You dont know")
+    val ansIndexZero = "0"
     val answerUrl1 = "/yes"
     val answerUrl2 = "/no"
     val answerUrl3 = "/dontknow"
@@ -112,7 +113,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
@@ -259,7 +260,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
