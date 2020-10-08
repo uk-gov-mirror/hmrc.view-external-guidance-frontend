@@ -73,6 +73,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
   @if(enableTimeout) {
       @timeoutDialog(
           TimeoutDialog(
+              language = Some(messages.lang.language),
               timeout = Some(appConfig.timeoutInSeconds),
               countdown = Some(appConfig.timeoutWarningInSeconds),
               keepAliveUrl = Some("#"),
