@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, H3, Paragraph, Text, Words, FormData, QuestionPage}
+import models.ui.{BulletPointList, Link, H3, H4, Paragraph, Text, Words, FormData, QuestionPage}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -47,7 +47,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
       KeyedStanza("1", Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
-      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("31"), false)),
+      KeyedStanza("31", Callout(SubSection, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
 
@@ -63,7 +64,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBulider Question processing" must {
 
     "Ignore Error Callouts when there are no errors" in new QuestionTest {
-      uiBuilder.fromStanzaPage(page, None)(urlMap) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas, None)(urlMap) match {
         case s: QuestionPage if s.question.errorMsgs.isEmpty => succeed
         case s: QuestionPage => fail("No error messages should be included on page")
         case _ => fail("Should return QuestionPage")
@@ -74,7 +75,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val formError = new FormError("test-page", List("error.required"))
       val formData = Some(FormData("test-page", Map(), List(formError)))
 
-      uiBuilder.fromStanzaPage(page, formData)(urlMap) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas, formData)(urlMap) match {
         case s: QuestionPage if s.question.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: QuestionPage => succeed
         case _ => fail("Should return QuestionPage")
@@ -82,13 +83,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Maintain order of components within a Question" in new QuestionTest {
-      uiBuilder.fromStanzaPage(page, None) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas, None) match {
         case q: QuestionPage =>
           q.question.body(0) match {
             case h: H3 => succeed
             case _ => fail("Ordering of question body components not maintained")
           }
           q.question.body(1) match {
+            case h: H4 => succeed
+            case _ => fail("Ordering of question body components not maintained")
+          }
+          q.question.body(2) match {
             case h: Paragraph => succeed
             case _ => fail("Ordering of question body components not maintained")
           }
@@ -99,7 +104,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Include a question hint appended to the question text" in new QuestionTest {
-      uiBuilder.fromStanzaPage(pageWithQuestionHint)(urlMap) match {
+      uiBuilder.fromStanzas(pageWithQuestionHint.url, pageWithQuestionHint.stanzas)(urlMap) match {
         case s: QuestionPage if s.question.hint == Some(Text(questionHintString, questionHintString)) => succeed
         case s: QuestionPage => fail("No hint found within Question")
         case _ => fail("Should return QuestionPage")
@@ -298,38 +303,38 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert and Ocelot page into a UI page with the same url" in new Test {
 
-      uiBuilder.fromStanzaPage(page) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas) match {
         case p if p.urlPath == page.url => succeed
         case p => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
       }
     }
 
     "convert 1st Callout type Title to H1" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(1) shouldBe models.ui.H1(Text(lang0))
     }
 
     "convert 2nd Callout type SubTitle to H2" in new Test {
 
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(2) shouldBe models.ui.H2(Text(lang1))
     }
 
     "convert Callout type Lede to lede Paragraph" in new Test {
 
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(3) shouldBe models.ui.Paragraph(Text(lang2), true)
     }
 
     "convert Simple instruction to Paragraph" in new Test {
 
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(four) shouldBe models.ui.Paragraph(Text(lang3), false)
     }
 
     "convert Link instruction to Paragraph" in new Test {
 
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       val en = Link("dummy-path/blah", lang4(0))
       val cy = Link("dummy-path/blah", lang4(1))
       uiPage.components(five) shouldBe models.ui.Paragraph(Text(en, cy), false)
@@ -337,17 +342,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert page with instruction stanza containing a sequence of Text and Link items" in new Test {
 
-      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks)
+      val uiPage = uiBuilder.fromStanzas(pageWithEmbeddLinks.url, pageWithEmbeddLinks.stanzas)
       uiPage.components(five) shouldBe models.ui.Paragraph(textItems, false)
     }
 
     "convert page with instruction stanza containing a sequence of TextItems beginning and ending with HyperLinks" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddLinks2)
+      val uiPage = uiBuilder.fromStanzas(pageWithEmbeddLinks2.url, pageWithEmbeddLinks2.stanzas)
       uiPage.components(5) shouldBe models.ui.Paragraph(textItems2, false)
     }
 
     "convert page with instruction stanza text containing PageLinks and Text" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddPageLinks)
+      val uiPage = uiBuilder.fromStanzas(pageWithEmbeddPageLinks.url, pageWithEmbeddPageLinks.stanzas)
       uiPage.components(5) shouldBe models.ui.Paragraph(pageLinkTextItems, false)
     }
 
@@ -363,22 +368,22 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     // }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddAllLinks)
+      val uiPage = uiBuilder.fromStanzas(pageWithEmbeddAllLinks.url, pageWithEmbeddAllLinks.stanzas)
       uiPage.components(five) shouldBe models.ui.Paragraph(allLinksTextItems, false)
     }
 
     "convert page including a PageLink instruction stanza" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(page)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3En, link3Cy), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(hyperLinkPage)
+      val uiPage = uiBuilder.fromStanzas(hyperLinkPage.url, hyperLinkPage.stanzas)
       uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4En, link4Cy), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(questionPage)
+      val uiPage = uiBuilder.fromStanzas(questionPage.url, questionPage.stanzas)
 
       uiPage.components.length shouldBe 1
 
@@ -399,7 +404,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a question page including answer hints into a Seq of a single Question UI object" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(questionPageWithHints)
+      val uiPage = uiBuilder.fromStanzas(questionPageWithHints.url, questionPageWithHints.stanzas)
 
       uiPage.components.length shouldBe 1
 
@@ -436,7 +441,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
 
-      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
+      val uiPage = uiBuilder.fromStanzas(bulletPointListPage.url, bulletPointListPage.stanzas)
 
       uiPage.components.length shouldBe 1
 
@@ -487,7 +492,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
 
-      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
+      val uiPage = uiBuilder.fromStanzas(bulletPointListPage.url, bulletPointListPage.stanzas)
 
       uiPage.components.length shouldBe 1
 
@@ -551,7 +556,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val complexPage = Page(Process.StartStanzaId, "/blah", stanzaSeq, Seq.empty)
 
-      val complexUiPage = uiBuilder.fromStanzaPage(complexPage)
+      val complexUiPage = uiBuilder.fromStanzas(complexPage.url, complexPage.stanzas)
 
       complexUiPage.components.size shouldBe 6
 
@@ -618,7 +623,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val bulletPointListPage = Page(Process.StartStanzaId, "/page-1", bulletPointStanzas, Seq.empty)
 
-      val uiPage = uiBuilder.fromStanzaPage(bulletPointListPage)
+      val uiPage = uiBuilder.fromStanzas(bulletPointListPage.url, bulletPointListPage.stanzas)
 
       uiPage.components.length shouldBe 1
 
@@ -652,8 +657,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
-
-      val uiPage = uiBuilder.fromStanzaPage(extraIncomeStanzaPages.head)(extraIncomeUrlMap)
+      val ocelotPage = extraIncomeStanzaPages.head
+      val uiPage = uiBuilder.fromStanzas(ocelotPage.url, ocelotPage.stanzas)(extraIncomeUrlMap)
 
       val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
                                          "Welsh: You've received income that you have not yet paid tax on from:")

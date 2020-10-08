@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, _}
-import models.ocelot.{Phrase, Link => OcelotLink, Page => OcelotPage}
+import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
 
@@ -31,19 +31,6 @@ class UIBuilder {
 def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
          BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
-           stanza match {
-             case i: Instruction => acc :+ fromInstruction(i)
-             case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-             case c: Callout => acc ++ fromCallout(c, formData)
-             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
-             case _ => acc
-           }
-         })
-
-  @deprecated("fromStanzaPage() is deprecated, replace with fromStanzas()", "current")
-  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(pge.url,
-         BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
@@ -92,20 +79,13 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
       case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
-      // Ignore error messages if no errors exist within form data
-      case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
       case Error =>
+        // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
         // as this linking of messages to form ids has not been resolved, Currently
         // this code will allocate all ErrorMsg elements to the only current error
         // which is error.required
-        formData
-          .map { data =>
-            data.errors.map { err =>
-              ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
-            }
-          }
-          .getOrElse(Seq.empty)
+        formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {

@@ -20,8 +20,9 @@ import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockPageRenderer, MockSessionRepository, MockUIBuilder}
 import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
-import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache}
+import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Phrase}
 import models.ui
+import models.PageEvaluationContext
 import uk.gov.hmrc.http.HeaderCarrier
 import repositories.ProcessContext
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -59,6 +60,27 @@ class GuidanceServiceSpec extends BaseSpec {
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
     val labels = LabelCache()
+
+    val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+    val questionStanza = Question(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
+    val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                                        KeyedStanza("1", instructionStanza),
+                                        KeyedStanza("3", questionStanza)
+                                      )
+    val page = Page("start", "/test-page", stanzas, Seq("4","5"))
+
+    val pec = PageEvaluationContext(
+                page,
+                processId,
+                Map(),
+                Some("/hello"),
+                ui.Text(),
+                processId,
+                "hello",
+                LabelCache(),
+                None,
+                None
+              )
 
     lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockPageRenderer, mockUIBuilder)
   }
@@ -276,6 +298,65 @@ class GuidanceServiceSpec extends BaseSpec {
         err shouldBe Left(DatabaseError)
       }
 
+    }
+  }
+
+  "Calling submitPage" should {
+    "Return None if page submission evaluation determines no valid next page" in new Test {
+      MockPageRenderer
+        .renderPagePostSubmit(page, LabelCache(), "yes")
+        .returns(None)
+
+      MockSessionRepository
+        .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
+        .returns(Future.successful(Right({})))
+
+      target.submitPage(pec, "/test-page", "yes").map{
+        case Left(err) => fail
+        case Right(res) if res.isEmpty => succeed
+        case Right(_) => fail
+      }
+    }
+
+    "Return the id of the page to follow" in new Test {
+      MockPageRenderer
+        .renderPagePostSubmit(page, LabelCache(), "yes")
+        .returns(Some(("4", LabelCache())))
+
+      MockSessionRepository
+        .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
+        .returns(Future.successful(Right({})))
+
+      target.submitPage(pec, "/test-page", "yes").map{
+        case Left(err) => fail
+        case Right(Some("4")) => succeed
+        case Right(_) => fail
+      }
+    }
+
+  }
+
+  "Calling saveLabels" should {
+    "Success when labels saved successfully" in new Test {
+      MockSessionRepository
+        .saveLabels(processId, LabelCache())
+        .returns(Future.successful(Right({})))
+
+      target.saveLabels(processId, LabelCache()).map{
+        case Right(x) if x == Unit => succeed
+        case Left(_) => fail()
+      }
+    }
+
+    "An error when labels not saved successfully" in new Test {
+      MockSessionRepository
+        .saveLabels(processId, LabelCache())
+        .returns(Future.successful(Left(DatabaseError)))
+
+      target.saveLabels(processId, LabelCache()).map{
+        case Left(err) if err == DatabaseError => succeed
+        case _ => fail()
+      }
     }
   }
 
