@@ -1,6 +1,9 @@
 # microservice specific routes
 GET   /assets/*file                      controllers.Assets.versioned(path="/public", file: Asset)
 
+->    /govuk-frontend                    govuk.Routes
+->    /hmrc-frontend                     hmrcfrontend.Routes
+
 GET   /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
 
 GET   /accessibility                     controllers.AccessibilityStatementController.getPage
@@ -11,3 +14,4 @@ GET   /:processCode                      controllers.entry.StartGuidanceControll
 
 GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String)
 POST  /:processCode/*path                controllers.GuidanceController.submitPage(processCode: String, path: String)
+
