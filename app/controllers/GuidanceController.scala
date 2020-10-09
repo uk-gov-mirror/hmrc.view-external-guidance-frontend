@@ -105,8 +105,7 @@ class GuidanceController @Inject() (
               case Right((None, labels)) =>
                 // None here indeicates there is no valid next page id because the guidance redirect back to a redisplay of page
                 logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                val formData = FormData(path, form.data, form.errors)
-                val pageContext = service.getPageContext(evalContext.copy(labels = labels), Some(formData))
+                val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
                 pageContext.page match {
                   case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
                   case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
