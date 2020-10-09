@@ -7,8 +7,8 @@ object AppDependencies {
     "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
     "uk.gov.hmrc" %% "play-language" % "4.4.0-play-26",
     "uk.gov.hmrc" %% "bootstrap-play-26" % "1.16.0",
-    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.50.0-play-26",
-    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.17.0-play-26",
+    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.51.0-play-26",
+    "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.20.0-play-26",
     "uk.gov.hmrc" %% "auth-client" % "3.2.0-play-26",
     "uk.gov.hmrc" %% "logback-json-logger" % "4.8.0"
   )
