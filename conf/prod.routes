@@ -1,10 +1,6 @@
 # Add all the application routes to the app.routes file
 ->         /guidance                  app.Routes
 ->         /guidance-review           appAdmin.Routes
-#->         /govuk-frontend            govuk.Routes
-#->         /hmrc-frontend             hmrcfrontend.Routes
 ->         /                          health.Routes
 
 GET        /admin/metrics             com.kenshoo.play.metrics.MetricsController.metrics
-
-#->         /template                  template.Routes
