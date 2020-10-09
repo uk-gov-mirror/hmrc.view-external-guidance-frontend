@@ -327,10 +327,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert Callout type Important to an ErrorMsg" in new Test {
-      page.stanzas.foreach(println)
       val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
       uiPage.components(6) shouldBe models.ui.ErrorMsg("ID", Text(lang0))
     }
+
     "convert Simple instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
