@@ -21,6 +21,8 @@ import play.api.data.Form
 import play.api.data.Forms._
 import models.ui.SubmittedAnswer
 
+trait FormProvider
+
 class SubmittedAnswerFormProvider @Inject() extends FormProvider {
 
   def apply(answer: String): Form[SubmittedAnswer] =

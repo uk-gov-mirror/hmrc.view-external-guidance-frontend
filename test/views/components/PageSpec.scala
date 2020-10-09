@@ -28,7 +28,7 @@ import views.html.question_page
 import models.PageContext
 import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage}
 import org.jsoup.nodes.{Element, Document}
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import scala.collection.JavaConverters._
 import play.api.data.FormError
 import models.ui.ErrorMsg
@@ -75,7 +75,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val question = Question(questionText, None, Seq(para, bulletPointList), answers)
     val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
-    val formProvider = new NextPageFormProvider()
+    val formProvider = new SubmittedAnswerFormProvider()
     val questionPage = QuestionPage("root", question)
     val questionPageWithErrors = QuestionPage("root", questionWithErrors)
 

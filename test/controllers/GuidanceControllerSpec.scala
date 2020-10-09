@@ -26,7 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import models.{PageEvaluationContext, PageContext}
 import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
 import models.ocelot.stanzas.{Question => OcelotQuestion,_}
@@ -101,7 +101,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
-      new NextPageFormProvider(),
+      new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
     )
@@ -169,7 +169,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
-      new NextPageFormProvider(),
+      new SubmittedAnswerFormProvider(),
       guidanceService,
       stubMessagesControllerComponents()
     )
@@ -331,7 +331,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         errorHandler,
         view,
         questionView,
-        new NextPageFormProvider(),
+        new SubmittedAnswerFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
       )
@@ -358,7 +358,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -391,7 +391,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -425,7 +425,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -458,7 +458,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -494,7 +494,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )

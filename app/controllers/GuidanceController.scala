@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{StandardPage, QuestionPage, FormData}
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import views.html.{standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
@@ -39,7 +39,7 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
-    formProvider: NextPageFormProvider,
+    formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -56,13 +56,13 @@ class GuidanceController @Inject() (
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
         // TEMP HACK
-        val textAnswer: Option[String] = pageContext.answer.flatMap(answer => {
-            pageContext.page.components(0) match {
-              case q: models.ui.Question => Some(q.answers(pageContext.answer.getOrElse("0").toInt).dest)
-              case _ => None
-            }
-          }
-        )
+        // val textAnswer: Option[String] = pageContext.answer.flatMap(answer => {
+        //     pageContext.page.components(0) match {
+        //       case q: models.ui.Question => Some(q.answers(pageContext.answer.getOrElse("0").toInt).dest)
+        //       case _ => None
+        //     }
+        //   }
+        // )
 
         pageContext.page match {
           case page: StandardPage =>
@@ -70,14 +70,14 @@ class GuidanceController @Inject() (
             Ok(standardView(page, pageContext))
           case page: QuestionPage =>
             // Original
-            // val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
-            //   formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-            // }
-
-            // TEMP HACK
-            val form = textAnswer.fold(formProvider(questionName(path))) { answer =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
+
+            // TEMP HACK
+            // val form = textAnswer.fold(formProvider(questionName(path))) { answer =>
+            //   formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            // }
             Ok(questionView(page, pageContext, questionName(path), form))
         }
       case Left(NotFoundError) =>
@@ -105,22 +105,22 @@ class GuidanceController @Inject() (
               case _ => Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
           },
-          nextPageUrl => {
+          submittedAnswer => {
             // nextPageUrl will become the value of the question or the input field data
             // Using the page evaluation context submit the page, this will return None if the page needs to be redisplayed
             // val pageContext = service.getPageContext(evalContext)
             // BadRequest(questionView(page, pageContext, questionName(path)))
             // Alternatively a Some(stanzaId) return should redirect to url = evalContext.stanzaIdMap(stanzaId).url
-            val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
+            val redirectLocation  = routes.GuidanceController.getPage(processCode, submittedAnswer.text.drop(appConfig.baseUrl.length + processCode.length + 2))
 
             // TEMP HACK
-            val answerIndex = evalContext.page.stanzas.last match {
-              case q: models.ocelot.stanzas.Question =>
-                val index = q.next.map(nxt => evalContext.stanzaIdToUrlMap(nxt)).indexOf(nextPageUrl.url)
-                if ( index == -1 ) "0" else index
-              case _ => "0"
-            }
-            service.submitPage(evalContext, s"/$path", answerIndex.toString).map{
+            // val answerIndex = evalContext.page.stanzas.last match {
+            //   case q: models.ocelot.stanzas.Question =>
+            //     val index = q.next.map(nxt => evalContext.stanzaIdToUrlMap(nxt)).indexOf(submittedAnswer.text)
+            //     if ( index == -1 ) "0" else index
+            //   case _ => "0"
+            // }
+            service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
               case Left(err) =>
                 logger.error(s"Page submission failed: $err")
                 InternalServerError(errorHandler.internalServerErrorTemplate)

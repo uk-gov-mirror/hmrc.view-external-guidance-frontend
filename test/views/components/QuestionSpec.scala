@@ -26,7 +26,7 @@ import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
 import models.ocelot.LabelCache
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -39,7 +39,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: NextPageFormProvider = injector.instanceOf[NextPageFormProvider]
+    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
     val para1Text = Text("This is a question", "Welsh, This is a question")
