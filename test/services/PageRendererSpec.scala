@@ -198,11 +198,6 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 3"),None))))
 
-      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 1"),None))))
-
-      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 2"),None))))
-
-      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 3"),None))))
     }
 
     "Evaluate the stanzas after user input stanza to determine the id of the next page" in new Test {
@@ -263,6 +258,28 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val labels = LabelCache()
 
       val (next, _) = renderer.renderPagePostSubmit(page, labels, "0")
+
+      next shouldBe None
+
+    }
+
+    "Evaluate the stanzas after user input stanza when question which indicate the supplied answer index is invalid" in new Test {
+
+      val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+      val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("2", instructionStanza),
+                        KeyedStanza("3", questionStanza),
+                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
+                        KeyedStanza("24", Choice(ChoiceStanza(Seq("end","1"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("end", EndStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
+      val labels = LabelCache()
+
+      val (next, _) = renderer.renderPagePostSubmit(page, labels, "12")
 
       next shouldBe None
 

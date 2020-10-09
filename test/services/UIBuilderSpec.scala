@@ -221,7 +221,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val embeddedLinkInstructionStanza2 = Instruction(txtWithLinks2, Seq("end"), None, false)
     val embeddedPageLinkInstructionStanza = Instruction(txtWithPageLinks, Seq("end"), None, false)
     val embeddedAllLinkInstructionStanza = Instruction(txtWithAllLinks, Seq("end"), None, false)
-
+    val importantCalloutStanza = Callout(Important, Phrase(lang0), Seq("3"), false)
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
@@ -254,7 +254,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val questionPage = Page(Process.StartStanzaId, "/blah", stanzasWithQuestion, Seq.empty)
     val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq.empty)
 
-    val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza), KeyedStanza("2", EndStanza))
+    val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza), KeyedStanza("2", importantCalloutStanza), KeyedStanza("3", EndStanza))
     val stanzasWithHyperLink: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", hyperLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedLinks2: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza2), KeyedStanza("7", EndStanza))
@@ -326,6 +326,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components(3) shouldBe models.ui.Paragraph(Text(lang2), true)
     }
 
+    "convert Callout type Important to an ErrorMsg" in new Test {
+      page.stanzas.foreach(println)
+      val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
+      uiPage.components(6) shouldBe models.ui.ErrorMsg("ID", Text(lang0))
+    }
     "convert Simple instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.fromStanzas(page.url, page.stanzas)
