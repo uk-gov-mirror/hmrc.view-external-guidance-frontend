@@ -94,7 +94,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       nxt.fold(fail){ next =>
         next shouldBe answerDestinations(id.toInt)
-        newLabels.updatedLabels shouldBe lbls
+        newLabels.updatedLabels shouldBe lbls.updatedLabels
       }
     }
 

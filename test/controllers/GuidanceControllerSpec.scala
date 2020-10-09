@@ -109,7 +109,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     val pec = PageEvaluationContext(
                 page,
                 processId,
-                Map(),
+                Map("4" -> "/somewhere-else"),
                 Some("/hello"),
                 Text(),
                 processId,
