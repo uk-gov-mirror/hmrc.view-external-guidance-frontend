@@ -55,15 +55,6 @@ class GuidanceController @Inject() (
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
-        // TEMP HACK
-        // val textAnswer: Option[String] = pageContext.answer.flatMap(answer => {
-        //     pageContext.page.components(0) match {
-        //       case q: models.ui.Question => Some(q.answers(pageContext.answer.getOrElse("0").toInt).dest)
-        //       case _ => None
-        //     }
-        //   }
-        // )
-
         pageContext.page match {
           case page: StandardPage =>
             service.saveLabels(pageContext.sessionId, pageContext.labels)
@@ -74,10 +65,6 @@ class GuidanceController @Inject() (
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
 
-            // TEMP HACK
-            // val form = textAnswer.fold(formProvider(questionName(path))) { answer =>
-            //   formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-            // }
             Ok(questionView(page, pageContext, questionName(path), form))
         }
       case Left(NotFoundError) =>
@@ -113,13 +100,6 @@ class GuidanceController @Inject() (
             // Alternatively a Some(stanzaId) return should redirect to url = evalContext.stanzaIdMap(stanzaId).url
             val redirectLocation  = routes.GuidanceController.getPage(processCode, submittedAnswer.text.drop(appConfig.baseUrl.length + processCode.length + 2))
 
-            // TEMP HACK
-            // val answerIndex = evalContext.page.stanzas.last match {
-            //   case q: models.ocelot.stanzas.Question =>
-            //     val index = q.next.map(nxt => evalContext.stanzaIdToUrlMap(nxt)).indexOf(submittedAnswer.text)
-            //     if ( index == -1 ) "0" else index
-            //   case _ => "0"
-            // }
             service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
               case Left(err) =>
                 logger.error(s"Page submission failed: $err")
@@ -130,8 +110,11 @@ class GuidanceController @Inject() (
                 Redirect(redirectLocation)
               case Right(Some(stanzaId)) =>
                 // Some(stanzaId) here idicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
-                logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId")
-                Redirect(redirectLocation)
+                val url = evalContext.stanzaIdToUrlMap(stanzaId)
+                logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
+                val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
+                logger.info(s"Redirecting => $redirect")
+                Redirect(redirect)
             }
           }
         )
