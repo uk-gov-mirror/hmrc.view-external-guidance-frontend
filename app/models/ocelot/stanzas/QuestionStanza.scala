@@ -56,11 +56,8 @@ case class Question(text: Phrase,
   override val labels = label.fold[List[Label]](Nil)(l => List(Label(l, None, None)))
 
   def eval(value: String, labels: Labels): Option[(String, Labels)] =
-    if (!value.forall(_.isDigit)) None
-    else
-      answers.lift(value.toInt).fold[Option[(String, Labels)]](None){ answer =>
-        Some((next(value.toInt), label.fold(labels)(labels.update(_, answer.langs(0)))))
-      }
+    if (value.forall(_.isDigit)) answers.lift(value.toInt).map(answer => (next(value.toInt), label.fold(labels)(labels.update(_, answer.langs(0)))))
+    else None
 }
 
 object Question {

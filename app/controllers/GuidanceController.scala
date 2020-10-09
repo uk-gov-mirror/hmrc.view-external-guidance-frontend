@@ -56,7 +56,7 @@ class GuidanceController @Inject() (
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
         // TEMP HACK
-        val textAnswer: Option[String] = pageContext.answer.fold[Option[String]](None)(answer => {
+        val textAnswer: Option[String] = pageContext.answer.flatMap(answer => {
             pageContext.page.components(0) match {
               case q: models.ui.Question => Some(q.answers(pageContext.answer.getOrElse("0").toInt).dest)
               case _ => None

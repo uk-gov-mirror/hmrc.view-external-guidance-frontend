@@ -64,7 +64,7 @@ class PageRenderer @Inject() () {
 
     val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
     optionalInput.fold[Option[(String, Labels)]](Some((nextPageId, newLabels))){dataInputStanza =>
-      dataInputStanza.eval(answer, newLabels).fold[Option[(String, Labels)]](None){case (next, postInputLabels) =>
+      dataInputStanza.eval(answer, newLabels).flatMap{case (next, postInputLabels) =>
         evaluatePostInputStanzas(next, postInputLabels, seen)
       }
     }
