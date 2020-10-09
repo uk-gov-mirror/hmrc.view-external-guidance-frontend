@@ -16,8 +16,6 @@
 
 package models.ui
 
-import models.ocelot.{Labels, LabelCache}
-
 sealed trait Page {
   val heading: Text
   val urlPath: String
@@ -48,12 +46,3 @@ case class QuestionPage(val urlPath: String, question: Question) extends Page {
   val heading: Text = question.text
   val components: Seq[UIComponent] = Seq(question)
 }
-
-case class PageContext(page: Page,
-                       processStartUrl: Option[String],
-                       processTitle: Text,
-                       processId: String,
-                       processCode: String,
-                       labels: Labels = LabelCache(),
-                       backLink: Option[String] = None,
-                       answer: Option[String] = None)

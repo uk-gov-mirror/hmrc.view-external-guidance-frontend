@@ -16,25 +16,27 @@
 
 package mocks
 
+import models.ocelot.stanzas.{DataInput, Stanza}
+import models.ocelot.{Page, Labels}
+import services.PageRenderer
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 
-import models.ocelot.stanzas.Stanza
-import models.ui.FormData
-import services.UIBuilder
+trait MockPageRenderer extends MockFactory {
 
-trait MockUIBuilder extends MockFactory {
+  val mockPageRenderer: PageRenderer = mock[PageRenderer]
 
-  val mockUIBuilder: UIBuilder = mock[UIBuilder]
+  object MockPageRenderer {
 
-  object MockUIBuilder {
+    def renderPage(page: Page, labels: Labels): CallHandler[(Seq[Stanza], Labels, Option[DataInput])] =
+      (mockPageRenderer
+        .renderPage(_: Page, _: Labels))
+        .expects(page, *)
 
-    def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData]): CallHandler[models.ui.Page] = {
-
-      (mockUIBuilder
-        .fromStanzas(_: String, _: Seq[Stanza], _: Option[FormData])(_: Map[String, String]))
-        .expects(url, stanzas, *, *)
-    }
+    def renderPagePostSubmit(page: Page, labels: Labels, answer: String): CallHandler[Option[(String, Labels)]] =
+      (mockPageRenderer
+        .renderPagePostSubmit(_: Page, _: Labels, _: String))
+        .expects(page, *, answer)
 
   }
 

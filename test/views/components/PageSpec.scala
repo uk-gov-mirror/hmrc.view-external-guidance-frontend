@@ -25,7 +25,8 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
-import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage, PageContext}
+import models.PageContext
+import models.ui.{BulletPointList, H1, Page, Paragraph, StandardPage, Text, Question, Answer, QuestionPage}
 import org.jsoup.nodes.{Element, Document}
 import forms.NextPageFormProvider
 import scala.collection.JavaConverters._
@@ -92,8 +93,8 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageContext = PageContext(simplePage, Some("/"), Text("Title", "Title"), "processId", "processCode")
-    val questionPageContext = PageContext(questionPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
+    val pageContext = PageContext(simplePage, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
+    val questionPageContext = PageContext(questionPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
   }
 
   trait WelshTest extends Test {
