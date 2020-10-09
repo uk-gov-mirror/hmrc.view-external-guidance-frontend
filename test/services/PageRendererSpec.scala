@@ -183,7 +183,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
     "Evaluate the user input stanza to determine the id of the next page" in new Test {
 
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
-      val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
+      val questionStanza = Question(questionPhrase, answers, answerDestinations, Some("TaxRefund"), false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                         KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
@@ -192,51 +192,17 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
-      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 1"),None))))
 
-      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 2"),None))))
 
-      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 3"),None))))
 
-      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 1"),None))))
 
-      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 2"),None))))
 
-      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None))))
-
-
-      // val (nxt, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
-
-      // nxt.fold(fail){ next =>
-      //   next shouldBe answerDestinations(0)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
-      // renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
-      //   next shouldBe answerDestinations(1)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
-      // renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
-      //   next shouldBe answerDestinations(2)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
-      // renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
-      //   next shouldBe answerDestinations(0)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
-      // renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
-      //   next shouldBe answerDestinations(1)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
-      // renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
-      //   next shouldBe answerDestinations(2)
-      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      // }
-
+      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Welsh, Some Text 3"),None))))
     }
 
     "Evaluate the stanzas after user input stanza to determine the id of the next page" in new Test {
