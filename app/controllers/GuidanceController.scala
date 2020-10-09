@@ -50,30 +50,34 @@ class GuidanceController @Inject() (
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
-    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).map {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
         pageContext.page match {
           case page: StandardPage =>
-            service.saveLabels(pageContext.sessionId, pageContext.labels)
-            Ok(standardView(page, pageContext))
+            service.saveLabels(pageContext.sessionId, pageContext.labels).map{
+              case Right(_) => Ok(standardView(page, pageContext))
+              case Left(err) =>
+                logger.error(s"Failed to save labels after evaluation of a standard page")
+                InternalServerError(errorHandler.internalServerErrorTemplate)
+            }
           case page: QuestionPage =>
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(questionView(page, pageContext, questionName(path), form))
+            Future.successful(Ok(questionView(page, pageContext, questionName(path), form)))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
-        NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
+        Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
       case Left(BadRequestError) =>
         logger.warn(s"Request for PageContext at /$path returned BadRequest")
-        BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+        Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
-        InternalServerError(errorHandler.internalServerErrorTemplate)
+        Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
     }
   }
 
