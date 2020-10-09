@@ -100,19 +100,18 @@ class GuidanceService @Inject() (
     }
 
   def submitPage(evalContext: PageEvaluationContext, url: String, answer: String)
-                (implicit context: ExecutionContext): Future[RequestOutcome[Option[String]]] =
-    pageRenderer
-      .renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
-      .fold[Future[RequestOutcome[Option[String]]]](Future.successful(Right(None))){
-        case (next, updateLabels) =>
-          logger.info(s"Next page found at stanzaId: $next")
-          sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, answer, updateLabels).map{
-            case Left(err) =>
-              logger.error(s"Failed to save updated labels, error = $err")
-              Left(InternalServerError)
-            case Right(_) => Right(Some(next))
-          }
+                (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
+    val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
+    optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
+      logger.info(s"Next page found at stanzaId: $next")
+      sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, answer, labels).map{
+        case Left(err) =>
+          logger.error(s"Failed to save updated labels, error = $err")
+          Left(InternalServerError)
+        case Right(_) => Right((Some(next), labels))
       }
+    }
+  }
 
   def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     sessionRepository.saveLabels(docId, labels)

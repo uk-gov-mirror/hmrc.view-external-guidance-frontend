@@ -81,7 +81,7 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, url, sessionId, *)
     }
 
-    def submitPage(evalContext: PageEvaluationContext, url: String, answer: String): CallHandler[Future[RequestOutcome[Option[String]]]] = {
+    def submitPage(evalContext: PageEvaluationContext, url: String, answer: String): CallHandler[Future[RequestOutcome[(Option[String], Labels)]]] = {
       (mockGuidanceService
         .submitPage(_: PageEvaluationContext, _: String, _: String)(_: ExecutionContext))
         .expects(evalContext, url, answer, *)

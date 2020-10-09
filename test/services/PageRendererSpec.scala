@@ -88,6 +88,16 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
 
     val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+
+    def testRender(pge: Page, id: String, lbls: Labels): Unit = {
+      val (nxt, newLabels) = renderer.renderPagePostSubmit(pge, LabelCache(), id)
+
+      nxt.fold(fail){ next =>
+        next shouldBe answerDestinations(id.toInt)
+        newLabels.updatedLabels shouldBe lbls
+      }
+    }
+
   }
 
   "PageRenderer" must {
@@ -181,37 +191,51 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                         KeyedStanza("3", questionStanza)
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
-      val labels = LabelCache()
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(0)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None))))
 
-      renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(1)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None))))
 
-      renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(2)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None))))
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(0)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None))))
 
-      renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(1)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None))))
 
-      renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
-        next shouldBe answerDestinations(2)
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
-      }
+      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None))))
+
+
+      // val (nxt, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
+
+      // nxt.fold(fail){ next =>
+      //   next shouldBe answerDestinations(0)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
+
+      // renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
+      //   next shouldBe answerDestinations(1)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
+
+      // renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
+      //   next shouldBe answerDestinations(2)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
+
+      // renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
+      //   next shouldBe answerDestinations(0)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
+
+      // renderer.renderPagePostSubmit(page, labels, "1").fold(fail){ case (next, newLabels) =>
+      //   next shouldBe answerDestinations(1)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
+
+      // renderer.renderPagePostSubmit(page, labels, "2").fold(fail){ case (next, newLabels) =>
+      //   next shouldBe answerDestinations(2)
+      //   newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("9"),None))
+      // }
 
     }
 
@@ -230,10 +254,9 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
       val labels = LabelCache()
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
-        next shouldBe "25"
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
-      }
+      val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
+      next shouldBe Some("25")
+      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
     }
 
     "Evaluate the stanzas after user input stanza when question answer is end" in new Test {
@@ -252,10 +275,9 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
       val labels = LabelCache()
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(fail){ case (next, newLabels) =>
-        next shouldBe "end"
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
-      }
+      val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
+      next shouldBe Some("end")
+      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
     }
 
     "Evaluate the stanzas after user input stanza when question which indicate a return to the same page (guidance deteceted error)" in new Test {
@@ -274,7 +296,9 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
       val labels = LabelCache()
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(succeed)(_ => fail)
+      val (next, _) = renderer.renderPagePostSubmit(page, labels, "0")
+
+      next shouldBe None
 
     }
 
@@ -292,10 +316,10 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
       val labels = LabelCache()
 
-      renderer.renderPagePostSubmit(page, labels, "0").fold(fail){case (next, newLabels) =>
-        next shouldBe "34"
-        newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("56"),None))
-      }
+      val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
+      next shouldBe Some("34")
+      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("56"),None))
+
     }
 
   }

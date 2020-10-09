@@ -203,7 +203,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .submitPage(pec, path, "/guidance/hello")
-        .returns(Future.successful(Right(Some("4"))))
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
@@ -225,7 +225,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .submitPage(pec, path, "/guidance/hello")
-        .returns(Future.successful(Right(Some("4"))))
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)

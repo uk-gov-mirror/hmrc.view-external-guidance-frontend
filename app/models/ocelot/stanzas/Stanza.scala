@@ -38,7 +38,7 @@ trait Evaluate {
 }
 
 trait DataInput {
-  def eval(value: String, labels: Labels): Option[(String, Labels)]
+  def eval(value: String, labels: Labels): (Option[String], Labels)
 }
 
 case object EndStanza extends Stanza

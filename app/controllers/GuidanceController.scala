@@ -83,7 +83,8 @@ class GuidanceController @Inject() (
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", _)).flatMap {
       case Right(evalContext) =>
-        formProvider(questionName(path)).bindFromRequest.fold(
+        val form = formProvider(questionName(path))
+        form.bindFromRequest.fold(
           formWithErrors => {
             val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
             val pageContext = service.getPageContext(evalContext, Some(formData))
@@ -93,22 +94,21 @@ class GuidanceController @Inject() (
             }
           },
           submittedAnswer => {
-            // nextPageUrl will become the value of the question or the input field data
-            // Using the page evaluation context submit the page, this will return None if the page needs to be redisplayed
-            // val pageContext = service.getPageContext(evalContext)
-            // BadRequest(questionView(page, pageContext, questionName(path)))
-            // Alternatively a Some(stanzaId) return should redirect to url = evalContext.stanzaIdMap(stanzaId).url
-            val redirectLocation  = routes.GuidanceController.getPage(processCode, submittedAnswer.text.drop(appConfig.baseUrl.length + processCode.length + 2))
-
             service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
               case Left(err) =>
                 logger.error(s"Page submission failed: $err")
                 InternalServerError(errorHandler.internalServerErrorTemplate)
-              case Right(None) =>
+              case Right((None, labels)) =>
                 // None here indeicates there is no valid next page id because the guidance redirect back to a redisplay of page
                 logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                Redirect(redirectLocation)
-              case Right(Some(stanzaId)) =>
+                val formData = FormData(path, form.data, form.errors)
+                val pageContext = service.getPageContext(evalContext.copy(labels = labels), Some(formData))
+                pageContext.page match {
+                  case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
+                  case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+                }
+
+              case Right((Some(stanzaId), _)) =>
                 // Some(stanzaId) here idicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
                 val url = evalContext.stanzaIdToUrlMap(stanzaId)
                 logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")

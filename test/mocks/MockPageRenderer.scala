@@ -33,7 +33,7 @@ trait MockPageRenderer extends MockFactory {
         .renderPage(_: Page, _: Labels))
         .expects(page, *)
 
-    def renderPagePostSubmit(page: Page, labels: Labels, answer: String): CallHandler[Option[(String, Labels)]] =
+    def renderPagePostSubmit(page: Page, labels: Labels, answer: String): CallHandler[(Option[String], Labels)] =
       (mockPageRenderer
         .renderPagePostSubmit(_: Page, _: Labels, _: String))
         .expects(page, *, answer)

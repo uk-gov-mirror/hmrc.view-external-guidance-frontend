@@ -65,7 +65,7 @@ case class Input(ipt_type: InputType,
                  placeholder: Option[Phrase],
                  stack: Boolean) extends VisualStanza with Populated with DataInput {
   override val labelRefs: List[String] = labelReferences(name.langs(0)) ++ labelReferences(help.langs(0))
-  def eval(value: String, labels: Labels): Option[(String, Labels)] = Some((next(0), labels.update(label, value)))
+  def eval(value: String, labels: Labels): (Option[String], Labels) = (Some(next(0)), labels.update(label, value))
 }
 
 object Input {
