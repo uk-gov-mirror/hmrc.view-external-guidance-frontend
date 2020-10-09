@@ -35,8 +35,8 @@
             id="@name-@index"
             name="@name"
             type="radio"
-            value="@ans.dest"
-            @if(form(name).value.contains(ans.dest)) {checked}
+            value="@index"
+            @if(form(name).value.contains(index.toString)) {checked}
             @optionalAria(ans, index, q.errorMsgs)>
 
       <label class="govuk-label govuk-radios__label" for="@name-@index">
