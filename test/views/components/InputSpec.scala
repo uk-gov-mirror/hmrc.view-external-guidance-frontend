@@ -16,8 +16,8 @@
 
 package views.components
 
-import forms.NextPageFormProvider
-import models.ocelot.Phrase
+import forms.SubmittedAnswerFormProvider
+import models.ocelot.{Label, Labels, LabelCache, Phrase}
 import models.ui.{BulletPointList, ErrorMsg, H2, H3, H4, Input, Paragraph, Text}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
@@ -41,7 +41,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: NextPageFormProvider = injector.instanceOf[NextPageFormProvider]
+    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
     private val para1Text = Text("This is a question", "Welsh, This is a question")
@@ -69,7 +69,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val inputWithHintAndNoBody: Input = Input(Text(i1), Some(Text(i1Hint)), Seq.empty)
     private val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val inputWithHintAndErrors: Input = Input(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: Labels = LabelCache()
 
   }
 

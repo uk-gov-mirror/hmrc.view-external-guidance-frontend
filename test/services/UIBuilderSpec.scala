@@ -378,7 +378,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     // }
 
     "convert Callout type SubSection to H4" in new Test {
-      val uiPage = uiBuilder.fromStanzaPage(pageWithEmbeddH4)
+      val uiPage = uiBuilder.fromStanzas(pageWithEmbeddH4.url, pageWithEmbeddH4.stanzas)
       uiPage.components(five) shouldBe models.ui.H4(Text(lang5))
     }
 
@@ -732,7 +732,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBuilder Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.fromStanzaPage(page, None)(urlMap) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas)(urlMap) match {
         case s: InputPage if s.input.errorMsgs.isEmpty => succeed
         case _: InputPage => fail("No error messages should be included on page")
         case x => fail(s"Should return InputPage: found $x")
@@ -743,7 +743,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val formError = new FormError("test-page", List("error.required"))
       val formData = Some(FormData("test-page", Map(), List(formError)))
 
-      uiBuilder.fromStanzaPage(page, formData)(urlMap) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas, formData)(urlMap) match {
         case s: InputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: InputPage => succeed
         case x => fail(s"Should return InputPage: found $x")
@@ -751,7 +751,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Maintain order of components within an Input" in new InputTest {
-      uiBuilder.fromStanzaPage(page, None) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas) match {
         case i: InputPage =>
           i.input.body(0) match {
             case _: H3 => succeed
@@ -768,7 +768,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.fromStanzaPage(page)(urlMap) match {
+      uiBuilder.fromStanzas(page.url, page.stanzas)(urlMap) match {
         case i: InputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
         case _: InputPage => fail("No hint found within Input")
         case x => fail(s"Should return InputPage: found $x")

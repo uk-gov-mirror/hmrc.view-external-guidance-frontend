@@ -26,7 +26,7 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
 import models.PageContext
-import models.ui.{BulletPointList, H1, Page, ErrorMsg, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
+import models.ui.{BulletPointList, H1, Page, ErrorMsg, Input, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
 import org.jsoup.nodes.{Element, Document}
 import forms.SubmittedAnswerFormProvider
 import scala.collection.JavaConverters._
