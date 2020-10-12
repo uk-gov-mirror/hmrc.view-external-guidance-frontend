@@ -48,9 +48,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent])(
-      implicit stanzaIdToUrlMap: Map[String, String]
-  ): UIComponent = {
+  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
 
     @tailrec
     def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
@@ -60,11 +58,11 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
         case x :: xs => partitionComponents(xs, errors, x +: others)
       }
 
-    val answers = (q.answers zip q.next).map { t =>
-      val (phrase, stanzaId) = t
-      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
-      Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
+    val answers = q.answers.map { ans =>
+      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
+      Answer(answer, hint)
     }
+    
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)

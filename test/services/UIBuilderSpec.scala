@@ -185,7 +185,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         "34" -> "dummy-path/next"
       )
     val answerDestinations = Seq("4", "5", "6")
-    val answerDestinationUrls = Seq("dummy-path/question", "dummy-path/blah", "dummy-path/anotherquestion")
 
     val txtWithLinks = Phrase(
       Vector(
@@ -398,11 +397,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length shouldBe 2
 
-          q.answers.head shouldBe models.ui.Answer(Text(ans1), None, answerDestinationUrls.head)
+          q.answers.head shouldBe models.ui.Answer(Text(ans1), None)
 
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2), None, answerDestinationUrls(1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2), None)
 
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3), None, answerDestinationUrls(2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3), None)
 
         case _ => fail("Found non question UIComponent")
       }
@@ -419,11 +418,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
           q.body.length shouldBe 2
 
-          q.answers.head shouldBe models.ui.Answer(Text(ans1), Some(hint1), answerDestinationUrls.head)
+          q.answers.head shouldBe models.ui.Answer(Text(ans1), Some(hint1))
 
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2), Some(hint2), answerDestinationUrls(1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2), Some(hint2))
 
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3), Some(hint3), answerDestinationUrls(2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3), Some(hint3))
 
         case _ => fail("Found non question UIComponent")
       }
