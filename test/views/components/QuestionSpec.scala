@@ -54,12 +54,9 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
     val ans3Hint = Vector("You dont know", "Welsh, You dont know")
     val ansIndexZero = "0"
-    val answerUrl1 = "/yes"
-    val answerUrl2 = "/no"
-    val answerUrl3 = "/dontknow"
-    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), answerUrl1)
-    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), answerUrl2)
-    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), answerUrl3)
+    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)))
+    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)))
+    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)))
     val leading = Text("You can buy", "Gwallwch brynu")
     val bp1 = Text("apples", "afalau")
     val bp2 = Text("oranges", "orennau")
