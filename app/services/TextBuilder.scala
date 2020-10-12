@@ -74,7 +74,7 @@ object TextBuilder {
     val enHint = enMatches.headOption.map(enM => enM.group(1))
     val cyHint = cyMatches.headOption.map(cyM => cyM.group(1))
     val hint = enHint.map(en => Text(en, cyHint.getOrElse("")))
-    (Text(enTexts.head, cyTexts.head), hint)
+    (Text(enTexts.head.trim, cyTexts.head.trim), hint)
   }
 
   @tailrec

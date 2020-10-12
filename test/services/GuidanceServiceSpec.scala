@@ -305,7 +305,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "Return None if page submission evaluation determines no valid next page" in new Test {
       MockPageRenderer
         .renderPagePostSubmit(page, LabelCache(), "yes")
-        .returns(None)
+        .returns((None, LabelCache()))
 
       MockSessionRepository
         .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
@@ -313,7 +313,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       target.submitPage(pec, "/test-page", "yes").map{
         case Left(err) => fail
-        case Right(res) if res.isEmpty => succeed
+        case Right((nxt, lbls)) if nxt.isEmpty => succeed
         case Right(_) => fail
       }
     }
@@ -321,7 +321,7 @@ class GuidanceServiceSpec extends BaseSpec {
     "Return the id of the page to follow" in new Test {
       MockPageRenderer
         .renderPagePostSubmit(page, LabelCache(), "yes")
-        .returns(Some(("4", LabelCache())))
+        .returns((Some("4"), LabelCache()))
 
       MockSessionRepository
         .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
@@ -329,7 +329,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       target.submitPage(pec, "/test-page", "yes").map{
         case Left(err) => fail
-        case Right(Some("4")) => succeed
+        case Right((Some("4"), _)) => succeed
         case Right(_) => fail
       }
     }

@@ -26,7 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import models.{PageEvaluationContext, PageContext}
 import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
 import models.ocelot.stanzas.{Question => OcelotQuestion,_}
@@ -46,6 +46,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
   trait TestData {
     val answerUrl1 = "/hello"
     val answerUrl2 = "/world"
+    val ansIndexZero = "0"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val sessionId = "session-2882605c-8e96-494a-a497-98ae90f52539"
     lazy val path = "/some-path"
@@ -101,20 +102,22 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
-      new NextPageFormProvider(),
+      new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
     )
 
+    val initialLabels = LabelCache()
+
     val pec = PageEvaluationContext(
                 page,
                 sessionId,
-                Map(),
+                Map("4" -> "/somewhere-else"),
                 Some("/hello"),
                 Text(),
                 processId,
                 "hello",
-                LabelCache(),
+                initialLabels,
                 None,
                 None
               )
@@ -145,7 +148,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     "Show the original answer selected" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(answerUrl1)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(ansIndexZero)))))
 
       val result = target.getPage(processId, relativePath)(fakeRequest)
 
@@ -169,7 +172,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
-      new NextPageFormProvider(),
+      new SubmittedAnswerFormProvider(),
       guidanceService,
       stubMessagesControllerComponents()
     )
@@ -203,7 +206,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .submitPage(pec, path, "/guidance/hello")
-        .returns(Future.successful(Right(Some("4"))))
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
@@ -213,8 +216,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       status(result) shouldBe Status.SEE_OTHER
     }
 
-    "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
-
+    "return a InternalServerError when saving of answer and labels fails" in new QuestionTest {
       MockGuidanceService
         .getPageEvaluationContext(processId, path, processId)
         .returns(Future.successful(Right(pec)))
@@ -225,7 +227,50 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       MockGuidanceService
         .submitPage(pec, path, "/guidance/hello")
-        .returns(Future.successful(Right(Some("4"))))
+        .returns(Future.successful(Left(DatabaseError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a BAD_REQUEST when submitting page and guidance determines invalid data" in new QuestionTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, None)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "/guidance/hello")
+        .returns(Future.successful(Right((None, initialLabels))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return a SeeOther response whether the saving of the question succeeds or not" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .submitPage(pec, path, "/guidance/hello")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List())))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
@@ -331,7 +376,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         errorHandler,
         view,
         questionView,
-        new NextPageFormProvider(),
+        new SubmittedAnswerFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
       )
@@ -358,7 +403,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -391,7 +436,44 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
+          mockGuidanceService,
+          stubMessagesControllerComponents()
+        )
+      lazy val result = target.getPage(processId, relativePath)(fakeRequest)
+    }
+
+    "return an INTERNAL_SERVER_ERROR response" in new Test {
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "be a HTML response" in new Test {
+      contentType(result) shouldBe Some("text/html")
+    }
+
+  }
+
+  "Calling a valid URL path for a page and encountering a database error when saving labels" should {
+
+    trait Test extends MockGuidanceService with TestData {
+      lazy val fakeRequest = FakeRequest(GET, path).withSession(SessionKeys.sessionId -> processId).withCSRFToken
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId)
+        .returns(Future.successful(Right(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))))
+
+      MockGuidanceService
+        .saveLabels(sessionId, LabelCache())
+        .returns(Future.successful(Left(DatabaseError)))
+
+      lazy val target =
+        new GuidanceController(
+          MockAppConfig,
+          fakeSessionIdAction,
+          errorHandler,
+          view,
+          questionView,
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -425,7 +507,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -458,7 +540,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -494,7 +576,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
-          new NextPageFormProvider(),
+          new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
         )

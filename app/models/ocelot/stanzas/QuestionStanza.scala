@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{labelReferences, Phrase, Label, Labels}
+import models.ocelot.{labelReferences, Phrase, Label, Labels, hintRegex}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -55,11 +55,15 @@ case class Question(text: Phrase,
   override val labelRefs: List[String] = labelReferences(text.langs(0)) ++ answers.flatMap(a => labelReferences(a.langs(0)))
   override val labels = label.fold[List[Label]](Nil)(l => List(Label(l, None, None)))
 
-  def eval(value: String, labels: Labels): (String, Labels) = {
-    val updatedLabels = label.fold(labels)(labels.update(_, value))
-    answers.zipWithIndex.find{case (x ,y) => x.langs(0) == value || x.langs(1) == value}
-                        .fold((next(0), updatedLabels)){case (ans, index) => (next(index), updatedLabels)}
-  }
+  def eval(value: String, labels: Labels): (Option[String], Labels) =
+    if (value.forall(_.isDigit))
+      answers.lift(value.toInt)
+             .fold[(Option[String], Labels)]((None, labels)){answer => {
+                  val answerText = hintRegex.split(answer.langs(0)).head.trim
+                  (Some(next(value.toInt)), label.fold(labels)(labels.update(_, answerText)))
+                }
+             }
+    else (None, labels)
 }
 
 object Question {

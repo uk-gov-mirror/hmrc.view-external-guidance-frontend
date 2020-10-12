@@ -26,7 +26,7 @@ import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
 import models.ocelot.LabelCache
-import forms.NextPageFormProvider
+import forms.SubmittedAnswerFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -39,7 +39,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: NextPageFormProvider = injector.instanceOf[NextPageFormProvider]
+    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
     val para1Text = Text("This is a question", "Welsh, This is a question")
@@ -53,6 +53,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ans1Hint = Vector("You agree with the assertion", "Welsh, You agree with the assertion")
     val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
     val ans3Hint = Vector("You dont know", "Welsh, You dont know")
+    val ansIndexZero = "0"
     val answerUrl1 = "/yes"
     val answerUrl2 = "/no"
     val answerUrl3 = "/dontknow"
@@ -112,7 +113,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
@@ -259,7 +260,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length

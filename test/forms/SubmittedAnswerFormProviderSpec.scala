@@ -16,19 +16,27 @@
 
 package forms
 
-import javax.inject.Inject
+import models.ui.SubmittedAnswer
 import play.api.data.Form
-import play.api.data.Forms._
-import models.ui.NextPageUrl
 
-trait FormProvider
+import base.BaseSpec
 
-class NextPageFormProvider @Inject() extends FormProvider {
+class SubmittedAnswerFormProviderSpec extends BaseSpec {
 
-  def apply(id: String): Form[NextPageUrl] =
-    Form(
-      mapping(
-        id -> nonEmptyText
-      )(NextPageUrl.apply)(NextPageUrl.unapply)
-    )
+  private val answer: String = "0"
+
+  val provider: SubmittedAnswerFormProvider = new SubmittedAnswerFormProvider()
+
+  "Forms created by SubmittedAnswerFormProvider" should {
+
+    "be able to be able to execute the unapply method held in mapping" in {
+
+      val form: Form[SubmittedAnswer] = provider(answer)
+      val map: Map[String,String] = form.mapping.unbind(SubmittedAnswer(""))
+      val keySet = map.keySet
+
+      keySet shouldBe Set(answer)
+    }
+  }
+
 }
