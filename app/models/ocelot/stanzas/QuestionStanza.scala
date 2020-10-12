@@ -59,7 +59,7 @@ case class Question(text: Phrase,
     if (value.forall(_.isDigit))
       answers.lift(value.toInt)
              .fold[(Option[String], Labels)]((None, labels)){answer => {
-                  val answerText = hintRegex.split(answer.langs(0)).head
+                  val answerText = hintRegex.split(answer.langs(0)).head.trim
                   (Some(next(value.toInt)), label.fold(labels)(labels.update(_, answerText)))
                 }
              }
