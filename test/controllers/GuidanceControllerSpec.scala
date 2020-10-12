@@ -44,8 +44,6 @@ import services._
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   trait TestData {
-    val answerUrl1 = "/hello"
-    val answerUrl2 = "/world"
     val ansIndexZero = "0"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val sessionId = "session-2882605c-8e96-494a-a497-98ae90f52539"
@@ -55,8 +53,8 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val processId = "ext90002"
     lazy val processCode = "testExample"
 
-    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")), answerUrl1)
-    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")), answerUrl2)
+    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")))
+    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")))
 
     lazy val expectedPage: Page = QuestionPage(
       path,
