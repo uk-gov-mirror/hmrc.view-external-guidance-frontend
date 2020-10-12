@@ -18,4 +18,4 @@ package models.ui
 
 import play.api.data.FormError
 
-case class FormData(url: String, data: Map[String, String], errors: Seq[FormError])
+case class FormData(id: String, data: Map[String, String], errors: Seq[FormError])

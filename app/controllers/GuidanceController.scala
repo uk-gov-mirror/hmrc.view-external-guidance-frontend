@@ -23,11 +23,12 @@ import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.ui.{FormData, InputPage, PageContext, QuestionPage, StandardPage}
-import forms.NextPageFormProvider
-import views.html.{input_page, question_page, standard_page}
+import models.{PageContext, PageEvaluationContext}
+import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
+import forms.SubmittedAnswerFormProvider
+import views.html.{input_page, standard_page, question_page}
 import play.api.Logger
-
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 
@@ -41,7 +42,7 @@ class GuidanceController @Inject() (
     standardView: standard_page,
     questionView: question_page,
     inputView: input_page,
-    formProvider: NextPageFormProvider,
+    formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -52,94 +53,95 @@ class GuidanceController @Inject() (
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
-    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).map {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
 
         pageContext.page match {
-          case page: StandardPage => Ok(standardView(page, pageContext))
+          case page: StandardPage =>
+            service.saveLabels(pageContext.sessionId, pageContext.labels).map{
+              case Right(_) => Ok(standardView(page, pageContext))
+              case Left(err) =>
+                logger.error(s"Failed to save labels after evaluation of a standard page")
+                InternalServerError(errorHandler.internalServerErrorTemplate)
+            }
+
           case page: QuestionPage =>
+            // Original
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(questionView(page, pageContext, questionName(path), form))
+            Future.successful(Ok(questionView(page, pageContext, questionName(path), form)))
+
           case page: InputPage =>
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-            Ok(inputView(page, pageContext, questionName(path), form))
+            Future.successful(Ok(inputView(page, pageContext, questionName(path), form)))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
-        NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
+        Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
       case Left(BadRequestError) =>
         logger.warn(s"Request for PageContext at /$path returned BadRequest")
-        BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+        Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
-        InternalServerError(errorHandler.internalServerErrorTemplate)
+        Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
     }
   }
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    formProvider(questionName(path)).bindFromRequest.fold(
-      formWithErrors => {
-        val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-        withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _, Some(formData))).map {
-          case Right(pageContext) =>
+    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", _)).flatMap {
+      case Right(evalContext) =>
+        val form = formProvider(questionName(path))
+        form.bindFromRequest.fold(
+          formWithErrors => {
+            val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
+            val pageContext = service.getPageContext(evalContext, Some(formData))
             pageContext.page match {
-              case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), formWithErrors))
-              case page: InputPage => BadRequest(inputView(page, pageContext, questionName(path), formWithErrors))
-              case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
-            }
-          case Left(NotFoundError) =>
-            logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
-            NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode)))
-          case Left(BadRequestError) =>
-            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
-            BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
-          case Left(err) =>
-            logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
-            InternalServerError(errorHandler.internalServerErrorTemplate)
-        }
-      },
-      nextPageUrl => {
-        withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _, None)).flatMap {
-          case Right(pageContext) =>
-            pageContext.page match {
-              case _: QuestionPage =>
-                val redirectLocation  = routes.GuidanceController.getPage(processCode, nextPageUrl.url.drop(appConfig.baseUrl.length + processCode.length + 2))
-                withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
-                  case Left(err) =>
-                    logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
-                    Redirect(redirectLocation)
-                  case Right(_) => Redirect(redirectLocation)
-                }
-              case page: InputPage =>
-                val url = page.input.nextPageUrl.fold(pageContext.processStartUrl.get)(next => next.url)
-                val redirectLocation  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
-                withExistingSession[Unit](service.saveAnswerToQuestion(_, s"/$path", nextPageUrl.url)).map {
-                  case Left(err) =>
-                    logger.error(s"Save Answer on page: $path failed, answser: /${redirectLocation.url}, error: $err")
-                    Redirect(redirectLocation)
-                  case Right(_) => Redirect(redirectLocation)
-                }
+              case page: QuestionPage => Future.successful(BadRequest(questionView(page, pageContext, questionName(path), formWithErrors)))
+              case page: InputPage => Future.successful(BadRequest(inputView(page, pageContext, questionName(path), formWithErrors)))
               case _ => Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
-          case Left(NotFoundError) =>
-            logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
-            Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
-          case Left(BadRequestError) =>
-            logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
-            Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
-          case Left(err) =>
-            logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
-            Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
-        }
-      }
-    )
+          },
+          submittedAnswer => {
+            service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
+              case Left(err) =>
+                logger.error(s"Page submission failed: $err")
+                InternalServerError(errorHandler.internalServerErrorTemplate)
+              case Right((None, labels)) =>
+                // None here indeicates there is no valid next page id because the guidance redirect back to a redisplay of page
+                logger.info(s"Post submit page evaluation indicates guidance detected input error")
+                val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
+                pageContext.page match {
+                  case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
+                  case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
+                }
+
+              case Right((Some(stanzaId), _)) =>
+                // Some(stanzaId) here idicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
+                val url = evalContext.stanzaIdToUrlMap(stanzaId)
+                logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
+                val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
+                logger.info(s"Redirecting => $redirect")
+                Redirect(redirect)
+            }
+          }
+        )
+
+      case Left(NotFoundError) =>
+        logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
+        Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
+      case Left(BadRequestError) =>
+        logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
+        Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
+      case Left(err) =>
+        logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
+        Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+    }
   }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse

@@ -25,10 +25,10 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
-import models.ui.{Answer, BulletPointList, ErrorMsg, H1, Input, InputPage, Page, PageContext, Paragraph, Question, QuestionPage, StandardPage, Text}
-import org.jsoup.nodes.{Document, Element}
-import forms.NextPageFormProvider
-
+import models.PageContext
+import models.ui.{BulletPointList, H1, Page, ErrorMsg, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
+import org.jsoup.nodes.{Element, Document}
+import forms.SubmittedAnswerFormProvider
 import scala.collection.JavaConverters._
 import play.api.data.FormError
 import base.ViewFns
@@ -75,7 +75,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val question = Question(questionText, None, Seq(para, bulletPointList), answers)
     val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
-    val formProvider = new NextPageFormProvider()
+    val formProvider = new SubmittedAnswerFormProvider()
     val questionPage = QuestionPage("root", question)
     val questionPageWithErrors = QuestionPage("root", questionWithErrors)
 
@@ -102,9 +102,9 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageContext = PageContext(simplePage, Some("/"), Text("Title", "Title"), "processId", "processCode")
-    val questionPageContext = PageContext(questionPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
-    val inputPageContext = PageContext(inputPage, Some("/here"), Text("Title", "Title"), "processId", "processCode")
+    val pageContext = PageContext(simplePage, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
+    val questionPageContext = PageContext(questionPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
+    val inputPageContext = PageContext(inputPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
   }
 
   trait WelshTest extends Test {

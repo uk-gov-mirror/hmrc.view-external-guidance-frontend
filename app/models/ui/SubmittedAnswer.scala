@@ -14,30 +14,6 @@
  * limitations under the License.
  */
 
-package forms
+package models.ui
 
-import org.scalatest.{Matchers, WordSpec}
-import play.api.data.Form
-
-import models.ui.NextPageUrl
-
-class NextPageFormProviderSpec extends WordSpec with Matchers {
-
-  private val url: String = "/somewhere"
-
-  val provider: NextPageFormProvider = new NextPageFormProvider()
-
-  "Forms created by NextPageFormProvider" should {
-
-    "Be able to execute the unapply method held in mapping" in {
-
-      val form: Form[NextPageUrl] = provider(url)
-      val map: Map[String, String] = form.mapping.unbind(NextPageUrl(""))
-      val keySet = map.keySet
-
-      keySet shouldBe Set(url)
-    }
-
-  }
-
-}
+case class SubmittedAnswer(text: String)
