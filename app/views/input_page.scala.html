@@ -16,10 +16,12 @@
 
 @import models.PageContext
 @import models.ui.InputPage
+@import uk.gov.hmrc.govukfrontend.views.html.components._
 
 @this(
   layout: main_layout,
-  formWithCSRF: FormWithCSRF
+  formWithCSRF: FormWithCSRF,
+  govukButton: GovukButton
 )
 
 @(page: InputPage, ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
@@ -39,9 +41,9 @@
 
     @components.input(page.input, inputName, form)
 
-    <button class="govuk-button" data-module="govuk-button">
-      @messages("site.continue")
-    </button>
+    @govukButton(Button(
+      content = Text(messages("site.continue"))
+    ))
   }
 }
 
