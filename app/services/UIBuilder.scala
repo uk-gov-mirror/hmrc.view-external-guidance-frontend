@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, _}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
@@ -110,7 +110,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(i: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
+  private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
     implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
 
@@ -124,10 +124,12 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
 
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    val name = TextBuilder.fromPhrase(i.name)
-    val hint = i.help.map(phrase => TextBuilder.fromPhrase(phrase))
+    val name = TextBuilder.fromPhrase(input.name)
+    val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
     // Placeholder not used
-    Input(name, hint, uiElements, errorMsgs)
+    input match {
+      case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+    }
   }
 
 

@@ -26,7 +26,7 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
 import models.PageContext
-import models.ui.{BulletPointList, H1, Page, ErrorMsg, Input, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
+import models.ui.{BulletPointList, H1, Page, ErrorMsg, Input, CurrencyInput, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
 import org.jsoup.nodes.{Element, Document}
 import forms.SubmittedAnswerFormProvider
 import scala.collection.JavaConverters._
@@ -83,8 +83,8 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val inputText = Text(i1)
     val i1Hint = Vector("use market value", "Welsh, use market value?")
     val inputHint = Text(i1Hint)
-    val input = Input(inputText, Some(inputHint), Seq(para, bulletPointList))
-    val inputWithErrors = Input(inputText, Some(inputHint), Seq(para, bulletPointList), Seq(errorMsg))
+    val input = CurrencyInput(inputText, Some(inputHint), Seq(para, bulletPointList))
+    val inputWithErrors = CurrencyInput(inputText, Some(inputHint), Seq(para, bulletPointList), Seq(errorMsg))
     val inputPage = InputPage("root", input)
     val inputPageWithErrors = InputPage("root", inputWithErrors)
 

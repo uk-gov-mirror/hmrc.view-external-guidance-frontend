@@ -18,7 +18,7 @@ package views.components
 
 import forms.SubmittedAnswerFormProvider
 import models.ocelot.{Label, Labels, LabelCache, Phrase}
-import models.ui.{BulletPointList, ErrorMsg, H2, H3, H4, Input, Paragraph, Text}
+import models.ui.{BulletPointList, ErrorMsg, H2, H3, H4, Input, CurrencyInput, Paragraph, Text}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
 import org.scalatest.{Matchers, WordSpec}
@@ -63,12 +63,12 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
     val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
 
-    val input: Input = Input(Text(i1), Some(Text(i1Hint)), Seq(h2, h3, h4, bpList, para1))
+    val input: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(h2, h3, h4, bpList, para1))
 
-    val inputWithoutBody: Input = Input(Text(i1), None, Seq.empty)
-    val inputWithHintAndNoBody: Input = Input(Text(i1), Some(Text(i1Hint)), Seq.empty)
+    val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
+    val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
     private val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
-    val inputWithHintAndErrors: Input = Input(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
+    val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
 
   }
