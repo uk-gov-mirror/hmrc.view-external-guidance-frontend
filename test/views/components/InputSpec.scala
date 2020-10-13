@@ -77,7 +77,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
-  "English Question component" must {
+  "English Input component" must {
 
     "render input text as a header" in new Test {
       private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
@@ -118,7 +118,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
     }
 
-    "question with no body should hide the legend heading" in new Test {
+    "Input with no body should hide the legend heading" in new Test {
       private val doc = asDocument(components.input(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, labels))
       private val legend = doc.getElementsByTag("legend").first
       private val attrs = elementAttrs(legend)
@@ -127,7 +127,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       attrs("class").contains("govuk-visually-hidden") shouldBe false
     }
 
-    "question with body should render hint within a span within fieldset" in new Test {
+    "Input with body should render hint within a span within fieldset" in new Test {
       private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
       private val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
