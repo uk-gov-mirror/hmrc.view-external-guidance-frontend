@@ -28,8 +28,7 @@ class PageRenderer @Inject() () {
    private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[Stanza], seen: Seq[String])
                               (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
     if (!ids.contains(stanzaId)) (visualStanzas, labels, seen, stanzaId, None)
-    else
-    stanzaMap(stanzaId) match {
+    else stanzaMap(stanzaId) match {
       case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, stanzaId, None)
       case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
       case s: Stanza with Evaluate =>
