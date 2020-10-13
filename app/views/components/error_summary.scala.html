@@ -17,7 +17,7 @@
 @import models.ui.{Text, ErrorMsg}
 @import models.ocelot.Labels
 
-@(heading: Text, errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Labels)
+@(heading: Text, inputFieldName: String, errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Labels)
 
 @if(!errors.isEmpty) {
 
@@ -30,7 +30,7 @@
 
       @for(err <- errors) {
         <li>
-          <a href="#@err.id-0">
+          <a href="#@inputFieldName-0">
             @components.render_text({err.text})
           </a>
         </li>

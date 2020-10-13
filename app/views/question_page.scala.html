@@ -36,7 +36,7 @@
 
 @layout(pageTitle(page), ctx.processTitle.asString(messages.lang), Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
 
-  @components.error_summary(page.question.text, page.question.errorMsgs)
+  @components.error_summary(page.question.text, questionName, page.question.errorMsgs)
 
   @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processCode, page.relativePath)) {
 
