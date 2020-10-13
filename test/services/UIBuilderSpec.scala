@@ -721,7 +721,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
-    val input1 = models.ocelot.stanzas.Input(Currency, inputNext, inputPhrase, helpPhrase, label ="input1", None, stack = false)
+    val input1 = models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()

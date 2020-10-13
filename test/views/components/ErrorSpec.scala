@@ -47,7 +47,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "error_summary" must {
 
     "render error header and list of messages" in new Test {
-      val doc = asDocument(components.error_summary(heading, errorMsgs)(messages, LabelCache()))
+      val doc = asDocument(components.error_summary(heading, "inputName", errorMsgs)(messages, LabelCache()))
       val head = doc.getElementById("error-summary-title")
 
       head.text() shouldBe messages("error.summary.title")

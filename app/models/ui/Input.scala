@@ -16,5 +16,11 @@
 
 package models.ui
 
-case class Input(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil)
-  extends UIComponent
+trait Input extends UIComponent {
+  val text: Text
+  val hint: Option[Text]
+  val body: Seq[UIComponent]
+  val errorMsgs: Seq[ErrorMsg]
+}
+
+case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input

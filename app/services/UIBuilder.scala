@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, _}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
@@ -63,7 +63,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
     }
-    
+
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
@@ -110,7 +110,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(i: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
+  private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
     implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
 
@@ -124,11 +124,12 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
 
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    // Strip out any hint from name as handled by the help attribute
-    val (input, _) = TextBuilder.singleTextWithOptionalHint(i.name)
-    val hint = TextBuilder.fromPhrase(i.help)
-
-    Input(input, Some(hint), uiElements, errorMsgs)
+    val name = TextBuilder.fromPhrase(input.name)
+    val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
+    // Placeholder not used
+    input match {
+      case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+    }
   }
 
 

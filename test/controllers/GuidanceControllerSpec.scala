@@ -30,7 +30,7 @@ import forms.SubmittedAnswerFormProvider
 import models.{PageEvaluationContext, PageContext}
 import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
 import models.ocelot.stanzas.{Question => OcelotQuestion,_}
-import models.ui.{Input => UiInput,_}
+import models.ui.{CurrencyInput => UiCurrencyInput,_}
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
@@ -371,7 +371,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     override lazy val expectedPage: Page = InputPage(
       path,
-      UiInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+      UiCurrencyInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
     )
     val enteredValue = "12000"
     val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken

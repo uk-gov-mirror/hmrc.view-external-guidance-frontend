@@ -68,7 +68,6 @@ class GuidanceController @Inject() (
             }
 
           case page: QuestionPage =>
-            // Original
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
