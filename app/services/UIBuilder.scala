@@ -63,7 +63,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
     }
-    
+
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
@@ -124,11 +124,10 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
 
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    // Strip out any hint from name as handled by the help attribute
-    val (input, _) = TextBuilder.singleTextWithOptionalHint(i.name)
-    val hint = TextBuilder.fromPhrase(i.help)
-
-    Input(input, Some(hint), uiElements, errorMsgs)
+    val name = TextBuilder.fromPhrase(i.name)
+    val hint = i.help.map(phrase => TextBuilder.fromPhrase(phrase))
+    // Placeholder not used
+    Input(name, hint, uiElements, errorMsgs)
   }
 
 
