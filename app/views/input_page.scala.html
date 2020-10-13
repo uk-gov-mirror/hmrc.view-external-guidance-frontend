@@ -15,32 +15,29 @@
  *@
 
 @import models.PageContext
-@import models.ui.{Text, QuestionPage}
-
-@import controllers.routes._
-@import uk.gov.hmrc.govukfrontend.views.html.helpers._
+@import models.ui.InputPage
 
 @this(
   layout: main_layout,
   formWithCSRF: FormWithCSRF
 )
 
-@(page: QuestionPage, ctx: PageContext, questionName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: InputPage, ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@pageTitle(page: QuestionPage) = @{
+@pageTitle(page: InputPage) = @{
   val titleText = page.heading.asString(messages.lang)
-  page.question.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
+  page.input.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
 }
 
 @implicitLabels = @{ctx.labels}
 
 @layout(pageTitle(page), ctx.processTitle.asString(messages.lang), Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
 
-  @components.error_summary(page.question.text, questionName, page.question.errorMsgs)
+  @components.error_summary(page.input.text, inputName, page.input.errorMsgs)
 
   @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processCode, page.relativePath)) {
 
-    @components.question(page.question, questionName, form)
+    @components.input(page.input, inputName, form)
 
     <button class="govuk-button" data-module="govuk-button">
       @messages("site.continue")

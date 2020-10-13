@@ -24,13 +24,15 @@ import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
-import models.ui.{StandardPage, QuestionPage, FormData}
+import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
 import forms.SubmittedAnswerFormProvider
-import views.html.{standard_page, question_page}
+import views.html.{input_page, standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
+
+import scala.concurrent.Future
 
 @Singleton
 class GuidanceController @Inject() (
@@ -39,6 +41,7 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: standard_page,
     questionView: question_page,
+    inputView: input_page,
     formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
@@ -63,13 +66,18 @@ class GuidanceController @Inject() (
                 logger.error(s"Failed to save labels after evaluation of a standard page")
                 InternalServerError(errorHandler.internalServerErrorTemplate)
             }
+
           case page: QuestionPage =>
-            // Original
             val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
               formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
             }
-
             Future.successful(Ok(questionView(page, pageContext, questionName(path), form)))
+
+          case page: InputPage =>
+            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
+              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
+            }
+            Future.successful(Ok(inputView(page, pageContext, questionName(path), form)))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -94,6 +102,7 @@ class GuidanceController @Inject() (
             val pageContext = service.getPageContext(evalContext, Some(formData))
             pageContext.page match {
               case page: QuestionPage => Future.successful(BadRequest(questionView(page, pageContext, questionName(path), formWithErrors)))
+              case page: InputPage => Future.successful(BadRequest(inputView(page, pageContext, questionName(path), formWithErrors)))
               case _ => Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
           },
@@ -108,6 +117,7 @@ class GuidanceController @Inject() (
                 val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
                 pageContext.page match {
                   case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
+                  case page: InputPage => BadRequest(inputView(page, pageContext, questionName(path), form))
                   case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
                 }
 

@@ -21,7 +21,7 @@ import mocks.{MockAppConfig, MockGuidanceService, MockSessionRepository, MockGui
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc._
-import play.api.mvc.{BodyParsers,AnyContentAsEmpty}
+import play.api.mvc.{AnyContentAsEmpty, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
@@ -30,7 +30,7 @@ import forms.SubmittedAnswerFormProvider
 import models.{PageEvaluationContext, PageContext}
 import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
 import models.ocelot.stanzas.{Question => OcelotQuestion,_}
-import models.ui._
+import models.ui.{CurrencyInput => UiCurrencyInput,_}
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
@@ -38,8 +38,8 @@ import models.errors._
 import models.ocelot.LabelCache
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
+import views.html._
 import services._
-
 
 class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
@@ -78,6 +78,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
     lazy val view = app.injector.instanceOf[views.html.standard_page]
     lazy val questionView = app.injector.instanceOf[views.html.question_page]
+    lazy val inputView = app.injector.instanceOf[input_page]
     val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
     val questionStanza = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
@@ -100,6 +101,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
+      inputView,
       new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -170,6 +172,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       errorHandler,
       view,
       questionView,
+      inputView,
       new SubmittedAnswerFormProvider(),
       guidanceService,
       stubMessagesControllerComponents()
@@ -229,7 +232,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "/guidance/hello"))
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -364,6 +367,231 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   }
 
+  trait InputTest extends MockGuidanceService with TestData {
+
+    override lazy val expectedPage: Page = InputPage(
+      path,
+      UiCurrencyInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+    )
+    val enteredValue = "12000"
+    val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+
+    val formError = new FormError(relativePath, List("error.required"))
+
+    val target = new GuidanceController(
+      MockAppConfig,
+      fakeSessionIdAction,
+      errorHandler,
+      view,
+      questionView,
+      inputView,
+      new SubmittedAnswerFormProvider(),
+      mockGuidanceService,
+      stubMessagesControllerComponents()
+    )
+
+    val initialLabels = LabelCache()
+
+    val pec = PageEvaluationContext(
+                page,
+                sessionId,
+                Map("4" -> "/somewhere-else"),
+                Some("/hello"),
+                Text(),
+                processId,
+                "hello",
+                initialLabels,
+                None,
+                None
+              )
+  }
+
+  "Calling a valid URL path to an Input page in a process" should {
+
+    "return an OK response" in new InputTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, processId)
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "be a HTML response" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId)
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+      contentType(result) shouldBe Some("text/html")
+    }
+  }
+
+  "Returning to an input page in a process" should {
+
+    "Show the original value entered" in new InputTest {
+      MockGuidanceService
+        .getPageContext(processId, path, processId)
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
+
+      val result = target.getPage(processId, relativePath)(fakeRequest)
+
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      // Probably not the right place to test this
+      contentAsString(result).contains(enteredValue) shouldBe true
+    }
+  }
+
+  "Submitting a blank Input page form" should {
+
+    "return a BadRequest response" in new InputTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "/guidance/hello")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+  }
+
+  "Submitting an Input page form with a value" should {
+
+    "return a SeeOther response" in new InputTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "/guidance/hello")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "return a SeeOther response whether the saving of the input succeeds or not" in new InputTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "/guidance/hello")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "return a INTERNAL_SERVER_ERROR response if submitting to a Process containing errors is referenced" in new InputTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Left(InvalidProcessError)))
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a NOT_FOUND response if trying to submit to a non-existent page" in new QuestionTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Left(NotFoundError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "return a InternalServerError response when an unexpected error returned from service call" in new QuestionTest {
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Left(DatabaseError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "return a BAD_REQUEST response when a bad request error returned from service call" in new QuestionTest {
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Left(BadRequestError)))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "/guidance/hello")
+        .withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "return a BAD_REQUEST response when submitted page is not an input or question" in new QuestionTest {
+
+      override val pec = PageEvaluationContext(
+            nonQuestionPage,
+            sessionId,
+            Map(),
+            Some("/hello"),
+            Text(),
+            processId,
+            "hello",
+            LabelCache(),
+            None,
+            None
+          )
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, standardPagePath, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativeStdPath, Map(), List(new FormError(relativeStdPath, List("error.required"))))))
+        .returns(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody()
+        .withCSRFToken
+      val result = target.submitPage(processId, relativeStdPath)(fakeRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+  }
+
   trait ProcessTest extends MockGuidanceService with TestData {
     lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
@@ -374,6 +602,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         errorHandler,
         view,
         questionView,
+        inputView,
         new SubmittedAnswerFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
@@ -401,6 +630,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -434,6 +664,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -471,6 +702,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -505,6 +737,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -538,6 +771,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -574,6 +808,7 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
           errorHandler,
           view,
           questionView,
+          inputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()

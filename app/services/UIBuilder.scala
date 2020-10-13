@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, _}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
@@ -35,6 +35,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
+             case in: OcelotInput => Seq(fromInput(in, formData, acc))
              case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
@@ -62,7 +63,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
     }
-    
+
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
@@ -108,4 +109,28 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
+
+  private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
+    implicit stanzaIdToUrlMap: Map[String, String]
+  ): UIComponent = {
+
+    @tailrec
+    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+      components match {
+        case Nil => (errors.reverse, others.reverse)
+        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+        case x :: xs => partitionComponents(xs, errors, x +: others)
+      }
+
+    // Split out an Error callouts from body components
+    val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+    val name = TextBuilder.fromPhrase(input.name)
+    val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
+    // Placeholder not used
+    input match {
+      case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+    }
+  }
+
+
 }
