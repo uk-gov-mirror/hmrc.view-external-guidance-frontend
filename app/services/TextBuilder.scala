@@ -23,7 +23,8 @@ import Regex._
 import scala.annotation.tailrec
 
 object TextBuilder {
-
+  // Ocelot data entry validation regex for use by input stanzas
+  // private val dateRegex = "\\d{2}/\\d{2}/\\d{4}"      // From Ocelot
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
   private object Placeholders { // All the placeholder matching in one place
@@ -73,7 +74,7 @@ object TextBuilder {
     val enHint = enMatches.headOption.map(enM => enM.group(1))
     val cyHint = cyMatches.headOption.map(cyM => cyM.group(1))
     val hint = enHint.map(en => Text(en, cyHint.getOrElse("")))
-    (Text(enTexts.head, cyTexts.head), hint)
+    (Text(enTexts.head.trim, cyTexts.head.trim), hint)
   }
 
   @tailrec

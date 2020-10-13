@@ -13,8 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<< HEAD
 package models.ui
 
 trait Input {
 
 }
+=======
+
+package models.ui
+
+case class Input(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil)
+  extends UIComponent
+>>>>>>> cf88fd142370d99bc4874da2d333052731bf07c3

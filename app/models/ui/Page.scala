@@ -28,11 +28,12 @@ object Page {
   def apply(urlPath: String, components: Seq[UIComponent]): Page =
     components match {
       case (question: Question) :: _ => QuestionPage(urlPath, question)
+      case (input: Input) :: _ => InputPage(urlPath, input)
       case _ => StandardPage(urlPath, components)
     }
 }
 
-case class StandardPage(val urlPath: String, val components: Seq[UIComponent]) extends Page {
+case class StandardPage(urlPath: String, val components: Seq[UIComponent]) extends Page {
 
   val heading: Text = components
     .find {
@@ -42,16 +43,12 @@ case class StandardPage(val urlPath: String, val components: Seq[UIComponent]) e
     .fold(Text())(_.text)
 }
 
-case class QuestionPage(val urlPath: String, question: Question) extends Page {
+case class QuestionPage(urlPath: String, question: Question) extends Page {
   val heading: Text = question.text
   val components: Seq[UIComponent] = Seq(question)
 }
 
-case class PageContext(page: Page,
-                       processStartUrl: Option[String],
-                       processTitle: Text,
-                       processId: String,
-                       processCode: String,
-                       labels: Map[String, models.ocelot.Label] = Map(),
-                       backLink: Option[String] = None,
-                       answer: Option[String] = None)
+case class InputPage(urlPath: String, input: Input) extends Page {
+  val heading: Text = input.text
+  val components: Seq[UIComponent] = Seq(input)
+}

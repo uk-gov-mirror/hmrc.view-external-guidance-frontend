@@ -17,8 +17,8 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, _}
-import models.ocelot.{Phrase, Link => OcelotLink, Page => OcelotPage}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, _}
+import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
 
@@ -28,17 +28,15 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def pages(stanzaPages: Seq[OcelotPage], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Map[String, Page] =
-    stanzaPages.map(p => (p.url, fromStanzaPage(p, formData)(stanzaIdToUrlMap))).toMap
-
-  def fromStanzaPage(pge: OcelotPage, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(pge.url,
-         BulletPointBuilder.groupBulletPointInstructions(pge.stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+    Page(url,
+         BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
-             case q: OcelotQuestion => Seq(fromQuestion(q, formData, acc))
+             case in: OcelotInput => Seq(fromInput(in, formData, acc))
+             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
@@ -51,9 +49,7 @@ class UIBuilder {
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: OcelotQuestion, formData: Option[FormData], components: Seq[UIComponent])(
-      implicit stanzaIdToUrlMap: Map[String, String]
-  ): UIComponent = {
+  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
 
     @tailrec
     def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
@@ -63,17 +59,16 @@ class UIBuilder {
         case x :: xs => partitionComponents(xs, errors, x +: others)
       }
 
-    val answers = (q.answers zip q.next).map { t =>
-      val (phrase, stanzaId) = t
-      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
-      Answer(answer, hint, stanzaIdToUrlMap(stanzaId))
+    val answers = q.answers.map { ans =>
+      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
+      Answer(answer, hint)
     }
+    
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
     Question(question, hint, uiElements, answers, errorMsgs)
   }
-
 
   private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
@@ -82,20 +77,14 @@ class UIBuilder {
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      // Ignore error messages if no errors exist within form data
-      case Error if formData.isEmpty || formData.get.errors.isEmpty => Seq.empty
+      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
       case Error =>
+        // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
         // as this linking of messages to form ids has not been resolved, Currently
         // this code will allocate all ErrorMsg elements to the only current error
         // which is error.required
-        formData
-          .map { data =>
-            data.errors.map { err =>
-              ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))
-            }
-          }
-          .getOrElse(Seq.empty)
+        formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
@@ -120,4 +109,27 @@ class UIBuilder {
 
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
+
+  private def fromInput(i: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
+    implicit stanzaIdToUrlMap: Map[String, String]
+  ): UIComponent = {
+
+    @tailrec
+    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+      components match {
+        case Nil => (errors.reverse, others.reverse)
+        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+        case x :: xs => partitionComponents(xs, errors, x +: others)
+      }
+
+    // Split out an Error callouts from body components
+    val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+    // Strip out any hint from name as handled by the help attribute
+    val (input, _) = TextBuilder.singleTextWithOptionalHint(i.name)
+    val hint = TextBuilder.fromPhrase(i.help)
+
+    Input(input, Some(hint), uiElements, errorMsgs)
+  }
+
+
 }

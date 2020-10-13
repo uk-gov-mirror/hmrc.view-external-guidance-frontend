@@ -25,7 +25,8 @@ import play.twirl.api.Html
 import org.jsoup._
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
-import forms.NextPageFormProvider
+import models.ocelot.LabelCache
+import forms.SubmittedAnswerFormProvider
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 
@@ -38,7 +39,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: NextPageFormProvider = injector.instanceOf[NextPageFormProvider]
+    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
     val para1Text = Text("This is a question", "Welsh, This is a question")
@@ -52,12 +53,10 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ans1Hint = Vector("You agree with the assertion", "Welsh, You agree with the assertion")
     val ans2Hint = Vector("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
     val ans3Hint = Vector("You dont know", "Welsh, You dont know")
-    val answerUrl1 = "/yes"
-    val answerUrl2 = "/no"
-    val answerUrl3 = "/dontknow"
-    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)), answerUrl1)
-    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)), answerUrl2)
-    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)), answerUrl3)
+    val ansIndexZero = "0"
+    val a1 = Answer(Text(ans1), Some(Text(ans1Hint)))
+    val a2 = Answer(Text(ans2), Some(Text(ans2Hint)))
+    val a3 = Answer(Text(ans3), Some(Text(ans3Hint)))
     val leading = Text("You can buy", "Gwallwch brynu")
     val bp1 = Text("apples", "afalau")
     val bp2 = Text("oranges", "orennau")
@@ -74,7 +73,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
     val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithHintAndErrors = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers, Seq(errorMsg))
-    implicit val labels: Map[String, models.ocelot.Label] = Map()
+    implicit val labels: LabelCache = LabelCache()
 
   }
 
@@ -111,7 +110,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
@@ -258,7 +257,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render answers as radio buttons with previous answer selected" in new Test {
-      val form = formProvider("test").bind(Map("test" -> answerUrl1))
+      val form = formProvider("test").bind(Map("test" -> ansIndexZero))
       val doc = asDocument(components.question(question, "test", form)(fakeRequest, messages, labels))
       val radios = doc.getElementsByTag("input").asScala.toList
       radios.size shouldBe answers.length
