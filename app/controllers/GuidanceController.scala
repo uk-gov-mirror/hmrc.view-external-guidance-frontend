@@ -118,6 +118,7 @@ class GuidanceController @Inject() (
                 val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
                 pageContext.page match {
                   case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
+                  case page: InputPage => BadRequest(inputView(page, pageContext, questionName(path), form))
                   case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
                 }
 
