@@ -18,6 +18,7 @@ package models.ocelot.stanzas
 
 import base.BaseSpec
 import play.api.libs.json._
+import models.ocelot.{LabelCache, Phrase}
 
 class InputStanzaSpec extends BaseSpec {
 
@@ -59,6 +60,44 @@ class InputStanzaSpec extends BaseSpec {
         inputStanza shouldBe expectedStanza
       }
     }
+  }
+
+  "CurrencyInput " should {
+    "update the input label" in {
+
+      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+        case currencyInput: CurrencyInput =>
+          val labels = LabelCache()
+
+          val (nxt, updatedLabels) = currencyInput.eval("33", labels)
+          updatedLabels.updatedLabels(expectedCurrencyStanza.label).value shouldBe Some("33")
+        case _ => fail
+      }
+
+    }
+
+    "Determine valid input to be correct" in {
+
+      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+        case currencyInput: CurrencyInput =>
+
+          currencyInput.validInput("a value") shouldBe None
+        case _ => fail
+      }
+
+    }
+
+    "Determine invalid input to be incorrect" in {
+
+      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+        case currencyInput: CurrencyInput =>
+
+          currencyInput.validInput("33") shouldBe Some("33")
+        case _ => fail
+      }
+
+    }
+
   }
 
   "Reading invalid JSON for a Input" should {

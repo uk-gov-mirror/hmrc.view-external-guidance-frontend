@@ -107,12 +107,13 @@ class GuidanceController @Inject() (
             }
           },
           submittedAnswer => {
+            // validate here and submit the validated answer
             service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
               case Left(err) =>
                 logger.error(s"Page submission failed: $err")
                 InternalServerError(errorHandler.internalServerErrorTemplate)
               case Right((None, labels)) =>
-                // None here indeicates there is no valid next page id because the guidance redirect back to a redisplay of page
+                // None here indicates there is no valid next page id because the guidance redirects back to a redisplay of page
                 logger.info(s"Post submit page evaluation indicates guidance detected input error")
                 val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
                 pageContext.page match {

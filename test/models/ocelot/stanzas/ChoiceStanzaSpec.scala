@@ -292,6 +292,18 @@ class ChoiceStanzaSpec extends BaseSpec {
       MoreThanOrEqualsTest("4", "hello").eval(LabelCache()) shouldBe false
     }
 
+    "provide support to LessThanTest" in {
+      LessThanTest("5", "5").eval(LabelCache()) shouldBe false
+
+      LessThanTest("4", "5").eval(LabelCache()) shouldBe true
+
+      LessThanTest("4", "3").eval(LabelCache()) shouldBe false
+
+      LessThanTest("hello", "hello").eval(LabelCache()) shouldBe false
+
+      LessThanTest("4", "hello").eval(LabelCache()) shouldBe true
+    }
+
     "provide support to LessThanOrEqualsTest" in {
       LessThanOrEqualsTest("5", "5").eval(LabelCache()) shouldBe true
 
@@ -308,6 +320,7 @@ class ChoiceStanzaSpec extends BaseSpec {
   "ChoiceStanzaTest" must {
 
     val lte = """{"left": "VAL-1","test": "lessThanOrEquals","right": "VAL-2"}"""
+    val lt = """{"left": "VAL-1","test": "lessThan","right": "VAL-2"}"""
     val e = """{"left": "VAL-3","test": "equals","right": "VAL-4"}"""
     val ne = """{"left": "VAL-3","test": "notEquals","right": "VAL-4"}"""
     val m = """{"left": "VAL-3","test": "moreThan","right": "VAL-4"}"""
@@ -328,6 +341,14 @@ class ChoiceStanzaSpec extends BaseSpec {
         val choice = Choice(cs)
         choice.tests(0) shouldBe NotEqualsTest("VAL-3", "VAL-4")
         choice.tests(1) shouldBe NotEqualsTest("VAL-3", "VAL-4")
+      }
+      )
+    }
+    "DeSerialise LessThanTest" in {
+      Json.parse(choiceStanzaJson(lt,lt)).validate[ChoiceStanza].fold(err => fail, cs => {
+        val choice = Choice(cs)
+        choice.tests(0) shouldBe LessThanTest("VAL-1", "VAL-2")
+        choice.tests(1) shouldBe LessThanTest("VAL-1", "VAL-2")
       }
       )
     }
@@ -361,6 +382,9 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
     "Serialise NotEqualsTest" in {
       Json.toJson(ChoiceStanzaTest("3", NotEquals, "4")).toString shouldBe """{"left":"3","test":"notEquals","right":"4"}"""
+    }
+    "Serialise LessThanTest" in {
+      Json.toJson(ChoiceStanzaTest("3", LessThan, "4")).toString shouldBe """{"left":"3","test":"lessThan","right":"4"}"""
     }
     "Serialise LessThanOrEqualsTest" in {
       Json.toJson(ChoiceStanzaTest("3", LessThanOrEquals, "4")).toString shouldBe """{"left":"3","test":"lessThanOrEquals","right":"4"}"""

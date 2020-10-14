@@ -86,6 +86,9 @@ case class MoreThanTest(left: String, right: String) extends ChoiceTest {
 case class MoreThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
   def eval(labels: Labels): Boolean = op(_ >= _, _ >= _, labels)
 }
+case class LessThanTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ < _, _ < _, labels)
+}
 case class LessThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
   def eval(labels: Labels): Boolean = op(_ <= _, _ <= _, labels)
 }
@@ -106,6 +109,7 @@ object Choice {
           case NotEquals => NotEqualsTest(t.left, t.right)
           case MoreThan => MoreThanTest(t.left, t.right)
           case MoreThanOrEquals => MoreThanOrEqualsTest(t.left, t.right)
+          case LessThan => LessThanTest(t.left, t.right)
           case LessThanOrEquals => LessThanOrEqualsTest(t.left, t.right)
         }
       }
