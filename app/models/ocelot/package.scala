@@ -22,7 +22,7 @@ package object ocelot {
   val hintRegex = "\\[hint:([^\\]])+\\]".r
   val pageLinkRegex = s"\\[link:.+?:(\\d+|${Process.StartStanzaId})\\]".r
   val labelRefRegex = s"\\[label:([0-9a-zA-Z\\s+_]+)\\]".r
-  val inputCurrencyRegex = "^-?\\d{1,3}(,\\d{3})*(\\.(\\d{1,2})?)?$".r
+  val inputCurrencyRegex = "^-?(\\d{1,3}(,\\d{3})*|\\d+)(\\.(\\d{1,2})?)?$".r
   val integerRegex = "^\\d+$".r
 
   def plSingleGroupCaptures(regex: Regex, str: String): List[String] = regex.findAllMatchIn(str).map(_.group(1)).toList

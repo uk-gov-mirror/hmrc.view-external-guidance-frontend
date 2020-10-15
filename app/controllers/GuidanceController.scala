@@ -20,12 +20,13 @@ import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
-import play.api.data.Form
+import play.api.data.{FormError, Form}
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
+import models.ocelot.stanzas.DataInput
 import forms.SubmittedAnswerFormProvider
 import views.html.{input_page, standard_page, question_page}
 import play.api.Logger
@@ -34,6 +35,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 import play.twirl.api.Html
 import scala.concurrent.Future
+import models.ocelot.KeyedStanza
 
 @Singleton
 class GuidanceController @Inject() (
@@ -91,22 +93,26 @@ class GuidanceController @Inject() (
             Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
           },
           submittedAnswer => {
-            // validate here and submit the validated answer
-            service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
-              case Right((None, labels)) =>
-                // No valid next page id indicates the guidance redirects to redisplay of page
-                logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                BadRequest(createInputView(evalContext.copy(labels = labels), questionName(path), None, form))
-              case Right((Some(stanzaId), _)) =>
-                // Some(stanzaId) here indicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
-                val url = evalContext.stanzaIdToUrlMap(stanzaId)
-                logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
-                val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
-                logger.info(s"Redirecting => $redirect")
-                Redirect(redirect)
-              case Left(err) =>
-                logger.error(s"Page submission failed: $err")
-                InternalServerError(errorHandler.internalServerErrorTemplate)
+            validateAnswer(evalContext, submittedAnswer.text).fold{
+              val formData = FormData(path, Map(), Seq(FormError("","error.required")))
+              Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), form)))
+            }{ answer =>
+              service.submitPage(evalContext, s"/$path", answer).map{
+                case Right((None, labels)) =>
+                  // No valid next page id indicates the guidance redirects to redisplay of page
+                  logger.info(s"Post submit page evaluation indicates guidance detected input error")
+                  BadRequest(createInputView(evalContext.copy(labels = labels), questionName(path), None, form))
+                case Right((Some(stanzaId), _)) =>
+                  // Some(stanzaId) here indicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
+                  val url = evalContext.stanzaIdToUrlMap(stanzaId)
+                  logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
+                  val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
+                  logger.info(s"Redirecting => $redirect")
+                  Redirect(redirect)
+                case Left(err) =>
+                  logger.error(s"Page submission failed: $err")
+                  InternalServerError(errorHandler.internalServerErrorTemplate)
+              }
             }
           }
         )
@@ -121,6 +127,9 @@ class GuidanceController @Inject() (
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
     }
   }
+
+  private def validateAnswer(ctx: PageEvaluationContext, answer: String): Option[String] =
+    ctx.page.keyedStanzas.collect{case KeyedStanza(_, i: DataInput) => i.validInput(answer)}.flatten.headOption
 
   private def createInputView(pec: PageEvaluationContext, inputName: String, formData: Option[FormData], form: Form[_])
                              (implicit request: Request[_], messages: Messages): Html = {
