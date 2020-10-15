@@ -76,7 +76,7 @@ class InputStanzaSpec extends BaseSpec {
 
     }
 
-    "Determine valid input to be correct" in {
+    "Determine invalid input to be incorrect" in {
 
       Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
         case currencyInput: CurrencyInput =>
@@ -87,7 +87,29 @@ class InputStanzaSpec extends BaseSpec {
 
     }
 
-    "Determine invalid input to be incorrect" in {
+    "Allow for coma separated 1000s" in {
+
+      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+        case currencyInput: CurrencyInput =>
+
+          currencyInput.validInput("123,345,768") shouldBe Some("123345768")
+        case _ => fail
+      }
+
+    }
+
+    "Allow -ve values" in {
+
+      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+        case currencyInput: CurrencyInput =>
+
+          currencyInput.validInput("-567,345") shouldBe Some("-567345")
+        case _ => fail
+      }
+
+    }
+
+    "Determine valid input to be correct" in {
 
       Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
         case currencyInput: CurrencyInput =>
