@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{isCurrency, Labels}
+import models.ocelot.{asCurrency, Labels}
 import models.ocelot.{labelReference, labelReferences}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
@@ -67,11 +67,14 @@ sealed trait ChoiceTest {
   val right: String
   def eval(labels: Labels): Boolean
   def value(arg: String, labels: Labels): String = labelReference(arg).fold(arg)(ref => labels.value(ref).getOrElse(""))
-  def op(f: (BigDecimal, BigDecimal) => Boolean, g: (String, String) => Boolean, labels: Labels): Boolean =
-    (value(left, labels), value(right, labels)) match {
-      case (x, y) if isCurrency(x) && isCurrency(y) => f(BigDecimal(x), BigDecimal(y))
-      case (x, y) => g(x, y)
+  def op(f: (BigDecimal, BigDecimal) => Boolean, g: (String, String) => Boolean, labels: Labels): Boolean = {
+    val x = value(left, labels)
+    val y = value(right, labels)
+    (asCurrency(x), asCurrency(y)) match {
+      case (Some(bd1), Some(bd2)) => f(bd1, bd2)
+      case _ => g(x, y)
     }
+  }
 }
 
 case class EqualsTest(left: String, right: String) extends ChoiceTest {

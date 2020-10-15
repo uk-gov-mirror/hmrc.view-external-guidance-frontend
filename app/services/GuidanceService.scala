@@ -113,8 +113,13 @@ class GuidanceService @Inject() (
     }
   }
 
-  def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
-    sessionRepository.saveLabels(docId, labels)
+  def saveLabels(docId: String, labels: Labels)(implicit context: ExecutionContext): Future[RequestOutcome[Unit]] =
+    sessionRepository.saveLabels(docId, labels).map {
+      case Left(err) =>
+        logger.error(s"Failure to save process labels, err = $err")
+        Left(err)
+      case result => result
+    }
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(

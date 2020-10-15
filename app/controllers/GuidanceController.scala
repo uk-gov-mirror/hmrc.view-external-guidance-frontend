@@ -20,6 +20,7 @@ import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
+import play.api.data.Form
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
@@ -31,7 +32,7 @@ import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
-
+import play.twirl.api.Html
 import scala.concurrent.Future
 
 @Singleton
@@ -52,32 +53,20 @@ class GuidanceController @Inject() (
 
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-
     withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
-
         pageContext.page match {
           case page: StandardPage =>
             service.saveLabels(pageContext.sessionId, pageContext.labels).map{
               case Right(_) => Ok(standardView(page, pageContext))
-              case Left(err) =>
-                logger.error(s"Failed to save labels after evaluation of a standard page")
-                InternalServerError(errorHandler.internalServerErrorTemplate)
+              case Left(err) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
-
           case page: QuestionPage =>
-            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
-              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-            }
-            Future.successful(Ok(questionView(page, pageContext, questionName(path), form)))
-
+            Future.successful(Ok(questionView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
           case page: InputPage =>
-            val form = pageContext.answer.fold(formProvider(questionName(path))) { answer =>
-              formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-            }
-            Future.successful(Ok(inputView(page, pageContext, questionName(path), form)))
+            Future.successful(Ok(inputView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -99,40 +88,28 @@ class GuidanceController @Inject() (
         form.bindFromRequest.fold(
           formWithErrors => {
             val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-            val pageContext = service.getPageContext(evalContext, Some(formData))
-            pageContext.page match {
-              case page: QuestionPage => Future.successful(BadRequest(questionView(page, pageContext, questionName(path), formWithErrors)))
-              case page: InputPage => Future.successful(BadRequest(inputView(page, pageContext, questionName(path), formWithErrors)))
-              case _ => Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
-            }
+            Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
           },
           submittedAnswer => {
             // validate here and submit the validated answer
             service.submitPage(evalContext, s"/$path", submittedAnswer.text).map{
-              case Left(err) =>
-                logger.error(s"Page submission failed: $err")
-                InternalServerError(errorHandler.internalServerErrorTemplate)
               case Right((None, labels)) =>
-                // None here indicates there is no valid next page id because the guidance redirects back to a redisplay of page
+                // No valid next page id indicates the guidance redirects to redisplay of page
                 logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                val pageContext = service.getPageContext(evalContext.copy(labels = labels), None)
-                pageContext.page match {
-                  case page: QuestionPage => BadRequest(questionView(page, pageContext, questionName(path), form))
-                  case page: InputPage => BadRequest(inputView(page, pageContext, questionName(path), form))
-                  case _ => BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode)))
-                }
-
+                BadRequest(createInputView(evalContext.copy(labels = labels), questionName(path), None, form))
               case Right((Some(stanzaId), _)) =>
-                // Some(stanzaId) here idicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
+                // Some(stanzaId) here indicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
                 val url = evalContext.stanzaIdToUrlMap(stanzaId)
                 logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
                 val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
                 logger.info(s"Redirecting => $redirect")
                 Redirect(redirect)
+              case Left(err) =>
+                logger.error(s"Page submission failed: $err")
+                InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           }
         )
-
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
@@ -143,6 +120,20 @@ class GuidanceController @Inject() (
         logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
     }
+  }
+
+  private def createInputView(pec: PageEvaluationContext, inputName: String, formData: Option[FormData], form: Form[_])
+                             (implicit request: Request[_], messages: Messages): Html = {
+    val pageContext = service.getPageContext(pec, formData)
+    pageContext.page match {
+      case page: QuestionPage => questionView(page, pageContext, inputName, form)
+      case page: InputPage => inputView(page, pageContext, inputName, form)
+      case _ => errorHandler.badRequestTemplateWithProcessCode(Some(pec.processCode))
+    }
+  }
+
+  private def populatedForm(ctx: PageContext, path: String): Form[_] = ctx.answer.fold(formProvider(questionName(path))) { answer =>
+    formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
   }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
