@@ -82,6 +82,8 @@ class InputStanzaSpec extends BaseSpec {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("a value") shouldBe None
+          currencyInput.validInput("100.789") shouldBe None
+          currencyInput.validInput("100.7a9") shouldBe None
         case _ => fail
       }
 
@@ -115,6 +117,12 @@ class InputStanzaSpec extends BaseSpec {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("33") shouldBe Some("33")
+          currencyInput.validInput("33.9") shouldBe Some("33.9")
+          currencyInput.validInput("33.") shouldBe Some("33")
+          currencyInput.validInput("3,334") shouldBe Some("3334")
+          currencyInput.validInput("1,234,567") shouldBe Some("1234567")
+          currencyInput.validInput("1,234,567.89") shouldBe Some("1234567.89")
+          currencyInput.validInput("1,234,567.8") shouldBe Some("1234567.8")
         case _ => fail
       }
 

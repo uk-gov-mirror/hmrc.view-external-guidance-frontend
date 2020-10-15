@@ -251,6 +251,14 @@ class ChoiceStanzaSpec extends BaseSpec {
     "provide support to EqualsTest" in {
       EqualsTest("5", "5").eval(LabelCache()) shouldBe true
 
+      EqualsTest("5,345,777.5", "5345777.5").eval(LabelCache()) shouldBe true
+
+      EqualsTest("5,345,777.5", "5345777.50").eval(LabelCache()) shouldBe true
+
+      EqualsTest("5,345,777.0", "5345777").eval(LabelCache()) shouldBe true
+
+      EqualsTest("5,345,777.5", "5345777.a").eval(LabelCache()) shouldBe false
+
       EqualsTest("4", "5").eval(LabelCache()) shouldBe false
 
       EqualsTest("hello", "hello").eval(LabelCache()) shouldBe true
@@ -259,7 +267,11 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
 
     "provide support to NotEqualsTest" in {
-      NotEqualsTest("5", "5").eval(LabelCache()) shouldBe false
+      NotEqualsTest("5.0", "5").eval(LabelCache()) shouldBe false
+
+      NotEqualsTest("5.1", "5.10").eval(LabelCache()) shouldBe false
+
+      NotEqualsTest("5,234.1", "5234.10").eval(LabelCache()) shouldBe false
 
       NotEqualsTest("4", "5").eval(LabelCache()) shouldBe true
 
@@ -273,6 +285,10 @@ class ChoiceStanzaSpec extends BaseSpec {
 
       MoreThanTest("4", "5").eval(LabelCache()) shouldBe false
 
+      MoreThanTest("4.0", "4").eval(LabelCache()) shouldBe false
+
+      MoreThanTest("4.01", "4").eval(LabelCache()) shouldBe true
+
       MoreThanTest("4", "3").eval(LabelCache()) shouldBe true
 
       MoreThanTest("hello", "hello").eval(LabelCache()) shouldBe false
@@ -282,6 +298,8 @@ class ChoiceStanzaSpec extends BaseSpec {
 
     "provide support to MoreThanOrEqualsTest" in {
       MoreThanOrEqualsTest("5", "5").eval(LabelCache()) shouldBe true
+
+      MoreThanOrEqualsTest("5,234.1", "5234.10").eval(LabelCache()) shouldBe true
 
       MoreThanOrEqualsTest("4", "5").eval(LabelCache()) shouldBe false
 
@@ -299,6 +317,8 @@ class ChoiceStanzaSpec extends BaseSpec {
 
       LessThanTest("4", "3").eval(LabelCache()) shouldBe false
 
+      LessThanTest("4,345", "4345.0").eval(LabelCache()) shouldBe false
+
       LessThanTest("hello", "hello").eval(LabelCache()) shouldBe false
 
       LessThanTest("4", "hello").eval(LabelCache()) shouldBe true
@@ -310,6 +330,8 @@ class ChoiceStanzaSpec extends BaseSpec {
       LessThanOrEqualsTest("4", "5").eval(LabelCache()) shouldBe true
 
       LessThanOrEqualsTest("4", "3").eval(LabelCache()) shouldBe false
+
+      LessThanOrEqualsTest("4,345", "4345.0").eval(LabelCache()) shouldBe true
 
       LessThanOrEqualsTest("hello", "hello").eval(LabelCache()) shouldBe true
 

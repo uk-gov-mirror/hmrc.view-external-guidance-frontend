@@ -94,21 +94,20 @@ class GuidanceController @Inject() (
           },
           submittedAnswer => {
             validateAnswer(evalContext, submittedAnswer.text).fold{
+              // Answer didnt pass page DataInput stanza validation
               val formData = FormData(path, Map(), Seq(FormError("","error.required")))
               Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), form)))
             }{ answer =>
               service.submitPage(evalContext, s"/$path", answer).map{
                 case Right((None, labels)) =>
-                  // No valid next page id indicates the guidance redirects to redisplay of page
+                  // No valid next page id indicates the guidance has determined there is an error and page should be re-displayed
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")
                   BadRequest(createInputView(evalContext.copy(labels = labels), questionName(path), None, form))
                 case Right((Some(stanzaId), _)) =>
-                  // Some(stanzaId) here indicates a redirect to the page with id "stanzaId", url = evalContext.stanzaIdMap(stanzaId).url
+                  // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
                   val url = evalContext.stanzaIdToUrlMap(stanzaId)
                   logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
-                  val redirect  = routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2))
-                  logger.info(s"Redirecting => $redirect")
-                  Redirect(redirect)
+                  Redirect(routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2)))
                 case Left(err) =>
                   logger.error(s"Page submission failed: $err")
                   InternalServerError(errorHandler.internalServerErrorTemplate)
