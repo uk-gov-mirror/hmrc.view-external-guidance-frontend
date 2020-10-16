@@ -37,8 +37,7 @@ class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: L
   override def switchToLanguage(language: String): Action[AnyContent] = Action { implicit request =>
     val enabled: Boolean = languageMap.get(language).exists(languageUtils.isLangAvailable)
     val lang: Lang =
-      if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang)
-      else languageUtils.getCurrentLang
+      if (enabled) languageMap.getOrElse(language, languageUtils.getCurrentLang) else languageUtils.getCurrentLang
 
     val relativeRedirectUrl: String = request.headers.get(REFERER).collect{
       case url if url.startsWith(appConfig.hostBaseUrl) => url.drop(appConfig.host.length)
