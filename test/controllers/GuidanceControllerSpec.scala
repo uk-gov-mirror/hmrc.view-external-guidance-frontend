@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.BaseSpec
+import base.{ViewFns, BaseSpec}
 import mocks.{MockAppConfig, MockGuidanceService, MockSessionRepository, MockGuidanceConnector}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
@@ -41,7 +41,7 @@ import controllers.actions.SessionIdAction
 import views.html._
 import services._
 
-class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
+class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSuite {
 
   trait TestData {
     val ansIndexZero = "0"
@@ -81,12 +81,19 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val inputView = app.injector.instanceOf[input_page]
     val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
     val questionStanza = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
+    val currencyInputStanza = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", questionStanza)
                                       )
-    val page = OcelotPage("start", "/test-page", stanzas, Seq("4","5"))
+    val stanzasWithInput: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                                        KeyedStanza("1", instructionStanza),
+                                        KeyedStanza("3", currencyInputStanza)
+                                      )
 
+
+    val page = OcelotPage("start", "/test-page", stanzas, Seq("4","5"))
+    val inputPage = OcelotPage("start", "/test-page", stanzasWithInput, Seq("4"))
     val nonQuestionPage = OcelotPage("start", "/test-page", stanzas.drop(1), Seq("3"))
   }
 
@@ -378,6 +385,9 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     val formError = new FormError(relativePath, List("error.required"))
 
+    val invalidDataFormError = new FormError("", List("error.required"))
+
+
     val target = new GuidanceController(
       MockAppConfig,
       fakeSessionIdAction,
@@ -461,6 +471,46 @@ class GuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
+    }
+  }
+
+  "Submitting an Input page with an invalid value" should {
+
+    "return a BadRequest to the current page" in new InputTest {
+      override val pec = PageEvaluationContext(
+                inputPage,
+                sessionId,
+                Map("4" -> "/somewhere-else"),
+                Some("/hello"),
+                Text(),
+                processId,
+                "hello",
+                initialLabels,
+                None,
+                None
+              )
+
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(invalidDataFormError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
+                                                          .withFormUrlEncodedBody(relativePath -> "invalid input").withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val doc = asDocument(contentAsString(result))
+
+      val inputElement = doc.getElementById(s"$relativePath-0")
+
+      elementAttrs(inputElement)("name") shouldBe relativePath
+
     }
   }
 
