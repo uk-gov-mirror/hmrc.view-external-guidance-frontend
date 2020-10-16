@@ -53,7 +53,7 @@ case class Question(text: Phrase,
                     label: Option[String],
                     stack: Boolean) extends VisualStanza with Populated with DataInput {
   override val labelRefs: List[String] = labelReferences(text.langs(0)) ++ answers.flatMap(a => labelReferences(a.langs(0)))
-  override val labels = label.fold[List[Label]](Nil)(l => List(Label(l, None, None)))
+  override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(Label(l, None, None)))
 
   def eval(value: String, labels: Labels): (Option[String], Labels) =
     validInput(value).fold[(Option[String], Labels)]((None, labels)){idx => {
@@ -62,7 +62,7 @@ case class Question(text: Phrase,
       }
     }
   def validInput(value: String): Option[String] =
-    asInt(value).fold[Option[String]](None)(idx => if (Range(0,answers.length).contains(idx)) Some(idx.toString) else None)
+    asInt(value).fold[Option[String]](None)(idx => if (answers.indices.contains(idx)) Some(idx.toString) else None)
 }
 
 object Question {

@@ -51,7 +51,7 @@ class GuidanceController @Inject() (
 ) extends FrontendController(mcc)
   with SessionFrontendController {
 
-  val logger = Logger(getClass)
+  private val logger = Logger(getClass)
 
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)

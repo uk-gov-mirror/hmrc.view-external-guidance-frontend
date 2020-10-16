@@ -19,5 +19,5 @@ package models
 import models.ocelot.Phrase
 
 package object ui {
-  implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))  
+  implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))
 }
