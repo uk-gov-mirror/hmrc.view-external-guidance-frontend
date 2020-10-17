@@ -43,7 +43,7 @@ case class LabelRef(name: String) extends TextItem {
 }
 
 case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false) extends TextItem {
-  override def toString: String = s"[link:$text:$dest:$window]"
+  override def toString: String = s"[${if(asButton) "button" else "link"}:$text:$dest:$window]"
   def isEmpty: Boolean = text.isEmpty
   def toWords: Seq[String] = text.split(" +").toSeq
 }

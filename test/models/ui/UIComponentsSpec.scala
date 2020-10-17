@@ -258,6 +258,20 @@ class UIComponentsSpec extends BaseSpec {
       linkCy.toString shouldBe s"[link:$welshLinkText:$destination:false]"
     }
 
+    "use Button Link components with an implementation of the toString method for use in debugging" in {
+
+      val englishLinkText = "English link text"
+      val welshLinkText = "Welsh link text"
+
+      val destination = "http://my.com/page"
+
+      val linkEn: Link = Link(destination, englishLinkText, false, true)
+      val linkCy: Link = Link(destination, welshLinkText, false, true)
+
+      linkEn.toString shouldBe s"[button:$englishLinkText:$destination:false]"
+      linkCy.toString shouldBe s"[button:$welshLinkText:$destination:false]"
+    }
+
     "build into a page of text and link paragraph" in {
 
       val langs1 = Vector("Hello my name is ....", "Welsh, Hello my name is ....")

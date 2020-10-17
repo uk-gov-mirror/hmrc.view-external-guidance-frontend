@@ -69,6 +69,17 @@ class TextBuilderSpec extends BaseSpec {
 
     }
 
+    "Convert button link placeholders within phrase to Link as button TextItems" in new Test {
+
+      val p = Phrase("""Sentence with a [button:BLAH:3] label reference""", """Sentence with a [button:BLAH:3] label reference""")
+
+      val txt = TextBuilder.fromPhrase(p)(urlMap1)
+
+      txt.english shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
+      txt.welsh shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
+
+    }
+
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
 
       val txt = TextBuilder.fromPhrase(txtWithLinks)
