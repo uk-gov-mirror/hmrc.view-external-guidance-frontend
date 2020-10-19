@@ -25,7 +25,7 @@ trait Labels {
   def flush(): Labels
 }
 
-private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label]) extends Labels {
+private class LabelCacheImpl(labels: Map[String, Label] = Map(), cache: Map[String, Label] = Map()) extends Labels {
   def value(name: String): Option[String] = label(name).map(_.value.getOrElse(""))
   def formattedValue(name: String): Option[String] = value(name)  // TODO format for type of label
   def update(name: String, value: String): Labels = new LabelCacheImpl(labels, updateOrAddLabel(name, value))
@@ -39,7 +39,7 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
 }
 
 object LabelCache {
-  def apply(): Labels = new LabelCacheImpl(Map(), Map())
-  def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels, Map())
+  def apply(): Labels = new LabelCacheImpl()
+  def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels)
   def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache)
 }
