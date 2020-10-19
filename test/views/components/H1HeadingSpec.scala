@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 
 import models.ui._
-import models.ocelot.LabelCache
+import models.ocelot.{Labels, LabelCache}
 import views.html.components.h1_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -35,7 +35,7 @@ import base.ViewSpec
 class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-    implicit val labels: LabelCache = LabelCache()
+    implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

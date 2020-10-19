@@ -30,11 +30,11 @@ object TextBuilder {
   private object Placeholders { // All the placeholder matching in one place
     val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)\\]"
     val boldPattern = "\\[bold:([^\\]]+)\\]"
-    val linkPattern = s"\\[(button|link(-same|-tab)?):([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
+    val linkPattern = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
     val plregex: Regex = s"${labelPattern}|${boldPattern}|${linkPattern}".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(2))
-    def buttonLinkFull(m: Match): Option[String] = Option(m.group(3))
+    def buttonOrLink(m: Match): Option[String] = Option(m.group(3))
     def linkTypeOpt(m: Match): Option[String] = Option(m.group(4))
     def linkText(m: Match): String = m.group(5)
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
@@ -52,7 +52,7 @@ object TextBuilder {
         boldTextOpt(m).fold[TextItem]({
           val window: Boolean = linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
           val dest: String = if (OcelotLink.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
-          val asButton: Boolean = buttonLinkFull(m).fold(false)(_ == "button")
+          val asButton: Boolean = buttonOrLink(m).fold(false)(_ == "button")
           Link(dest, linkText(m), window, asButton)
         })(txt => Words(txt, true))
       })(labelName => LabelRef(labelName))

@@ -21,7 +21,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import models.ocelot.LabelCache
+import models.ocelot.{Labels, LabelCache}
 import models.ui._
 import views.html.components.h2_heading
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -30,7 +30,7 @@ import base.ViewSpec
 class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
-    implicit val labels: LabelCache = LabelCache()
+    implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
 

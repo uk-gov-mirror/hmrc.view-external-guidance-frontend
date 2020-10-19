@@ -15,7 +15,5 @@
  *@
 
 @import models.ui.Link
-
 @(link: Link)
-
-<a href="@link.dest" @if(link.asButton) {class="govuk-button" role="button"} else {class="govuk-link"} @if(link.window) {target="_blank"}>@link.text</a>
+<a @if(!link.asButton) {class="govuk-link"} href="@link.dest" @if(link.asButton) {class="govuk-button" role="button"} @if(link.window) {target="_blank"}>@link.text</a>

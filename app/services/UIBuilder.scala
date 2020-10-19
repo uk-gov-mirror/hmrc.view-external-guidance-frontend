@@ -51,14 +51,6 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
 
   private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
 
-    @tailrec
-    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
-      components match {
-        case Nil => (errors.reverse, others.reverse)
-        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
-        case x :: xs => partitionComponents(xs, errors, x +: others)
-      }
-
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
@@ -113,15 +105,6 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
   private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
     implicit stanzaIdToUrlMap: Map[String, String]
   ): UIComponent = {
-
-    @tailrec
-    def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
-      components match {
-        case Nil => (errors.reverse, others.reverse)
-        case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
-        case x :: xs => partitionComponents(xs, errors, x +: others)
-      }
-
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val name = TextBuilder.fromPhrase(input.name)
@@ -132,5 +115,12 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
     }
   }
 
+  @tailrec
+  private def partitionComponents(components: Seq[UIComponent], errors: Seq[ErrorMsg], others: Seq[UIComponent]): (Seq[ErrorMsg], Seq[UIComponent]) =
+    components match {
+      case Nil => (errors.reverse, others.reverse)
+      case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
+      case x :: xs => partitionComponents(xs, errors, x +: others)
+    }
 
 }

@@ -20,7 +20,7 @@ package repositories
 
 import config.AppConfig
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, Writes}
 import models.ocelot._
 import models.errors._
 import models.MongoDateTimeFormats
@@ -63,12 +63,12 @@ trait SessionRepository {
 
 @Singleton
 class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
-    extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
-      collectionName = "view-external-guidance-session",
-      mongo = component.mongoConnector.db,
-      domainFormat = DefaultSessionRepository.SessionProcess.format
-    )
-    with SessionRepository {
+  extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
+    collectionName = "view-external-guidance-session",
+    mongo = component.mongoConnector.db,
+    domainFormat = DefaultSessionRepository.SessionProcess.format
+  )
+  with SessionRepository {
 
   val lastAccessedIndexName = "lastAccessedIndex"
   val expiryAfterOptionName = "expireAfterSeconds"
@@ -147,7 +147,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs => (Some(x), None)
     }
 
-
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, labels, Map(), Nil, Instant.now))
     collection
@@ -161,12 +160,19 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
+    (name -> Json.toJsFieldJsValueWrapper(value))
+
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli),
-                                  s"answers.$url" -> answer,
-                                  "labels" -> labels.updatedLabels))
+      Json.obj(
+        "$set" -> Json.obj(
+          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+                 toFieldPair(s"answers.$url", answer)) ++
+            labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+        )
+      )
     ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
@@ -196,10 +202,14 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     }
 
   def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]] =
-    findAndUpdate(
-      Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj("labels" -> labels.updatedLabels))
-    ).map { result =>
+    if (labels.updatedLabels.isEmpty) Future.successful(Right({}))
+    else
+      findAndUpdate(
+        Json.obj("_id" -> key),
+        Json.obj("$set" -> Json.obj(
+          labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*)
+        )
+      ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
