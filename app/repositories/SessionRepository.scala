@@ -168,9 +168,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(
-          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-                 toFieldPair(s"answers.$url", answer)) ++
-            labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))), toFieldPair(s"answers.$url", answer)) ++
+           labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
         )
       )
     ).map { result =>
@@ -206,9 +205,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     else
       findAndUpdate(
         Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj(
-          labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*)
-        )
+        Json.obj("$set" -> Json.obj(labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
       ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
