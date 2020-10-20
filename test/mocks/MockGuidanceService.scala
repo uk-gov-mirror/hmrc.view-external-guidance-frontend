@@ -89,8 +89,8 @@ trait MockGuidanceService extends MockFactory {
 
     def saveLabels(docId: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] = {
       (mockGuidanceService
-        .saveLabels(_: String, _: Labels)(_: ExecutionContext))
-        .expects(docId, *, *)
+        .saveLabels(_: String, _: Labels))
+        .expects(docId, *)
     }
 
   }

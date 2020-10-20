@@ -57,8 +57,8 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
-  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]]
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
+  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -163,13 +163,13 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
     (name -> Json.toJsFieldJsValueWrapper(value))
 
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]] =
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(
-          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))), toFieldPair(s"answers.$url", answer)) ++
-           labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+                toFieldPair(s"answers.$url", answer)) ++ labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
         )
       )
     ).map { result =>
@@ -177,14 +177,14 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(
-              s"Attempt to saveAnswerToQuestion using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+              s"Attempt to saveUserAnswerAndLabels using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
             )
             Left(NotFoundError): RequestOutcome[Unit]
           }(_ => Right({}))
       }
       .recover {
         case lastError =>
-          logger.error(s"Error $lastError while trying to update question answers within session repo with _id=$key, url: $url, answer: $answer")
+          logger.error(s"Error $lastError while trying to update question answers and labels within session repo with _id=$key, url: $url, answer: $answer")
           Left(DatabaseError)
       }
 
@@ -200,12 +200,10 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]] =
-    if (labels.updatedLabels.isEmpty) Future.successful(Right({}))
-    else
+  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj(labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
+        Json.obj("$set" -> Json.obj(labels.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
       ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]

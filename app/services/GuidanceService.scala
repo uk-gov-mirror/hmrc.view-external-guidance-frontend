@@ -104,7 +104,7 @@ class GuidanceService @Inject() (
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, answer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, answer, labels).map{
+      sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, answer, labels.updatedLabels.values.toSeq).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)
@@ -113,13 +113,10 @@ class GuidanceService @Inject() (
     }
   }
 
-  def saveLabels(docId: String, labels: Labels)(implicit context: ExecutionContext): Future[RequestOutcome[Unit]] =
-    sessionRepository.saveLabels(docId, labels).map {
-      case Left(err) =>
-        logger.error(s"Failure to save process labels, err = $err")
-        Left(err)
-      case result => result
-    }
+  def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
+    labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
+      sessionRepository.saveLabels(docId, labels.updatedLabels.values.toSeq)
+    )
 
   def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(
