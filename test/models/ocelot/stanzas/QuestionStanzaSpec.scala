@@ -18,18 +18,9 @@ package models.ocelot.stanzas
 
 import play.api.libs.json._
 
-import base.BaseSpec
+import base.{BaseSpec, TestConstants}
 
-class QuestionStanzaSpec extends BaseSpec {
-
-  val zero: Int = 0
-  val one: Int = 1
-  val two: Int = 2
-  val three: Int = 3
-  val four: Int = 4
-  val five: Int = 5
-  val seven: Int = 7
-  val eight: Int = 8
+class QuestionStanzaSpec extends BaseSpec with TestConstants {
 
   val twoStr: String = "2"
   val fourStr: String = "4"
@@ -61,9 +52,9 @@ class QuestionStanzaSpec extends BaseSpec {
 
   val validQuestionStanzaJson: JsObject = Json.parse(twoAnswersQuestionStanzaJsonInput).as[JsObject]
 
-  val expectedTwoQuestionsQuestionStanza = QuestionStanza(one, Seq(zero, two), Seq(twoStr, fiveStr), None, stack)
+  val expectedTwoQuestionsQuestionStanza: QuestionStanza = QuestionStanza(one, Seq(zero, two), Seq(twoStr, fiveStr), None, stack)
 
-  val expectedThreeAnswersQuestionStanza = QuestionStanza(one, Seq(three, four, five), Seq(fourStr, sevenStr, eightStr), None, stack)
+  val expectedThreeAnswersQuestionStanza: QuestionStanza = QuestionStanza(one, Seq(three, four, five), Seq(fourStr, sevenStr, eightStr), None, stack)
 
   "Question stanza" must {
 
