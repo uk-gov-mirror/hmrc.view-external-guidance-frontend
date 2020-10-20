@@ -34,14 +34,14 @@ class PageRenderer @Inject() () {
       case s: Stanza with Evaluate =>
         val (next, updatedLabels) = s.eval(labels)
         evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
-      case s: Stanza => evaluateStanzas(s.next(0), labels, visualStanzas :+ s, seen :+ stanzaId)
+      case s: Stanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
     }
 
   def renderPage(page: Page, labels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
     implicit val ids = page.keyedStanzas.map(_.key)
 
-    val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
+    val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
 
     (visualStanzas, newLabels, optionalInput)
   }
@@ -61,7 +61,7 @@ class PageRenderer @Inject() () {
           evaluatePostInputStanzas(next, updatedLabels, seen)
       }
 
-    val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next(0), labels, Nil, Nil)
+    val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       val (next, postInputLabels) = dataInputStanza.eval(answer, newLabels)
       next.fold[(Option[String], Labels)]((None, postInputLabels))(evaluatePostInputStanzas(_, postInputLabels, seen))

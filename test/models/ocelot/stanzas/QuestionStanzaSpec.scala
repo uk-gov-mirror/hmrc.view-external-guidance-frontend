@@ -17,8 +17,10 @@
 package models.ocelot.stanzas
 
 import play.api.libs.json._
+import models.ocelot._
 
 import base.{BaseSpec, TestConstants}
+
 
 class QuestionStanzaSpec extends BaseSpec with TestConstants {
 
@@ -74,6 +76,34 @@ class QuestionStanzaSpec extends BaseSpec with TestConstants {
       val threeAnswersQuestionStanza: QuestionStanza = threeAnswersQuestionStanzaJson.as[QuestionStanza]
 
       threeAnswersQuestionStanza shouldBe expectedThreeAnswersQuestionStanza
+    }
+
+    "Validate input as correct when valid" in {
+      val answers =
+        Seq(Phrase(Vector("Some Text 1", "Welsh, Some Text 1")),
+            Phrase(Vector("Some Text 2", "Welsh, Some Text 2")),
+            Phrase(Vector("Some Text 3", "Welsh, Some Text 3")))
+      val answerDestinations = Seq("4", "5", "6")
+      val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+
+      val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+
+      question.validInput("1") shouldBe Some("1")
+    }
+
+    "Validate input as incorrect when invalid" in {
+      val answers =
+        Seq(Phrase(Vector("Some Text 1", "Welsh, Some Text 1")),
+            Phrase(Vector("Some Text 2", "Welsh, Some Text 2")),
+            Phrase(Vector("Some Text 3", "Welsh, Some Text 3")))
+      val answerDestinations = Seq("4", "5", "6")
+      val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+
+      val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+
+      question.validInput("4") shouldBe None
+      question.validInput("-1") shouldBe None
+      question.validInput("blah") shouldBe None
     }
 
     "serialise to json" in {
