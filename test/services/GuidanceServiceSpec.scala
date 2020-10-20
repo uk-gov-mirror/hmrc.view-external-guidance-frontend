@@ -104,7 +104,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns((pages(2).stanzas, labels, None))
 
       MockSessionRepository
-        .saveLabels(sessionRepoId, LabelCache())
+        .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
@@ -140,7 +140,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns((pages(2).stanzas, labels, None))
 
       MockSessionRepository
-        .saveLabels(sessionRepoId, LabelCache())
+        .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
@@ -308,7 +308,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns((None, LabelCache()))
 
       MockSessionRepository
-        .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
+        .saveUserAnswerAndLabels(processId,"/test-page", "yes", Seq.empty)
         .returns(Future.successful(Right({})))
 
       target.submitPage(pec, "/test-page", "yes").map{
@@ -324,7 +324,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns((Some("4"), LabelCache()))
 
       MockSessionRepository
-        .saveUserAnswerAndLabels(processId,"/test-page", "yes", LabelCache())
+        .saveUserAnswerAndLabels(processId,"/test-page", "yes", Seq.empty)
         .returns(Future.successful(Right({})))
 
       target.submitPage(pec, "/test-page", "yes").map{
@@ -339,7 +339,7 @@ class GuidanceServiceSpec extends BaseSpec {
   "Calling saveLabels" should {
     "Success when labels saved successfully" in new Test {
       MockSessionRepository
-        .saveLabels(processId, LabelCache())
+        .saveLabels(processId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       target.saveLabels(processId, LabelCache()).map{
@@ -350,7 +350,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "An error when labels not saved successfully" in new Test {
       MockSessionRepository
-        .saveLabels(processId, LabelCache())
+        .saveLabels(processId, Seq.empty)
         .returns(Future.successful(Left(DatabaseError)))
 
       target.saveLabels(processId, LabelCache()).map{

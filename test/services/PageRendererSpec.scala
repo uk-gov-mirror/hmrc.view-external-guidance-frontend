@@ -91,7 +91,6 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     def testRender(pge: Page, id: String, lbls: Labels): Unit = {
       val (nxt, newLabels) = renderer.renderPagePostSubmit(pge, LabelCache(), id)
-
       nxt.fold(fail){ next =>
         next shouldBe answerDestinations(id.toInt)
         newLabels.updatedLabels shouldBe lbls.updatedLabels
@@ -192,11 +191,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
-      testRender(page, "0", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 1"),None))))
+      testRender(page, "0", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 1"),None))))
 
-      testRender(page, "1", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 2"),None))))
+      testRender(page, "1", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 2"),None))))
 
-      testRender(page, "2", LabelCache(Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 3"),None))))
+      testRender(page, "2", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 3"),None))))
 
     }
 

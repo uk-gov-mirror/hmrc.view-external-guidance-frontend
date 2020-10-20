@@ -20,7 +20,7 @@ package repositories
 
 import config.AppConfig
 import com.google.inject.{Inject, Singleton}
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, Writes}
 import models.ocelot._
 import models.errors._
 import models.MongoDateTimeFormats
@@ -57,18 +57,18 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
-  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]]
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
+  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
 class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
-    extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
-      collectionName = "view-external-guidance-session",
-      mongo = component.mongoConnector.db,
-      domainFormat = DefaultSessionRepository.SessionProcess.format
-    )
-    with SessionRepository {
+  extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
+    collectionName = "view-external-guidance-session",
+    mongo = component.mongoConnector.db,
+    domainFormat = DefaultSessionRepository.SessionProcess.format
+  )
+  with SessionRepository {
 
   val lastAccessedIndexName = "lastAccessedIndex"
   val expiryAfterOptionName = "expireAfterSeconds"
@@ -147,7 +147,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs => (Some(x), None)
     }
 
-
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, labels, Map(), Nil, Instant.now))
     collection
@@ -161,25 +160,31 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]] =
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
+    (name -> Json.toJsFieldJsValueWrapper(value))
+
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli),
-                                  s"answers.$url" -> answer,
-                                  "labels" -> labels.updatedLabels))
+      Json.obj(
+        "$set" -> Json.obj(
+          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+                toFieldPair(s"answers.$url", answer)) ++ labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+        )
+      )
     ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
           .fold {
             logger.warn(
-              s"Attempt to saveAnswerToQuestion using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+              s"Attempt to saveUserAnswerAndLabels using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
             )
             Left(NotFoundError): RequestOutcome[Unit]
           }(_ => Right({}))
       }
       .recover {
         case lastError =>
-          logger.error(s"Error $lastError while trying to update question answers within session repo with _id=$key, url: $url, answer: $answer")
+          logger.error(s"Error $lastError while trying to update question answers and labels within session repo with _id=$key, url: $url, answer: $answer")
           Left(DatabaseError)
       }
 
@@ -195,11 +200,11 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  def saveLabels(key: String, labels: Labels): Future[RequestOutcome[Unit]] =
-    findAndUpdate(
-      Json.obj("_id" -> key),
-      Json.obj("$set" -> Json.obj("labels" -> labels.updatedLabels))
-    ).map { result =>
+  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
+      findAndUpdate(
+        Json.obj("_id" -> key),
+        Json.obj("$set" -> Json.obj(labels.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
+      ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
           .fold {

@@ -144,6 +144,20 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       asString(TextBuilder.flattenPlaceholders(text)) shouldBe "View instructions for mending a broken axle"
     }
 
+    "Return both normal and link text for combination of leading text followed by button text" in {
+
+      val text: String = "View instructions for [button:mending a broken axle:http://mechanicsAreUs/axles]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "View instructions for mending a broken axle"
+    }
+
+    "Return both normal and link text for combination of leading text followed by link-tab text" in {
+
+      val text: String = "View instructions for [link-tab:mending a broken axle:http://mechanicsAreUs/axles]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "View instructions for mending a broken axle"
+    }
+
     "Return both normal text and link text for combination of leading link text followed by normal text" in {
 
       val text: String = "[link:Click here:https://my.com/details] for information"
@@ -156,6 +170,34 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text: String = "For details [link:click here:https://info.co.uk/details] and follow the instructions shown"
 
       asString(TextBuilder.flattenPlaceholders(text)) shouldBe "For details click here and follow the instructions shown"
+    }
+
+    "Return both normal and link text for text with single embedded button" in {
+
+      val text: String = "For details [button:click here:https://info.co.uk/details] and follow the instructions shown"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "For details click here and follow the instructions shown"
+    }
+
+    "Return both normal and link text for text with single embedded link-tab" in {
+
+      val text: String = "For details [link-tab:click here:https://info.co.uk/details] and follow the instructions shown"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "For details click here and follow the instructions shown"
+    }
+
+    "Return both normal and button text with normal text embedded in links" in {
+
+      val text: String = "[button:Link 1 text:http://link1] and [button:link 2 text:https://link2]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Link 1 text and link 2 text"
+    }
+
+    "Return both normal and link-tab text with normal text embedded in links" in {
+
+      val text: String = "[link-tab:Link 1 text:http://link1] and [link-tab:link 2 text:https://link2]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Link 1 text and link 2 text"
     }
 
     "Return both normal and link text with normal text embedded in links" in {
@@ -172,6 +214,20 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
     }
 
+    "Return both normal and button text from mixed text starting with normal text" in {
+
+      val text: String = "Today is [link:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link:Thursday 11th May:http://my.com/calendar]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+    }
+
+    "Return both normal and link-tab text from mixed text starting with normal text" in {
+
+      val text: String = "Today is [link-tab:Wednesday 10th May:http://my.com/calendar] and tomorrow is [link-tab:Thursday 11th May:http://my.com/calendar]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Today is Wednesday 10th May and tomorrow is Thursday 11th May"
+    }
+
     "Return both normal and link text from mixed text staring with link" in {
 
       val text: String = "[link:Here and now:http://thisyear/today] we must all [link:try:https://explain] to be calm"
@@ -179,9 +235,37 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Here and now we must all try to be calm"
     }
 
+    "Return both normal and button text from mixed text staring with link" in {
+
+      val text: String = "[button:Here and now:http://thisyear/today] we must all [button:try:https://explain] to be calm"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Here and now we must all try to be calm"
+    }
+
+    "Return both normal and link-tab text from mixed text staring with link" in {
+
+      val text: String = "[link-tab:Here and now:http://thisyear/today] we must all [link-tab:try:https://explain] to be calm"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "Here and now we must all try to be calm"
+    }
+
     "Return correct text with back to back links" in {
 
       val text: String = "This should [link:be interesting:https://my.com/interesting?part=2] [link:and informative:http://my.com/inform]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "This should be interesting and informative"
+    }
+
+    "Return correct text with back to back buttons" in {
+
+      val text: String = "This should [button:be interesting:https://my.com/interesting?part=2] [button:and informative:http://my.com/inform]"
+
+      asString(TextBuilder.flattenPlaceholders(text)) shouldBe "This should be interesting and informative"
+    }
+
+    "Return correct text with back to back link-tabs" in {
+
+      val text: String = "This should [link-tab:be interesting:https://my.com/interesting?part=2] [link-tab:and informative:http://my.com/inform]"
 
       asString(TextBuilder.flattenPlaceholders(text)) shouldBe "This should be interesting and informative"
     }
