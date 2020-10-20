@@ -16,14 +16,10 @@
 
 package models.ui
 
-import base.BaseSpec
+import base.{BaseSpec, TestConstants}
 import play.api.i18n.Lang
 
-class UIComponentsSpec extends BaseSpec {
-
-  val four: Int = 4
-  val five: Int = 5
-  val six: Int = 6
+class UIComponentsSpec extends BaseSpec with TestConstants {
 
   val h1English: String = "Heading level 1 text"
   val h1Welsh: String = "Welsh heading level 1 text"
