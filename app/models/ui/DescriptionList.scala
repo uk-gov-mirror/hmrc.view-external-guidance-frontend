@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models.ui
 
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-
-case class Phrase(langs: Vector[String])
-
-object Phrase {
-  def apply(first: String, second: String): Phrase = Phrase(Vector(first, second))
-  implicit val reads: Reads[Phrase] = __.read[Vector[String]](minLength[Vector[String]](2)).map(Phrase(_))
-
-  implicit val writes: Writes[Phrase] = new Writes[Phrase] {
-    override def writes(phrase: Phrase): JsValue = Json.toJson(phrase.langs)
-  }
-
-  def apply(): Phrase = Phrase(Vector("",""))
+case class DescriptionCell(txt: Text, hint: Option[Text] = None)
+case class DescriptionRow(cells: Seq[DescriptionCell])
+case class DescriptionList(rows: Seq[DescriptionRow]) extends UIComponent {
+  val text: Text = Text()
 }

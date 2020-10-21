@@ -35,11 +35,22 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
+             case rg: RowGroup => acc :+ fromRowGroup(rg)
              case in: OcelotInput => Seq(fromInput(in, formData, acc))
              case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
+
+  private def fromRowGroup(rg: RowGroup): UIComponent = {
+    val rowLength = rg.group.map(_.cells.length).max
+    DescriptionList(rg.group.map{row =>
+      DescriptionRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
+        val (txt, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
+        DescriptionCell(txt, hint)
+      })
+    })
+  }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {

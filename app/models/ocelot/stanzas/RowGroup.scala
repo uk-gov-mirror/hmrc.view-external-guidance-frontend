@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package models.ocelot
+package models.ocelot.stanzas
 
-import play.api.libs.json.Reads._
-import play.api.libs.json._
+case class RowGroup (override val next: Seq[String], group: Seq[Row]) extends VisualStanza with Populated
 
-case class Phrase(langs: Vector[String])
-
-object Phrase {
-  def apply(first: String, second: String): Phrase = Phrase(Vector(first, second))
-  implicit val reads: Reads[Phrase] = __.read[Vector[String]](minLength[Vector[String]](2)).map(Phrase(_))
-
-  implicit val writes: Writes[Phrase] = new Writes[Phrase] {
-    override def writes(phrase: Phrase): JsValue = Json.toJson(phrase.langs)
-  }
-
-  def apply(): Phrase = Phrase(Vector("",""))
+object RowGroup {
+  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, group)
 }

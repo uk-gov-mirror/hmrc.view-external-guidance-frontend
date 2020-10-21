@@ -20,6 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import models.ui.{BulletPointList, Link, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
+import models.ui.{DescriptionList, DescriptionRow, DescriptionCell}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -304,7 +305,61 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val five: Int = 5
   }
 
+  trait DLTest extends Test {
+    val phraseWithHint = Phrase(Vector("Blah[hint:HELLO]", "Blah[hint:HELLO]"))
+    val rows = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase()), Seq()))
+    val rowsWithHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithHint), Seq()))
+    val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
+
+    val dlRows = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("","")))))
+    val expectedDl = DescriptionList(dlRows)
+    val dlRowsWithHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah"), Some(Text("HELLO","HELLO"))))))
+    val expectedDlWithHint = DescriptionList(dlRowsWithHint)
+    val sparseDlRows = Seq(dlRows(0), DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("","")), DescriptionCell(Text("","")))), dlRows(2))
+    val expectedDlSparse = DescriptionList(sparseDlRows)
+  }
+
   "UIBuilder" must {
+
+    "convert a RowGroup with three simple phrase column into a DescriptionList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rows)))
+      p.components.head match {
+        case dl: DescriptionList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDl.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three column including a hint into a DescriptionList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithHint)))
+      p.components.head match {
+        case dl: DescriptionList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDlWithHint.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three sparse columns into a DescriptionList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), sparseRows)))
+      p.components.head match {
+        case dl: DescriptionList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDlSparse.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
 
     "convert and Ocelot page into a UI page with the same url" in new Test {
 
@@ -364,17 +419,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val uiPage = uiBuilder.fromStanzas(pageWithEmbeddPageLinks.url, pageWithEmbeddPageLinks.stanzas)
       uiPage.components(5) shouldBe models.ui.Paragraph(pageLinkTextItems, false)
     }
-
-    // "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
-    //   implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
-    //   val pageMap = uiBuilder.pages(stanzaPages)
-
-    //   pageMap.keys.toList.length shouldBe stanzaPages.length
-
-    //   stanzaPages.foreach { p =>
-    //     pageMap.contains(p.url) shouldBe true
-    //   }
-    // }
 
     "convert Callout type SubSection to H4" in new Test {
       val uiPage = uiBuilder.fromStanzas(pageWithEmbeddH4.url, pageWithEmbeddH4.stanzas)
