@@ -69,17 +69,32 @@ object TextBuilder {
     Text(en, cy)
   }
 
-  // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
-  // The text before the first hint (if any) and if so the first hint will be
-  // returned. All subsequent text and hints will be ignored and lost
-  def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
+  private def singlePhraseWithOptionalHint(txt: Phrase): (Phrase, Option[Text]) = {
     val (enTexts, enMatches) = fromPattern(answerHintPattern, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(answerHintPattern, txt.langs(1))
 
     val enHint = enMatches.headOption.map(enM => enM.group(1))
     val cyHint = cyMatches.headOption.map(cyM => cyM.group(1))
     val hint = enHint.map(en => Text(en, cyHint.getOrElse("")))
-    (Text(enTexts.head.trim, cyTexts.head.trim), hint)
+    (Phrase(enTexts.head.trim, cyTexts.head.trim), hint)
+  }
+
+  // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
+  // The string before the first hint will be converted to a Text object
+  // and returned along with optional hint
+  // All characters after the optional hint pattern are discarded
+  def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
+    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
+    (Text(phrase.langs), hint)
+  }
+
+  // Parses a phrase potentially containing a hint pattern[hint:<Text Hint>]
+  // The string before the first hint will be converted to a Text object
+  // expanding any placeholders contained. All characters after the optional hint
+  // pattern are discarded
+  def fromPhraseWithOptionalHint(txt: Phrase)(implicit urlMap: Map[String, String]): (Text, Option[Text]) = {
+    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
+    (fromPhrase(phrase), hint)
   }
 
   @tailrec

@@ -310,6 +310,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val rows = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase()), Seq()))
     val rowsWithHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithHint), Seq()))
     val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
+    val phraseWithLinkAndHint = Phrase(Vector("[link:Change:3][hint:HELLO]", "[link:Change:3][hint:HELLO]"))
+    val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
 
     val dlRows = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("","")))))
     val expectedDl = DescriptionList(dlRows)
@@ -317,6 +319,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val expectedDlWithHint = DescriptionList(dlRowsWithHint)
     val sparseDlRows = Seq(dlRows(0), DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("","")), DescriptionCell(Text("","")))), dlRows(2))
     val expectedDlSparse = DescriptionList(sparseDlRows)
+    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text.link("dummy-path",Vector("Change", "Change")), Some(Text("HELLO","HELLO"))))))
+    val expectedDLWithLinkAndHint = DescriptionList(dlRowsWithLinkAndHint)
+
   }
 
   "UIBuilder" must {
@@ -360,6 +365,18 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     }
 
+    "convert a RowGroup with three columns including a link and hint into a DescriptionList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithLinkAndHint)))
+      p.components.head match {
+        case dl: DescriptionList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDLWithLinkAndHint.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
 
     "convert and Ocelot page into a UI page with the same url" in new Test {
 

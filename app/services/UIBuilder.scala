@@ -42,11 +42,11 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
            }
          })
 
-  private def fromRowGroup(rg: RowGroup): UIComponent = {
+  private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     val rowLength = rg.group.map(_.cells.length).max
     DescriptionList(rg.group.map{row =>
       DescriptionRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
-        val (txt, hint) = TextBuilder.singleTextWithOptionalHint(phrase)
+        val (txt, hint) = TextBuilder.fromPhraseWithOptionalHint(phrase)
         DescriptionCell(txt, hint)
       })
     })
