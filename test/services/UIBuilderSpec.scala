@@ -54,14 +54,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, None, false)), Seq.empty)
 
-    val stanzaAggregator: StanzaAggregator = new StanzaAggregator()
-
-    val aggregatedPageStanzas: Seq[Stanza] = stanzaAggregator.aggregate(
-      page.stanzas,
-      BulletPointBuilder.groupBulletPointInstructions,
-      RowAggregator.aggregateStanzas
-    )
-
     val pageWithQuestionHint =
       Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
 
@@ -296,12 +288,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy) + Text(startLinkEn, startLinkCy)
 
     val pageWithEmbeddLinks: Page = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
-
-    val aggregatedPageWithEmbeddLinksStanzas: Seq[Stanza] = stanzaAggregator.aggregate(
-      pageWithEmbeddLinks.stanzas,
-      BulletPointBuilder.groupBulletPointInstructions,
-      RowAggregator.aggregateStanzas
-    )
 
     val pageWithEmbeddLinks2 = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks2, Seq.empty)
 
