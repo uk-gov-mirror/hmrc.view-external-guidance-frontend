@@ -22,7 +22,7 @@
 @(cell: DescriptionCell)(implicit request: Request[_], messages: Messages, labels: Labels)
 <dd class="govuk-summary-list__actions">
   @render_text(cell.txt)
-  @cell.hint.map(hint => <span class="govuk-visually-hidden">{render_text(hint)}</span>)
+  @* @cell.hint.map(hint => <span class="govuk-visually-hidden">{render_text(hint)}</span>) *@
 </dd>
 @{
      //$COVERAGE-OFF$

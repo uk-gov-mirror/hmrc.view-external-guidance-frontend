@@ -92,21 +92,21 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
       }
     }
 
-    "display the correct text in columns with action cell hint as visually hidden text" in new Test {
-      val html: Html = components.description_list(expectedDLWithLinkAndHint)
-      val dlElement: Element = getSingleElementByTag(html, "dl")
-      dlElement.hasClass("govuk-summary-list") shouldBe true
-      val rows = dlElement.getElementsByTag("div").asScala.toList
+    // "display the correct text in columns with action cell hint as visually hidden text" in new Test {
+    //   val html: Html = components.description_list(expectedDLWithLinkAndHint)
+    //   val dlElement: Element = getSingleElementByTag(html, "dl")
+    //   dlElement.hasClass("govuk-summary-list") shouldBe true
+    //   val rows = dlElement.getElementsByTag("div").asScala.toList
 
-      for( row <- rows ){
-        row.hasClass("govuk-summary-list__row") shouldBe true
-        val dds = row.getElementsByTag("dd").asScala.toList
-        dds.size shouldBe 2
+    //   for( row <- rows ){
+    //     row.hasClass("govuk-summary-list__row") shouldBe true
+    //     val dds = row.getElementsByTag("dd").asScala.toList
+    //     dds.size shouldBe 2
 
-        val span = dds(1).getElementsByTag("span").first
-        elementAttrs(span)("class") shouldBe "govuk-visually-hidden"
-      }
-    }
+    //     val span = dds(1).getElementsByTag("span").first
+    //     elementAttrs(span)("class") shouldBe "govuk-visually-hidden"
+    //   }
+    // }
 
   }
 

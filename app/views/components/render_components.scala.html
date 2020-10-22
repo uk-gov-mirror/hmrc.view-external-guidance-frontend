@@ -19,7 +19,6 @@
 @import models.ocelot.Labels
 
 @(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, labels: Labels)
-
 @for(cmp <- elements) {
   @{cmp match {
         case p: Paragraph => components.paragraph(p)
@@ -31,7 +30,6 @@
         case d: DescriptionList => components.description_list(d)
         case _ =>
       }
-
   }
 }
 
