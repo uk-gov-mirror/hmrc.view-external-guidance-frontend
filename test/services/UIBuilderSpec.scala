@@ -321,7 +321,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val expectedDlSparse = DescriptionList(sparseDlRows)
     val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text.link("dummy-path",Vector("Change", "Change")), Some(Text("HELLO","HELLO"))))))
     val expectedDLWithLinkAndHint = DescriptionList(dlRowsWithLinkAndHint)
-
   }
 
   "UIBuilder" must {

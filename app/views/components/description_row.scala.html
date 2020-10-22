@@ -19,12 +19,17 @@
 @import models.ocelot.Labels
 @import models.ui.{DescriptionList, DescriptionRow}
 
-@(dl: DescriptionList)(implicit request: Request[_], messages: Messages, labels: Labels)
-<dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  @for(row <- dl.rows){
-    @description_row(row)
+@(row: DescriptionRow)(implicit request: Request[_], messages: Messages, labels: Labels)
+<div class="govuk-summary-list__row">
+  @for(index <- row.cells.indices) {
+    @{index match {
+      case 0 => <dt class="govuk-summary-list__key">{render_text(row.cells(0).txt)}</dt>
+      case 1 => <dd class="govuk-summary-list__value">{render_text(row.cells(1).txt)}</dd>
+      case x => description_actioncell(row.cells(x))
+      }
+    }
   }
-</dl>
+</div>
 @{
      //$COVERAGE-OFF$
 }
