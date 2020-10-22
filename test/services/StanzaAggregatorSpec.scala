@@ -84,27 +84,27 @@ class StanzaAggregatorSpec extends BaseSpec {
 
     // Define stanzas used as input to aggregator
     val pageStanza: Stanza = PageStanza("/aggregator-test", Seq("1"), stack = false)
-    val callout: Callout = new Callout(Title, title, Seq("2"), stack = false)
-    val instruction1: Instruction = new Instruction(introduction, Seq("3"), None, stack = false)
-    val instruction2: Instruction = new Instruction(bp1Item1, Seq("4"), None, stack = false)
-    val instruction3: Instruction = new Instruction(bp1Item2, Seq("5"), None, stack = true)
-    val instruction4: Instruction = new Instruction(bp1Item3, Seq("6"), None, stack = true)
-    val row1: Row = new Row(dl1r1Cells, Seq("7"), stack = false)
-    val row2: Row = new Row(dl1r2Cells, Seq("8"), stack = true)
-    val row3: Row = new Row(dl1r3Cells, Seq("9"), stack = true)
-    val instruction5: Instruction = new Instruction(instruction5Phrase, Seq("10"), None, stack = false)
-    val row4: Row = new Row(dl2r1Cells, Seq("11"), stack = false)
-    val row5: Row = new Row(dl2r2Cells, Seq("12"), stack = true)
-    val row6: Row = new Row(dl2r3Cells, Seq("13"), stack = true)
-    val row7: Row = new Row(dl2r4Cells, Seq("14"), stack = true)
-    val row8: Row = new Row(dl3r1Cells, Seq("15"), stack = false)
-    val instruction6: Instruction = new Instruction(bp2Item1, Seq("16"), None, stack = false)
-    val instruction7: Instruction = new Instruction(bp2Item2, Seq("17"), None, stack = true)
-    val instruction8: Instruction = new Instruction(bp2Item3, Seq("18"), None, stack = true)
-    val instruction9: Instruction = new Instruction(bp2Item4, Seq("19"), None, stack = true)
-    val instruction10: Instruction = new Instruction(instruction10Phrase, Seq("20"), None, stack = false)
-    val row9: Row = new Row(dl4r1Cells, Seq("21"), stack = true)
-    val instruction11: Instruction = new Instruction(instruction11Phrase, Seq("end"), None, stack = false)
+    val callout: Callout = Callout(Title, title, Seq("2"), stack = false)
+    val instruction1: Instruction = Instruction(introduction, Seq("3"), None, stack = false)
+    val instruction2: Instruction = Instruction(bp1Item1, Seq("4"), None, stack = false)
+    val instruction3: Instruction = Instruction(bp1Item2, Seq("5"), None, stack = true)
+    val instruction4: Instruction = Instruction(bp1Item3, Seq("6"), None, stack = true)
+    val row1: Row = Row(dl1r1Cells, Seq("7"), stack = false)
+    val row2: Row = Row(dl1r2Cells, Seq("8"), stack = true)
+    val row3: Row = Row(dl1r3Cells, Seq("9"), stack = true)
+    val instruction5: Instruction = Instruction(instruction5Phrase, Seq("10"), None, stack = false)
+    val row4: Row = Row(dl2r1Cells, Seq("11"), stack = false)
+    val row5: Row = Row(dl2r2Cells, Seq("12"), stack = true)
+    val row6: Row = Row(dl2r3Cells, Seq("13"), stack = true)
+    val row7: Row = Row(dl2r4Cells, Seq("14"), stack = true)
+    val row8: Row = Row(dl3r1Cells, Seq("15"), stack = false)
+    val instruction6: Instruction = Instruction(bp2Item1, Seq("16"), None, stack = false)
+    val instruction7: Instruction = Instruction(bp2Item2, Seq("17"), None, stack = true)
+    val instruction8: Instruction = Instruction(bp2Item3, Seq("18"), None, stack = true)
+    val instruction9: Instruction = Instruction(bp2Item4, Seq("19"), None, stack = true)
+    val instruction10: Instruction = Instruction(instruction10Phrase, Seq("20"), None, stack = false)
+    val row9: Row = Row(dl4r1Cells, Seq("21"), stack = true)
+    val instruction11: Instruction = Instruction(instruction11Phrase, Seq("end"), None, stack = false)
 
     val stanzaAggregator: StanzaAggregator = new StanzaAggregator()
   }
@@ -157,6 +157,27 @@ class StanzaAggregatorSpec extends BaseSpec {
       aggregatedStanzas(nine) shouldBe instruction10
       aggregatedStanzas(ten) shouldBe RowGroup(Seq(row9))
       aggregatedStanzas(eleven) shouldBe instruction11
+    }
+
+    "return sequence of stanzas unchanged when no aggregation is necessary" in new Test {
+
+      val inputStanzas: Seq[Stanza] = Seq(
+        pageStanza,
+        callout,
+        instruction1,
+        instruction5,
+        instruction10,
+        instruction11,
+        EndStanza
+      )
+
+      val outputStanzas: Seq[Stanza] = stanzaAggregator.aggregate(
+        inputStanzas,
+        BulletPointBuilder.groupBulletPointInstructions,
+        RowAggregator.aggregateStanzas
+      )
+
+      outputStanzas shouldBe inputStanzas
     }
   }
 

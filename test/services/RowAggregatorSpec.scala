@@ -56,10 +56,10 @@ class RowAggregatorSpec extends BaseSpec {
 
     val pageStanza: Stanza = PageStanza("/start", Seq(""), stack = false)
 
-    val callout: Callout = new Callout(Title, titlePhrase, Seq(""), stack = false)
-    val instruction: Instruction = new Instruction(instructionPhrase, Seq(""), None, stack = false)
-    val instruction1: Instruction = new Instruction(instruction1Phrase, Seq(""), None, stack = false)
-    val instruction2: Instruction = new Instruction(instruction2Phrase, Seq(""), None, stack = false)
+    val callout: Callout = Callout(Title, titlePhrase, Seq(""), stack = false)
+    val instruction: Instruction = Instruction(instructionPhrase, Seq(""), None, stack = false)
+    val instruction1: Instruction = Instruction(instruction1Phrase, Seq(""), None, stack = false)
+    val instruction2: Instruction = Instruction(instruction2Phrase, Seq(""), None, stack = false)
     val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction, instruction1, instruction2))
   }
 
@@ -67,7 +67,7 @@ class RowAggregatorSpec extends BaseSpec {
 
     "add an isolated row with stack equals false into a row group of size 1" in new Test {
 
-      val row: Row = new Row(r1Cells, Seq(""), stack = false)
+      val row: Row = Row(r1Cells, Seq(""), stack = false)
 
       val stanzas: Seq[Stanza] = Seq(
         pageStanza,
@@ -85,7 +85,7 @@ class RowAggregatorSpec extends BaseSpec {
 
   "add an isolated row with stack equals true into a row group of size 1" in new Test {
 
-    val row: Row = new Row(r1Cells, Seq(""), stack = true)
+    val row: Row = Row(r1Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -102,8 +102,8 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create two row groups for two contiguous rows with stack set to false" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""), stack = false)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -122,8 +122,8 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create a row group with two entries for two contiguous rows with stack set to true" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = true)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = true)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -141,8 +141,8 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create two row groups for two contiguous rows with stack set to true and false respectively" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = true)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""), stack = true)
+    val row2: Row = Row(r2Cells, Seq(""), stack = false)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -162,8 +162,8 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create a row group with two rows for two contiguous row stanzas with stack set to false and true respectively" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -182,11 +182,11 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create a row group with multiple rows" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
-    val row3: Row = new Row(r3Cells, Seq(""), stack = true)
-    val row4: Row = new Row(r4Cells, Seq(""), stack = true)
-    val row5: Row = new Row(r5Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
+    val row3: Row = Row(r3Cells, Seq(""), stack = true)
+    val row4: Row = Row(r4Cells, Seq(""), stack = true)
+    val row5: Row = Row(r5Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -207,10 +207,10 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create two row groups of size two from four contiguous rows where stack is false for the third row" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = true)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
-    val row3: Row = new Row(r3Cells, Seq(""), stack = false)
-    val row4: Row = new Row(r4Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = true)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
+    val row3: Row = Row(r3Cells, Seq(""), stack = false)
+    val row4: Row = Row(r4Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -229,8 +229,8 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create two row groups of size one for two non-contiguous rows in sequence of stanzas" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,
@@ -251,11 +251,11 @@ class RowAggregatorSpec extends BaseSpec {
 
   "create two row groups with multiple rows from a complex sequence of stanzas" in new Test {
 
-    val row1: Row = new Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = new Row(r2Cells, Seq(""), stack = true)
-    val row3: Row = new Row(r3Cells, Seq(""), stack = true)
-    val row4: Row = new Row(r4Cells, Seq(""), stack = false)
-    val row5: Row = new Row(r5Cells, Seq(""), stack = true)
+    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""), stack = true)
+    val row3: Row = Row(r3Cells, Seq(""), stack = true)
+    val row4: Row = Row(r4Cells, Seq(""), stack = false)
+    val row5: Row = Row(r5Cells, Seq(""), stack = true)
 
     val stanzas: Seq[Stanza] = Seq(
       pageStanza,

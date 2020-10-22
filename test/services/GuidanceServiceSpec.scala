@@ -82,7 +82,14 @@ class GuidanceServiceSpec extends BaseSpec {
                 None
               )
 
-    lazy val target = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, mockPageBuilder, mockPageRenderer, mockUIBuilder)
+    lazy val target = new GuidanceService(
+      MockAppConfig,
+      mockGuidanceConnector,
+      mockSessionRepository,
+      mockPageBuilder,
+      mockPageRenderer,
+      new StanzaAggregator(),
+      mockUIBuilder)
   }
 
   "Calling getPageContext with a valid URL" should {

@@ -16,7 +16,7 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
@@ -25,7 +25,7 @@ import play.api.Logger
 import scala.annotation.tailrec
 
 @Singleton
-class UIBuilder @Inject()(stanzaAggregator: StanzaAggregator) {
+class UIBuilder {
   val logger: Logger = Logger(getClass)
 
 def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
