@@ -42,8 +42,8 @@ case class LabelRef(name: String) extends TextItem {
   override def toString: String = s"[label:${name}]"
 }
 
-case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false) extends TextItem {
-  override def toString: String = s"[${if(asButton) "button" else "link"}:$text:$dest:$window]"
+case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false, hint:Option[String] = None) extends TextItem {
+  override def toString: String = s"[${if(asButton) "button" else "link"}:$text:$dest:$window:$hint]"
   def isEmpty: Boolean = text.isEmpty
   def toWords: Seq[String] = text.split(" +").toSeq
 }
@@ -67,6 +67,6 @@ object Text {
   def apply(): Text = Text(Nil, Nil)
 
   def labelRef(name: String): Text = Text(LabelRef(name), LabelRef(name))
-  def link(dest: String, phrase: Vector[String], window: Boolean = false, asButton: Boolean = false): Text =
-    Text(Link(dest, phrase(0), window, asButton), Link(dest, phrase(1), window, asButton))
+  def link(dest: String, phrase: Vector[String], window: Boolean = false, asButton: Boolean = false, hint: Option[Vector[String]] = None): Text =
+    Text(Link(dest, phrase(0), window, asButton, hint.map(_(0))), Link(dest, phrase(1), window, asButton, hint.map(_(1))))
 }

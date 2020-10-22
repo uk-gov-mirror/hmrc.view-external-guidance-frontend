@@ -46,8 +46,7 @@ def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = 
     val rowLength = rg.group.map(_.cells.length).max
     DescriptionList(rg.group.map{row =>
       DescriptionRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
-        val (txt, hint) = TextBuilder.fromPhraseWithOptionalHint(phrase)
-        DescriptionCell(txt, hint)
+        DescriptionCell(TextBuilder.fromPhrase(phrase))
       })
     })
   }

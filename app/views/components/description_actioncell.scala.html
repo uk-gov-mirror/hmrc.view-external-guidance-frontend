@@ -20,10 +20,7 @@
 @import models.ui.{DescriptionList, DescriptionRow}
 
 @(cell: DescriptionCell)(implicit request: Request[_], messages: Messages, labels: Labels)
-<dd class="govuk-summary-list__actions">
-  @render_text(cell.txt)
-  @* @cell.hint.map(hint => <span class="govuk-visually-hidden">{render_text(hint)}</span>) *@
-</dd>
+<dd class="govuk-summary-list__actions">@render_text(cell.txt)</dd>
 @{
      //$COVERAGE-OFF$
 }

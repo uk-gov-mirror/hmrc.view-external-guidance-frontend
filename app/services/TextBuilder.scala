@@ -30,7 +30,7 @@ object TextBuilder {
   private object Placeholders { // All the placeholder matching in one place
     val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)\\]"
     val boldPattern = "\\[bold:([^\\]]+)\\]"
-    val linkPattern = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
+    val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
     val plregex: Regex = s"${labelPattern}|${boldPattern}|${linkPattern}".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(2))
@@ -53,7 +53,8 @@ object TextBuilder {
           val window: Boolean = linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
           val dest: String = if (OcelotLink.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
           val asButton: Boolean = buttonOrLink(m).fold(false)(_ == "button")
-          Link(dest, linkText(m), window, asButton)
+          val (lnkText, lnkHint) = singleStringWithOptionalHint(linkText(m))
+          Link(dest, lnkText, window, asButton, lnkHint)
         })(txt => Words(txt, true))
       })(labelName => LabelRef(labelName))
     }
@@ -69,14 +70,16 @@ object TextBuilder {
     Text(en, cy)
   }
 
-  private def singlePhraseWithOptionalHint(txt: Phrase): (Phrase, Option[Text]) = {
-    val (enTexts, enMatches) = fromPattern(answerHintPattern, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(answerHintPattern, txt.langs(1))
+  private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
+    val (txts, matches) = fromPattern(answerHintPattern, str)
+    val hint = matches.headOption.map(m => m.group(1))
+    (txts.head.trim, hint)
+  }
 
-    val enHint = enMatches.headOption.map(enM => enM.group(1))
-    val cyHint = cyMatches.headOption.map(cyM => cyM.group(1))
-    val hint = enHint.map(en => Text(en, cyHint.getOrElse("")))
-    (Phrase(enTexts.head.trim, cyTexts.head.trim), hint)
+  private def singlePhraseWithOptionalHint(txt: Phrase): (Phrase, Option[Text]) = {
+    val (en, enHint) = singleStringWithOptionalHint(txt.langs(0))
+    val (cy, cyHint) = singleStringWithOptionalHint(txt.langs(1))
+    (Phrase(en, cy), enHint.map(Text(_, cyHint.getOrElse(""))))
   }
 
   // Parses a string potentially containing a hint pattern[hint:<Text Hint>]

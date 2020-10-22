@@ -306,20 +306,21 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   }
 
   trait DLTest extends Test {
-    val phraseWithHint = Phrase(Vector("Blah[hint:HELLO]", "Blah[hint:HELLO]"))
     val rows = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase()), Seq()))
-    val rowsWithHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithHint), Seq()))
+    val rowsComplete = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase(Vector("Blah", "Blah"))), Seq()))
     val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
-    val phraseWithLinkAndHint = Phrase(Vector("[link:Change:3][hint:HELLO]", "[link:Change:3][hint:HELLO]"))
+    val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
     val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
 
     val dlRows = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("","")))))
     val expectedDl = DescriptionList(dlRows)
-    val dlRowsWithHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah"), Some(Text("HELLO","HELLO"))))))
-    val expectedDlWithHint = DescriptionList(dlRowsWithHint)
+    val dlRowsComplete = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah")))))
+    val expectedDlComplete = DescriptionList(dlRowsComplete)
     val sparseDlRows = Seq(dlRows(0), DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("","")), DescriptionCell(Text("","")))), dlRows(2))
     val expectedDlSparse = DescriptionList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text.link("dummy-path",Vector("Change", "Change")), Some(Text("HELLO","HELLO"))))))
+    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")),
+                                                               DescriptionCell(Text("World","World")),
+                                                               DescriptionCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))))
     val expectedDLWithLinkAndHint = DescriptionList(dlRowsWithLinkAndHint)
   }
 
@@ -338,13 +339,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     }
 
-    "convert a RowGroup with three column including a hint into a DescriptionList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithHint)))
+    "convert a RowGroup with three columns into a DescriptionList, all columns complete" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsComplete)))
       p.components.head match {
         case dl: DescriptionList =>
           dl.rows.zipWithIndex.foreach{
             case (r, idx) =>
-              r shouldBe expectedDlWithHint.rows(idx)
+              r shouldBe expectedDlComplete.rows(idx)
           }
         case x => fail(s"Found $x")
       }

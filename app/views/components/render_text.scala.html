@@ -23,7 +23,8 @@
   txt.value(messages.lang).map{
     case w: Words if w.bold => s"<strong>$w</strong>"
     case w: Words => w
-    case l: Link => components.link(l)
+    case l: Link if l.hint.isEmpty => components.link(l)
+    case l: Link => components.link_withHint(l, l.hint.getOrElse(""))
     case lr: LabelRef => labels.formattedValue(lr.name).getOrElse("")
   }.mkString
 )

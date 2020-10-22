@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ui
-
-case class DescriptionCell(txt: Text)
-case class DescriptionRow(cells: Seq[DescriptionCell])
-case class DescriptionList(rows: Seq[DescriptionRow]) extends UIComponent {
-  val text: Text = Text()
-}
+@import models.ui.Link
+@(link: Link, hint: String)
+<a @if(!link.asButton) {class="govuk-link"} href="@link.dest" @if(link.asButton) {class="govuk-button" role="button" data-module="govuk-button"} @if(link.window) {target="_blank"}>@link.text<span class="govuk-visually-hidden">@hint</span></a>

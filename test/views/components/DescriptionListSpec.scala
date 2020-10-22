@@ -46,11 +46,13 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
     val h1Welsh: String = "Welsh Level 1 heading text"
     val dlRows = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("","")))))
     val expectedDl = DescriptionList(dlRows)
-    val dlRowsWithHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah"), Some(Text("HELLO","HELLO"))))))
+    val dlRowsWithHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah")))))
     val expectedDlWithHint = DescriptionList(dlRowsWithHint)
     val sparseDlRows = Seq(dlRows(0), DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("","")), DescriptionCell(Text("","")))), dlRows(2))
     val expectedDlSparse = DescriptionList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("Goodbye","Goodbye")), DescriptionCell(Text("World","World")), DescriptionCell(Text.link("dummy-path",Vector("Change", "Change")), Some(Text("HELLO","HELLO"))))))
+    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("Goodbye","Goodbye")),
+                                                               DescriptionCell(Text("World","World")),
+                                                               DescriptionCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))))
     val expectedDLWithLinkAndHint = DescriptionList(dlRowsWithLinkAndHint)
   }
 
@@ -92,21 +94,21 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
       }
     }
 
-    // "display the correct text in columns with action cell hint as visually hidden text" in new Test {
-    //   val html: Html = components.description_list(expectedDLWithLinkAndHint)
-    //   val dlElement: Element = getSingleElementByTag(html, "dl")
-    //   dlElement.hasClass("govuk-summary-list") shouldBe true
-    //   val rows = dlElement.getElementsByTag("div").asScala.toList
+    "display the correct text in columns with action cell hint as visually hidden text" in new Test {
+      val html: Html = components.description_list(expectedDLWithLinkAndHint)
+      val dlElement: Element = getSingleElementByTag(html, "dl")
+      dlElement.hasClass("govuk-summary-list") shouldBe true
+      val rows = dlElement.getElementsByTag("div").asScala.toList
 
-    //   for( row <- rows ){
-    //     row.hasClass("govuk-summary-list__row") shouldBe true
-    //     val dds = row.getElementsByTag("dd").asScala.toList
-    //     dds.size shouldBe 2
+      for( row <- rows ){
+        row.hasClass("govuk-summary-list__row") shouldBe true
+        val dds = row.getElementsByTag("dd").asScala.toList
+        dds.size shouldBe 2
 
-    //     val span = dds(1).getElementsByTag("span").first
-    //     elementAttrs(span)("class") shouldBe "govuk-visually-hidden"
-    //   }
-    // }
+        val a = dds(1).getElementsByTag("a").first
+        a.text shouldBe "ChangeGoodbye"
+      }
+    }
 
   }
 
