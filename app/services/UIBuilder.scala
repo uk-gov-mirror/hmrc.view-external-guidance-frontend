@@ -16,7 +16,7 @@
 
 package services
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
@@ -25,12 +25,12 @@ import play.api.Logger
 import scala.annotation.tailrec
 
 @Singleton
-class UIBuilder {
+class UIBuilder @Inject()(stanzaAggregator: StanzaAggregator) {
   val logger: Logger = Logger(getClass)
 
 def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
-         BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+           stanzas.foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)

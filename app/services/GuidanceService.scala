@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
+import models.ocelot.stanzas.Stanza
 
 @Singleton
 class GuidanceService @Inject() (
@@ -36,6 +37,7 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
+    stanzaAggregator: StanzaAggregator,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
@@ -89,7 +91,12 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.fromStanzas(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
+    val aggregatedStanzas: Seq[Stanza] = stanzaAggregator.aggregate(
+      visualStanzas,
+      BulletPointBuilder.groupBulletPointInstructions,
+      RowAggregator.aggregateStanzas
+    )
+    val uiPage = uiBuilder.fromStanzas(pec.page.url, aggregatedStanzas, formData)(pec.stanzaIdToUrlMap)
     PageContext(pec, uiPage, labels)
   }
 

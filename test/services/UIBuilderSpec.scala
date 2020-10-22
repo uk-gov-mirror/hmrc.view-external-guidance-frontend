@@ -56,7 +56,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val pageWithQuestionHint =
       Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
-    val uiBuilder: UIBuilder = new UIBuilder()
+    val uiBuilder: UIBuilder = new UIBuilder(new StanzaAggregator)
 
     val four: Int = 4
   }
@@ -298,7 +298,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val extraIncomeUrlMap = extraIncomeStanzaPages.map(p =>(p.id, p.url)).toMap
 
     // Define instance of class to be used in tests
-    val uiBuilder: UIBuilder = new UIBuilder()
+    val uiBuilder: UIBuilder = new UIBuilder(new StanzaAggregator)
 
     val four: Int = 4
     val five: Int = 5
@@ -724,7 +724,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val input1 = models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
 
-    val uiBuilder: UIBuilder = new UIBuilder()
+    val uiBuilder: UIBuilder = new UIBuilder(new StanzaAggregator)
 
     val four: Int = 4
   }
