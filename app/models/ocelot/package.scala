@@ -31,6 +31,6 @@ package object ocelot {
   def labelReferences(str: String): List[String] = plSingleGroupCaptures(labelRefRegex, str)
   def labelReference(str: String): Option[String] = plSingleGroupCaptures(labelRefRegex, str).headOption
   def isCurrency(str: String): Boolean = inputCurrencyRegex.findFirstIn(str).fold(false)(_ => true)
-  def asCurrency(value: String): Option[BigDecimal] = inputCurrencyRegex.findFirstIn(value).map(s => BigDecimal(s.filterNot(_==',')))
+  def asCurrency(value: String): Option[BigDecimal] = inputCurrencyRegex.findFirstIn(value.filterNot(_==' ')).map(s => BigDecimal(s.filterNot(_==',')))
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
 }
