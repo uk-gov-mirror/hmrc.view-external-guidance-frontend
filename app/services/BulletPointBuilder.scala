@@ -74,7 +74,7 @@ object BulletPointBuilder {
     constructLeadingText(noOfMatchedWords, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
   }
 
-  def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int): Int = {
+  private def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int): Int = {
 
     val firstInstruction = instructionGroup.group.head
 
@@ -194,7 +194,7 @@ object BulletPointBuilder {
     *
     * @return - Returns a list of strings containing the leading text
     */
-  def constructLeadingText(
+  private def constructLeadingText(
       wordLimit: Int,
       texts: List[String],
       textsProcessed: Int,
@@ -218,7 +218,7 @@ object BulletPointBuilder {
 
   }
 
-  def constructLeadingTextFromMatches(
+  private def constructLeadingTextFromMatches(
       wordLimit: Int,
       texts: List[String],
       textsProcessed: Int,
@@ -257,7 +257,7 @@ object BulletPointBuilder {
     *
     * @return - Returns a sub-sample of the final input text
     */
-  def extractLeadingMatchedWords(noOfMatchedWords: Int, texts: List[String], textsProcessed: Int, matches: List[Match], matchesProcessed: Int): String = {
+  private def extractLeadingMatchedWords(noOfMatchedWords: Int, texts: List[String], textsProcessed: Int, matches: List[Match], matchesProcessed: Int): String = {
 
     val textElements: List[Match] = notSpaceRegex.findAllMatchIn(texts(textsProcessed)).toList
 
@@ -283,7 +283,7 @@ object BulletPointBuilder {
     }
   }
 
-  def getUpdatedLeadingMatchedWords(
+  private def getUpdatedLeadingMatchedWords(
       noOfMatchedWords: Int,
       textElements: List[Match],
       texts: List[String],
@@ -310,7 +310,7 @@ object BulletPointBuilder {
     matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)
   }
 
-  def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
+  private def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
 
     // Break instruction text into fragments
     val text1FragmentsToDisplay: Seq[String] = TextBuilder.flattenPlaceholders(text1)
@@ -325,9 +325,9 @@ object BulletPointBuilder {
     (text1WordsToDisplay.size, text2WordsToDisplay.size, matchedTextItems)
   }
 
-  def wordsInString(text: String): Int = notSpaceRegex.findAllMatchIn(text).toList.size
+  private def wordsInString(text: String): Int = notSpaceRegex.findAllMatchIn(text).toList.size
 
-  def wordsInText(text: String, textsProcessed: Int, matches: List[Match], matchesProcessed: Int): Int = {
+  private def wordsInText(text: String, textsProcessed: Int, matches: List[Match], matchesProcessed: Int): Int = {
 
     val wordsInText: Int = wordsInString(text)
 
@@ -343,7 +343,7 @@ object BulletPointBuilder {
     }
   }
 
-  def wordsInMatchText(matchText: String, texts: List[String], textsProcessed: Int): Int = {
+  private def wordsInMatchText(matchText: String, texts: List[String], textsProcessed: Int): Int = {
 
     val wordsInMatchText: Int = wordsInString(matchText)
 
@@ -362,7 +362,7 @@ object BulletPointBuilder {
     }
   }
 
-  def processNextMatch(
+  private def processNextMatch(
       noOfWordsToMatch: Int,
       wordsProcessed: Int,
       noOfWordsInCurrentText: Int,
@@ -381,7 +381,7 @@ object BulletPointBuilder {
     notAllWordsProcessed || textLeadsNextMatch
   }
 
-  def processNextText(
+  private def processNextText(
       noOfWordsToMatch: Int,
       wordsProcessed: Int,
       noOfWordsInCurrentText: Int,
@@ -398,12 +398,12 @@ object BulletPointBuilder {
     notAllWordsProcessed || textFollowingPreviousMatch
   }
 
-  def textLeadingMatchText(textsProcessed: Int, texts: List[String], m: Match): Boolean = {
+  private def textLeadingMatchText(textsProcessed: Int, texts: List[String], m: Match): Boolean = {
 
     if (gapBetweenTextElements(texts(textsProcessed), TextBuilder.placeholderMatchText(m))) false else true
   }
 
-  def textTrailingMatchText(textsProcessed: Int, texts: List[String], matchText: String): Boolean = {
+  private def textTrailingMatchText(textsProcessed: Int, texts: List[String], matchText: String): Boolean = {
     if (texts.size - 1 >= textsProcessed) {
       if (gapBetweenTextElements(matchText, texts(textsProcessed))) false else true
     } else {
@@ -411,11 +411,11 @@ object BulletPointBuilder {
     }
   }
 
-  def updateNoOfMatchedWords(trailingText: Boolean, noOfMatchedWords: Int): Int = {
+  private def updateNoOfMatchedWords(trailingText: Boolean, noOfMatchedWords: Int): Int = {
 
     if (trailingText) noOfMatchedWords + 1 else noOfMatchedWords
 
   }
 
-  def gapBetweenTextElements(text1: String, text2: String): Boolean = text1.endsWith(" ") || text2.startsWith(" ")
+  private def gapBetweenTextElements(text1: String, text2: String): Boolean = text1.endsWith(" ") || text2.startsWith(" ")
 }
