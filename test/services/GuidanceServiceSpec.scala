@@ -88,7 +88,6 @@ class GuidanceServiceSpec extends BaseSpec {
       mockSessionRepository,
       mockPageBuilder,
       mockPageRenderer,
-      new StanzaAggregator(),
       mockUIBuilder)
   }
 

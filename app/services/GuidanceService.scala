@@ -37,10 +37,11 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
-    stanzaAggregator: StanzaAggregator,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
+  val uiBuilderPreProcessTransformations: Seq[(Seq[Stanza], Seq[Stanza]) => Seq[Stanza]] =
+    Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
@@ -91,11 +92,7 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    val aggregatedStanzas: Seq[Stanza] = stanzaAggregator.aggregate(
-      visualStanzas,
-      BulletPointBuilder.groupBulletPointInstructions,
-      RowAggregator.aggregateStanzas
-    )
+    val aggregatedStanzas: Seq[Stanza] = uiBuilderPreProcessTransformations.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
     val uiPage = uiBuilder.fromStanzas(pec.page.url, aggregatedStanzas, formData)(pec.stanzaIdToUrlMap)
     PageContext(pec, uiPage, labels)
   }

@@ -177,7 +177,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       mockSessionRepository,
       new PageBuilder,
       new PageRenderer,
-      new StanzaAggregator(),
       new UIBuilder())
 
     val target = new GuidanceController(
