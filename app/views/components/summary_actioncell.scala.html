@@ -14,19 +14,13 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Text => OcelotText, Link, Words, LabelRef, TextItem}
-@import play.twirl.api.StringInterpolation
+@import models.ui._
+@import controllers.routes._
 @import models.ocelot.Labels
+@import models.ui.{SummaryList, SummaryRow}
 
-@(txt: OcelotText)(implicit messages: Messages, labels: Labels)
-@Html(
-  txt.value(messages.lang).map{
-    case w: Words if w.bold => s"<strong>$w</strong>"
-    case w: Words => w
-    case l: Link => l.hint.fold(components.link(l))(h => components.link_withHint(l, h))
-    case lr: LabelRef => labels.formattedValue(lr.name).getOrElse("")
-  }.mkString
-)
+@(cell: SummaryCell)(implicit request: Request[_], messages: Messages, labels: Labels)
+<dd class="govuk-summary-list__actions">@render_text(cell.txt)</dd>
 @{
      //$COVERAGE-OFF$
 }

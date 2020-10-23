@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{Text => OcelotText, Link, Words, LabelRef, TextItem}
-@import play.twirl.api.StringInterpolation
-@import models.ocelot.Labels
+package models.ui
 
-@(txt: OcelotText)(implicit messages: Messages, labels: Labels)
-@Html(
-  txt.value(messages.lang).map{
-    case w: Words if w.bold => s"<strong>$w</strong>"
-    case w: Words => w
-    case l: Link => l.hint.fold(components.link(l))(h => components.link_withHint(l, h))
-    case lr: LabelRef => labels.formattedValue(lr.name).getOrElse("")
-  }.mkString
-)
-@{
-     //$COVERAGE-OFF$
+case class SummaryCell(txt: Text)
+case class SummaryRow(cells: Seq[SummaryCell])
+case class SummaryList(rows: Seq[SummaryRow]) extends UIComponent {
+  val text: Text = Text()
 }

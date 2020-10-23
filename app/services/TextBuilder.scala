@@ -28,17 +28,18 @@ object TextBuilder {
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
   private object Placeholders { // All the placeholder matching in one place
-    val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)\\]"
+    val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency))?\\]"
     val boldPattern = "\\[bold:([^\\]]+)\\]"
-    val linkPattern = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
+    val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
     val plregex: Regex = s"${labelPattern}|${boldPattern}|${linkPattern}".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
-    def boldTextOpt(m: Match): Option[String] = Option(m.group(2))
-    def buttonOrLink(m: Match): Option[String] = Option(m.group(3))
-    def linkTypeOpt(m: Match): Option[String] = Option(m.group(4))
-    def linkText(m: Match): String = m.group(5)
+    def labelTypeOpt(m: Match): Option[String] = Option(m.group(3))
+    def boldTextOpt(m: Match): Option[String] = Option(m.group(4))
+    def buttonOrLink(m: Match): Option[String] = Option(m.group(5))
+    def linkTypeOpt(m: Match): Option[String] = Option(m.group(6))
+    def linkText(m: Match): String = m.group(7)
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
-    def linkDest(m: Match): String = m.group(6)
+    def linkDest(m: Match): String = m.group(8)
   }
 
   import Placeholders._
@@ -53,14 +54,14 @@ object TextBuilder {
           val window: Boolean = linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
           val dest: String = if (OcelotLink.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
           val asButton: Boolean = buttonOrLink(m).fold(false)(_ == "button")
-          Link(dest, linkText(m), window, asButton)
+          val (lnkText, lnkHint) = singleStringWithOptionalHint(linkText(m))
+          Link(dest, lnkText, window, asButton, lnkHint)
         })(txt => Words(txt, true))
-      })(labelName => LabelRef(labelName))
+      })(labelName => LabelRef(labelName, labelTypeOpt(m)))
     }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty
-
     val (enTexts, enMatches) = fromPattern(plregex, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(plregex, txt.langs(1))
 
@@ -69,17 +70,34 @@ object TextBuilder {
     Text(en, cy)
   }
 
-  // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
-  // The text before the first hint (if any) and if so the first hint will be
-  // returned. All subsequent text and hints will be ignored and lost
-  def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
-    val (enTexts, enMatches) = fromPattern(answerHintPattern, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(answerHintPattern, txt.langs(1))
+  private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
+    val (txts, matches) = fromPattern(answerHintPattern, str)
+    val hint = matches.headOption.map(m => m.group(1))
+    (txts.head.trim, hint)
+  }
 
-    val enHint = enMatches.headOption.map(enM => enM.group(1))
-    val cyHint = cyMatches.headOption.map(cyM => cyM.group(1))
-    val hint = enHint.map(en => Text(en, cyHint.getOrElse("")))
-    (Text(enTexts.head.trim, cyTexts.head.trim), hint)
+  private def singlePhraseWithOptionalHint(txt: Phrase): (Phrase, Option[Text]) = {
+    val (en, enHint) = singleStringWithOptionalHint(txt.langs(0))
+    val (cy, cyHint) = singleStringWithOptionalHint(txt.langs(1))
+    (Phrase(en, cy), enHint.map(Text(_, cyHint.getOrElse(""))))
+  }
+
+  // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
+  // The string before the first hint will be converted to a Text object
+  // and returned along with optional hint
+  // All characters after the optional hint pattern are discarded
+  def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
+    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
+    (Text(phrase.langs), hint)
+  }
+
+  // Parses a phrase potentially containing a hint pattern[hint:<Text Hint>]
+  // The string before the first hint will be converted to a Text object
+  // expanding any placeholders contained. All characters after the optional hint
+  // pattern are discarded
+  def fromPhraseWithOptionalHint(txt: Phrase)(implicit urlMap: Map[String, String]): (Text, Option[Text]) = {
+    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
+    (fromPhrase(phrase), hint)
   }
 
   @tailrec

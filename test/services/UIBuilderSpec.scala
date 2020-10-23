@@ -20,6 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import models.ui.{BulletPointList, Link, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
+import models.ui.{SummaryList, SummaryRow, SummaryCell}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -312,7 +313,78 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val five: Int = 5
   }
 
+  trait DLTest extends Test {
+    val rows = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase()), Seq()))
+    val rowsComplete = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase(Vector("Blah", "Blah"))), Seq()))
+    val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
+    val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
+    val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
+
+    val dlRows = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("","")))))
+    val expectedDl = SummaryList(dlRows)
+    val dlRowsComplete = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("Blah","Blah")))))
+    val expectedDlComplete = SummaryList(dlRowsComplete)
+    val sparseDlRows = Seq(dlRows(0), SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("","")), SummaryCell(Text("","")))), dlRows(2))
+    val expectedDlSparse = SummaryList(sparseDlRows)
+    val dlRowsWithLinkAndHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")),
+                                                               SummaryCell(Text("World","World")),
+                                                               SummaryCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))))
+    val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+  }
+
   "UIBuilder" must {
+
+    "convert a RowGroup with three simple phrase column into a SummaryList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rows)))
+      p.components.head match {
+        case dl: SummaryList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDl.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three columns into a SummaryList, all columns complete" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsComplete)))
+      p.components.head match {
+        case dl: SummaryList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDlComplete.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three sparse columns into a SummaryList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), sparseRows)))
+      p.components.head match {
+        case dl: SummaryList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDlSparse.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three columns including a link and hint into a SummaryList" in new DLTest {
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithLinkAndHint)))
+      p.components.head match {
+        case dl: SummaryList =>
+          dl.rows.zipWithIndex.foreach{
+            case (r, idx) =>
+              r shouldBe expectedDLWithLinkAndHint.rows(idx)
+          }
+        case x => fail(s"Found $x")
+      }
+
+    }
 
     "convert and Ocelot page into a UI page with the same url" in new Test {
 
@@ -372,17 +444,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val uiPage = uiBuilder.fromStanzas(pageWithEmbeddPageLinks.url, pageWithEmbeddPageLinks.stanzas)
       uiPage.components(5) shouldBe models.ui.Paragraph(pageLinkTextItems, false)
     }
-
-    // "convert a sequence of stanza pages into a map of UI pages by url" in new Test {
-    //   implicit val stanzaToUrlMap: Map[String, String] = stanzaPages.map(p => (p.id, p.url)).toMap
-    //   val pageMap = uiBuilder.pages(stanzaPages)
-
-    //   pageMap.keys.toList.length shouldBe stanzaPages.length
-
-    //   stanzaPages.foreach { p =>
-    //     pageMap.contains(p.url) shouldBe true
-    //   }
-    // }
 
     "convert Callout type SubSection to H4" in new Test {
       val uiPage = uiBuilder.fromStanzas(pageWithEmbeddH4.url, pageWithEmbeddH4.stanzas)

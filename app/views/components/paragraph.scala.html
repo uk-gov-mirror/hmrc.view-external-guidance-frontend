@@ -20,9 +20,7 @@
 @(para: Paragraph)(implicit messages: Messages, labels: Labels)
 
 @pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body}}
-
 <p class="@pclass(para)">@components.render_text(para.text)</p>
-
 @{
      //$COVERAGE-OFF$
 }

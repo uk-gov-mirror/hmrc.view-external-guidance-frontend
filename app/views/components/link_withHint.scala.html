@@ -14,19 +14,6 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Text => OcelotText, Link, Words, LabelRef, TextItem}
-@import play.twirl.api.StringInterpolation
-@import models.ocelot.Labels
-
-@(txt: OcelotText)(implicit messages: Messages, labels: Labels)
-@Html(
-  txt.value(messages.lang).map{
-    case w: Words if w.bold => s"<strong>$w</strong>"
-    case w: Words => w
-    case l: Link => l.hint.fold(components.link(l))(h => components.link_withHint(l, h))
-    case lr: LabelRef => labels.formattedValue(lr.name).getOrElse("")
-  }.mkString
-)
-@{
-     //$COVERAGE-OFF$
-}
+@import models.ui.Link
+@(link: Link, hint: String)
+<a @if(!link.asButton) {class="govuk-link"} href="@link.dest" @if(link.asButton) {class="govuk-button" role="button" data-module="govuk-button"} @if(link.window) {target="_blank"}>@link.text<span class="govuk-visually-hidden">@hint</span></a>

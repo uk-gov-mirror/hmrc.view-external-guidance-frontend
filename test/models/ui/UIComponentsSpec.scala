@@ -230,14 +230,14 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
 
       // Test components of bullet point list
       bulletPointList.text.english(0).toString shouldBe "Leading text 1"
-      bulletPointList.text.english(1).toString shouldBe "[link:Leading text link:http://textUrl:false]"
+      bulletPointList.text.english(1).toString shouldBe "[link:Leading text link:http://textUrl:false:None]"
       bulletPointList.text.english(2).toString shouldBe "Leading text 2"
 
       bulletPointList.listItems.head.english(0).toString shouldBe "Bullet point 1 text"
-      bulletPointList.listItems.head.english(1).toString shouldBe "[link:Bullet point 1 link:http://bulletPointOneUrl:false]"
+      bulletPointList.listItems.head.english(1).toString shouldBe "[link:Bullet point 1 link:http://bulletPointOneUrl:false:None]"
 
       bulletPointList.listItems(1).english(0).toString shouldBe "Bullet point 2 text"
-      bulletPointList.listItems(1).english(1).toString shouldBe "[link:Bullet point 2 link:http://bulletPointTwoUrl:true]"
+      bulletPointList.listItems(1).english(1).toString shouldBe "[link:Bullet point 2 link:http://bulletPointTwoUrl:true:None]"
     }
 
     "use Link components with an implementation of the toString method for use in debugging" in {
@@ -250,8 +250,8 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
       val linkEn: Link = Link(destination, englishLinkText, false)
       val linkCy: Link = Link(destination, welshLinkText, false)
 
-      linkEn.toString shouldBe s"[link:$englishLinkText:$destination:false]"
-      linkCy.toString shouldBe s"[link:$welshLinkText:$destination:false]"
+      linkEn.toString shouldBe s"[link:$englishLinkText:$destination:false:None]"
+      linkCy.toString shouldBe s"[link:$welshLinkText:$destination:false:None]"
     }
 
     "use Button Link components with an implementation of the toString method for use in debugging" in {
@@ -264,8 +264,8 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
       val linkEn: Link = Link(destination, englishLinkText, false, true)
       val linkCy: Link = Link(destination, welshLinkText, false, true)
 
-      linkEn.toString shouldBe s"[button:$englishLinkText:$destination:false]"
-      linkCy.toString shouldBe s"[button:$welshLinkText:$destination:false]"
+      linkEn.toString shouldBe s"[button:$englishLinkText:$destination:false:None]"
+      linkCy.toString shouldBe s"[button:$welshLinkText:$destination:false:None]"
     }
 
     "build into a page of text and link paragraph" in {
@@ -300,7 +300,7 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
 
     "use Link components which correctly support toString" in {
       val en: String = "Hello"
-      Link("4", en).toString shouldBe s"[link:${en}:4:false]"
+      Link("4", en).toString shouldBe s"[link:${en}:4:false:None]"
     }
 
     "use LabelRef components which correctly support isEmpty" in {
@@ -308,7 +308,7 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
     }
 
     "use LabelRef components which correctly support toString" in {
-      LabelRef("BLAH").toString shouldBe s"[label:BLAH]"
+      LabelRef("BLAH").toString shouldBe s"[label:BLAH:None]"
     }
 
     "use LabelRef components which correctly support toWords" in {

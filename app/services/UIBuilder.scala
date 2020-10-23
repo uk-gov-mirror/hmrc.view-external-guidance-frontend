@@ -35,11 +35,21 @@ class UIBuilder {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
              case c: Callout => acc ++ fromCallout(c, formData)
+             case rg: RowGroup => acc :+ fromRowGroup(rg)
              case in: OcelotInput => Seq(fromInput(in, formData, acc))
              case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
+
+  private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    val rowLength = rg.group.map(_.cells.length).max
+    SummaryList(rg.group.map{row =>
+      SummaryRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
+        SummaryCell(TextBuilder.fromPhrase(phrase))
+      })
+    })
+  }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {

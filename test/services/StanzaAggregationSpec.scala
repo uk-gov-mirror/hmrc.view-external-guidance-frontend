@@ -34,36 +34,36 @@ class StanzaAggregatorSpec extends BaseSpec {
     val bp1Item2: Phrase = Phrase(Vector("First bullet point: World", "Welsh, First bullet point: World"))
     val bp1Item3: Phrase = Phrase(Vector("First bullet point: !", "Welsh, First bullet point: !"))
 
-    val dl1r1c1: Phrase = Phrase(Vector("Description list 1 - Row 1 - Cell 1", "Welsh, Description list 1 - Row 1 - Cell 1"))
-    val dl1r1c2: Phrase = Phrase(Vector("Description list 1 - Row 1 - Cell 2", "Welsh, Description list 1 - Row 1 - Cell 2"))
-    val dl1r1c3: Phrase = Phrase(Vector("Description list 1 - Row 1 - Cell 3", "Welsh, Description list 1 - Row 1 - Cell 3"))
-    val dl1r2c1: Phrase = Phrase(Vector("Description list 1 - Row 2 - Cell 1", "Welsh, Description list 1 - Row 2 - Cell 1"))
-    val dl1r2c2: Phrase = Phrase(Vector("Description list 1 - Row 2 - Cell 2", "Welsh, Description list 1 - Row 2 - Cell 2"))
-    val dl1r2c3: Phrase = Phrase(Vector("Description list 1 - Row 2 - Cell 3", "Welsh, Description list 1 - Row 2 - Cell 3"))
-    val dl1r3c1: Phrase = Phrase(Vector("Description list 1 - Row 3 - Cell 1", "Welsh, Description list 1 - Row 3 - Cell 1"))
-    val dl1r3c2: Phrase = Phrase(Vector("Description list 1 - Row 3 - Cell 2", "Welsh, Description list 1 - Row 3 - Cell 2"))
-    val dl1r3c3: Phrase = Phrase(Vector("Description list 1 - Row 3 - Cell 3", "Welsh, Description list 1 - Row 3 - Cell 3"))
+    val dl1r1c1: Phrase = Phrase(Vector("Summary list 1 - Row 1 - Cell 1", "Welsh, Summary list 1 - Row 1 - Cell 1"))
+    val dl1r1c2: Phrase = Phrase(Vector("Summary list 1 - Row 1 - Cell 2", "Welsh, Summary list 1 - Row 1 - Cell 2"))
+    val dl1r1c3: Phrase = Phrase(Vector("Summary list 1 - Row 1 - Cell 3", "Welsh, Summary list 1 - Row 1 - Cell 3"))
+    val dl1r2c1: Phrase = Phrase(Vector("Summary list 1 - Row 2 - Cell 1", "Welsh, Summary list 1 - Row 2 - Cell 1"))
+    val dl1r2c2: Phrase = Phrase(Vector("Summary list 1 - Row 2 - Cell 2", "Welsh, Summary list 1 - Row 2 - Cell 2"))
+    val dl1r2c3: Phrase = Phrase(Vector("Summary list 1 - Row 2 - Cell 3", "Welsh, Summary list 1 - Row 2 - Cell 3"))
+    val dl1r3c1: Phrase = Phrase(Vector("Summary list 1 - Row 3 - Cell 1", "Welsh, Summary list 1 - Row 3 - Cell 1"))
+    val dl1r3c2: Phrase = Phrase(Vector("Summary list 1 - Row 3 - Cell 2", "Welsh, Summary list 1 - Row 3 - Cell 2"))
+    val dl1r3c3: Phrase = Phrase(Vector("Summary list 1 - Row 3 - Cell 3", "Welsh, Summary list 1 - Row 3 - Cell 3"))
 
     val dl1r1Cells: Seq[Phrase] = Seq(dl1r1c1, dl1r1c2, dl1r1c3)
     val dl1r2Cells: Seq[Phrase] = Seq(dl1r2c1, dl1r2c2, dl1r2c3)
     val dl1r3Cells: Seq[Phrase] = Seq(dl1r3c1, dl1r3c2, dl1r3c3)
 
-    val dl2r1c1: Phrase = Phrase(Vector("Description list 2 - Row 1 - Cell 1", "Welsh, Description list 2 - Row 1 - Cell 1"))
-    val dl2r1c2: Phrase = Phrase(Vector("Description list 2 - Row 1 - Cell 2", "Welsh, Description list 2 - Row 1 - Cell 2"))
-    val dl2r2c1: Phrase = Phrase(Vector("Description list 2 - Row 2 - Cell 1", "Welsh, Description list 2 - Row 2 - Cell 1"))
-    val dl2r2c2: Phrase = Phrase(Vector("Description list 2 - Row 2 - Cell 2", "Welsh, Description list 2 - Row 2 - Cell 2"))
-    val dl2r3c1: Phrase = Phrase(Vector("Description list 2 - Row 3 - Cell 1", "Welsh, Description list 2 - Row 3 - Cell 1"))
-    val dl2r3c2: Phrase = Phrase(Vector("Description list 2 - Row 3 - Cell 2", "Welsh, Description list 2 - Row 3 - Cell 2"))
-    val dl2r4c1: Phrase = Phrase(Vector("Description list 2 - Row 4 - Cell 1", "Welsh, Description list 2 - Row 4 - Cell 1"))
-    val dl2r4c2: Phrase = Phrase(Vector("Description list 2 - Row 4 - Cell 2", "Welsh, Description list 2 - Row 4 - Cell 2"))
+    val dl2r1c1: Phrase = Phrase(Vector("Summary list 2 - Row 1 - Cell 1", "Welsh, Summary list 2 - Row 1 - Cell 1"))
+    val dl2r1c2: Phrase = Phrase(Vector("Summary list 2 - Row 1 - Cell 2", "Welsh, Summary list 2 - Row 1 - Cell 2"))
+    val dl2r2c1: Phrase = Phrase(Vector("Summary list 2 - Row 2 - Cell 1", "Welsh, Summary list 2 - Row 2 - Cell 1"))
+    val dl2r2c2: Phrase = Phrase(Vector("Summary list 2 - Row 2 - Cell 2", "Welsh, Summary list 2 - Row 2 - Cell 2"))
+    val dl2r3c1: Phrase = Phrase(Vector("Summary list 2 - Row 3 - Cell 1", "Welsh, Summary list 2 - Row 3 - Cell 1"))
+    val dl2r3c2: Phrase = Phrase(Vector("Summary list 2 - Row 3 - Cell 2", "Welsh, Summary list 2 - Row 3 - Cell 2"))
+    val dl2r4c1: Phrase = Phrase(Vector("Summary list 2 - Row 4 - Cell 1", "Welsh, Summary list 2 - Row 4 - Cell 1"))
+    val dl2r4c2: Phrase = Phrase(Vector("Summary list 2 - Row 4 - Cell 2", "Welsh, Summary list 2 - Row 4 - Cell 2"))
 
     val dl2r1Cells: Seq[Phrase] = Seq(dl2r1c1, dl2r1c2)
     val dl2r2Cells: Seq[Phrase] = Seq(dl2r2c1, dl2r2c2)
     val dl2r3Cells: Seq[Phrase] = Seq(dl2r3c1, dl2r3c2)
     val dl2r4Cells: Seq[Phrase] = Seq(dl2r4c1, dl2r4c2)
 
-    val dl3r1c1: Phrase = Phrase(Vector("Description list 3 - Row 1 - Cell 1", "Welsh, Description list 3 - Row 1 - Cell 1"))
-    val dl3r1c2: Phrase = Phrase(Vector("Description list 3 - Row 1 - Cell 2", "Welsh, Description list 3 - Row 1 - Cell 2"))
+    val dl3r1c1: Phrase = Phrase(Vector("Summary list 3 - Row 1 - Cell 1", "Welsh, Summary list 3 - Row 1 - Cell 1"))
+    val dl3r1c2: Phrase = Phrase(Vector("Summary list 3 - Row 1 - Cell 2", "Welsh, Summary list 3 - Row 1 - Cell 2"))
 
     val dl3r1Cells: Seq[Phrase] = Seq(dl3r1c1, dl3r1c2)
 
@@ -74,9 +74,9 @@ class StanzaAggregatorSpec extends BaseSpec {
 
     val instruction10Phrase: Phrase = Phrase(Vector("Further comments", "Welsh, Further comments"))
 
-    val dl4r1c1: Phrase = Phrase(Vector("Description list 4 - Row 1 - Cell 1", "Welsh, Description list 4 - Row 1 - Cell 1"))
-    val dl4r1c2: Phrase = Phrase(Vector("Description list 4 - Row 1 - Cell 2", "Welsh, Description list 4 - Row 1 - Cell 2"))
-    val dl4r1c3: Phrase = Phrase(Vector("Description list 4 - Row 1 - Cell 3", "Welsh, Description list 4 - Row 1 - Cell 3"))
+    val dl4r1c1: Phrase = Phrase(Vector("Summary list 4 - Row 1 - Cell 1", "Welsh, Summary list 4 - Row 1 - Cell 1"))
+    val dl4r1c2: Phrase = Phrase(Vector("Summary list 4 - Row 1 - Cell 2", "Welsh, Summary list 4 - Row 1 - Cell 2"))
+    val dl4r1c3: Phrase = Phrase(Vector("Summary list 4 - Row 1 - Cell 3", "Welsh, Summary list 4 - Row 1 - Cell 3"))
 
     val dl4r1Cells: Seq[Phrase] = Seq(dl4r1c1, dl4r1c2, dl4r1c3)
 
