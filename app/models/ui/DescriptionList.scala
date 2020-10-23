@@ -16,8 +16,8 @@
 
 package models.ui
 
-case class DescriptionCell(txt: Text)
-case class DescriptionRow(cells: Seq[DescriptionCell])
-case class DescriptionList(rows: Seq[DescriptionRow]) extends UIComponent {
+case class SummaryCell(txt: Text)
+case class SummaryRow(cells: Seq[SummaryCell])
+case class SummaryList(rows: Seq[SummaryRow]) extends UIComponent {
   val text: Text = Text()
 }

@@ -32,7 +32,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import base.{ViewFns, ViewSpec}
 
-class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
+class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   private trait Test {
     implicit val labels: Labels = LabelCache()
@@ -44,16 +44,16 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
 
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
-    val dlRows = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("","")))))
-    val expectedDl = DescriptionList(dlRows)
-    val dlRowsWithHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("World","World")), DescriptionCell(Text("Blah","Blah")))))
-    val expectedDlWithHint = DescriptionList(dlRowsWithHint)
-    val sparseDlRows = Seq(dlRows(0), DescriptionRow(Seq(DescriptionCell(Text("HELLO","HELLO")), DescriptionCell(Text("","")), DescriptionCell(Text("","")))), dlRows(2))
-    val expectedDlSparse = DescriptionList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(DescriptionRow(Seq(DescriptionCell(Text("Goodbye","Goodbye")),
-                                                               DescriptionCell(Text("World","World")),
-                                                               DescriptionCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))))
-    val expectedDLWithLinkAndHint = DescriptionList(dlRowsWithLinkAndHint)
+    val dlRows = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("","")))))
+    val expectedDl = SummaryList(dlRows)
+    val dlRowsWithHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("Blah","Blah")))))
+    val expectedDlWithHint = SummaryList(dlRowsWithHint)
+    val sparseDlRows = Seq(dlRows(0), SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("","")), SummaryCell(Text("","")))), dlRows(2))
+    val expectedDlSparse = SummaryList(sparseDlRows)
+    val dlRowsWithLinkAndHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("Goodbye","Goodbye")),
+                                                               SummaryCell(Text("World","World")),
+                                                               SummaryCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))))
+    val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
   }
 
   private trait WelshTest extends Test {
@@ -62,10 +62,10 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
 
   }
 
-  "Creating Description list with some content" must {
+  "Creating Summary list with some content" must {
 
     "display the correct number of rows and columns" in new Test {
-      val html: Html = components.description_list(expectedDlSparse)
+      val html: Html = components.summary_list(expectedDlSparse)
       val dlElement: Element = getSingleElementByTag(html, "dl")
 
       dlElement.hasClass("govuk-summary-list") shouldBe true
@@ -79,7 +79,7 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
     }
 
     "display the correct text in columns" in new Test {
-      val html: Html = components.description_list(expectedDl)
+      val html: Html = components.summary_list(expectedDl)
       val dlElement: Element = getSingleElementByTag(html, "dl")
       dlElement.hasClass("govuk-summary-list") shouldBe true
       val rows = dlElement.getElementsByTag("div").asScala.toList
@@ -95,7 +95,7 @@ class DescriptionListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite
     }
 
     "display the correct text in columns with action cell hint as visually hidden text" in new Test {
-      val html: Html = components.description_list(expectedDLWithLinkAndHint)
+      val html: Html = components.summary_list(expectedDLWithLinkAndHint)
       val dlElement: Element = getSingleElementByTag(html, "dl")
       dlElement.hasClass("govuk-summary-list") shouldBe true
       val rows = dlElement.getElementsByTag("div").asScala.toList

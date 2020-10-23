@@ -44,9 +44,9 @@ class UIBuilder {
 
   private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     val rowLength = rg.group.map(_.cells.length).max
-    DescriptionList(rg.group.map{row =>
-      DescriptionRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
-        DescriptionCell(TextBuilder.fromPhrase(phrase))
+    SummaryList(rg.group.map{row =>
+      SummaryRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
+        SummaryCell(TextBuilder.fromPhrase(phrase))
       })
     })
   }
