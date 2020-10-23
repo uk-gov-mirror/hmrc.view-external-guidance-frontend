@@ -21,9 +21,7 @@
 
 @(dl: SummaryList)(implicit request: Request[_], messages: Messages, labels: Labels)
 <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  @for(row <- dl.rows){
-    @summary_row(row)
-  }
+  @for(row <- dl.rows){@summary_row(row)}
 </dl>
 @{
      //$COVERAGE-OFF$
