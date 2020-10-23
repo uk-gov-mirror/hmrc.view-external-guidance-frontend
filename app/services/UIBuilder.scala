@@ -28,9 +28,9 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+  def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
-         BulletPointBuilder.groupBulletPointInstructions(stanzas, Nil).foldLeft(Seq[UIComponent]()) { (acc, stanza) =>
+         stanzas.foldLeft(Seq[UIComponent]()) {(acc, stanza) =>
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
