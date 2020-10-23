@@ -56,6 +56,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val pageWithQuestionHint =
       Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
+
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
@@ -253,6 +254,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     )
 
     val questionPage = Page(Process.StartStanzaId, "/blah", stanzasWithQuestion, Seq.empty)
+
     val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq.empty)
 
     val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza), KeyedStanza("2", importantCalloutStanza), KeyedStanza("3", EndStanza))
@@ -262,8 +264,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val stanzasWithEmbeddedPageLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedPageLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedAllLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedAllLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedSubsection: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", embeddedSubsectionCalloutStanza), KeyedStanza("2", EndStanza))
-    val page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
-    val hyperLinkPage = Page(Process.StartStanzaId, "/test-page", stanzasWithHyperLink, Seq.empty)
+
+    val page: Page = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
+
+    val hyperLinkPage: Page = Page(Process.StartStanzaId, "/test-page", stanzasWithHyperLink, Seq.empty)
 
     val pageWithH4 = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
 
@@ -281,10 +285,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       ltxt3
     val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy) + Text(startLinkEn, startLinkCy)
 
-    val pageWithEmbeddLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
+    val pageWithEmbeddLinks: Page = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
+
     val pageWithEmbeddLinks2 = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks2, Seq.empty)
+
     val pageWithEmbeddPageLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedPageLinks, Seq.empty)
+
     val pageWithEmbeddAllLinks = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedAllLinks, Seq.empty)
+
     val pageWithEmbeddH4 = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedSubsection, Seq.empty)
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
@@ -667,7 +675,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
-      val uiPage = uiBuilder.fromStanzas(ocelotPage.url, ocelotPage.stanzas)(extraIncomeUrlMap)
+      val uiPreProcessTransformations: Seq[(Seq[Stanza], Seq[Stanza]) => Seq[Stanza]] =
+        Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
+
+      val uiPage = uiBuilder.fromStanzas(
+        ocelotPage.url,
+        uiPreProcessTransformations.foldLeft(ocelotPage.stanzas){case (s, t) => t(s, Nil)}
+      )(extraIncomeUrlMap)
 
       val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
                                          "Welsh: You've received income that you have not yet paid tax on from:")

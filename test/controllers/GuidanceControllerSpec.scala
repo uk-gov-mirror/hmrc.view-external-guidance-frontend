@@ -171,7 +171,13 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     val formError = new FormError(relativePath, List("error.required"))
 
-    val guidanceService = new GuidanceService(MockAppConfig, mockGuidanceConnector, mockSessionRepository, new PageBuilder, new PageRenderer, new UIBuilder)
+    val guidanceService = new GuidanceService(
+      MockAppConfig,
+      mockGuidanceConnector,
+      mockSessionRepository,
+      new PageBuilder,
+      new PageRenderer,
+      new UIBuilder())
 
     val target = new GuidanceController(
       MockAppConfig,
