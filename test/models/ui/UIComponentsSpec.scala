@@ -308,7 +308,7 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
     }
 
     "use LabelRef components which correctly support toString" in {
-      LabelRef("BLAH").toString shouldBe s"[label:BLAH]"
+      LabelRef("BLAH").toString shouldBe s"[label:BLAH:None]"
     }
 
     "use LabelRef components which correctly support toWords" in {

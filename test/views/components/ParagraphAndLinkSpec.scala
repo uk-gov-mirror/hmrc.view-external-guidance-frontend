@@ -29,9 +29,7 @@ import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 import models.ocelot.{Labels, LabelCache}
 
-class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
-
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with GuiceOneAppPerSuite {
 
   trait Test {
     implicit val labels: Labels = LabelCache()
@@ -57,8 +55,9 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
     val link1 = Text(link1En, link1Cy)
     val link2 = Text(link2En, link2Cy)
     val pageLink = Text(pageLinkEn, pageLinkCy)
+    val linkWithHint = Text(Link(dest2, "BBC News", false, false, Some("HINT")), Link(dest2, "Welsh, BBC News", false, false, Some("HINT")))
 
-    val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink)
+    val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink + linkWithHint)
   }
 
   trait WelshTest extends Test {
@@ -92,7 +91,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       paras.size shouldBe 1
 
       val links = paras.first.getElementsByTag("a").asScala
-      links.length shouldBe 3
+      links.length shouldBe 4
 
       val txtNodes = paras.first.textNodes().asScala
       txtNodes.length shouldBe 3
@@ -120,6 +119,16 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link3Attrs.contains("class") shouldBe true
       link3Attrs("class") shouldBe "govuk-link"
       link3Attrs.contains("target") shouldBe false
+
+      val spans = links(3).getElementsByTag("span").asScala.toList
+      spans.length shouldBe 1
+      elementAttrs(spans(0))("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "HINT"
+
+      val link4Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      elementAttrs(links(3))("href") shouldBe dest2
+      elementAttrs(links(3))("class") shouldBe "govuk-link"
+      elementAttrs(links(3)).get("target") shouldBe None
     }
 
     "generate Welsh html containing a lede text paragraph" in new WelshTest {
@@ -147,7 +156,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       paras.size shouldBe 1
 
       val links = paras.first.getElementsByTag("a").asScala
-      links.length shouldBe 3
+      links.length shouldBe 4
 
       val txtNodes = paras.first.textNodes().asScala
       txtNodes.length shouldBe 3
@@ -175,6 +184,16 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with GuiceOneAppPerSui
       link3Attrs.contains("class") shouldBe true
       link3Attrs("class") shouldBe "govuk-link"
       link3Attrs.contains("target") shouldBe false
+
+      val spans = links(3).getElementsByTag("span").asScala.toList
+      spans.length shouldBe 1
+      elementAttrs(spans(0))("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "HINT"
+
+      val link4Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
+      elementAttrs(links(3))("href") shouldBe dest2
+      elementAttrs(links(3))("class") shouldBe "govuk-link"
+      elementAttrs(links(3)).get("target") shouldBe None
 
     }
 

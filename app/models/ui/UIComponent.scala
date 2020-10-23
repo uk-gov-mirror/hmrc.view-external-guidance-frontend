@@ -36,10 +36,10 @@ case class Words(s: String, bold: Boolean = false) extends TextItem {
   override def toString: String = s
 }
 
-case class LabelRef(name: String) extends TextItem {
+case class LabelRef(name: String, displayType: Option[String] = None) extends TextItem {
   def isEmpty: Boolean = false
   def toWords: Seq[String] = name.split(" +").toSeq
-  override def toString: String = s"[label:${name}]"
+  override def toString: String = s"[label:${name}:$displayType]"
 }
 
 case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false, hint:Option[String] = None) extends TextItem {
