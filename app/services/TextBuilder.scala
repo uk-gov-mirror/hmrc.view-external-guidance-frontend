@@ -57,7 +57,7 @@ object TextBuilder {
           val (lnkText, lnkHint) = singleStringWithOptionalHint(linkText(m))
           Link(dest, lnkText, window, asButton, lnkHint)
         })(txt => Words(txt, true))
-      })(labelName => LabelRef(labelName, labelTypeOpt(m)))
+      })(labelName => LabelRef(labelName, OutputFormat(labelTypeOpt(m))))
     }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
