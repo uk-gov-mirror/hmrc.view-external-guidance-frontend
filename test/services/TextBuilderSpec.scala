@@ -18,7 +18,7 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ui.{Link, Text, Words, LabelRef}
+import models.ui.{Link, Text, Words, LabelRef, Currency, Txt}
 
 class TextBuilderSpec extends BaseSpec {
 
@@ -60,12 +60,21 @@ class TextBuilderSpec extends BaseSpec {
 
   "TextBuilder placeholder parsing" must {
 
-    "Convert label reference placeholders within phrase to LabelRef TextItems" in new Test {
+    "Convert label reference with default output format placeholders within phrase to LabelRef TextItems" in new Test {
       val p = Phrase("""Sentence with a [label:BLAH] label reference""", """Sentence with a [label:BLAH] label reference""")
 
       val txt = TextBuilder.fromPhrase(p)
 
-      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH"), Words(" label reference"))
+      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Txt), Words(" label reference"))
+
+    }
+
+    "Convert label reference with currency output format placeholders within phrase to LabelRef TextItems" in new Test {
+      val p = Phrase("""Sentence with a [label:BLAH:currency] label reference""", """Sentence with a [label:BLAH:currency] label reference""")
+
+      val txt = TextBuilder.fromPhrase(p)
+
+      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
 
     }
 

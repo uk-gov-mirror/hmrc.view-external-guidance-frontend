@@ -37,23 +37,15 @@ case object Currency extends OutputFormat with Name {
       }
     )
 }
-case object Number extends OutputFormat with Name {
-  val name: String = "number"
-}
 case object Txt extends OutputFormat with Name {
   val name: String = "text"
-}
-case object Date extends OutputFormat with Name {
-  val name: String = "date"
 }
 
 object OutputFormat {
   def apply(name: Option[String]): OutputFormat =
     name match {
       case Some(Currency.name) => Currency
-      case Some(Number.name) => Number
       case Some(Txt.name) => Txt
-      case Some(Date.name) => Date
       case _ => Txt
     }
 
