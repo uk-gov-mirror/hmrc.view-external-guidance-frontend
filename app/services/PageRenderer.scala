@@ -26,7 +26,7 @@ class PageRenderer @Inject() () {
 
   @tailrec
    private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[Stanza], seen: Seq[String])
-                              (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
+                              (implicit stanzaMap: Map[String, Stanza]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
     stanzaMap.get(stanzaId) match {
       case None => (visualStanzas, labels, seen, stanzaId, None)
       case Some(s) => s match {
@@ -41,7 +41,6 @@ class PageRenderer @Inject() () {
 
   def renderPage(page: Page, labels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    implicit val ids = page.keyedStanzas.map(_.key)
 
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
 
@@ -50,7 +49,6 @@ class PageRenderer @Inject() () {
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    implicit val ids = page.keyedStanzas.map( _.key)
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) =
