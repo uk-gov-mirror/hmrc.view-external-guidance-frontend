@@ -26,20 +26,21 @@ class PageRenderer @Inject() () {
 
   @tailrec
    private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[Stanza], seen: Seq[String])
-                              (implicit stanzaMap: Map[String, Stanza], ids: Seq[String]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
-    if (!ids.contains(stanzaId)) (visualStanzas, labels, seen, stanzaId, None)
-    else stanzaMap(stanzaId) match {
-      case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, stanzaId, None)
-      case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
-      case s: Stanza with Evaluate =>
-        val (next, updatedLabels) = s.eval(labels)
-        evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
-      case s: Stanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
+                              (implicit stanzaMap: Map[String, Stanza]): (Seq[Stanza], Labels, Seq[String], String, Option[DataInput]) =
+    stanzaMap.get(stanzaId) match {
+      case None => (visualStanzas, labels, seen, stanzaId, None)
+      case Some(s) => s match {
+        case EndStanza => (visualStanzas :+ EndStanza, labels, seen :+ stanzaId, stanzaId, None)
+        case s: Stanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
+        case s: Stanza with Evaluate =>
+          val (next, updatedLabels) = s.eval(labels)
+          evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
+        case s: Stanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
+      }
     }
 
   def renderPage(page: Page, labels: Labels): (Seq[Stanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    implicit val ids = page.keyedStanzas.map(_.key)
 
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
 
@@ -48,17 +49,18 @@ class PageRenderer @Inject() () {
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    implicit val ids = page.keyedStanzas.map( _.key)
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) =
-      if (!ids.contains(next)) (Some(next), labels)
-      else if (seen.contains(next)) (None, labels)
-      else stanzaMap(next) match {
-        case EndStanza => (Some(next), labels)
-        case s: Stanza with Evaluate =>
-          val (next, updatedLabels) = s.eval(labels)
-          evaluatePostInputStanzas(next, updatedLabels, seen)
+      stanzaMap.get(next) match {
+        case None => (Some(next), labels)
+        case Some(_) if seen.contains(next) => (None, labels)
+        case Some(s) => s match {
+          case EndStanza => (Some(next), labels)
+          case s: Stanza with Evaluate =>
+            val (next, updatedLabels) = s.eval(labels)
+            evaluatePostInputStanzas(next, updatedLabels, seen)
+        }
       }
 
     val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
