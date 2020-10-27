@@ -17,6 +17,7 @@
 package models.ui
 
 import models.ocelot.asCurrency
+import java.util.Locale.UK
 import java.text.NumberFormat
 
 trait Name {
@@ -32,7 +33,7 @@ case object Currency extends OutputFormat with Name {
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
       asCurrency(value) match {
-        case Some(x) => NumberFormat.getCurrencyInstance().format(x)
+        case Some(x) => NumberFormat.getCurrencyInstance(UK).format(x)
         case None => ""
       }
     )
