@@ -36,7 +36,8 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   trait Test {
     implicit val labels: Labels = LabelCache(Map("Blah" -> Label("Blah", Some("a value")),
-                                                                "A-Label" -> Label("A-Label", Some("33.9"))))
+                                                 "A-Label" -> Label("A-Label", Some("33.9")),
+                                                 "BigNumber" -> Label("BigNumber", Some("12345678"))))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
@@ -52,7 +53,9 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val textWithCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)),
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", Currency)))
     val textWithInvaldiCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Currency), Words(" , price "),LabelRef("A-Label", Currency)))
+                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)))
+    val textLargeValueNoDpsCurrencyLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)),
+                                                   Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)))
   }
 
   trait WelshTest extends Test {
@@ -83,6 +86,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, labels))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have , price £33.90"
+    }
+
+    "generate English html containing label references with Currency output formatting with large values and no decimal places" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, labels))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }
 
     "generate English html containing normal text" in new Test {
@@ -137,6 +146,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, labels))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have , price £33.90"
+    }
+
+    "generate Welsh html containing label references with Currency output formatting with large values and no decimal places" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, labels))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }
 
     "generate Welsh html containing normal text" in new WelshTest {
