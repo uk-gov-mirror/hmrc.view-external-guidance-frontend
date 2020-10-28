@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import models.ui.{BulletPointList, Link, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
-import models.ui.{SummaryList, SummaryRow, SummaryCell}
+import models.ui.SummaryList
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -320,22 +320,22 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
     val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
 
-    val dlRows = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("","")))))
+    val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
     val expectedDl = SummaryList(dlRows)
-    val dlRowsComplete = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("Blah","Blah")))))
+    val dlRowsComplete = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
     val expectedDlComplete = SummaryList(dlRowsComplete)
-    val sparseDlRows = Seq(dlRows(0), SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("","")), SummaryCell(Text("","")))), dlRows(2))
+    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
     val expectedDlSparse = SummaryList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")),
-                                                               SummaryCell(Text("World","World")),
-                                                               SummaryCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))))
+    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"),
+                                                               Text("World","World"),
+                                                               Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
   }
 
   "UIBuilder" must {
 
     "convert a RowGroup with three simple phrase column into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rows)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rows, rows.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -348,7 +348,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns into a SummaryList, all columns complete" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsComplete)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rowsComplete, rowsComplete.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -361,7 +361,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three sparse columns into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), sparseRows)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, sparseRows, sparseRows.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -374,7 +374,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns including a link and hint into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithLinkAndHint)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rowsWithLinkAndHint, rowsWithLinkAndHint.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{

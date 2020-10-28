@@ -20,11 +20,14 @@ import scala.util.matching.Regex
 
 package object ocelot {
   val hintRegex = "\\[hint:([^\\]])+\\]".r
+  val pageLinkOnlyRegex = s"^\\[link:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]$$".r
   val pageLinkRegex = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]".r
   val labelRefRegex = s"\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency))?\\]".r
   val inputCurrencyRegex = "^-?(\\d{1,3}(,\\d{3})*|\\d+)(\\.(\\d{1,2})?)?$".r
   val integerRegex = "^\\d+$".r
 
+  def isLinkOnlyPhrase(phrase: Phrase): Boolean = pageLinkOnlyRegex.findFirstIn(phrase.langs(0))
+                                                    .fold(false)(_ => pageLinkOnlyRegex.findFirstIn(phrase.langs(1)).fold(false)(_ => true))
   def plSingleGroupCaptures(regex: Regex, str: String, index: Int = 1): List[String] = regex.findAllMatchIn(str).map(_.group(index)).toList
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str, 4)
   def pageLinkIds(phrases: Seq[Phrase]): List[String] = phrases.flatMap(phrase => pageLinkIds(phrase.langs.head)).toList

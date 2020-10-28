@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui._
-@import controllers.routes._
-@import models.ocelot.Labels
-@import models.ui.SummaryList
+package models.ui
 
-@(sl: SummaryList)(implicit request: Request[_], messages: Messages, labels: Labels)
-<dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  @for(row <- sl.rows){@summary_row(row)}
-</dl>
-@{
-     //$COVERAGE-OFF$
+case class TableCell(txt: Text)
+case class TableRow(cells: Seq[TableCell])
+case class Table(rows: Seq[TableRow]) extends UIComponent {
+  val text: Text = Text()
 }

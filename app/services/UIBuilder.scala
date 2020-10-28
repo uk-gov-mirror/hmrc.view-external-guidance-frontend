@@ -21,6 +21,7 @@ import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, 
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
+import models.ocelot.isLinkOnlyPhrase
 
 import scala.annotation.tailrec
 
@@ -34,20 +35,20 @@ class UIBuilder {
            stanza match {
              case i: Instruction => acc :+ fromInstruction(i)
              case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-             case c: Callout => acc ++ fromCallout(c, formData)
-             case rg: RowGroup => acc :+ fromRowGroup(rg)
+             case c: Callout => acc ++ fromCallout(c, formData, acc)
+             case rg: RowGroup => acc :+ fromRowGroup(rg, acc)
              case in: OcelotInput => Seq(fromInput(in, formData, acc))
              case q: OcelotQuestion => Seq(fromQuestion(q, acc))
              case _ => acc
            }
          })
 
-  private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+  private def fromRowGroup(rg: RowGroup, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     val rowLength = rg.group.map(_.cells.length).max
+    val summaryList: Boolean = rowLength == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
+
     SummaryList(rg.group.map{row =>
-      SummaryRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
-        SummaryCell(TextBuilder.fromPhrase(phrase))
-      })
+      (row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map(phrase => TextBuilder.fromPhrase(phrase))
     })
   }
 
@@ -72,7 +73,8 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromCallout(c: Callout, formData: Option[FormData], components: Seq[UIComponent])
+                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
       case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))

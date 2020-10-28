@@ -14,18 +14,17 @@
  * limitations under the License.
  *@
 
-@import models.ui._
 @import controllers.routes._
 @import models.ocelot.Labels
-@import models.ui.{SummaryList, SummaryRow}
+@import models.ui.Text
 
-@(row: SummaryRow)(implicit request: Request[_], messages: Messages, labels: Labels)
+@(row: Seq[Text])(implicit request: Request[_], messages: Messages, labels: Labels)
 <div class="govuk-summary-list__row">
-  @for(index <- row.cells.indices) {
+  @for(index <- row.indices) {
     @{index match {
-      case 0 => <dt class="govuk-summary-list__key">{render_text(row.cells(0).txt)}</dt>
-      case 1 => <dd class="govuk-summary-list__value">{render_text(row.cells(1).txt)}</dd>
-      case x => summary_actioncell(row.cells(x))
+      case 0 => <dt class="govuk-summary-list__key">{render_text(row(0))}</dt>
+      case 1 => <dd class="govuk-summary-list__value">{render_text(row(1))}</dd>
+      case x => summary_actioncell(row(x))
       }
     }
   }
