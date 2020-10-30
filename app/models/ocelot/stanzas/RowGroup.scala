@@ -16,9 +16,8 @@
 
 package models.ocelot.stanzas
 
-case class RowGroup (override val next: Seq[String], callouts: Seq[Callout], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated
+case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated
 
 object RowGroup {
-  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, Seq.empty, group, group.head.stack)
-  def apply(callouts: Seq[Callout], group: Seq[Row]): RowGroup = RowGroup(group.last.next, callouts, group, group.head.stack)
+  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, group, group.head.stack)
 }

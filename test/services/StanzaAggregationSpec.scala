@@ -105,7 +105,7 @@ class StanzaAggregatorSpec extends BaseSpec {
     val instruction10: Instruction = Instruction(instruction10Phrase, Seq("20"), None, stack = false)
     val row9: Row = Row(dl4r1Cells, Seq("21"), stack = true)
     val instruction11: Instruction = Instruction(instruction11Phrase, Seq("end"), None, stack = false)
-      val uiPreProcessTransformations: Seq[(Seq[Stanza], Seq[Stanza]) => Seq[Stanza]] =
+      val uiPreProcessTransformations: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
         Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
   }
 
@@ -113,7 +113,7 @@ class StanzaAggregatorSpec extends BaseSpec {
 
     "aggregate appropriate instructions and rows in a sequence of stanzas" in new Test {
 
-      val stanzas: Seq[Stanza] = Seq(
+      val stanzas: Seq[VisualStanza] = Seq(
         pageStanza,
         callout,
         instruction1,
@@ -137,28 +137,27 @@ class StanzaAggregatorSpec extends BaseSpec {
         row9,
         instruction11,
         EndStanza
-      )
+      ).collect{case s: VisualStanza => s}
 
 
       val aggregatedStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(stanzas){case (s, t) => t(s, Nil)}
 
-      aggregatedStanzas.head shouldBe pageStanza
-      aggregatedStanzas(1) shouldBe callout
-      aggregatedStanzas(2) shouldBe instruction1
-      aggregatedStanzas(3) shouldBe InstructionGroup(Seq(instruction2, instruction3, instruction4))
-      aggregatedStanzas(four) shouldBe RowGroup(Seq(row1, row2, row3))
-      aggregatedStanzas(five) shouldBe instruction5
-      aggregatedStanzas(six) shouldBe RowGroup(Seq(row4, row5, row6, row7))
-      aggregatedStanzas(seven) shouldBe RowGroup(Seq(row8))
-      aggregatedStanzas(eight) shouldBe InstructionGroup(Seq(instruction6, instruction7, instruction8, instruction9))
-      aggregatedStanzas(nine) shouldBe instruction10
-      aggregatedStanzas(ten) shouldBe RowGroup(Seq(row9))
-      aggregatedStanzas(eleven) shouldBe instruction11
+      aggregatedStanzas.head shouldBe callout
+      aggregatedStanzas(1) shouldBe instruction1
+      aggregatedStanzas(2) shouldBe InstructionGroup(Seq(instruction2, instruction3, instruction4))
+      aggregatedStanzas(3) shouldBe RowGroup(Seq(row1, row2, row3))
+      aggregatedStanzas(four) shouldBe instruction5
+      aggregatedStanzas(five) shouldBe RowGroup(Seq(row4, row5, row6, row7))
+      aggregatedStanzas(six) shouldBe RowGroup(Seq(row8))
+      aggregatedStanzas(seven) shouldBe InstructionGroup(Seq(instruction6, instruction7, instruction8, instruction9))
+      aggregatedStanzas(eight) shouldBe instruction10
+      aggregatedStanzas(nine) shouldBe RowGroup(Seq(row9))
+      aggregatedStanzas(ten) shouldBe instruction11
     }
 
     "return sequence of stanzas unchanged when no aggregation is necessary" in new Test {
 
-      val inputStanzas: Seq[Stanza] = Seq(
+      val inputStanzas: Seq[VisualStanza] = Seq(
         pageStanza,
         callout,
         instruction1,
@@ -166,7 +165,7 @@ class StanzaAggregatorSpec extends BaseSpec {
         instruction10,
         instruction11,
         EndStanza
-      )
+      ).collect{case s: VisualStanza => s}
 
       val outputStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(inputStanzas){case (s, t) => t(s, Nil)}
 

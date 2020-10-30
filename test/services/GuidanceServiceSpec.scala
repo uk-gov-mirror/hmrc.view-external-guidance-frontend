@@ -107,14 +107,14 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels, None))
+        .returns((pages(2).stanzas.collect{case s: VisualStanza => s}, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .fromStanzas(lastPageUrl, pages.last.stanzas, None)
+        .fromStanzas(lastPageUrl, pages.last.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
@@ -143,14 +143,14 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockPageRenderer
         .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas, labels, None))
+        .returns((pages(2).stanzas.collect{case s: VisualStanza => s}, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .fromStanzas(lastPageUrl, pages.last.stanzas, None)
+        .fromStanzas(lastPageUrl, pages.last.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)

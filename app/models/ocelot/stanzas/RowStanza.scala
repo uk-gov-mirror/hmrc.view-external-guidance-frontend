@@ -54,5 +54,5 @@ object Row {
   def apply(stanza: RowStanza, cells: Seq[Phrase], linkIds: List[String] ) : Row = {
     Row(cells, stanza.next, stanza.stack, linkIds)
   }
-  
+
 }

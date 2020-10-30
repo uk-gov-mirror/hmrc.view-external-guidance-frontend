@@ -69,17 +69,16 @@ class RowAggregatorSpec extends BaseSpec {
 
       val row: Row = Row(r1Cells, Seq(""), stack = false)
 
-      val stanzas: Seq[Stanza] = Seq(
+      val stanzas: Seq[VisualStanza] = Seq(
         pageStanza,
         callout,
         row,
         instruction,
         EndStanza
-      )
+      ).collect{case s: VisualStanza => s}
 
       val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
-
-      aggregatedStanzas(2) shouldBe RowGroup(Seq(row))
+      aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
     }
   }
 
@@ -87,17 +86,17 @@ class RowAggregatorSpec extends BaseSpec {
 
     val row: Row = Row(r1Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       row,
       instruction,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
   }
 
   "create two row groups for two contiguous rows with stack set to false" in new Test {
@@ -105,19 +104,19 @@ class RowAggregatorSpec extends BaseSpec {
     val row1: Row = Row(r1Cells, Seq(""), stack = false)
     val row2: Row = Row(r2Cells, Seq(""), stack = false)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       row1,
       row2,
       instruction,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1))
-    aggregatedStanzas(3) shouldBe RowGroup(Seq(row2))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
+    aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
   }
 
   "create a row group with two entries for two contiguous rows with stack set to true" in new Test {
@@ -125,18 +124,18 @@ class RowAggregatorSpec extends BaseSpec {
     val row1: Row = Row(r1Cells, Seq(""), stack = true)
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       row1,
       row2,
       instruction,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1, row2))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
 
   "create two row groups for two contiguous rows with stack set to true and false respectively" in new Test {
@@ -144,7 +143,7 @@ class RowAggregatorSpec extends BaseSpec {
     val row1: Row = Row(r1Cells, Seq(""), stack = true)
     val row2: Row = Row(r2Cells, Seq(""), stack = false)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       instruction,
       row1,
@@ -152,12 +151,12 @@ class RowAggregatorSpec extends BaseSpec {
       instruction,
       callout,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1))
-    aggregatedStanzas(3) shouldBe RowGroup(Seq(row2))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
+    aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
   }
 
   "create a row group with two rows for two contiguous row stanzas with stack set to false and true respectively" in new Test {
@@ -165,7 +164,7 @@ class RowAggregatorSpec extends BaseSpec {
     val row1: Row = Row(r1Cells, Seq(""), stack = false)
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       instruction,
       row1,
@@ -173,11 +172,11 @@ class RowAggregatorSpec extends BaseSpec {
       instruction,
       callout,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1, row2))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
 
   "create a row group with multiple rows" in new Test {
@@ -188,7 +187,7 @@ class RowAggregatorSpec extends BaseSpec {
     val row4: Row = Row(r4Cells, Seq(""), stack = true)
     val row5: Row = Row(r5Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       row1,
@@ -198,11 +197,11 @@ class RowAggregatorSpec extends BaseSpec {
       row5,
       instruction,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1, row2, row3, row4, row5))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2, row3, row4, row5))
   }
 
   "create two row groups of size two from four contiguous rows where stack is false for the third row" in new Test {
@@ -212,19 +211,19 @@ class RowAggregatorSpec extends BaseSpec {
     val row3: Row = Row(r3Cells, Seq(""), stack = false)
     val row4: Row = Row(r4Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       row1,
       row2,
       row3,
       row4,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
-    aggregatedStanzas(2) shouldBe RowGroup(Seq(row3, row4))
+    aggregatedStanzas(0) shouldBe RowGroup(Seq(row1, row2))
+    aggregatedStanzas(1) shouldBe RowGroup(Seq(row3, row4))
   }
 
   "create two row groups of size one for two non-contiguous rows in sequence of stanzas" in new Test {
@@ -232,7 +231,7 @@ class RowAggregatorSpec extends BaseSpec {
     val row1: Row = Row(r1Cells, Seq(""), stack = false)
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       instruction,
@@ -241,12 +240,11 @@ class RowAggregatorSpec extends BaseSpec {
       row2,
       instruction2,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
-
-    aggregatedStanzas(3) shouldBe RowGroup(Seq(row1))
-    aggregatedStanzas(five) shouldBe RowGroup(Seq(row2))
+    aggregatedStanzas(2) shouldBe RowGroup(Seq(row1))
+    aggregatedStanzas(four) shouldBe RowGroup(Seq(row2))
   }
 
   "create two row groups with multiple rows from a complex sequence of stanzas" in new Test {
@@ -257,7 +255,7 @@ class RowAggregatorSpec extends BaseSpec {
     val row4: Row = Row(r4Cells, Seq(""), stack = false)
     val row5: Row = Row(r5Cells, Seq(""), stack = true)
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       instruction,
@@ -270,23 +268,23 @@ class RowAggregatorSpec extends BaseSpec {
       row5,
       instruction2,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 
-    aggregatedStanzas(four) shouldBe RowGroup(Seq(row1, row2, row3))
-    aggregatedStanzas(six) shouldBe RowGroup(Seq(row4, row5))
+    aggregatedStanzas(3) shouldBe RowGroup(Seq(row1, row2, row3))
+    aggregatedStanzas(five) shouldBe RowGroup(Seq(row4, row5))
   }
 
   "return input sequence of stanzas if sequence does not contain row stanzas" in new Test {
 
-    val stanzas: Seq[Stanza] = Seq(
+    val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
       callout,
       instruction,
       instructionGroup,
       EndStanza
-    )
+    ).collect{case s: VisualStanza => s}
 
     val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(stanzas, Nil)
 

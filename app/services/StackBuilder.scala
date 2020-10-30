@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package models.ocelot.stanzas
+package services
 
-/**
-  * Case class InstructionGroup is a container class for groups of Instructions
-  * with similar leading text that comprise bullet point lists
-  *
-  * @param next - Identifier for next stanza in page
-  * @param group - A group of instructions
-  */
-case class InstructionGroup(override val next: Seq[String], group: Seq[Instruction], stack: Boolean) extends VisualStanza with Populated
+import javax.inject.Singleton
 
-object InstructionGroup {
+@Singleton
+class StackPatternFilter {
 
-  def apply(group: Seq[Instruction], stack: Boolean = false): InstructionGroup = InstructionGroup(group.last.next, group, stack)
+  // Heading Callout + RowGroup of 3 columns with column three link only => CyaGroup(title, rows: RowGroup): VisualStanza
+  // Heading Callout (Optional) + RowGroup + First row all bold (Optional) => TableGroup(title: Option, columnHeaders: Option, rows: RowGroup): VisualStanza
+  // Heading Callout with stack == true => Medium heading styling, large otherwise
 
+  // transform Seq[VisualStanza] into (HeadingClass, Seq[VisualStanza])
 }

@@ -16,7 +16,7 @@
 
 package services
 
-import models.ocelot.stanzas.{Stanza, Instruction, InstructionGroup}
+import models.ocelot.stanzas.{VisualStanza, Instruction, InstructionGroup}
 import scala.util.matching.Regex
 import Regex._
 import scala.annotation.tailrec
@@ -27,7 +27,7 @@ object BulletPointBuilder {
   val matchLimit: Int = 3
 
   @tailrec
-  def groupBulletPointInstructions(inputSeq: Seq[Stanza], acc: Seq[Stanza]): Seq[Stanza] =
+  def groupBulletPointInstructions(inputSeq: Seq[VisualStanza], acc: Seq[VisualStanza]): Seq[VisualStanza] =
     inputSeq match {
       case Nil => acc
       case x :: xs =>
@@ -39,12 +39,12 @@ object BulletPointBuilder {
             } else {
               groupBulletPointInstructions(xs, acc :+ matchedInstructions.head)
             }
-          case s: Stanza => groupBulletPointInstructions(xs, acc :+ s)
+          case s: VisualStanza => groupBulletPointInstructions(xs, acc :+ s)
         }
     }
 
   @tailrec
-  private def groupMatchedInstructions(inputSeq: Seq[Stanza], acc: Seq[Instruction]): Seq[Instruction] =
+  private def groupMatchedInstructions(inputSeq: Seq[VisualStanza], acc: Seq[Instruction]): Seq[Instruction] =
     inputSeq match {
       case Nil => acc
       case x :: xs =>

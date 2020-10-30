@@ -335,7 +335,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBuilder" must {
 
     "convert a RowGroup with three simple phrase column into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rows, rows.head.stack)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rows, rows.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -348,7 +348,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns into a SummaryList, all columns complete" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rowsComplete, rowsComplete.head.stack)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsComplete, rowsComplete.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -361,7 +361,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three sparse columns into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, sparseRows, sparseRows.head.stack)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), sparseRows, sparseRows.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -374,7 +374,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns including a link and hint into a SummaryList" in new DLTest {
-      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), Seq.empty, rowsWithLinkAndHint, rowsWithLinkAndHint.head.stack)))
+      val p = uiBuilder.fromStanzas("/start", Seq(RowGroup(Seq("2"), rowsWithLinkAndHint, rowsWithLinkAndHint.head.stack)))
       p.components.head match {
         case dl: SummaryList =>
           dl.rows.zipWithIndex.foreach{
@@ -736,12 +736,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
-      val uiPreProcessTransformations: Seq[(Seq[Stanza], Seq[Stanza]) => Seq[Stanza]] =
+      val uiPreProcessTransformations: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
         Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
 
+      val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
       val uiPage = uiBuilder.fromStanzas(
         ocelotPage.url,
-        uiPreProcessTransformations.foldLeft(ocelotPage.stanzas){case (s, t) => t(s, Nil)}
+        uiPreProcessTransformations.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
       )(extraIncomeUrlMap)
 
       val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",

@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.ocelot.stanzas.{DataInput, Stanza}
+import models.ocelot.stanzas.{DataInput, VisualStanza}
 import models.ocelot.{Page, Labels}
 import services.PageRenderer
 import org.scalamock.handlers.CallHandler
@@ -28,7 +28,7 @@ trait MockPageRenderer extends MockFactory {
 
   object MockPageRenderer {
 
-    def renderPage(page: Page, labels: Labels): CallHandler[(Seq[Stanza], Labels, Option[DataInput])] =
+    def renderPage(page: Page, labels: Labels): CallHandler[(Seq[VisualStanza], Labels, Option[DataInput])] =
       (mockPageRenderer
         .renderPage(_: Page, _: Labels))
         .expects(page, *)

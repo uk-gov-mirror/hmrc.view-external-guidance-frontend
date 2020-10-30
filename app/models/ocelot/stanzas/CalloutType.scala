@@ -20,18 +20,16 @@ import play.api.libs.json._
 
 sealed trait CalloutType
 
+// Headings
 case object Title extends CalloutType
-
 case object SubTitle extends CalloutType
+case object Section extends CalloutType
+case object SubSection extends CalloutType
 
+// Errors
 case object Error extends CalloutType
 
 case object Lede extends CalloutType
-
-case object Section extends CalloutType
-
-case object SubSection extends CalloutType
-
 case object Important extends CalloutType
 
 
