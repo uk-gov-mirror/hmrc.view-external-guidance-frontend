@@ -37,6 +37,7 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
+    gdsBuilder: GDSPatternBuilder,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)

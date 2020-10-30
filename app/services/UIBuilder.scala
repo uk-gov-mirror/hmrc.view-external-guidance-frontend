@@ -21,7 +21,7 @@ import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, 
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
-import models.ocelot.isLinkOnlyPhrase
+//import models.ocelot.isLinkOnlyPhrase
 
 import scala.annotation.tailrec
 
@@ -45,7 +45,7 @@ class UIBuilder {
 
   private def fromRowGroup(rg: RowGroup, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     val rowLength = rg.group.map(_.cells.length).max
-    val summaryList: Boolean = rowLength == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
+    //val summaryList: Boolean = rowLength == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
 
     SummaryList(rg.group.map{row =>
       (row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map(phrase => TextBuilder.fromPhrase(phrase))

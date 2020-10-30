@@ -19,7 +19,7 @@ package services
 import javax.inject.Singleton
 
 @Singleton
-class StackPatternFilter {
+class GDSPatternBuilder {
 
   // Heading Callout + RowGroup of 3 columns with column three link only => CyaGroup(title, rows: RowGroup): VisualStanza
   // Heading Callout (Optional) + RowGroup + First row all bold (Optional) => TableGroup(title: Option, columnHeaders: Option, rows: RowGroup): VisualStanza
