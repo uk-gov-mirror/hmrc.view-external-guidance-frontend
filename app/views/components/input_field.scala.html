@@ -14,25 +14,22 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
-@import models.ocelot.{Labels, Label}
+@import models.ocelot.Labels
 
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, labels: Labels)
 
 @optionalAria() = @{
-  Seq(input.hint.map(_ => s"${name}-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+  Seq(input.hint.map(_ => s"$name-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
+    case l => ariaDescribedBy("input-hint")
   }
 }
 <div class="govuk-form-group">
-    <div class="hmrc-currency-input__wrapper">
-        <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
-        <input class="govuk-input govuk-input--width-10" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>
-    </div>
+  <div class="hmrc-currency-input__wrapper">
+    <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
+    <input class="govuk-input govuk-input--width-10" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>
+  </div>
 </div>
 @{
      //$COVERAGE-OFF$
 }
-
