@@ -36,7 +36,7 @@
       @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
 
   } else {
-    @components.h1_heading(H1(input.text))
+    @components.h1_heading_with_label(H1(input.text), name + "-0")
 
     @components.render_components(input.body)
 
