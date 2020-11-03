@@ -29,10 +29,12 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+  def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
+               (implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url, fromStanzas(stackStanzas(stanzas, Nil), stanzas.head.stack, formData))
 
-  def fromStanzas(stanzas: Seq[VisualStanza], useReducedHeadings: Boolean, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  def fromStanzas(stanzas: Seq[VisualStanza], useReducedHeadings: Boolean, formData: Option[FormData] = None)
+                 (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     stanzas match {
       case Nil => Nil
       case _ =>
@@ -52,16 +54,21 @@ class UIBuilder {
   private def summaryList(rg: RowGroup): Boolean =
     rg.group.map(_.cells.length).max == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
 
-  private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
-      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) && summaryList(rg) => // Summary List
+      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) && summaryList(rg) =>
+        // Summary List
         (fromCallout(c, formData, true) :+
          SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))) ++
          fromStanzas(xs, true, formData)
-      // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) => // Confirmation callout with multiple lines
-      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) => // Table
+      // Confirmation callout with multiple lines
+      // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) =>
+      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) =>
+        // Table
         fromStanzas(sg.group, sg.containsHeading, formData)
-      case _ => // No recognised stacked pattern
+      case _ =>
+        // No recognised stacked pattern
         fromStanzas(sg.group, sg.containsHeading, formData)
     }
 
@@ -74,7 +81,6 @@ class UIBuilder {
     }
 
   private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
-
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
@@ -87,7 +93,7 @@ class UIBuilder {
   }
 
   private def fromCallout(c: Callout, formData: Option[FormData], useReducedHeadings: Boolean)
-                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
       case Title if useReducedHeadings => Seq(H1small(TextBuilder.fromPhrase(c.text)))
       case SubTitle if useReducedHeadings => Seq(H2small(TextBuilder.fromPhrase(c.text)))
@@ -107,7 +113,6 @@ class UIBuilder {
         // which is error.required
         formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
     }
-  }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
