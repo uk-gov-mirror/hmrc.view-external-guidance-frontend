@@ -30,7 +30,7 @@ class UIBuilder {
   val logger: Logger = Logger(getClass)
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url, fromStanzas(stackStanzas(stanzas, Nil), false, formData))
+    Page(url, fromStanzas(stackStanzas(stanzas, Nil), stanzas.head.stack, formData))
 
   def fromStanzas(stanzas: Seq[VisualStanza], useReducedHeadings: Boolean, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     stanzas match {
@@ -42,24 +42,11 @@ class UIBuilder {
            case i: Instruction => acc :+ fromInstruction(i)
            case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
            case c: Callout => acc ++ fromCallout(c, formData, useReducedHeadings)
-           //case rg: RowGroup => acc :+ fromRowGroup(rg)
            case in: OcelotInput => Seq(fromInput(in, formData, acc))
            case q: OcelotQuestion => Seq(fromQuestion(q, acc))
            case _ => acc
           }
         }
-    }
-
-  @tailrec
-  private def stackStanzas(stanzas: Seq[VisualStanza], acc: Seq[Seq[VisualStanza]]): Seq[VisualStanza] =
-    stanzas match {
-      case Nil => acc.collect{
-        case s if s.length > 1 => StackedGroup(s)
-        case s => s.head
-      }
-      case x :: xs if acc.isEmpty => stackStanzas(xs, Seq(Seq(x)))
-      case x :: xs if x.stack => stackStanzas(xs, acc.init :+ (acc.last :+ x))
-      case x :: xs => stackStanzas(xs, acc :+ Seq(x))
     }
 
   private def summaryList(rg: RowGroup): Boolean =
@@ -68,27 +55,15 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
       case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) && summaryList(rg) => // Summary List
-        logger.info(s"SUMMARY LIST PATTERN")
         (fromCallout(c, formData, true) :+
          SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))) ++
          fromStanzas(xs, true, formData)
       // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) => // Confirmation callout with multiple lines
       case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) => // Table
-        logger.info(s"TABLE PATTERN")
         fromStanzas(sg.group, sg.containsHeading, formData)
       case _ => // No recognised stacked pattern
-        logger.info(s"NO PATTERN")
-        sg.group.foreach(vs => println(s"VS: $vs"))
         fromStanzas(sg.group, sg.containsHeading, formData)
     }
-
-  // private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
-  //   // val rowLength = rg.group.map(_.cells.length).max
-  //   // SummaryList(rg.group.map{row =>
-  //   //   (row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map(phrase => TextBuilder.fromPhrase(phrase))
-  //   // })
-  //   Seq.empty
-  // }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {

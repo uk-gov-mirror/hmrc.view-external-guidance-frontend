@@ -17,7 +17,22 @@
 package models
 
 import models.ocelot.Phrase
+import models.ocelot.stanzas.{VisualStanza, StackedGroup}
+import scala.annotation.tailrec
 
 package object ui {
   implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))
+
+  @tailrec
+  def stackStanzas(stanzas: Seq[VisualStanza], acc: Seq[Seq[VisualStanza]]): Seq[VisualStanza] =
+    stanzas match {
+      case Nil => acc.collect{
+        case s if s.length > 1 => StackedGroup(s)
+        case s => s.head
+      }
+      case x :: xs if acc.isEmpty => stackStanzas(xs, Seq(Seq(x)))
+      case x :: xs if x.stack => stackStanzas(xs, acc.init :+ (acc.last :+ x))
+      case x :: xs => stackStanzas(xs, acc :+ Seq(x))
+    }
+
 }

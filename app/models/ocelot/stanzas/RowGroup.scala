@@ -19,7 +19,7 @@ package models.ocelot.stanzas
 import models.ocelot.Phrase
 
 case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
-  lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(group.length - row.cells.size)(Phrase())))
+  lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(row.cells.length - row.cells.size)(Phrase())))
 }
 
 object RowGroup {

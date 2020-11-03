@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package services
+package models.ui
 
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas._
-
 
 class StackingSpec extends BaseSpec {
 
