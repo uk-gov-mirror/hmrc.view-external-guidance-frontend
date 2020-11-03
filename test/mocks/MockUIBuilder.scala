@@ -19,7 +19,7 @@ package mocks
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 
-import models.ocelot.stanzas.Stanza
+import models.ocelot.stanzas.VisualStanza
 import models.ui.FormData
 import services.UIBuilder
 
@@ -29,10 +29,10 @@ trait MockUIBuilder extends MockFactory {
 
   object MockUIBuilder {
 
-    def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData]): CallHandler[models.ui.Page] = {
+    def fromStanzas(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData]): CallHandler[models.ui.Page] = {
 
       (mockUIBuilder
-        .fromStanzas(_: String, _: Seq[Stanza], _: Option[FormData])(_: Map[String, String]))
+        .fromStanzas(_: String, _: Seq[VisualStanza], _: Option[FormData])(_: Map[String, String]))
         .expects(url, stanzas, *, *)
     }
 

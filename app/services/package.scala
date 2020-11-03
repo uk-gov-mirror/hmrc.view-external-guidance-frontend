@@ -21,8 +21,6 @@ import java.util.UUID
 import models.RequestOutcome
 import models.ocelot.{Label, Page, Process}
 import play.api.libs.json._
-import models.ocelot.stanzas.VisualStanza
-import scala.annotation.tailrec
 
 package object services {
   val processIdformat = "^[a-z]{3}[0-9]{5}$"
@@ -69,13 +67,4 @@ package object services {
       errs => Left(Error(GuidanceError.fromJsonValidationErrors(errs))),
       process => pageBuilder.pagesWithValidation(process).fold(errs => Left(Error(errs)), p => Right((process, p)))
     )
-
-  @tailrec
-  def collateStacked(stanzas: Seq[VisualStanza], acc: Seq[Seq[VisualStanza]]): Seq[Seq[VisualStanza]] =
-    stanzas match {
-      case Nil => acc
-      case x :: xs if !x.stack => collateStacked(xs, acc :+ Seq(x))
-      case x :: xs if acc.isEmpty => collateStacked(xs, Seq(Seq(x)))
-      case x :: xs => collateStacked(xs, acc.init :+ (acc.last :+ x))
-    }
 }

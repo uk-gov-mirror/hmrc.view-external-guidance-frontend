@@ -28,7 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
-import models.ocelot.stanzas.{VisualStanza, Stanza}
+import models.ocelot.stanzas.VisualStanza
 
 @Singleton
 class GuidanceService @Inject() (
@@ -37,7 +37,6 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
-    gdsBuilder: GDSPatternBuilder,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
@@ -93,9 +92,8 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    // val stackedStanzas: Seq[Seq[Stanza]] = collateStacked(stanzaGroupBuilders.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}, Nil)
-    val stackedStanzas: Seq[Stanza] = stanzaGroupBuilders.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
-    val uiPage = uiBuilder.fromStanzas(pec.page.url, stackedStanzas, formData)(pec.stanzaIdToUrlMap)
+    val groupedStanzas: Seq[VisualStanza] = stanzaGroupBuilders.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
+    val uiPage = uiBuilder.buildPage(pec.page.url, groupedStanzas, formData)(pec.stanzaIdToUrlMap)
     PageContext(pec, uiPage, labels)
   }
 

@@ -16,12 +16,13 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.Phrase
-
-case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
-  lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(group.length - row.cells.size)(Phrase())))
+case class StackedGroup (override val next: Seq[String], group: Seq[VisualStanza], stack: Boolean) extends VisualStanza with Populated {
+  lazy val containsHeading = group.exists{
+    case c: Callout with Heading => true
+    case _ => false
+  }
 }
 
-object RowGroup {
-  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, group, group.head.stack)
+object StackedGroup {
+  def apply(group: Seq[VisualStanza]): StackedGroup = StackedGroup(group.last.next, group, group.head.stack)
 }

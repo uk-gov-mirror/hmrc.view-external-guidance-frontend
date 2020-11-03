@@ -32,34 +32,35 @@ class StackingSpec extends BaseSpec {
     "Group stacked stanzas together" in new Test {
       val stanzas = Seq(stackedCo(Title, false), stackedCo(Title, false), stackedCo(Title, true), stackedCo(Title, false), stackedRowGroup(true))
 
-      val stacked = collateStacked(stanzas, Nil)
+      val stacked = stackStanzas(stanzas, Nil)
 
       stacked.length shouldBe 3
-      stacked(0) shouldBe Seq(stackedCo(Title, false))
-      stacked(1) shouldBe Seq(stackedCo(Title, false), stackedCo(Title, true))
-      stacked(2) shouldBe Seq(stackedCo(Title, false), stackedRowGroup(true))
+      stacked(0) shouldBe stackedCo(Title, false)
+      stacked(1) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedCo(Title, true)))
+      stacked(2) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedRowGroup(true)))
     }
 
     "Group stacked stanzas including initial isolated unstackable stanza marked stack" in new Test {
       val stanzas = Seq(stackedCo(Title, true), stackedCo(Title, false), stackedCo(Title, true), stackedCo(Title, false), stackedRowGroup(true))
 
-      val stacked = collateStacked(stanzas, Nil)
+      val stacked = stackStanzas(stanzas, Nil)
 
       stacked.length shouldBe 3
-      stacked(0) shouldBe Seq(stackedCo(Title, true))
-      stacked(1) shouldBe Seq(stackedCo(Title, false), stackedCo(Title, true))
-      stacked(2) shouldBe Seq(stackedCo(Title, false), stackedRowGroup(true))
+      stacked(0) shouldBe stackedCo(Title, true)
+      stacked(1) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedCo(Title, true)))
+      stacked(2) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedRowGroup(true)))
     }
 
     "Group stacked stanzas including embedded isolated unstackable stanza marked stack" in new Test {
-      val stanzas = Seq(stackedCo(Title, true), stackedCo(Title, false), stackedCo(Error, true), stackedCo(Title, false), stackedRowGroup(true))
+      val stanzas = Seq(stackedCo(Title, true), stackedCo(Title, false), stackedCo(Error, false), stackedCo(Title, false), stackedRowGroup(true))
 
-      val stacked = collateStacked(stanzas, Nil)
+      val stacked = stackStanzas(stanzas, Nil)
 
-      stacked.length shouldBe 3
-      stacked(0) shouldBe Seq(stackedCo(Title, true))
-      stacked(1) shouldBe Seq(stackedCo(Title, false), stackedCo(Error, true))
-      stacked(2) shouldBe Seq(stackedCo(Title, false), stackedRowGroup(true))
+      stacked.length shouldBe 4
+      stacked(0) shouldBe stackedCo(Title, true)
+      stacked(1) shouldBe stackedCo(Title, false)
+      stacked(2) shouldBe stackedCo(Error, false)
+      stacked(3) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedRowGroup(true)))
     }
 
   }

@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ocelot.stanzas
+@import ui.H4small
+@import models.ocelot.Labels
 
-import models.ocelot.Phrase
+@( h4: H4small )( implicit messages: Messages, labels: Labels )
 
-case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
-  lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(group.length - row.cells.size)(Phrase())))
-}
+<h4 class="govuk-heading-s">@components.render_text(h4.text)</h4>
 
-object RowGroup {
-  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, group, group.head.stack)
+@{
+//$COVERAGE-OFF$
 }

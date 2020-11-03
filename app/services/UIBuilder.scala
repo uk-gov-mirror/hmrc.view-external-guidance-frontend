@@ -21,7 +21,7 @@ import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, 
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
-//import models.ocelot.isLinkOnlyPhrase
+import models.ocelot.isLinkOnlyPhrase
 
 import scala.annotation.tailrec
 
@@ -29,28 +29,64 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url,
-         stanzas.foldLeft(Seq[UIComponent]()) {(acc, stanza) =>
-           stanza match {
-             case i: Instruction => acc :+ fromInstruction(i)
-             case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-             case c: Callout => acc ++ fromCallout(c, formData, acc)
-             case rg: RowGroup => acc :+ fromRowGroup(rg, acc)
-             case in: OcelotInput => Seq(fromInput(in, formData, acc))
-             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
-             case _ => acc
-           }
-         })
+  def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+    Page(url, fromStanzas(stackStanzas(stanzas, Nil), false, formData))
 
-  private def fromRowGroup(rg: RowGroup, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
-    val rowLength = rg.group.map(_.cells.length).max
-    //val summaryList: Boolean = rowLength == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
+  def fromStanzas(stanzas: Seq[VisualStanza], useReducedHeadings: Boolean, formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+    stanzas match {
+      case Nil => Nil
+      case _ =>
+        stanzas.foldLeft(Seq[UIComponent]()) {(acc, stanza) =>
+          stanza match {
+           case sg: StackedGroup => fromStackedGroup(sg, formData)
+           case i: Instruction => acc :+ fromInstruction(i)
+           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
+           case c: Callout => acc ++ fromCallout(c, formData, useReducedHeadings, acc)
+           //case rg: RowGroup => acc :+ fromRowGroup(rg)
+           case in: OcelotInput => Seq(fromInput(in, formData, acc))
+           case q: OcelotQuestion => Seq(fromQuestion(q, acc))
+           case _ => acc
+          }
+        }
+    }
 
-    SummaryList(rg.group.map{row =>
-      (row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map(phrase => TextBuilder.fromPhrase(phrase))
-    })
+  @tailrec
+  private def stackStanzas(stanzas: Seq[VisualStanza], acc: Seq[Seq[VisualStanza]]): Seq[VisualStanza] =
+    stanzas match {
+      case Nil => acc.collect{
+        case s if s.length > 1 => StackedGroup(s)
+        case s => s.head
+      }
+      case x :: xs if acc.isEmpty => stackStanzas(xs, Seq(Seq(x)))
+      case x :: xs if x.stack => stackStanzas(xs, acc.init :+ (acc.last :+ x))
+      case x :: xs => stackStanzas(xs, acc :+ Seq(x))
+    }
+
+  private def summaryList(rg: RowGroup): Boolean = rg.group.length == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
+  private def headingCallout(c: Callout): Boolean = c.noteType match {
+    case nt: Heading => true
+    case _ => false
   }
+
+  private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+    sg.group match {
+      case Seq(c: Callout, rg: RowGroup) :: xs if headingCallout(c) && summaryList(rg) => // Summary List
+        (fromCallout(c, formData, true, Nil) :+
+         SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))) ++
+         fromStanzas(xs, true, formData)
+      // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) => // Confirmation callout with multiple lines
+      case Seq(c: Callout, rg: RowGroup) :: xs if headingCallout(c) => // Table
+        fromStanzas(sg.group, sg.containsHeading, formData)
+      case _ => // No recognised stacked pattern
+        fromStanzas(sg.group, sg.containsHeading, formData)
+    }
+
+  // private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+  //   val rowLength = rg.group.map(_.cells.length).max
+  //   SummaryList(rg.group.map{row =>
+  //     (row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map(phrase => TextBuilder.fromPhrase(phrase))
+  //   })
+  // }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {
@@ -73,9 +109,13 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(c: Callout, formData: Option[FormData], components: Seq[UIComponent])
-                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromCallout(c: Callout, formData: Option[FormData], useReducedHeadings: Boolean, components: Seq[UIComponent])
+                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     c.noteType match {
+      case Title if useReducedHeadings => Seq(H1small(TextBuilder.fromPhrase(c.text)))
+      case SubTitle if useReducedHeadings => Seq(H2small(TextBuilder.fromPhrase(c.text)))
+      case Section if useReducedHeadings => Seq(H3small(TextBuilder.fromPhrase(c.text)))
+      case SubSection if useReducedHeadings => Seq(H4small(TextBuilder.fromPhrase(c.text)))
       case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
@@ -90,6 +130,7 @@ class UIBuilder {
         // which is error.required
         formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
     }
+  }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
