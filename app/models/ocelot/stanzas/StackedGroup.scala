@@ -16,11 +16,11 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.headingCallout
+import models.ocelot.isHeadingCallout
 
 case class StackedGroup (override val next: Seq[String], group: Seq[VisualStanza], stack: Boolean) extends VisualStanza with Populated {
   lazy val containsHeading = group.exists{
-    case c: Callout if headingCallout(c) => true
+    case c: Callout if isHeadingCallout(c) => true
     case _ => false
   }
 }

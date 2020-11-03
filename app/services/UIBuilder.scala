@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
-import models.ocelot.{Phrase, Link => OcelotLink, headingCallout}
+import models.ocelot.{Phrase, Link => OcelotLink, isHeadingCallout}
 import models.ui._
 import play.api.Logger
 import models.ocelot.isLinkOnlyPhrase
@@ -51,20 +51,20 @@ class UIBuilder {
         }
     }
 
-  private def summaryList(rg: RowGroup): Boolean =
+  private def matchesSummaryList(rg: RowGroup): Boolean =
     rg.group.map(_.cells.length).max == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
-      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) && summaryList(rg) =>
+      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) && matchesSummaryList(rg) =>
         // Summary List
         (fromCallout(c, formData, true) :+
          SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))) ++
          fromStanzas(xs, true, formData)
       // Confirmation callout with multiple lines
       // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) =>
-      case (c: Callout) :: (rg: RowGroup) :: xs if headingCallout(c) =>
+      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) =>
         // Table
         fromStanzas(sg.group, sg.containsHeading, formData)
       case _ =>

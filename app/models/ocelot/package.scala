@@ -38,7 +38,7 @@ package object ocelot {
   // Ocelot patterns
   def isLinkOnlyPhrase(phrase: Phrase): Boolean = pageLinkOnlyRegex.findFirstIn(phrase.langs(0))
                                                     .fold(false)(_ => pageLinkOnlyRegex.findFirstIn(phrase.langs(1)).fold(false)(_ => true))
-  def headingCallout(c: Callout): Boolean = c.noteType match {
+  def isHeadingCallout(c: Callout): Boolean = c.noteType match {
     case nt: Heading => true
     case _ => false
   }
