@@ -58,9 +58,9 @@ sealed trait Operation {
 
   def addString(s1: String, s2: String) : Option[String] = Option(s1 + s2)
 
-  def subtractString(s1: String, s2: String) : Option[String] = {
+  def unsupportedOperation(s1: String, s2: String) : Option[String] = {
 
-    logger.error("Illegal string subtraction operation defined in guidance configuration")
+    logger.error("Unsupported " + this.getClass.getSimpleName.toLowerCase + " operation defined in guidance")
 
     None
   }
@@ -98,7 +98,7 @@ case class Add(left: String, right: String, label: String) extends Operation {
 
 case class Subtract(left: String, right: String, label: String) extends Operation {
 
-  def eval(labels: Labels): Labels = op(_ - _, subtractString, labels)
+  def eval(labels: Labels): Labels = op(_ - _, unsupportedOperation, labels)
 
 }
 
