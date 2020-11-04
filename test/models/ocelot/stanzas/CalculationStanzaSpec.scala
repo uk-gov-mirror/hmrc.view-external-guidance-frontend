@@ -568,7 +568,43 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels.value( "output4") shouldBe Some("15.00")
     }
 
-    "not support operations on non-currency input" in {
+    "support string addition in the form of concatenation" in {
+
+      val calcOperations: Seq[CalcOperation] = Seq(
+        CalcOperation("[label:input1]", Addition, "[label:input2]", "output1"),
+        CalcOperation("[label:output1]", Addition, "[label:input3]", "output2"),
+        CalcOperation("[label:output2]", Addition, "[label:input4]", "output3")
+      )
+
+      val next: Seq[String] = Seq("16")
+
+      val stanza: CalculationStanza = CalculationStanza(calcOperations, next, stack = false)
+
+      val calculation: Calculation = Calculation(stanza)
+
+      val input1: Label = Label( "input1", Some("Hello"))
+      val input2: Label = Label( "input2", Some(" "))
+      val input3: Label = Label( "input3", Some("World"))
+      val input4: Label = Label( "input4", Some("!"))
+
+      val labelMap: Map[String, Label] = Map(
+        input1.name -> input1,
+        input2.name -> input2,
+        input3.name -> input3,
+        input4.name -> input4
+      )
+
+      val labelCache = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = calculation.eval(labelCache)
+
+      nextStanza shouldBe "16"
+
+      updatedLabels.value("output3") shouldBe Some( "Hello World!")
+
+    }
+
+    "not support subtraction operations on non-currency input" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(CalcOperation("[label:input1]", Subtraction, "[label:input2]", "result"))
 

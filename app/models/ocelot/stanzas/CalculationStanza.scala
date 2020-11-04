@@ -17,6 +17,7 @@
 package models.ocelot.stanzas
 
 import models.ocelot.{asCurrency, labelReference, labelReferences, Label, Labels}
+import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
@@ -45,6 +46,8 @@ object CalculationStanza {
 
 sealed trait Operation {
 
+  val logger: Logger = Logger(this.getClass)
+
   val left: String
   val right: String
   val label: String
@@ -53,7 +56,16 @@ sealed trait Operation {
 
   def value(arg: String, labels: Labels): String = labelReference(arg).fold(arg){ref => labels.value(ref).getOrElse("")}
 
-  def op(f: (BigDecimal, BigDecimal) => BigDecimal, labels: Labels) : Labels = {
+  def addString(s1: String, s2: String) : Option[String] = Option(s1 + s2)
+
+  def subtractString(s1: String, s2: String) : Option[String] = {
+
+    logger.error("Illegal string subtraction operation defined in guidance configuration")
+
+    None
+  }
+
+  def op(f: (BigDecimal, BigDecimal) => BigDecimal, g: (String, String) => Option[String], labels: Labels) : Labels = {
 
     val x: String = value(left, labels)
     val y: String = value(right, labels)
@@ -66,7 +78,12 @@ sealed trait Operation {
         labels.update(label, bg3.bigDecimal.toPlainString)
 
       }
-      case _ => labels // Currently only support currency
+      case _ =>
+        // Treat both operands as strings
+        g(x,y) match {
+          case Some(value) => labels.update(label, value)
+          case None => labels
+      }
     }
 
   }
@@ -75,13 +92,13 @@ sealed trait Operation {
 
 case class Add(left: String, right: String, label: String) extends Operation {
 
-  def eval(labels: Labels): Labels = op(_ + _, labels)
+  def eval(labels: Labels): Labels = op(_ + _, addString, labels)
 
 }
 
 case class Subtract(left: String, right: String, label: String) extends Operation {
 
-  def eval(labels: Labels): Labels = op(_ - _, labels)
+  def eval(labels: Labels): Labels = op(_ - _, subtractString, labels)
 
 }
 
