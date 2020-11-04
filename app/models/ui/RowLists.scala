@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$
+
 package models.ui
 
 case class SummaryList(rows: Seq[Seq[Text]]) extends UIComponent {

@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 
 import play.twirl.api.Html
 
-import models.ui.{H3, Text}
+import models.ui.{H3, Text, SummaryList}
 import views.html.components.h3_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -46,8 +46,11 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     val h3: H3 = H3(Text(h3English, h3Welsh))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val summaryList = SummaryList(Seq.empty)
+    val page = models.ui.StandardPage("/url", Seq(currencyInput))
+    val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
+    val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctxReduced = models.PageContext(summaryPage, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {
@@ -58,18 +61,27 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   "Creating a level 3 heading with some content" must {
 
-    "Define the correct GDS class" in new Test {
+    "Define the correct GDS standard class" in new Test {
 
-      val markUp: Html = h3_heading(h3)
+      val markUp: Html = h3_heading(h3)(messages, ctx)
 
       val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
       h3Element.hasClass("govuk-heading-m") shouldBe true
     }
 
+    "Define the correct GDS reduced class" in new Test {
+
+      val markUp: Html = h3_heading(h3)(messages, ctxReduced)
+
+      val h3Element: Element = getSingleElementByTag(markUp, "h3")
+
+      h3Element.hasClass("govuk-heading-s") shouldBe true
+    }
+
     "display text in English" in new Test {
 
-      val markUp: Html = h3_heading(h3)
+      val markUp: Html = h3_heading(h3)(messages, ctx)
 
       val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
@@ -78,7 +90,7 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h3_heading(h3)
+      val markUp: Html = h3_heading(h3)(messages, ctx)
 
       val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
