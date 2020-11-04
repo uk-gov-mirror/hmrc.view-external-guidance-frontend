@@ -40,7 +40,7 @@ class UIBuilder {
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
-      case (rg: RowGroup) :: xs if rg.isSummaryList => // Summary List
+      case (rg: RowGroup) :: xs if rg.isSummaryList =>
         fromStanzas(stackStanzas(xs, Nil),
                     acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))),
                     formData)
