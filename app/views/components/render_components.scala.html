@@ -14,11 +14,10 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Paragraph, H1, H2, H3, H4, H1small, H2small, H3small, H4small, BulletPointList, SummaryList, UIComponent}
+@import models.ui.{Paragraph, H1, H2, H3, H4, BulletPointList, SummaryList, UIComponent}
 @import controllers.routes._
-@import models.ocelot.Labels
 
-@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, labels: Labels)
+@(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 @for(cmp <- elements) {
   @{cmp match {
         case p: Paragraph => components.paragraph(p)

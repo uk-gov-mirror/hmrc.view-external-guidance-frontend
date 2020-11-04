@@ -16,9 +16,8 @@
 
 @import models.ui._
 @import controllers.routes._
-@import models.ocelot.Labels
 
-@(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, labels: Labels)
+@(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
 @optionalAria(a: Answer, i: Int, errs: Seq[ErrorMsg]) = @{
   Seq(a.hint.map(_ => s"${name}-item-${i}-hint"), errs.headOption.map(err => s"${err.id}-error")).flatten match {

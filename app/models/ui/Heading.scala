@@ -22,10 +22,3 @@ case class H1(text: Text) extends UIComponent with StandardSize
 case class H2(text: Text) extends UIComponent with StandardSize
 case class H3(text: Text) extends UIComponent with StandardSize
 case class H4(text: Text) extends UIComponent with StandardSize
-
-sealed trait ReducedSize
-
-case class H1small(text: Text) extends UIComponent with ReducedSize
-case class H2small(text: Text) extends UIComponent with ReducedSize
-case class H3small(text: Text) extends UIComponent with ReducedSize
-case class H4small(text: Text) extends UIComponent with ReducedSize

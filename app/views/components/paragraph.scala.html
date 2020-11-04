@@ -15,9 +15,8 @@
  *@
 
 @import models.ui.Paragraph
-@import models.ocelot.Labels
 
-@(para: Paragraph)(implicit messages: Messages, labels: Labels)
+@(para: Paragraph)(implicit messages: Messages, ctx: PageContext)
 
 @pclass(p: Paragraph) = {@if(p.lede){govuk-body-l} else {govuk-body}}
 <p class="@pclass(para)">@components.render_text(para.text)</p>

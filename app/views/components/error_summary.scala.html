@@ -15,9 +15,8 @@
  *@
 
 @import models.ui.{Text, ErrorMsg}
-@import models.ocelot.Labels
 
-@(heading: Text, inputFieldName: String, errors: Seq[ErrorMsg])(implicit messages: Messages, labels: Labels)
+@(heading: Text, inputFieldName: String, errors: Seq[ErrorMsg])(implicit messages: Messages, ctx: PageContext)
 
 @if(!errors.isEmpty) {
 

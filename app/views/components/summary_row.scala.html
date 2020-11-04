@@ -15,10 +15,9 @@
  *@
 
 @import controllers.routes._
-@import models.ocelot.Labels
 @import models.ui.Text
 
-@(row: Seq[Text])(implicit request: Request[_], messages: Messages, labels: Labels)
+@(row: Seq[Text])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <div class="govuk-summary-list__row">
   @for(index <- row.indices) {
     @{index match {

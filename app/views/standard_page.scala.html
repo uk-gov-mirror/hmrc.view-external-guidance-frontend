@@ -21,7 +21,7 @@
 
 @(page: StandardPage, ctx: PageContext)(implicit request: Request[_], messages: Messages)
 
-@implicitLabels = @{ctx.labels}
+@implicitCtx = @{ctx}
 
 @layout(page.heading.asString(messages.lang), ctx.processTitle.asString(messages.lang), Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
 

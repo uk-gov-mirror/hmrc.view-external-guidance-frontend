@@ -16,9 +16,8 @@
 
 @import models.ui.Text
 @import controllers.routes._
-@import models.ocelot.Labels
 
-@(cell: Text)(implicit request: Request[_], messages: Messages, labels: Labels)
+@(cell: Text)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <dd class="govuk-summary-list__actions">@render_text(cell)</dd>
 @{
      //$COVERAGE-OFF$
