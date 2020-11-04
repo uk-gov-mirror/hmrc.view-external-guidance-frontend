@@ -31,46 +31,42 @@ class UIBuilder {
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
                (implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url, fromStanzas(stackStanzas(stanzas, Nil), stanzas.head.stack, formData))
+    Page(url, fromStanzas(stackStanzas(stanzas, Nil), Nil, formData))
 
-  def fromStanzas(stanzas: Seq[VisualStanza], useReducedHeadings: Boolean, formData: Option[FormData] = None)
+  @tailrec
+  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], formData: Option[FormData])
                  (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     stanzas match {
-      case Nil => Nil
-      case _ =>
-        stanzas.foldLeft(Seq[UIComponent]()) {(acc, stanza) =>
-          stanza match {
-           case sg: StackedGroup => acc ++ fromStackedGroup(sg, formData)
-           case i: Instruction => acc :+ fromInstruction(i)
-           case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-           case c: Callout => acc ++ fromCallout(c, formData, useReducedHeadings)
-           case in: OcelotInput => Seq(fromInput(in, formData, acc))
-           case q: OcelotQuestion => Seq(fromQuestion(q, acc))
-           case _ => acc
-          }
-        }
+      case Nil => acc
+      case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
+      case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
+      case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
+      case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
+      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
+      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
+      case x :: xs => fromStanzas(xs, acc, formData)
     }
-
-  private def matchesSummaryList(rg: RowGroup): Boolean =
-    rg.group.map(_.cells.length).max == 3 && rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+    def isSummaryList(c: Callout, rg: RowGroup): Boolean =
+      isHeadingCallout(c) &&
+      rg.group.map(_.cells.length).max == 3 &&
+      rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
+
     sg.group match {
-      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) && matchesSummaryList(rg) =>
-        // Summary List
-        (fromCallout(c, formData, true) :+
-         SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))) ++
-         fromStanzas(xs, true, formData)
+      case (c: Callout) :: (rg: RowGroup) :: xs if isSummaryList(c, rg) => // Summary List
+        val sl = SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+        fromStanzas(stackStanzas(xs, Nil), fromCallout(c, formData) ++ Seq(sl), formData)
+
       // Confirmation callout with multiple lines
       // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) =>
-      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) =>
-        // Table
-        fromStanzas(sg.group, sg.containsHeading, formData)
-      case _ =>
-        // No recognised stacked pattern
-        fromStanzas(sg.group, sg.containsHeading, formData)
+      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) => // Table
+        fromStanzas(sg.group, Nil, formData)
+      case _ => // No recognised stacked pattern
+        fromStanzas(sg.group, Nil, formData)
     }
+  }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {
@@ -92,13 +88,8 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(c: Callout, formData: Option[FormData], useReducedHeadings: Boolean)
-                         (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     c.noteType match {
-      case Title if useReducedHeadings => Seq(H1small(TextBuilder.fromPhrase(c.text)))
-      case SubTitle if useReducedHeadings => Seq(H2small(TextBuilder.fromPhrase(c.text)))
-      case Section if useReducedHeadings => Seq(H3small(TextBuilder.fromPhrase(c.text)))
-      case SubSection if useReducedHeadings => Seq(H4small(TextBuilder.fromPhrase(c.text)))
       case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
@@ -138,7 +129,7 @@ class UIBuilder {
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])
+  private def fromInput(input: OcelotInput, components: Seq[UIComponent])
                        (implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)

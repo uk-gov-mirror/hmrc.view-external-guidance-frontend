@@ -35,4 +35,10 @@ package object ui {
       case x :: xs => stackStanzas(xs, acc :+ Seq(x))
     }
 
+  def useReducedHeadings(components: Seq[UIComponent]): Boolean =
+    components.exists{
+      case c: SummaryList => true
+      case _ => false
+    }
+
 }
