@@ -16,10 +16,13 @@
 
 package models.ocelot.stanzas
 
+import models.ocelot.isLinkOnlyPhrase
 import models.ocelot.Phrase
 
 case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
   lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(row.cells.length - row.cells.size)(Phrase())))
+  lazy val isSummaryList: Boolean = group.map(_.cells.length).max == 3 &&
+                                    group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)) || r.cells(2) == Phrase())
 }
 
 object RowGroup {

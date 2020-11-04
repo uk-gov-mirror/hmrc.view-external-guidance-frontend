@@ -18,10 +18,9 @@ package services
 
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
-import models.ocelot.{Phrase, Link => OcelotLink, isHeadingCallout}
+import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
-import models.ocelot.isLinkOnlyPhrase
 
 import scala.annotation.tailrec
 
@@ -41,6 +40,10 @@ class UIBuilder {
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
+      case (rg: RowGroup) :: xs if rg.isSummaryList => // Summary List
+        fromStanzas(stackStanzas(xs, Nil),
+                    acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))),
+                    formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
@@ -49,22 +52,10 @@ class UIBuilder {
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
-    def isSummaryList(c: Callout, rg: RowGroup): Boolean =
-      isHeadingCallout(c) &&
-      rg.group.map(_.cells.length).max == 3 &&
-      rg.group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)))
-
     sg.group match {
-      case (c: Callout) :: (rg: RowGroup) :: xs if isSummaryList(c, rg) => // Summary List
-        val sl = SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
-        fromStanzas(stackStanzas(xs, Nil), fromCallout(c, formData) ++ Seq(sl), formData)
-
-      // Confirmation callout with multiple lines
-      // case cp: Seq[Callout] if cp.forall(c => c.noteType == YourDecision) =>
-      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) => // Table
-        fromStanzas(sg.group, Nil, formData)
-      case _ => // No recognised stacked pattern
-        fromStanzas(sg.group, Nil, formData)
+      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Descision example
+      case x :: xs => // No recognised stacked pattern
+        fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }
   }
 
