@@ -21,12 +21,3 @@ package models.ui
 case class SummaryList(rows: Seq[Seq[Text]]) extends UIComponent {
   val text: Text = Text()
 }
-
-case class TableList(title: Option[Text], headings: Seq[Text], rows: Seq[Seq[Text]]) extends UIComponent {
-  val text: Text = Text()
-}
-
-case class Task(heading: Text, rows: Seq[Seq[Text]])
-case class TaskList(sections: Seq[Task]) extends UIComponent {
-  val text: Text = Text()
-}
