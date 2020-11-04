@@ -45,6 +45,9 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val h3Welsh: String = "Welsh Level 3 heading text"
 
     val h3: H3 = H3(Text(h3English, h3Welsh))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {

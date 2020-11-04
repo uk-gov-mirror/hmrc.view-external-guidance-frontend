@@ -42,12 +42,15 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", "/")
     val heading = Text(headStrings)
     val errorMsgs = Seq(ErrorMsg("id", Text(errorStrings)))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode")
   }
 
   "error_summary" must {
 
     "render error header and list of messages" in new Test {
-      val doc = asDocument(components.error_summary(heading, "inputName", errorMsgs)(messages, LabelCache()))
+      val doc = asDocument(components.error_summary(heading, "inputName", errorMsgs)(messages, ctx))
       val head = doc.getElementById("error-summary-title")
 
       head.text() shouldBe messages("error.summary.title")
@@ -63,7 +66,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "error_message" must {
 
     "render error message" in new Test {
-      val doc = asDocument(components.error_message(errorMsgs)(messages, LabelCache()))
+      val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
       val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "id-error")
 
       span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorStrings(0)
@@ -71,7 +74,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render hidden text with error message" in new Test {
 
-      val doc = asDocument(components.error_message(errorMsgs)(messages, LabelCache()))
+      val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
       val hidden = doc.getElementsByClass("govuk-visually-hidden").asScala.toList
 
       hidden(0).text() shouldBe messages("error.browser.title.prefix")

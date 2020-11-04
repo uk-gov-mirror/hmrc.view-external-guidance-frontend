@@ -16,9 +16,7 @@
 
 package models.ui
 
-sealed trait StandardSize
-
-case class H1(text: Text) extends UIComponent with StandardSize
-case class H2(text: Text) extends UIComponent with StandardSize
-case class H3(text: Text) extends UIComponent with StandardSize
-case class H4(text: Text) extends UIComponent with StandardSize
+case class H1(text: Text) extends UIComponent
+case class H2(text: Text) extends UIComponent
+case class H3(text: Text) extends UIComponent
+case class H4(text: Text) extends UIComponent

@@ -54,6 +54,10 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
                                                                Text("World","World"),
                                                                Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {

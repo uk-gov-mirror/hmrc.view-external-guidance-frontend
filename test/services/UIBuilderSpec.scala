@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, H1small, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
+import models.ui.{BulletPointList, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
 import models.ui.SummaryList
 import play.api.data.FormError
 
@@ -365,7 +365,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
                                                 RowGroup(Seq("2"), sparseRowsWithLinkAndHint, true)))
       p.components match {
-        case Seq((h: H1small), (sl: SummaryList)) => succeed
+        case Seq((h: H1), (sl: SummaryList)) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -375,7 +375,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
       p.components match {
-        case Seq((h: H1small), (sl: SummaryList)) => succeed
+        case Seq((h: H1), (sl: SummaryList)) => succeed
         case x => fail(s"Found $x")
       }
 

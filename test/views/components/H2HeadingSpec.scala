@@ -41,6 +41,9 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val h2Welsh: String = "Welsh Level 2 heading text"
 
     val h2: H2 = H2(Text(h2English, h2Welsh))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {

@@ -35,9 +35,11 @@ package object ocelot {
   def asCurrency(value: String): Option[BigDecimal] = inputCurrencyRegex.findFirstIn(value.filterNot(_==' ')).map(s => BigDecimal(s.filterNot(_==',')))
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
 
-  // Ocelot patterns
-  def isLinkOnlyPhrase(phrase: Phrase): Boolean = pageLinkOnlyRegex.findFirstIn(phrase.langs(0))
-                                                    .fold(false)(_ => pageLinkOnlyRegex.findFirstIn(phrase.langs(1)).fold(false)(_ => true))
+  def isLinkOnlyPhrase(phrase: Phrase): Boolean =
+    pageLinkOnlyRegex
+      .findFirstIn(phrase.langs(0))
+      .fold(false)(_ => pageLinkOnlyRegex.findFirstIn(phrase.langs(1)).fold(false)(_ => true))
+
   def isHeadingCallout(c: Callout): Boolean = c.noteType match {
     case nt: Heading => true
     case _ => false

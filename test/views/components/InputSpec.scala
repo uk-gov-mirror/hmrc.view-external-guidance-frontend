@@ -31,6 +31,7 @@ import play.twirl.api.Html
 import views.html._
 
 import scala.collection.JavaConverters._
+import models.PageContext
 
 class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
@@ -70,7 +71,9 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     private val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
-
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    val ctx = PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -80,14 +83,14 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "English Input component" must {
 
     "render input text as a header" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
       heading.first.text() shouldBe i1(0)
     }
 
     "render contained paragraphs" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
 
       doc.getElementsByTag("p").asScala.toList.foreach { p =>
         elementAttrs(p)("class").contains("govuk-body") shouldBe true
@@ -95,14 +98,14 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render input as input field" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val inputFields = doc.getElementsByTag("input")
       inputFields.size shouldBe 1
     }
 
     "render input with previous answer entered" in new Test {
       private val form = formProvider("test").bind(Map("test" -> inputValue1))
-      private val doc = asDocument(components.input(input, "test", form)(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", form)(fakeRequest, messages, ctx))
       private val inputs = doc.getElementsByTag("input").asScala.toList
       inputs.size shouldBe 1
       private val inputField = elementAttrs(inputs.head)
@@ -110,7 +113,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "render input with hints" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val hints = doc.getElementsByTag("span").asScala.toList
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
@@ -119,7 +122,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "Input with no body should hide the legend heading" in new Test {
-      private val doc = asDocument(components.input(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val legend = doc.getElementsByTag("legend").first
       private val attrs = elementAttrs(legend)
 
@@ -128,7 +131,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "Input with body should render hint within a span within fieldset" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
@@ -142,7 +145,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "input without body should render hint within a span within fieldset" in new Test {
-      private val doc = asDocument(components.input(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
@@ -156,7 +159,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
    "input with hint should include hint id in aria-desribedby on fieldset" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
@@ -164,7 +167,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
    }
 
    "input with hint in error should include hint id and error id in aria-desribedby on fieldset" in new Test {
-      private val doc = asDocument(components.input(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, labels))
+      private val doc = asDocument(components.input(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
