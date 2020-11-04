@@ -41,9 +41,7 @@ class UIBuilder {
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
       case (rg: RowGroup) :: xs if rg.isSummaryList =>
-        fromStanzas(stackStanzas(xs, Nil),
-                    acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))),
-                    formData)
+        fromStanzas(xs, acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
