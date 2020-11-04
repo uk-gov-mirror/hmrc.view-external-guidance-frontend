@@ -20,7 +20,6 @@ import models.ocelot.{asCurrency, labelReference, labelReferences, Label, Labels
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import scala.annotation.tailrec
 
 case class CalculationStanza(calcs: Seq[CalcOperation], override val next: Seq[String], stack: Boolean) extends Stanza {
   override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
@@ -91,18 +90,11 @@ case class Calculation(override val next: Seq[String], calcs: Seq[Operation]) ex
   override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
   override val labelRefs: List[String] = calcs.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
 
-  @tailrec
-  private def executeOperations(calcs: Seq[Operation], labels: Labels): Labels = {
-    calcs match {
-      case Nil => labels
-      case c :: cs => executeOperations(cs, c.eval(labels))
-    }
-  }
-
   def eval(labels: Labels): (String, Labels) = {
 
-    (next.last, executeOperations(calcs, labels))
+    val updatedLabels: Labels = calcs.foldLeft(labels){case(l, f) => f.eval(l)}
 
+    (next.last, updatedLabels)
   }
 
 }
