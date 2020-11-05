@@ -51,8 +51,12 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
     val expectedDlSparse = SummaryList(sparseDlRows)
     val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye","Goodbye"),
-                                                               Text("World","World"),
-                                                               Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))
+                                                Text("World","World"),
+                                                Text.link("dummy-path",
+                                                          Vector("Change", "Change"),
+                                                          false,
+                                                          false,
+                                                          Some(Vector("Goodbye", "Goodbye")))))
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
@@ -60,11 +64,7 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
-  }
+  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "Creating Summary list with some content" must {
 

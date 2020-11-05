@@ -51,7 +51,7 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Descision example
+      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }

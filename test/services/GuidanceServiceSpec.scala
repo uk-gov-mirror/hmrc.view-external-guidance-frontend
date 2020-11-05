@@ -114,7 +114,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, pages.last.stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
@@ -150,7 +150,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, pages.last.stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)

@@ -62,5 +62,25 @@ class StackingSpec extends BaseSpec {
       stacked(3) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedRowGroup(true)))
     }
 
+
+    "Group stacked stanzas in alternate group" in new Test {
+      val stanzas = Seq(stackedCo(Title, true), stackedCo(Title, true), stackedCo(Error, false), stackedCo(Title, false), stackedRowGroup(true))
+
+      val stacked = stackStanzas(stanzas, Nil)
+      stacked.length shouldBe 3
+      stacked(0) shouldBe StackedGroup(Seq(stackedCo(Title, true), stackedCo(Title, true)))
+      stacked(1) shouldBe stackedCo(Error, false)
+      stacked(2) shouldBe StackedGroup(Seq(stackedCo(Title, false), stackedRowGroup(true)))
+    }
+
+    "Group stacked stanzas in alternate group 2" in new Test {
+      val stanzas = Seq(stackedCo(Title, true), stackedCo(Title, true), stackedCo(Error, true), stackedCo(Title, true), stackedRowGroup(false))
+
+      val stacked = stackStanzas(stanzas, Nil)
+      stacked.length shouldBe 2
+      stacked(0) shouldBe StackedGroup(Seq(stackedCo(Title, true), stackedCo(Title, true), stackedCo(Error, true), stackedCo(Title, true)))
+      stacked(1) shouldBe stackedRowGroup(false)
+    }
+
   }
 }
