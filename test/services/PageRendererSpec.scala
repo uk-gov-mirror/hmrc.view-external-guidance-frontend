@@ -351,7 +351,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache(labelMap))
 
-      visualStanzas shouldBe List(callout, instruction1, instruction2, EndStanza)
+      visualStanzas shouldBe List(callout, instruction1, instruction2)
 
       dataInput shouldBe None
 
