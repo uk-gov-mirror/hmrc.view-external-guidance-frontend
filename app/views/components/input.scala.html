@@ -15,11 +15,10 @@
  *@
 
 @import models.ui._
-@import models.ocelot.{Labels, Label}
 @import controllers.routes._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, labels: Labels)
+@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
 @optionalAria() = @{
   Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {

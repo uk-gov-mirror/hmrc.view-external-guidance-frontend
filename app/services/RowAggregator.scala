@@ -16,35 +16,28 @@
 
 package services
 
-import models.ocelot.stanzas.{Stanza, Row, RowGroup}
+import models.ocelot.stanzas.{VisualStanza, Row, RowGroup}
 
 import scala.annotation.tailrec
 
 object RowAggregator {
 
   @tailrec
-  def aggregateStanzas( inputSeq: Seq[Stanza], acc: Seq[Stanza]): Seq[Stanza] =
+  def aggregateStanzas( inputSeq: Seq[VisualStanza], acc: Seq[VisualStanza]): Seq[VisualStanza] =
     inputSeq match {
       case Nil => acc
-      case x :: xs =>
-        x match {
-          case r: Row =>
-            val rowGroup: Seq[Row] = aggregate (xs, Seq (r) )
-              aggregateStanzas (xs.drop (rowGroup.size - 1), acc :+ RowGroup (rowGroup) )
-          case s: Stanza => aggregateStanzas (xs, acc :+ s)
-        }
+      case (x: Row) :: xs =>
+        val rowGroup: Seq[Row] = aggregate (xs, Seq (x) )
+        aggregateStanzas (xs.drop (rowGroup.size - 1), acc :+ RowGroup (rowGroup) )
+      case x :: xs => aggregateStanzas (xs, acc :+ x)
     }
 
   @tailrec
-  private def aggregate(inputSeq: Seq[Stanza], acc: Seq[Row]): Seq[Row] =
-
+  private def aggregate(inputSeq: Seq[VisualStanza], acc: Seq[Row]): Seq[Row] =
     inputSeq match {
       case Nil => acc
-      case x :: xs =>
-        x match {
-          case r: Row if(r.stack) => aggregate(xs, acc :+ r)
-          case _ => acc
-        }
+      case (x: Row) :: xs if x.stack => aggregate(xs, acc :+ x)
+      case _ => acc
     }
 
 }

@@ -16,12 +16,11 @@
 
 @import models.ui._
 @import controllers.routes._
-@import models.ocelot.Labels
 @import models.ui.SummaryList
 
-@(dl: SummaryList)(implicit request: Request[_], messages: Messages, labels: Labels)
+@(sl: SummaryList)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  @for(row <- dl.rows){@summary_row(row)}
+  @for(row <- sl.rows){@summary_row(row)}
 </dl>
 @{
      //$COVERAGE-OFF$

@@ -28,27 +28,33 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def fromStanzas(url: String, stanzas: Seq[Stanza], formData: Option[FormData] = None)(implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url,
-         stanzas.foldLeft(Seq[UIComponent]()) {(acc, stanza) =>
-           stanza match {
-             case i: Instruction => acc :+ fromInstruction(i)
-             case ig: InstructionGroup => acc :+ fromInstructionGroup(ig)
-             case c: Callout => acc ++ fromCallout(c, formData)
-             case rg: RowGroup => acc :+ fromRowGroup(rg)
-             case in: OcelotInput => Seq(fromInput(in, formData, acc))
-             case q: OcelotQuestion => Seq(fromQuestion(q, acc))
-             case _ => acc
-           }
-         })
+  def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
+               (implicit stanzaIdToUrlMap: Map[String, String]): Page =
+    Page(url, fromStanzas(stackStanzas(stanzas, Nil), Nil, formData))
 
-  private def fromRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
-    val rowLength = rg.group.map(_.cells.length).max
-    SummaryList(rg.group.map{row =>
-      SummaryRow((row.cells ++ Seq.fill(rowLength - row.cells.size)(Phrase())).map{phrase =>
-        SummaryCell(TextBuilder.fromPhrase(phrase))
-      })
-    })
+  @tailrec
+  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], formData: Option[FormData])
+                 (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+    stanzas match {
+      case Nil => acc
+      case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
+      case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
+      case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
+      case (rg: RowGroup) :: xs if rg.isSummaryList =>
+        fromStanzas(xs, acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))), formData)
+      case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
+      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
+      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
+      case x :: xs => fromStanzas(xs, acc, formData)
+    }
+
+  private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+    sg.group match {
+      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
+      case x :: xs => // No recognised stacked pattern
+        fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
+    }
   }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
@@ -60,7 +66,6 @@ class UIBuilder {
     }
 
   private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
-
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
@@ -90,7 +95,8 @@ class UIBuilder {
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
-    def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
+    def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
       remainder.map { instruction =>
         val bulletPointEnglish: String = instruction.text
           .langs(0)
@@ -112,9 +118,8 @@ class UIBuilder {
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(input: OcelotInput, formData: Option[FormData], components: Seq[UIComponent])(
-    implicit stanzaIdToUrlMap: Map[String, String]
-  ): UIComponent = {
+  private def fromInput(input: OcelotInput, components: Seq[UIComponent])
+                       (implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val name = TextBuilder.fromPhrase(input.name)

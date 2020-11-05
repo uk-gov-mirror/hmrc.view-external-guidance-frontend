@@ -41,6 +41,12 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val h2Welsh: String = "Welsh Level 2 heading text"
 
     val h2: H2 = H2(Text(h2English, h2Welsh))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val summaryList = SummaryList(Seq.empty)
+    val page = models.ui.StandardPage("/url", Seq(currencyInput))
+    val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
+    val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctxReduced = models.PageContext(summaryPage, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {
@@ -51,18 +57,27 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   "Creating a level 2 heading with some content" must {
 
-    "Define the correct GDS class" in new Test {
+    "Define the correct GDS standard class" in new Test {
 
-      val markUp: Html = h2_heading(h2)
+      val markUp: Html = h2_heading(h2)(messages, ctx)
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
       h2Element.hasClass("govuk-heading-l") shouldBe true
     }
 
+    "Define the correct GDS reduced class" in new Test {
+
+      val markUp: Html = h2_heading(h2)(messages, ctxReduced)
+
+      val h2Element: Element = getSingleElementByTag(markUp, "h2")
+
+      h2Element.hasClass("govuk-heading-m") shouldBe true
+    }
+
     "display text in English" in new Test {
 
-      val markUp: Html = h2_heading(h2)
+      val markUp: Html = h2_heading(h2)(messages, ctx)
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
@@ -71,7 +86,7 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h2_heading(h2)
+      val markUp: Html = h2_heading(h2)(messages, ctx)
 
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 

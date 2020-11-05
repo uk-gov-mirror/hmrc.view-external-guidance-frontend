@@ -42,6 +42,9 @@ class H4HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val welshText: String = "Welsh text"
 
     val h4: H4 = H4(Text(englishText, welshText))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {

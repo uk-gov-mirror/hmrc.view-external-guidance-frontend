@@ -17,9 +17,9 @@
 @import ui.H1
 @import models.ocelot.Labels
 
-@( h1: H1 )( implicit messages: Messages, labels: Labels )
+@(h1: H1)(implicit messages: Messages, ctx: PageContext)
 
-<h1 class="govuk-heading-xl">@components.render_text(h1.text)</h1>
+<h1 class="@if(ctx.page.reduceHeadings){govuk-heading-l} else {govuk-heading-xl}">@components.render_text(h1.text)</h1>
 
 @{
 //$COVERAGE-OFF$

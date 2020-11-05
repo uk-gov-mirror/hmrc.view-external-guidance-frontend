@@ -18,13 +18,13 @@
 @import play.twirl.api.StringInterpolation
 @import models.ocelot.Labels
 
-@(txt: OcelotText)(implicit messages: Messages, labels: Labels)
+@(txt: OcelotText)(implicit messages: Messages, ctx: PageContext)
 @Html(
   txt.value(messages.lang).map{
     case w: Words if w.bold => s"<strong>$w</strong>"
     case w: Words => w
     case l: Link => l.hint.fold(components.link(l))(h => components.link_withHint(l, h))
-    case lr: LabelRef => lr.outputFormat.asString(labels.value(lr.name))
+    case lr: LabelRef => lr.outputFormat.asString(ctx.labels.value(lr.name))
   }.mkString
 )
 @{

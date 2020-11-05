@@ -58,6 +58,9 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
     val linkWithHint = Text(Link(dest2, "BBC News", false, false, Some("HINT")), Link(dest2, "Welsh, BBC News", false, false, Some("HINT")))
 
     val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink + linkWithHint)
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {

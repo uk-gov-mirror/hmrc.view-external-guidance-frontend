@@ -56,6 +56,9 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)))
     val textLargeValueNoDpsCurrencyLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)),
                                                    Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)))
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -65,31 +68,31 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "render_text component" should {
 
     "generate English html containing label references with default output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price 33.9"
     }
 
     "generate English html containing label reference to Label which does not exist" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "The price is"
     }
 
     "generate English html containing label references with Currency output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price £33.90"
     }
 
     "generate English html containing label references with Currency output formatting with invalid data" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have , price £33.90"
     }
 
     "generate English html containing label references with Currency output formatting with large values and no decimal places" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }
@@ -125,31 +128,31 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "generate Welsh html containing label references with default output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price 33.9"
     }
 
     "generate Welsh html containing label reference to Label which does not exist" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh The price is"
     }
 
     "generate Welsh html containing label references with Currency output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price £33.90"
     }
 
     "generate Welsh html containing label references with Currency output formatting with invalid data" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textWithInvaldiCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have , price £33.90"
     }
 
     "generate Welsh html containing label references with Currency output formatting with large values and no decimal places" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, labels))
+      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }

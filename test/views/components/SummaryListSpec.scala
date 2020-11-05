@@ -44,23 +44,27 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
-    val dlRows = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("","")))))
+    val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
     val expectedDl = SummaryList(dlRows)
-    val dlRowsWithHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("World","World")), SummaryCell(Text("Blah","Blah")))))
+    val dlRowsWithHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
     val expectedDlWithHint = SummaryList(dlRowsWithHint)
-    val sparseDlRows = Seq(dlRows(0), SummaryRow(Seq(SummaryCell(Text("HELLO","HELLO")), SummaryCell(Text("","")), SummaryCell(Text("","")))), dlRows(2))
+    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
     val expectedDlSparse = SummaryList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(SummaryRow(Seq(SummaryCell(Text("Goodbye","Goodbye")),
-                                                               SummaryCell(Text("World","World")),
-                                                               SummaryCell(Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("Goodbye", "Goodbye")))))))
+    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye","Goodbye"),
+                                                Text("World","World"),
+                                                Text.link("dummy-path",
+                                                          Vector("Change", "Change"),
+                                                          false,
+                                                          false,
+                                                          Some(Vector("Goodbye", "Goodbye")))))
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+
+    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page = models.ui.InputPage("/url", currencyInput)
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
-  }
+  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "Creating Summary list with some content" must {
 

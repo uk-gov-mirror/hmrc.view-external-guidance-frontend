@@ -16,17 +16,15 @@
 
 package models.ocelot.stanzas
 
-/**
-  * Case class InstructionGroup is a container class for groups of Instructions
-  * with similar leading text that comprise bullet point lists
-  *
-  * @param next - Identifier for next stanza in page
-  * @param group - A group of instructions
-  */
-case class InstructionGroup(override val next: Seq[String], group: Seq[Instruction], stack: Boolean) extends VisualStanza with Populated
+import models.ocelot.isHeadingCallout
 
-object InstructionGroup {
+case class StackedGroup (override val next: Seq[String], group: Seq[VisualStanza], stack: Boolean) extends VisualStanza with Populated {
+  lazy val containsHeading = group.exists{
+    case c: Callout if isHeadingCallout(c) => true
+    case _ => false
+  }
+}
 
-  def apply(group: Seq[Instruction], stack: Boolean = false): InstructionGroup = InstructionGroup(group.last.next, group, stack)
-
+object StackedGroup {
+  def apply(group: Seq[VisualStanza]): StackedGroup = StackedGroup(group.last.next, group, group.head.stack)
 }

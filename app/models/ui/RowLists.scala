@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+// $COVERAGE-OFF$
+
 package models.ui
 
-case class SummaryCell(txt: Text)
-case class SummaryRow(cells: Seq[SummaryCell])
-case class SummaryList(rows: Seq[SummaryRow]) extends UIComponent {
+case class SummaryList(rows: Seq[Seq[Text]]) extends UIComponent {
   val text: Text = Text()
 }
