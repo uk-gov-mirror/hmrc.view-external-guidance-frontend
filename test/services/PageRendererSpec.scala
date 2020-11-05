@@ -304,6 +304,138 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     }
 
+    "execute calculation stanza when rendering page" in new Test {
+
+      val callout: Callout = Callout(
+        Title,
+        Phrase(Vector("Title", "Welsh - Title")),
+        Seq("2"),
+        stack = false
+      )
+
+      val instruction1: Instruction = Instruction(
+        Phrase(Vector("Example calculation", "Welsh - Example calculation")),
+        Seq("3"),
+        None,
+        stack = false)
+
+      val operations: Seq[CalcOperation] = Seq(
+        CalcOperation("[label:input1]", Addition, "10", "output1")
+      )
+
+      val calculationStanza: CalculationStanza = CalculationStanza(operations, Seq("4"), stack = false)
+
+      val calculation: Calculation = Calculation(calculationStanza)
+
+      val instruction2: Instruction = Instruction(
+        Phrase(Vector("Sum of values : [label:output1]", "Welsh - Sum of values : [label:output1]")),
+        Seq("end"),
+        None,
+        stack = false
+      )
+
+      val stanzas: Seq[KeyedStanza] = Seq(
+        KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
+        KeyedStanza("1", callout),
+        KeyedStanza("2", instruction1),
+        KeyedStanza("3", calculation),
+        KeyedStanza("4", instruction2),
+        KeyedStanza("end", EndStanza)
+      )
+
+      val page: Page = Page(Process.StartStanzaId, "/render", stanzas, Seq("end"))
+
+      val input1: Label = Label( "input1", Some("60"))
+
+      val labelMap: Map[String, Label] = Map(input1.name -> input1)
+
+      val (visualStanzas, labels, dataInput) = renderer.renderPage(page, LabelCache(labelMap))
+
+      visualStanzas shouldBe List(callout, instruction1, instruction2, EndStanza)
+
+      dataInput shouldBe None
+
+      labels.labelMap shouldBe labelMap
+
+      val expectedUpdatedLabels: Map[String, Label] = Map("output1" -> Label("output1", Some("70")))
+
+      labels.updatedLabels shouldBe expectedUpdatedLabels
+
+      dataInput shouldBe None
+    }
+
+    "execute calculation stanza when submitting page" in new Test {
+
+      val valueStanza: ValueStanza = ValueStanza(
+        List(Value(Scalar, "input1", "10")),
+        Seq("2"),
+        stack = true
+      )
+
+      val callout: Callout = Callout(
+        Title,
+        Phrase(Vector("Title", "Welsh - Title")),
+        Seq("3"),
+        stack = false
+      )
+
+      val instruction1: Instruction = Instruction(
+        Phrase(Vector("Example of calculation after submit", "Welsh - Example of calculation after submit")),
+        Seq("4"),
+        None,
+        stack = false)
+
+      val questionStanza = Question(
+        questionPhrase,
+        answers,
+        Seq("5","5","5"),
+        None,
+        stack = false)
+
+      val operations: Seq[CalcOperation] = Seq(
+        CalcOperation("[label:input1]", Addition, "15", "output1")
+      )
+
+      val calculationStanza: CalculationStanza = CalculationStanza(operations, Seq("6"), stack = false)
+
+      val calculation: Calculation = Calculation(calculationStanza)
+
+      val choiceStanzaTest: ChoiceStanzaTest = ChoiceStanzaTest("[label:output1]", LessThan, "50")
+
+      val choiceStanza: ChoiceStanza = ChoiceStanza(
+        Seq("7", "14"),
+        Seq(choiceStanzaTest),
+        stack = false)
+
+      val choice: Choice = Choice(choiceStanza)
+
+      val stanzas: Seq[KeyedStanza] = Seq(
+        KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
+        KeyedStanza("1", valueStanza),
+        KeyedStanza("2", callout),
+        KeyedStanza("3", instruction1),
+        KeyedStanza("4", questionStanza),
+        KeyedStanza("5", calculation),
+        KeyedStanza("6", choice),
+        KeyedStanza("end", EndStanza)
+      )
+
+      val page: Page = Page(Process.StartStanzaId, "/render", stanzas, answerDestinations)
+
+      val labels = LabelCache()
+
+      val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, answer = "0")
+
+      next shouldBe Some("7")
+
+      val expectedUpdatedLabels: Map[String, Label] = Map(
+        "input1" -> Label("input1", Some("10")),
+        "output1" -> Label("output1", Some("25"))
+      )
+
+      newLabels.updatedLabels shouldBe expectedUpdatedLabels
+    }
+
   }
 
 }
