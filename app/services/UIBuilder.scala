@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
-import models.ocelot.{Phrase, Link => OcelotLink}
+import models.ocelot.{Phrase, Link => OcelotLink, isHeadingCallout}
 import models.ui._
 import play.api.Logger
 
@@ -52,6 +52,10 @@ class UIBuilder {
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
       //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
+      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) && !rg.isSummaryList =>
+        val heading = fromCallout(c, formData).head
+        val table = Table(heading, rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+        fromStanzas(stackStanzas(xs, Nil), Seq(table), formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }
@@ -84,7 +88,9 @@ class UIBuilder {
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
+      case Important => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
+      case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
+      case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case Error =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
