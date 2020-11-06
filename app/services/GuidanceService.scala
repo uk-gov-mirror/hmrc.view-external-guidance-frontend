@@ -97,7 +97,8 @@ class GuidanceService @Inject() (
     PageContext(pec, uiPage, labels)
   }
 
-  def getPageContext(processCode: String, url: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+  def getPageContext(processCode: String, url: String, sessionId: String)
+                    (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, sessionId).map{
       case Right(evalContext) => Right(getPageContext(evalContext))
       case Left(err) => Left(err)
@@ -122,7 +123,8 @@ class GuidanceService @Inject() (
       sessionRepository.saveLabels(docId, labels.updatedLabels.values.toSeq)
     )
 
-  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCacheScratch(uuid: String, docId: String)
+                             (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(
       uuid,
       docId,

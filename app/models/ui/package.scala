@@ -38,6 +38,7 @@ package object ui {
   def useReducedHeadings(components: Seq[UIComponent]): Boolean =
     components.exists{
       case c: SummaryList => true
+      case t: Table => true
       case _ => false
     }
 

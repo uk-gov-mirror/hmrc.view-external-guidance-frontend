@@ -18,7 +18,7 @@ package services
 
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
-import models.ocelot.{Phrase, Link => OcelotLink, isHeadingCallout}
+import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui._
 import play.api.Logger
 
@@ -40,8 +40,8 @@ class UIBuilder {
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
-      case (rg: RowGroup) :: xs if rg.isSummaryList =>
-        fromStanzas(xs, acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))), formData)
+      case (rg: RowGroup) :: xs if rg.isSummaryList => fromStanzas(xs, acc ++ Seq(fromSummaryListRowGroup(rg)), formData)
+      case (rg: RowGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
@@ -52,12 +52,29 @@ class UIBuilder {
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
       //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
-      case (c: Callout) :: (rg: RowGroup) :: xs if isHeadingCallout(c) && !rg.isSummaryList =>
-        val heading = fromCallout(c, formData).head
-        val table = Table(heading, rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
-        fromStanzas(stackStanzas(xs, Nil), Seq(table), formData)
+      case (c: Callout) :: (rg: RowGroup) :: xs if c.noteType == SubSection && !rg.isSummaryList =>
+        fromStanzas(stackStanzas(xs, Nil), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
+    }
+  }
+
+  private def fromSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+
+  private def fromTableRowGroup(caption: Option[Text], rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    val rows: Seq[Seq[Cell]] = rg.paddedRows.map{rw =>
+      rw.map{phrase =>
+        TextBuilder.fromPhrase(phrase) match {
+          case x if x.isBold => Th(x, x.isNumeric)
+          case x => Td(x, x.isNumeric)
+        }
+      }
+    }
+    rows.headOption.fold(Table(caption, None, Seq.empty)){row0 =>
+      val heading = if (row0.collect{case c: Th => c}.length == row0.length) Some(row0) else None
+      val tableRows = heading.fold(rows)(_ => rows.tail)
+      Table(caption, heading, tableRows)
     }
   }
 
@@ -88,7 +105,7 @@ class UIBuilder {
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      case Important => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
+      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
       case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case Error =>
