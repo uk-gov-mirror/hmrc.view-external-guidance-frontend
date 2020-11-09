@@ -19,7 +19,7 @@
 @optionalAria() = @{
   Seq(input.hint.map(_ => s"$name-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
+    case l => ariaDescribedBy("input-hint")
   }
 }
 <div class="govuk-form-group">
