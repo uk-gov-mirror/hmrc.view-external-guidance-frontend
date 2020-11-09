@@ -14,15 +14,12 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
-
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
 @optionalAria() = @{
-  Seq(input.hint.map(_ => s"${name}-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+  Seq(input.hint.map(_ => s"$name-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
     case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
+    case l => ariaDescribedBy("input-hint")
   }
 }
 <div class="govuk-form-group">
@@ -34,4 +31,3 @@
 @{
      //$COVERAGE-OFF$
 }
-
