@@ -21,7 +21,7 @@
 @(tbl: Table)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <table class="govuk-table">
   @tbl.caption.map{caption =>
-  <caption class="govuk-table__head">
+  <caption class="govuk-table__caption">
     @components.render_text(caption)
   </caption>
   }
