@@ -20,10 +20,10 @@ package models.ui
 
 trait Cell {
   val text: Text
-  val numeric: Boolean
+  val numeric: Boolean = text.isNumeric
 }
-case class Th(text: Text, numeric: Boolean = false) extends Cell
-case class Td(text: Text, numeric: Boolean = false) extends Cell
+case class Th(text: Text) extends Cell
+case class Td(text: Text) extends Cell
 
 //
 // 1. Cell content all bold encoded within a <th>

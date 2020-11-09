@@ -72,8 +72,8 @@ class UIBuilder {
     val rows: Seq[Seq[Cell]] = rg.paddedRows.map{rw =>
       rw.map{phrase =>
         TextBuilder.fromPhrase(phrase) match {
-          case x if x.isBold => Th(x, x.isNumeric)
-          case x => Td(x, x.isNumeric)
+          case x if x.isBold => Th(x)
+          case x => Td(x)
         }
       }
     }

@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import models.ui.{BulletPointList, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
-import models.ui.SummaryList
+import models.ui.{SummaryList, Table}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -339,33 +339,54 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
   }
 
+  trait TableTest extends Test {
+    val rows = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), false) +:
+               Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
+    val simpleRowGroup = RowGroup(rows)
+    val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), false) +:
+               Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
+    val captionRowGroup = RowGroup(rowsWithHeading)
+    val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
+  }
+
   "UIBuilder" must {
+    "Convert a non-summarylist RowGroup into a table" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
+                                                simpleRowGroup))
+      p.components match {
+        case Seq((h: H1), (tbl: Table)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // "convert a RowGroup with three simple phrase column into a SummaryList" in new SLTest {
-    //   val p = uiBuilder.buildPage("/start", Seq(RowGroup(Seq("2"), rows, rows.head.stack)))
-    //   p.components.head match {
-    //     case dl: SummaryList =>
-    //       dl.rows.zipWithIndex.foreach{
-    //         case (r, idx) =>
-    //           r shouldBe expectedDl.rows(idx)
-    //       }
-    //     case x => fail(s"Found $x")
-    //   }
+    "Convert a non-summarylist RowGroup into a table with a heading line" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
+                                                captionRowGroup))
+      p.components match {
+        case Seq((h: H1), Table(None, Some(_), _)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // }
+    "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(SubSection, Phrase("Heading", "Heading"), Seq.empty, false),
+                                                stackedRowGroup))
+      p.components match {
+        case Seq(Table(Some(heading), None, rows)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // "convert a RowGroup with three columns into a SummaryList, all columns complete" in new SLTest {
-    //   val p = uiBuilder.buildPage("/start", Seq(RowGroup(Seq("2"), rowsComplete, rowsComplete.head.stack)))
-    //   p.components.head match {
-    //     case dl: SummaryList =>
-    //       dl.rows.zipWithIndex.foreach{
-    //         case (r, idx) =>
-    //           r shouldBe expectedDlComplete.rows(idx)
-    //       }
-    //     case x => fail(s"Found $x")
-    //   }
+    "convert a non-summarylist RowGroup into a table with a right aligned numeric column" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
+                                                numericRowGroup))
+      p.components match {
+        case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).numeric) => succeed
+        case x => fail(s"Found $x")
+      }
 
-    // }
+    }
 
     "convert a RowGroup with three sparse columns including a link and hint into a SummaryList" in new SLTest {
       val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),

@@ -42,36 +42,21 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
-    val h1English: String = "Level 1 heading text"
-    val h1Welsh: String = "Welsh Level 1 heading text"
-    val dlRows: Seq[Seq[Text]] = Seq(Seq(Text(Words("HELLO", true),Words("HELLO", true)), Text(Words("World", true),Words("World", true)))) ++
-                                 Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World")))
-
-    val tableBody: Seq[Seq[Cell]] = Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World"))))
     val expectedTable = Table(None,
                               Some(Seq(Th(Text("HELLO","HELLO")), Th(Text("World","World")))),
-                              tableBody)
+                              Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
+    val expectedTableNoHeadings = Table(None,
+                                        None,
+                                        Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
+    val expectedTableWithNumericCells = Table(None,
+                                              Some(Seq(Th(Text("HELLO","HELLO")), Th(Text("World","World")))),
+                                              Seq.fill(3)(Seq(Th(Text("HELLO","HELLO")), Td(Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency))))))
     val expectedTableWithCaption = expectedTable.copy(caption = Some(Text("Caption", "Caption")))
-
-    val dlRowsWithHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("Blah","Blah")))
-    val expectedDlWithHint = SummaryList(dlRowsWithHint)
-    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
-    val expectedDlSparse = SummaryList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye","Goodbye"),
-                                                Text("World","World"),
-                                                Text.link("dummy-path",
-                                                          Vector("Change", "Change"),
-                                                          false,
-                                                          false,
-                                                          Some(Vector("Goodbye", "Goodbye")))))
-    val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
-
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "Tables" must {
 
@@ -86,6 +71,18 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
         headings.size shouldBe row.size
       }
 
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTable.rows.size
+    }
+
+    "Encode an intial row not all bold as a standard table body row" in new Test {
+      val html: Html = components.table(expectedTableNoHeadings)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
+      table.hasClass("govuk-table") shouldBe true
+      table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
       val body = table.getElementsByTag("tbody").first
       val rows = body.getElementsByTag("tr").asScala.toList
 
@@ -114,38 +111,27 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       rows.size shouldBe expectedTable.rows.size
     }
 
-    // "display the correct text in columns" in new Test {
-    //   val html: Html = components.summary_list(expectedDl)
-    //   val dlElement: Element = getSingleElementByTag(html, "dl")
-    //   dlElement.hasClass("govuk-summary-list") shouldBe true
-    //   val rows = dlElement.getElementsByTag("div").asScala.toList
+    "Encode table with numeric cells using govuk numeric class" in new Test {
+      val html: Html = components.table(expectedTableWithNumericCells)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.hasClass("govuk-table") shouldBe true
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
 
-    //   for( row <- rows ){
-    //     row.hasClass("govuk-summary-list__row") shouldBe true
-    //     row.getElementsByTag("dt").first.text() shouldBe "HELLO"
-    //     val dds = row.getElementsByTag("dd").asScala.toList
-    //     dds.size shouldBe 2
-    //     dds(0).text shouldBe "World"
-    //     dds(1).text shouldBe ""
-    //   }
-    // }
+      rows.size shouldBe expectedTable.rows.size
 
-    // "display the correct text in columns with action cell hint as visually hidden text" in new Test {
-    //   val html: Html = components.summary_list(expectedDLWithLinkAndHint)
-    //   val dlElement: Element = getSingleElementByTag(html, "dl")
-    //   dlElement.hasClass("govuk-summary-list") shouldBe true
-    //   val rows = dlElement.getElementsByTag("div").asScala.toList
+      (rows zip expectedTableWithNumericCells.rows).foreach{
+        case (rowElem, tableRow) =>
+          val cells = rowElem.children.asScala.toList
+          (cells zip tableRow).foreach{
+            case (c, td: Td) if td.numeric =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe true
 
-    //   for( row <- rows ){
-    //     row.hasClass("govuk-summary-list__row") shouldBe true
-    //     val dds = row.getElementsByTag("dd").asScala.toList
-    //     dds.size shouldBe 2
-
-    //     val a = dds(1).getElementsByTag("a").first
-    //     a.text shouldBe "ChangeGoodbye"
-    //   }
-    // }
-
+            case (c, tc) =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe false
+          }
+      }
+    }
   }
 
 }
