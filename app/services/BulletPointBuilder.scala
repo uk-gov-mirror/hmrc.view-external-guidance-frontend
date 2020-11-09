@@ -27,7 +27,7 @@ object BulletPointBuilder {
   val matchLimit: Int = 3
 
   @tailrec
-  def groupBulletPointInstructions(inputSeq: Seq[VisualStanza], acc: Seq[VisualStanza]): Seq[VisualStanza] =
+  def groupBulletPointInstructions(acc: Seq[VisualStanza])(inputSeq: Seq[VisualStanza]): Seq[VisualStanza] =
     inputSeq match {
       case Nil => acc
       case x :: xs =>
@@ -35,11 +35,11 @@ object BulletPointBuilder {
           case i: Instruction =>
             val matchedInstructions: Seq[Instruction] = groupMatchedInstructions(xs, Seq(i))
             if (matchedInstructions.size > 1) {
-              groupBulletPointInstructions(xs.drop(matchedInstructions.size - 1), acc :+ InstructionGroup(matchedInstructions))
+              groupBulletPointInstructions(acc :+ InstructionGroup(matchedInstructions))(xs.drop(matchedInstructions.size - 1))
             } else {
-              groupBulletPointInstructions(xs, acc :+ matchedInstructions.head)
+              groupBulletPointInstructions(acc :+ matchedInstructions.head)(xs)
             }
-          case s: VisualStanza => groupBulletPointInstructions(xs, acc :+ s)
+          case s: VisualStanza => groupBulletPointInstructions(acc :+ s)(xs)
         }
     }
 

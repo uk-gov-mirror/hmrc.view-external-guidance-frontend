@@ -105,8 +105,8 @@ class StanzaAggregatorSpec extends BaseSpec {
     val instruction10: Instruction = Instruction(instruction10Phrase, Seq("20"), None, stack = false)
     val row9: Row = Row(dl4r1Cells, Seq("21"), stack = true)
     val instruction11: Instruction = Instruction(instruction11Phrase, Seq("end"), None, stack = false)
-      val uiPreProcessTransformations: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
-        Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
+      val uiPreProcessTransformations: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
+        Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), RowAggregator.aggregateStanzas(Nil))
   }
 
   "Stanza aggregator" must {
@@ -140,7 +140,7 @@ class StanzaAggregatorSpec extends BaseSpec {
       ).collect{case s: VisualStanza => s}
 
 
-      val aggregatedStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(stanzas){case (s, t) => t(s, Nil)}
+      val aggregatedStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(stanzas){case (s, t) => t(s)}
 
       aggregatedStanzas.head shouldBe callout
       aggregatedStanzas(1) shouldBe instruction1
@@ -167,7 +167,7 @@ class StanzaAggregatorSpec extends BaseSpec {
         EndStanza
       ).collect{case s: VisualStanza => s}
 
-      val outputStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(inputStanzas){case (s, t) => t(s, Nil)}
+      val outputStanzas: Seq[Stanza] = uiPreProcessTransformations.foldLeft(inputStanzas){case (s, t) => t(s)}
 
       outputStanzas shouldBe inputStanzas
     }

@@ -23,13 +23,13 @@ import scala.annotation.tailrec
 object RowAggregator {
 
   @tailrec
-  def aggregateStanzas( inputSeq: Seq[VisualStanza], acc: Seq[VisualStanza]): Seq[VisualStanza] =
+  def aggregateStanzas(acc: Seq[VisualStanza])(inputSeq: Seq[VisualStanza]): Seq[VisualStanza] =
     inputSeq match {
       case Nil => acc
       case (x: Row) :: xs =>
         val rowGroup: Seq[Row] = aggregate (xs, Seq (x) )
-        aggregateStanzas (xs.drop (rowGroup.size - 1), acc :+ RowGroup (rowGroup) )
-      case x :: xs => aggregateStanzas (xs, acc :+ x)
+        aggregateStanzas(acc :+ RowGroup (rowGroup))(xs.drop (rowGroup.size - 1))
+      case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
 
   @tailrec

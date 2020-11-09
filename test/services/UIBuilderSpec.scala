@@ -747,14 +747,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
-      val uiPreProcessTransformations: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
-        Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
 
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
-      val uiPage = uiBuilder.buildPage(
-        ocelotPage.url,
-        uiPreProcessTransformations.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
-      )(extraIncomeUrlMap)
+      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap)
 
       val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
                                          "Welsh: You've received income that you have not yet paid tax on from:")

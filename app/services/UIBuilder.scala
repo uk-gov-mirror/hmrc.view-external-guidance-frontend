@@ -27,10 +27,16 @@ import scala.annotation.tailrec
 @Singleton
 class UIBuilder {
   val logger: Logger = Logger(getClass)
+  val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
+    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil),
+        RowAggregator.aggregateStanzas(Nil),
+        stackStanzas(Nil))
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
-               (implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url, fromStanzas(stackStanzas(stanzas, Nil), Nil, formData))
+               (implicit stanzaIdToUrlMap: Map[String, String]): Page = {
+    val groupedStanzas: Seq[VisualStanza] = stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}
+    Page(url, fromStanzas(groupedStanzas, Nil, formData))
+  }
 
   @tailrec
   private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], formData: Option[FormData])
@@ -53,9 +59,9 @@ class UIBuilder {
     sg.group match {
       //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
       case (c: Callout) :: (rg: RowGroup) :: xs if c.noteType == SubSection && !rg.isSummaryList =>
-        fromStanzas(stackStanzas(xs, Nil), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
       case x :: xs => // No recognised stacked pattern
-        fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
+        fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
     }
   }
 
