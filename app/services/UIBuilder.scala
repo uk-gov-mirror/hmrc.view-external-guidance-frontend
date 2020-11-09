@@ -51,10 +51,10 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
-      case x :: xs => // No recognised stacked pattern
-        fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
+      case Seq(Callout(YourCall,_,_,_), _*) => fromSequenceWithLeadingYourCallCallout(sg, formData)
+      case x :: xs => fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }
+
   }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
@@ -85,6 +85,7 @@ class UIBuilder {
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
       case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
+      case YourCall => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case Error =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
@@ -137,5 +138,44 @@ class UIBuilder {
       case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
+
+  private def fromSequenceWithLeadingYourCallCallout(sg: StackedGroup, formData: Option[FormData])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+
+    val (yourCalls, visualStanzas) = extractLeadingYourCallCallouts(sg.group, Nil)
+
+    val groupSize: Int = sg.group.size
+
+    yourCalls.size match {
+      case 1 =>  fromStanzas(yourCalls.head +: stackStanzas(visualStanzas, Nil), Nil, formData)
+      case `groupSize` =>  Seq(fromYourCallGroup(yourCalls))
+      case _ => fromStanzas(StackedGroup(yourCalls) +: stackStanzas(visualStanzas, Nil), Nil, formData)
+    }
+
+  }
+
+  @tailrec
+  private def extractLeadingYourCallCallouts(input: Seq[VisualStanza], output: Seq[Callout]) : (Seq[Callout], Seq[VisualStanza]) =
+
+    input match {
+      case Nil => (output, input)
+      case x :: xs => {
+        x match {
+          case Callout(YourCall, text @ _, next @ _, stack @ _) => extractLeadingYourCallCallouts(
+            xs,
+            output :+ Callout(YourCall, text, next, stack)
+          )
+          case _ => (output, input)
+        }
+      }
+    }
+
+  private def fromYourCallGroup(group: Seq[Callout])(implicit stanzaIdToUrlMap: Map[String, String]) : ConfirmationPanel = {
+
+    val texts: Seq[Text] = group.map(c => TextBuilder.fromPhrase(c.text))
+
+    ConfirmationPanel(texts.head, texts.tail)
+  }
+
 
 }
