@@ -966,6 +966,27 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       page.components.last shouldBe Paragraph(instruction2Text, lede = false)
     }
 
+    "create a full confirmation panel from 2 YourCall callouts with extra stacked after an instruction" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        confirmationPanelAdditional1,
+        instruction1.copy(stack = true),
+        confirmationPanelAdditional2,
+        instruction1,
+        instruction2
+      )
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(confirmationPanelAdditional1Text)
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      page.components.head shouldBe expectedConfirmationPanel
+    }
+
     "create a two text items confirmation panel followed by an instruction from two stacked your call callouts and an instruction" in new ConfirmationPanelTest {
 
       val stanzas: Seq[VisualStanza] = Seq(

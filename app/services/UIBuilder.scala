@@ -172,8 +172,11 @@ class UIBuilder {
 
   private def fromSequenceWithLeadingYourCallCallouts(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+    val callouts: Seq[Callout] = sg.group.takeWhile{
+      case c: Callout if c.noteType == YourCall => true
+      case _ => false
+    }.collect{case c: Callout if c.noteType == YourCall => c}
 
-    val callouts: Seq[Callout] = sg.group.collect{case c: Callout if c.noteType == YourCall => c}
     val visualStanzas = sg.group.drop(callouts.length)
 
     fromStanzas(stackStanzas(Nil)(visualStanzas), Seq(fromYourCallGroup(callouts)), formData)
