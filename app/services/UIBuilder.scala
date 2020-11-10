@@ -51,7 +51,7 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      case (c:Callout) :: xs if c.noteType == YourCall => fromSequenceWithLeadingCallout(sg, YourCall, formData)
+      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) => fromSequenceWithLeadingCallout(sg, YourCall, formData)
       case x :: xs => fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }
 
