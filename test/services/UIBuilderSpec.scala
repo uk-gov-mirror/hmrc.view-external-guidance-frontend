@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
+import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
 import models.ui.{SummaryList, Table}
 import play.api.data.FormError
 
@@ -878,6 +878,208 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _: InputPage => fail("No hint found within Input")
         case x => fail(s"Should return InputPage: found $x")
       }
+    }
+
+  }
+
+  trait ConfirmationPanelTest {
+
+    implicit val urlMap: Map[String, String] =
+      Map(
+        Process.StartStanzaId -> "/page-1",
+        "3" -> "dummy-path",
+        "4" -> "dummy-path/input",
+        "5" -> "dummy-path/blah",
+        "6" -> "dummy-path/anotherinput",
+        "34" -> "dummy-path/next"
+      )
+
+    val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh, Confirmation"))
+    val confirmationPanelAdditionalText1Phrase: Phrase =  Phrase(Vector("Additional line 1", "Welsh, Additional line 1"))
+    val confirmationPanelAdditionalText2Phrase: Phrase = Phrase(Vector("Additional line 2", "Welsh, Additional line 2"))
+    val instruction1Phrase: Phrase = Phrase(Vector("Instruction one", "Welsh, Instruction one"))
+    val instruction2Phrase: Phrase = Phrase(Vector("Instruction two", "Welsh, Instruction two"))
+    val sectionCallOutPhrase: Phrase = Phrase(Vector("Section title", "Welsh, Section title"))
+    val subSectionCalloutPhrase: Phrase = Phrase(Vector("Subsection title", "Welsh, Subsection title"))
+
+    val confirmationPanelHeader: Callout = Callout(YourCall, confirmationPanelHeaderPhrase, Seq("2"), stack = false)
+    val stackedConfirmationPanelHeader: Callout = Callout(YourCall, confirmationPanelHeaderPhrase, Seq("2"), stack = true)
+    val confirmationPanelAdditional1: Callout = Callout(YourCall, confirmationPanelAdditionalText1Phrase, Seq("4"), stack = true)
+    val confirmationPanelAdditional2: Callout = Callout(YourCall, confirmationPanelAdditionalText2Phrase, Seq("5"), stack = true)
+    val instruction1: Instruction = Instruction(instruction1Phrase, Seq("6"), None, stack = false)
+    val stackedInstruction1: Instruction = Instruction(instruction1Phrase, Seq("6"), None, stack = true)
+    val instruction2: Instruction = Instruction(instruction2Phrase, Seq("7"), None, stack = false)
+    val sectionCallout: Callout = Callout(Section, sectionCallOutPhrase, Seq("8"), stack = true)
+    val subSectionCallout: Callout = Callout(SubSection, subSectionCalloutPhrase, Seq("8"), stack = true)
+
+    val confirmationPanelHeaderText: Text = TextBuilder.fromPhrase(confirmationPanelHeaderPhrase)
+    val confirmationPanelAdditional1Text: Text = TextBuilder.fromPhrase(confirmationPanelAdditionalText1Phrase)
+    val confirmationPanelAdditional2Text: Text = TextBuilder.fromPhrase(confirmationPanelAdditionalText2Phrase)
+    val instruction1Text: Text = TextBuilder.fromPhrase(instruction1Phrase)
+    val instruction2Text: Text = TextBuilder.fromPhrase(instruction2Phrase)
+    val sectionCalloutText: Text = TextBuilder.fromPhrase(sectionCallOutPhrase)
+    val subSectionCalloutText: Text = TextBuilder.fromPhrase(subSectionCalloutPhrase)
+
+    val uiBuilder: UIBuilder = new UIBuilder()
+
+  }
+
+  "UIBuilder confirmation panel processing" must {
+
+    "create a title only confirmation panel for a single unstacked your call callout" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        instruction1,
+        instruction2
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      page.components.head shouldBe ConfirmationPanel(TextBuilder.fromPhrase(confirmationPanelHeaderPhrase))
+      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
+      page.components.last shouldBe Paragraph(instruction2Text, lede = false)
+    }
+
+    "create a full confirmation panel from three stacked your call callouts" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        confirmationPanelAdditional1,
+        confirmationPanelAdditional2,
+        instruction1,
+        instruction2
+      )
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(
+          confirmationPanelAdditional1Text,
+          confirmationPanelAdditional2Text
+        )
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      page.components.head shouldBe expectedConfirmationPanel
+      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
+      page.components.last shouldBe Paragraph(instruction2Text, lede = false)
+    }
+
+    "create a two text items confirmation panel followed by an instruction from two stacked your call callouts and an instruction" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        confirmationPanelAdditional1,
+        instruction1
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(confirmationPanelAdditional1Text)
+      )
+
+      page.components.head shouldBe expectedConfirmationPanel
+
+      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
+    }
+
+    "create single text item confirmation panel from stacked your call and section callouts" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        sectionCallout
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      page.components.head shouldBe ConfirmationPanel(confirmationPanelHeaderText)
+      page.components.last shouldBe H3(sectionCalloutText)
+    }
+
+    "create paragraph and single item confirmation panel from stacked instruction and your call callout" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction2,
+        stackedConfirmationPanelHeader
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      page.components.head shouldBe Paragraph(instruction2Text, lede = false)
+      page.components.last shouldBe ConfirmationPanel(confirmationPanelHeaderText)
+    }
+
+    "process stacked group with two your call callouts followed by two other visual stanzas" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        confirmationPanelHeader,
+        confirmationPanelAdditional2,
+        sectionCallout,
+        stackedInstruction1
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(confirmationPanelAdditional2Text)
+      )
+
+      page.components.head shouldBe expectedConfirmationPanel
+      page.components(1) shouldBe H3(sectionCalloutText)
+      page.components.last shouldBe Paragraph(instruction1Text, lede = false)
+    }
+
+    "process stacked group with three your call callouts sandwiched within other visual stanza types" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction2,
+        stackedConfirmationPanelHeader,
+        confirmationPanelAdditional1,
+        confirmationPanelAdditional2,
+        stackedInstruction1
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(
+          confirmationPanelAdditional1Text,
+          confirmationPanelAdditional2Text
+        )
+      )
+
+      page.components.head shouldBe Paragraph(instruction2Text, lede = false)
+      page.components(1) shouldBe expectedConfirmationPanel
+      page.components.last shouldBe Paragraph(instruction1Text, lede = false)
+    }
+
+    "process stacked group with three your call callouts preceded by two other visual stanza types" in new ConfirmationPanelTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction1,
+        subSectionCallout,
+        stackedConfirmationPanelHeader,
+        confirmationPanelAdditional1,
+        confirmationPanelAdditional2
+      )
+
+      val page = uiBuilder.buildPage("/page-1", stanzas)
+
+      val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
+        confirmationPanelHeaderText,
+        Seq(
+          confirmationPanelAdditional1Text,
+          confirmationPanelAdditional2Text)
+      )
+
+      page.components.head shouldBe Paragraph(instruction1Text, lede = false)
+      page.components(1) shouldBe H4(subSectionCalloutText)
+      page.components.last shouldBe expectedConfirmationPanel
     }
 
   }

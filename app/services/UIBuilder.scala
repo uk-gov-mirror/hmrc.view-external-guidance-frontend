@@ -57,9 +57,10 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      //case (yd: Seq[Callout]) :: xs if yf.forall() Your Decision example
       case (c: Callout) :: (rg: RowGroup) :: xs if c.noteType == SubSection && !rg.isSummaryList =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
+      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) =>
+        fromSequenceWithLeadingYourCallCallouts(sg, formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
     }
@@ -82,6 +83,7 @@ class UIBuilder {
       val tableRows = heading.fold(rows)(_ => rows.tail)
       Table(caption, heading, tableRows)
     }
+
   }
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
@@ -114,6 +116,7 @@ class UIBuilder {
       case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
       case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
+      case YourCall => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case Error =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
@@ -166,5 +169,21 @@ class UIBuilder {
       case (e: ErrorMsg) :: xs => partitionComponents(xs, e +: errors, others)
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
+
+  private def fromSequenceWithLeadingYourCallCallouts(sg: StackedGroup, formData: Option[FormData])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+
+    val callouts: Seq[Callout] = sg.group.collect{case c: Callout if c.noteType == YourCall => c}
+    val visualStanzas = sg.group.drop(callouts.length)
+
+    fromStanzas(stackStanzas(Nil)(visualStanzas), Seq(fromYourCallGroup(callouts)), formData)
+  }
+
+  private def fromYourCallGroup(group: Seq[Callout])(implicit stanzaIdToUrlMap: Map[String, String]) : ConfirmationPanel = {
+
+    val texts: Seq[Text] = group.map(c => TextBuilder.fromPhrase(c.text))
+
+    ConfirmationPanel(texts.head, texts.tail)
+  }
 
 }
