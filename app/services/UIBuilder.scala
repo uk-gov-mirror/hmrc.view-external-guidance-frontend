@@ -27,10 +27,16 @@ import scala.annotation.tailrec
 @Singleton
 class UIBuilder {
   val logger: Logger = Logger(getClass)
+  val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
+    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil),
+        RowAggregator.aggregateStanzas(Nil),
+        stackStanzas(Nil))
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
-               (implicit stanzaIdToUrlMap: Map[String, String]): Page =
-    Page(url, fromStanzas(stackStanzas(stanzas, Nil), Nil, formData))
+               (implicit stanzaIdToUrlMap: Map[String, String]): Page = {
+    val groupedStanzas: Seq[VisualStanza] = stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}
+    Page(url, fromStanzas(groupedStanzas, Nil, formData))
+  }
 
   @tailrec
   private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], formData: Option[FormData])
@@ -40,8 +46,8 @@ class UIBuilder {
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
-      case (rg: RowGroup) :: xs if rg.isSummaryList =>
-        fromStanzas(xs, acc ++ Seq(SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))), formData)
+      case (rg: RowGroup) :: xs if rg.isSummaryList => fromStanzas(xs, acc ++ Seq(fromSummaryListRowGroup(rg)), formData)
+      case (rg: RowGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
@@ -51,8 +57,31 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) => fromSequenceWithLeadingYourCallCallouts(sg, formData)
-      case x :: xs => fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
+      case (c: Callout) :: (rg: RowGroup) :: xs if c.noteType == SubSection && !rg.isSummaryList =>
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
+      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) =>
+        fromSequenceWithLeadingYourCallCallouts(sg, formData)
+      case x :: xs => // No recognised stacked pattern
+        fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
+    }
+  }
+
+  private def fromSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+
+  private def fromTableRowGroup(caption: Option[Text], rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    val rows: Seq[Seq[Cell]] = rg.paddedRows.map{rw =>
+      rw.map{phrase =>
+        TextBuilder.fromPhrase(phrase) match {
+          case x if x.isBold => Th(x)
+          case x => Td(x)
+        }
+      }
+    }
+    rows.headOption.fold(Table(caption, None, Seq.empty)){row0 =>
+      val heading = if (row0.collect{case c: Th => c}.length == row0.length) Some(row0) else None
+      val tableRows = heading.fold(rows)(_ => rows.tail)
+      Table(caption, heading, tableRows)
     }
 
   }
@@ -84,7 +113,9 @@ class UIBuilder {
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text)))
+      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
+      case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
+      case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case YourCall => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case Error =>
         // Ignore error messages if no errors exist within form data
@@ -145,7 +176,7 @@ class UIBuilder {
     val callouts: Seq[Callout] = sg.group.collect{case c: Callout if c.noteType == YourCall => c}
     val visualStanzas = sg.group.drop(callouts.length)
 
-    fromStanzas(stackStanzas(visualStanzas, Nil), Seq(fromYourCallGroup(callouts)), formData)
+    fromStanzas(stackStanzas(Nil)(visualStanzas), Seq(fromYourCallGroup(callouts)), formData)
   }
 
   private def fromYourCallGroup(group: Seq[Callout])(implicit stanzaIdToUrlMap: Map[String, String]) : ConfirmationPanel = {
@@ -154,6 +185,5 @@ class UIBuilder {
 
     ConfirmationPanel(texts.head, texts.tail)
   }
-
 
 }

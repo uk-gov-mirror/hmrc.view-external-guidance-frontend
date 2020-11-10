@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
-import models.ocelot.stanzas.VisualStanza
 
 @Singleton
 class GuidanceService @Inject() (
@@ -40,8 +39,6 @@ class GuidanceService @Inject() (
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
-  val stanzaGroupBuilders: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
-    Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
@@ -92,12 +89,12 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    val groupedStanzas: Seq[VisualStanza] = stanzaGroupBuilders.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
-    val uiPage = uiBuilder.buildPage(pec.page.url, groupedStanzas, formData)(pec.stanzaIdToUrlMap)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
     PageContext(pec, uiPage, labels)
   }
 
-  def getPageContext(processCode: String, url: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+  def getPageContext(processCode: String, url: String, sessionId: String)
+                    (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, sessionId).map{
       case Right(evalContext) => Right(getPageContext(evalContext))
       case Left(err) => Left(err)
@@ -122,7 +119,8 @@ class GuidanceService @Inject() (
       sessionRepository.saveLabels(docId, labels.updatedLabels.values.toSeq)
     )
 
-  def retrieveAndCacheScratch(uuid: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCacheScratch(uuid: String, docId: String)
+                             (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(
       uuid,
       docId,

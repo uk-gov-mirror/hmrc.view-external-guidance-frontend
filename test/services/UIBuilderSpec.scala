@@ -20,7 +20,7 @@ import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
 import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
-import models.ui.SummaryList
+import models.ui.{SummaryList, Table}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -225,6 +225,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val embeddedAllLinkInstructionStanza = Instruction(txtWithAllLinks, Seq("end"), None, false)
     val embeddedSubsectionCalloutStanza = Callout(SubSection, Phrase(lang5), Seq("3"), false)
     val importantCalloutStanza = Callout(Important, Phrase(lang0), Seq("3"), false)
+    val valueErrorCalloutStanza = Callout(ValueError, Phrase(lang0), Seq("3"), false)
+    val typeErrorCalloutStanza = Callout(TypeError, Phrase(lang0), Seq("3"), false)
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
@@ -258,7 +260,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val questionPageWithHints = Page(Process.StartStanzaId, "/blah", stanzasWithQuestionAndHints, Seq.empty)
 
-    val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza), KeyedStanza("2", importantCalloutStanza), KeyedStanza("3", EndStanza))
+    val stanzas: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("1", linkInstructionStanza),
+                                                         KeyedStanza("2", importantCalloutStanza),
+                                                         KeyedStanza("21", valueErrorCalloutStanza),
+                                                         KeyedStanza("22", typeErrorCalloutStanza),
+                                                         KeyedStanza("3", EndStanza))
     val stanzasWithHyperLink: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", hyperLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedLinks: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza), KeyedStanza("7", EndStanza))
     val stanzasWithEmbeddedLinks2: Seq[KeyedStanza] = initialStanza ++ Seq(KeyedStanza("6", embeddedLinkInstructionStanza2), KeyedStanza("7", EndStanza))
@@ -331,38 +337,62 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                                Text("World","World"),
                                                                Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))
     val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+    val headingPhrase = Phrase("Heading", "Heading")
+  }
+
+  trait TableTest extends Test {
+    val rows = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), false) +:
+               Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
+    val simpleRowGroup = RowGroup(rows)
+    val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), false) +:
+               Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
+    val captionRowGroup = RowGroup(rowsWithHeading)
+    val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
+    val headingPhrase = Phrase("Heading", "Heading")
+    val headingText = Text(headingPhrase.langs)
   }
 
   "UIBuilder" must {
+    "Convert a non-summarylist RowGroup into a table" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+                                                simpleRowGroup))
+      p.components match {
+        case Seq((h: H1), (tbl: Table)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // "convert a RowGroup with three simple phrase column into a SummaryList" in new SLTest {
-    //   val p = uiBuilder.buildPage("/start", Seq(RowGroup(Seq("2"), rows, rows.head.stack)))
-    //   p.components.head match {
-    //     case dl: SummaryList =>
-    //       dl.rows.zipWithIndex.foreach{
-    //         case (r, idx) =>
-    //           r shouldBe expectedDl.rows(idx)
-    //       }
-    //     case x => fail(s"Found $x")
-    //   }
+    "Convert a non-summarylist RowGroup into a table with a heading line" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+                                                captionRowGroup))
+      p.components match {
+        case Seq((h: H1), Table(None, Some(_), _)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // }
+    "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(SubSection, headingPhrase, Seq.empty, false),
+                                                stackedRowGroup))
+      p.components match {
+        case Seq(Table(Some(headingText), None, rows)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
 
-    // "convert a RowGroup with three columns into a SummaryList, all columns complete" in new SLTest {
-    //   val p = uiBuilder.buildPage("/start", Seq(RowGroup(Seq("2"), rowsComplete, rowsComplete.head.stack)))
-    //   p.components.head match {
-    //     case dl: SummaryList =>
-    //       dl.rows.zipWithIndex.foreach{
-    //         case (r, idx) =>
-    //           r shouldBe expectedDlComplete.rows(idx)
-    //       }
-    //     case x => fail(s"Found $x")
-    //   }
+    "convert a non-summarylist RowGroup into a table with a right aligned numeric column" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+                                                numericRowGroup))
+      p.components match {
+        case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).text.isNumericLabelRef) => succeed
+        case x => fail(s"Found $x")
+      }
 
-    // }
+    }
 
     "convert a RowGroup with three sparse columns including a link and hint into a SummaryList" in new SLTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), sparseRowsWithLinkAndHint, true)))
       p.components match {
         case Seq((h: H1), (sl: SummaryList)) => succeed
@@ -372,7 +402,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns including a link and hint into a SummaryList" in new SLTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
       p.components match {
         case Seq((h: H1), (sl: SummaryList)) => succeed
@@ -409,6 +439,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     "convert Callout type Important to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
       uiPage.components(6) shouldBe models.ui.ErrorMsg("ID", Text(lang0))
+    }
+
+    "convert Callout type ValueError to an ErrorMsg" in new Test {
+      val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
+      uiPage.components(7) shouldBe models.ui.ErrorMsg("Value.ID", Text(lang0))
+    }
+
+    "convert Callout type TypeError to an ErrorMsg" in new Test {
+      val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
+      uiPage.components(8) shouldBe models.ui.ErrorMsg("Type.ID", Text(lang0))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
@@ -731,14 +771,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
-      val uiPreProcessTransformations: Seq[(Seq[VisualStanza], Seq[VisualStanza]) => Seq[VisualStanza]] =
-        Seq(BulletPointBuilder.groupBulletPointInstructions, RowAggregator.aggregateStanzas)
 
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
-      val uiPage = uiBuilder.buildPage(
-        ocelotPage.url,
-        uiPreProcessTransformations.foldLeft(visualStanzas){case (s, t) => t(s, Nil)}
-      )(extraIncomeUrlMap)
+      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap)
 
       val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
                                          "Welsh: You've received income that you have not yet paid tax on from:")

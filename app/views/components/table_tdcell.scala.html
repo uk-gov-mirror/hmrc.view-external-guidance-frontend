@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ocelot.stanzas
+@import models.ui._
+@import controllers.routes._
+@import models.ui.Cell
 
-case class StackedGroup (override val next: Seq[String], group: Seq[VisualStanza], stack: Boolean) extends VisualStanza with Populated
-
-object StackedGroup {
-  def apply(group: Seq[VisualStanza]): StackedGroup = StackedGroup(group.last.next, group, group.head.stack)
+@(cell: Cell)(implicit request: Request[_], messages: Messages, ctx: PageContext)
+<td class=@if(cell.text.isNumericLabelRef){"govuk-table__cell govuk-table__cell--numeric"} else{"govuk-table__cell"}>
+  @components.render_text(cell.text)
+</td>
+@{
+     //$COVERAGE-OFF$
 }

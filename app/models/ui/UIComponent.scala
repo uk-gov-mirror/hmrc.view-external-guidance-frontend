@@ -58,6 +58,14 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
   def asString(implicit lang: Lang): String = toWords.mkString(" ")
   override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
   def +(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
+  lazy val isBold: Boolean = english.length == 1 && (english.head match {
+    case w: Words => w.bold
+    case _ => false
+  })
+  lazy val isNumericLabelRef: Boolean = english.length == 1 && (english.head match {
+    case l: LabelRef if l.outputFormat == Currency => true
+    case _ => false
+  })
 }
 
 object Text {
