@@ -19,7 +19,7 @@
 @import models.ui.Cell
 
 @(cell: Cell)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<td class=@if(cell.text.isNumeric){"govuk-table__cell govuk-table__cell--numeric"} else{"govuk-table__cell"}>
+<td class=@if(cell.text.isNumericLabelRef){"govuk-table__cell govuk-table__cell--numeric"} else{"govuk-table__cell"}>
   @components.render_text(cell.text)
 </td>
 @{

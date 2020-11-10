@@ -20,7 +20,7 @@ package models.ui
 
 trait Cell {
   val text: Text
-  val numeric: Boolean = text.isNumeric
+  val numeric: Boolean = text.isNumericLabelRef
 }
 case class Th(text: Text) extends Cell
 case class Td(text: Text) extends Cell

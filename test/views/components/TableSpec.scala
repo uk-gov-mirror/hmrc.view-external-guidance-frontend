@@ -58,7 +58,9 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  "Tables" must {
+  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
+
+  "English Tables" must {
 
     "Encode all bold intial row as table headings" in new Test {
       val html: Html = components.table(expectedTable)
@@ -67,7 +69,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       table.hasClass("govuk-table") shouldBe true
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
-      expectedTable.headingRow.fold(succeed){row =>
+      expectedTable.headingRow.fold(fail){row =>
         headings.size shouldBe row.size
       }
 
@@ -112,6 +114,82 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "Encode table with numeric cells using govuk numeric class" in new Test {
+      val html: Html = components.table(expectedTableWithNumericCells)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.hasClass("govuk-table") shouldBe true
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTable.rows.size
+
+      (rows zip expectedTableWithNumericCells.rows).foreach{
+        case (rowElem, tableRow) =>
+          val cells = rowElem.children.asScala.toList
+          (cells zip tableRow).foreach{
+            case (c, td: Td) if td.numeric =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe true
+
+            case (c, tc) =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe false
+          }
+      }
+    }
+  }
+
+  "Welsh Tables" must {
+
+    "Encode all bold intial row as table headings" in new WelshTest {
+      val html: Html = components.table(expectedTable)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
+      table.hasClass("govuk-table") shouldBe true
+      val head = table.getElementsByTag("thead").first
+      val headings = head.getElementsByTag("th").asScala.toList
+      expectedTable.headingRow.fold(fail){row =>
+        headings.size shouldBe row.size
+      }
+
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTable.rows.size
+    }
+
+    "Encode an intial row not all bold as a standard table body row" in new WelshTest {
+      val html: Html = components.table(expectedTableNoHeadings)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
+      table.hasClass("govuk-table") shouldBe true
+      table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTable.rows.size
+    }
+
+    "Encode all bold intial row as table headings with a Caption" in new WelshTest {
+      val html: Html = components.table(expectedTableWithCaption)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.hasClass("govuk-table") shouldBe true
+      expectedTableWithCaption.caption.fold(fail){caption =>
+        val element: Element = table.getElementsByTag("caption").first
+        element.hasClass("govuk-table__caption") shouldBe true
+        element.text shouldBe caption.asString(messages.lang)
+      }
+
+      val head = table.getElementsByTag("thead").first
+      val headings = head.getElementsByTag("th").asScala.toList
+      expectedTableWithCaption.headingRow.fold(succeed){row =>
+        headings.size shouldBe row.size
+      }
+
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTable.rows.size
+    }
+
+    "Encode table with numeric cells using govuk numeric class" in new WelshTest {
       val html: Html = components.table(expectedTableWithNumericCells)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true

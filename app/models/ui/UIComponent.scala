@@ -62,7 +62,7 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
     case w: Words => w.bold
     case _ => false
   })
-  lazy val isNumeric: Boolean = english.length == 1 && (english.head match {
+  lazy val isNumericLabelRef: Boolean = english.length == 1 && (english.head match {
     case l: LabelRef if l.outputFormat == Currency => true
     case _ => false
   })
