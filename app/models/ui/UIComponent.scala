@@ -28,10 +28,9 @@ trait UIComponent {
 sealed trait TextItem {
   def isEmpty: Boolean
   def toWords: Seq[String]
-  val bold: Boolean = false
 }
 
-case class Words(s: String, override val bold: Boolean = false) extends TextItem {
+case class Words(s: String, bold: Boolean = false) extends TextItem {
   def isEmpty: Boolean = s.isEmpty
   def toWords: Seq[String] = s.split(" +").toSeq
   override def toString: String = s
@@ -59,7 +58,10 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
   def asString(implicit lang: Lang): String = toWords.mkString(" ")
   override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
   def +(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
-  lazy val isBold: Boolean = english.length == 1 && english(0).bold
+  lazy val isBold: Boolean = english.length == 1 && (english.head match {
+    case w: Words => w.bold
+    case _ => false
+  })
   lazy val isNumeric: Boolean = english.length == 1 && (english.head match {
     case l: LabelRef if l.outputFormat == Currency => true
     case _ => false
