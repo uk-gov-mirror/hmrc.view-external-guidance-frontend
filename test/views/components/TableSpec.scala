@@ -62,7 +62,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "English Tables" must {
 
-    "Encode all bold intial row as table headings" in new Test {
+    "Encode all bold initial row as table headings" in new Test {
       val html: Html = components.table(expectedTable)
       val table: Element = getSingleElementByTag(html, "Table")
       table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
@@ -79,7 +79,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       rows.size shouldBe expectedTable.rows.size
     }
 
-    "Encode an intial row not all bold as a standard table body row" in new Test {
+    "Encode an initial row not all bold as a standard table body row" in new Test {
       val html: Html = components.table(expectedTableNoHeadings)
       val table: Element = getSingleElementByTag(html, "Table")
       table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
@@ -91,7 +91,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       rows.size shouldBe expectedTable.rows.size
     }
 
-    "Encode all bold intial row as table headings with a Caption" in new Test {
+    "Encode all bold initial row as table headings with a Caption" in new Test {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true
@@ -103,7 +103,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
-      expectedTableWithCaption.headingRow.fold(succeed){row =>
+      expectedTableWithCaption.headingRow.fold(fail){row =>
         headings.size shouldBe row.size
       }
 
@@ -138,7 +138,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "Welsh Tables" must {
 
-    "Encode all bold intial row as table headings" in new WelshTest {
+    "Encode all bold initial row as table headings" in new WelshTest {
       val html: Html = components.table(expectedTable)
       val table: Element = getSingleElementByTag(html, "Table")
       table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
@@ -155,7 +155,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       rows.size shouldBe expectedTable.rows.size
     }
 
-    "Encode an intial row not all bold as a standard table body row" in new WelshTest {
+    "Encode an initial row not all bold as a standard table body row" in new WelshTest {
       val html: Html = components.table(expectedTableNoHeadings)
       val table: Element = getSingleElementByTag(html, "Table")
       table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
@@ -167,7 +167,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       rows.size shouldBe expectedTable.rows.size
     }
 
-    "Encode all bold intial row as table headings with a Caption" in new WelshTest {
+    "Encode all bold initial row as table headings with a Caption" in new WelshTest {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true
@@ -179,7 +179,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
-      expectedTableWithCaption.headingRow.fold(succeed){row =>
+      expectedTableWithCaption.headingRow.fold(fail){row =>
         headings.size shouldBe row.size
       }
 
