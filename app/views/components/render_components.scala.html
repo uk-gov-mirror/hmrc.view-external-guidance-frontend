@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Paragraph, H1, H2, H3, H4, BulletPointList, SummaryList, UIComponent}
+@import models.ui.{ConfirmationPanel, Paragraph, H1, H2, H3, H4, BulletPointList, SummaryList, UIComponent}
 @import controllers.routes._
 
 @(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, ctx: PageContext)
@@ -27,6 +27,7 @@
         case h: H4 => components.h4_heading(h)
         case b: BulletPointList => components.bullet_point_list(b)
         case s: SummaryList => components.summary_list(s)
+        case c: ConfirmationPanel => components.confirmation_panel(c)
         case _ =>
       }
   }
