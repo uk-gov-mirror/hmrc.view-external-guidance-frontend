@@ -382,7 +382,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(Callout(Title, Phrase("Heading", "Heading"), Seq.empty, false),
                                                 numericRowGroup))
       p.components match {
-        case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).numeric) => succeed
+        case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).text.isNumeric) => succeed
         case x => fail(s"Found $x")
       }
 

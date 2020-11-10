@@ -29,7 +29,6 @@ sealed trait TextItem {
   def isEmpty: Boolean
   def toWords: Seq[String]
   val bold: Boolean = false
-  val numeric: Boolean = false
 }
 
 case class Words(s: String, override val bold: Boolean = false) extends TextItem {
@@ -42,7 +41,6 @@ case class LabelRef(name: String, outputFormat: OutputFormat = Txt) extends Text
   def isEmpty: Boolean = false
   def toWords: Seq[String] = name.split(" +").toSeq
   override def toString: String = s"[label:${name}:$outputFormat]"
-  override val numeric: Boolean = outputFormat == Currency
 }
 
 case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false, hint:Option[String] = None) extends TextItem {
@@ -62,7 +60,10 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
   override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
   def +(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
   lazy val isBold: Boolean = english.length == 1 && english(0).bold
-  lazy val isNumeric: Boolean = english.length == 1 && english(0).numeric
+  lazy val isNumeric: Boolean = english.length == 1 && (english.head match {
+    case l: LabelRef if l.outputFormat == Currency => true
+    case _ => false
+  })
 }
 
 object Text {
