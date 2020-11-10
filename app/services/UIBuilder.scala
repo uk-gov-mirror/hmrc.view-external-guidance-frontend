@@ -51,7 +51,7 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) => fromSequenceWithLeadingCallout(sg, YourCall, formData)
+      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) => fromSequenceWithLeadingYourCallCallouts(sg, formData)
       case x :: xs => fromStanzas( x +: stackStanzas(xs, Nil), Nil, formData)
     }
 
@@ -139,35 +139,14 @@ class UIBuilder {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
-  private def fromSequenceWithLeadingCallout(sg: StackedGroup, calloutType: CalloutType, formData: Option[FormData])
+  private def fromSequenceWithLeadingYourCallCallouts(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
 
-    val (callouts, visualStanzas) = extractLeadingCallouts(calloutType, sg.group, Nil)
+    val callouts: Seq[Callout] = sg.group.collect{case c: Callout if c.noteType == YourCall => c}
+    val visualStanzas = sg.group.drop(callouts.length)
 
-    val groupSize: Int = sg.group.size
-
-    callouts.size match {
-      case 1 =>  fromStanzas(callouts.head +: stackStanzas(visualStanzas, Nil), Nil, formData)
-      case `groupSize` =>  Seq(fromYourCallGroup(callouts))
-      case _ => fromStanzas(StackedGroup(callouts) +: stackStanzas(visualStanzas, Nil), Nil, formData)
-    }
-
+    fromStanzas(stackStanzas(visualStanzas, Nil), Seq(fromYourCallGroup(callouts)), formData)
   }
-
-  @tailrec
-  private def extractLeadingCallouts(calloutType: CalloutType,
-                                     input: Seq[VisualStanza],
-                                     output: Seq[Callout]) : (Seq[Callout], Seq[VisualStanza]) =
-
-    input match {
-      case Nil => (output, input)
-      case x :: xs => {
-        x match {
-          case (c:Callout) if c.noteType == calloutType => extractLeadingCallouts(calloutType, xs, output :+ c)
-          case _ => (output, input)
-        }
-      }
-    }
 
   private def fromYourCallGroup(group: Seq[Callout])(implicit stanzaIdToUrlMap: Map[String, String]) : ConfirmationPanel = {
 
