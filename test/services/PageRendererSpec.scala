@@ -191,11 +191,9 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
-      testRender(page, "0", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 1"),None))))
-
-      testRender(page, "1", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 2"),None))))
-
-      testRender(page, "2", LabelCache(Map(), Map("X" -> Label("X",Some("9"),None), "TaxRefund" -> Label("TaxRefund",Some("Some Text 3"),None))))
+      testRender(page, "0", LabelCache(Map(), Map("X" -> ValueLabel("X",Some("9")), "TaxRefund" -> DisplayLabel("TaxRefund",Some("Some Text 1"), Some("Some Text 1")))))
+      testRender(page, "1", LabelCache(Map(), Map("X" -> ValueLabel("X",Some("9")), "TaxRefund" -> DisplayLabel("TaxRefund",Some("Some Text 2"), Some("Some Text 2")))))
+      testRender(page, "2", LabelCache(Map(), Map("X" -> ValueLabel("X",Some("9")), "TaxRefund" -> DisplayLabel("TaxRefund",Some("Some Text 3"), Some("Some Text 3")))))
 
     }
 
@@ -216,7 +214,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("25")
-      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
+      newLabels.updatedLabels shouldBe Map("X" -> ValueLabel("X",Some("4")))
     }
 
     "Evaluate the stanzas after user input stanza when question answer is end" in new Test {
@@ -237,7 +235,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("end")
-      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("4"),None))
+      newLabels.updatedLabels shouldBe Map("X" -> ValueLabel("X",Some("4")))
     }
 
     "Evaluate the stanzas after user input stanza when question which indicate a return to the same page (guidance deteceted error)" in new Test {
@@ -300,7 +298,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("34")
-      newLabels.updatedLabels shouldBe Map("X" -> Label("X",Some("56"),None))
+      newLabels.updatedLabels shouldBe Map("X" -> ValueLabel("X",Some("56")))
 
     }
 
@@ -345,7 +343,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       val page: Page = Page(Process.StartStanzaId, "/render", stanzas, Seq("end"))
 
-      val input1: Label = Label( "input1", Some("60"))
+      val input1: Label = ValueLabel( "input1", Some("60"))
 
       val labelMap: Map[String, Label] = Map(input1.name -> input1)
 
@@ -357,7 +355,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
       labels.labelMap shouldBe labelMap
 
-      val expectedUpdatedLabels: Map[String, Label] = Map("output1" -> Label("output1", Some("70")))
+      val expectedUpdatedLabels: Map[String, Label] = Map("output1" -> ValueLabel("output1", Some("70")))
 
       labels.updatedLabels shouldBe expectedUpdatedLabels
 
@@ -429,8 +427,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       next shouldBe Some("7")
 
       val expectedUpdatedLabels: Map[String, Label] = Map(
-        "input1" -> Label("input1", Some("10")),
-        "output1" -> Label("output1", Some("25"))
+        "input1" -> ValueLabel("input1", Some("10")),
+        "output1" -> ValueLabel("output1", Some("25"))
       )
 
       newLabels.updatedLabels shouldBe expectedUpdatedLabels

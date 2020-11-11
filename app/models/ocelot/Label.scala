@@ -16,7 +16,6 @@
 
 package models.ocelot
 
-import models.ocelot.stanzas.InputType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.i18n.Lang
@@ -24,27 +23,24 @@ import play.api.i18n.Lang
 trait Label {
   val name: String
   val value: Option[String]
-  val valueType: Option[stanzas.InputType]
   def displayValue(implicit lang: Lang): Option[String] = value
 }
 
-case class ValueLabel(name: String, value: Option[String] = None, valueType: Option[stanzas.InputType] = None) extends Label
+case class ValueLabel(name: String, value: Option[String] = None) extends Label
 
 object ValueLabel {
   implicit val reads: Reads[ValueLabel] = (
     (__ \ "name").read[String] and
-      (__ \ "value").readNullable[String] and
-      (__ \ "valueType").readNullable[InputType]
+      (__ \ "value").readNullable[String]
   )(ValueLabel.apply _)
 
   implicit val writes: OWrites[ValueLabel] = (
     (__ \ "name").write[String] and
-      (__ \ "value").writeNullable[String] and
-      (__ \ "valueType").writeNullable[InputType]
+      (__ \ "value").writeNullable[String]
   )(unlift(ValueLabel.unapply))
 }
 
-case class DisplayLabel(name: String, english: Option[String] = None, welsh: Option[String] = None, valueType: Option[stanzas.InputType] = None) extends Label {
+case class DisplayLabel(name: String, english: Option[String] = None, welsh: Option[String] = None) extends Label {
   override val value: Option[String] = english
   override def displayValue(implicit lang: Lang): Option[String] = lang.code match {
     case "en" => english
@@ -56,36 +52,32 @@ object DisplayLabel {
   implicit val reads: Reads[DisplayLabel] = (
     (__ \ "name").read[String] and
       (__ \ "english").readNullable[String] and
-      (__ \ "welsh").readNullable[String] and
-      (__ \ "valueType").readNullable[InputType]
+      (__ \ "welsh").readNullable[String]
   )(DisplayLabel.apply _)
 
   implicit val writes: OWrites[DisplayLabel] = (
     (__ \ "name").write[String] and
       (__ \ "english").writeNullable[String] and
-      (__ \ "welsh").writeNullable[String] and
-      (__ \ "valueType").writeNullable[InputType]
+      (__ \ "welsh").writeNullable[String]
   )(unlift(DisplayLabel.unapply))
 }
 
 object Label {
-  def apply(lbl: Label, value: Option[String]): Label = ValueLabel(lbl.name, value, lbl.valueType)
-  def apply(lbl: Label, english: Option[String], welsh: Option[String]): Label = DisplayLabel(lbl.name, english, welsh, lbl.valueType)
+  def apply(lbl: Label, value: Option[String]): Label = ValueLabel(lbl.name, value)
+  def apply(lbl: Label, english: Option[String], welsh: Option[String]): Label = DisplayLabel(lbl.name, english, welsh)
 
   implicit val reads: Reads[Label] = (js: JsValue) => {
     (js \ "type").validate[String] match {
       case err @ JsError(_) => err
-      case JsSuccess(typ, _) => typ match {
-        case "Value" => js.validate[ValueLabel]
-        case "Display" => js.validate[DisplayLabel]
-        case typeName => JsError(JsonValidationError(Seq("Stanza"), typeName))
-      }
+      case JsSuccess("Value", _) => js.validate[ValueLabel]
+      case JsSuccess("Display", _) => js.validate[DisplayLabel]
+      case JsSuccess(typeName, _) => JsError(JsonValidationError(Seq("Stanza"), typeName))
     }
   }
 
   implicit val writes: Writes[Label] = {
-    case q: ValueLabel => Json.obj("type" -> "Value") ++ Json.toJsObject[ValueLabel](q)
-    case i: DisplayLabel => Json.obj("type" -> "Display") ++ Json.toJsObject[DisplayLabel](i)
+    case v: ValueLabel => Json.obj("type" -> "Value") ++ Json.toJsObject[ValueLabel](v)
+    case d: DisplayLabel => Json.obj("type" -> "Display") ++ Json.toJsObject[DisplayLabel](d)
     case s => Json.toJson("")
   }
 }

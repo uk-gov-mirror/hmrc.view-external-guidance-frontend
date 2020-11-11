@@ -440,25 +440,25 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   "services" must {
     "determine unique set of case sensitive labels from a collection of pages" in new IhtTest {
-      val labels = Seq(Label("Properties",None,None),
-                       Label("Money",None,None),
-                       Label("Household",None,None),
-                       Label("Motor Vehicles",None,None),
-                       Label("Private pension",None,None),
-                       Label("Trust",None,None),
-                       Label("Foreign assets",None,None),
-                       Label("Other assets",None,None),
-                       Label("Mortgage_debt",None,None),
-                       Label("funeral_expenses",None,None),
-                       Label("other_debts",None,None),
-                       Label("left to spouse",None,None),
-                       Label("registered charity",None,None),
-                       Label("nil rate band",None,None),
-                       Label("more than 100k",None,None),
-                       Label("Value of Assets",None,None),
-                       Label("Value of Debts",None,None),
-                       Label("Additional Info",None,None),
-                       Label("IHT result",None,None))
+      val labels = Seq(ValueLabel("Properties",None),
+                       ValueLabel("Money",None),
+                       ValueLabel("Household",None),
+                       ValueLabel("Motor Vehicles",None),
+                       ValueLabel("Private pension",None),
+                       ValueLabel("Trust",None),
+                       ValueLabel("Foreign assets",None),
+                       ValueLabel("Other assets",None),
+                       ValueLabel("Mortgage_debt",None),
+                       ValueLabel("funeral_expenses",None),
+                       ValueLabel("other_debts",None),
+                       ValueLabel("left to spouse",None),
+                       ValueLabel("registered charity",None),
+                       ValueLabel("nil rate band",None),
+                       DisplayLabel("more than 100k",None, None),
+                       ValueLabel("Value of Assets",None),
+                       ValueLabel("Value of Debts",None),
+                       ValueLabel("Additional Info",None),
+                       ValueLabel("IHT result",None))
 
       pageBuilder.pagesWithValidation(ihtProcess, "start") match {
         case Right(pages) => services.uniqueLabels(pages) shouldBe labels

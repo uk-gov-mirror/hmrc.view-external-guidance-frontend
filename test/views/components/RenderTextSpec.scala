@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import models.ocelot.{Label, Labels, LabelCache}
+import models.ocelot.{Label, ValueLabel, Labels, LabelCache}
 import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words, LabelRef, Currency}
 import org.jsoup.nodes.{Document, Element}
 
@@ -35,9 +35,9 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Labels = LabelCache(Map("Blah" -> Label("Blah", Some("a value")),
-                                                 "A-Label" -> Label("A-Label", Some("33.9")),
-                                                 "BigNumber" -> Label("BigNumber", Some("12345678"))))
+    implicit val labels: Labels = LabelCache(Map("Blah" -> ValueLabel("Blah", Some("a value")),
+                                                 "A-Label" -> ValueLabel("A-Label", Some("33.9")),
+                                                 "BigNumber" -> ValueLabel("BigNumber", Some("12345678"))))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
