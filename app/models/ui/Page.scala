@@ -43,6 +43,7 @@ case class StandardPage(urlPath: String, val components: Seq[UIComponent]) exten
   val heading: Text = components
     .find {
       case _: H1 => true
+      case _: ConfirmationPanel => true
       case _ => false
     }
     .fold(Text())(_.text)
