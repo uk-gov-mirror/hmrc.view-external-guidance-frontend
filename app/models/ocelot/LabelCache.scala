@@ -19,6 +19,7 @@ package models.ocelot
 trait Labels {
   def value(name: String): Option[String]
   def update(name: String, value: String): Labels
+  def update(name: String, english: String, welsh: String): Labels
   def updatedLabels: Map[String, Label]
   def labelMap:Map[String, Label]
   def flush(): Labels
@@ -26,14 +27,17 @@ trait Labels {
 
 private class LabelCacheImpl(labels: Map[String, Label] = Map(), cache: Map[String, Label] = Map()) extends Labels {
   def value(name: String): Option[String] = label(name).map(_.value.getOrElse(""))
-  def update(name: String, value: String): Labels = new LabelCacheImpl(labels, updateOrAddLabel(name, value))
+  def update(name: String, value: String): Labels = new LabelCacheImpl(labels, updateOrAddValueLabel(name, value))
+  def update(name: String, english: String, welsh: String): Labels = new LabelCacheImpl(labels, updateOrAddDisplayLabel(name, english, welsh))
   def updatedLabels: Map[String, Label] = cache
   def labelMap:Map[String, Label] = labels
   def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map())
 
   private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
-  private def updateOrAddLabel(name: String, value: String): Map[String, Label] =
-    cache + (name -> cache.get(name).fold(Label(name, Some(value)))(l => l.copy(value = Some(value))))
+  private def updateOrAddValueLabel(name: String, value: String): Map[String, Label] =
+    cache + (name -> cache.get(name).fold[Label](ValueLabel(name, Some(value)))(l => Label(l, Some(value))))
+  private def updateOrAddDisplayLabel(name: String, english: String, welsh: String): Map[String, Label] =
+    cache + (name -> cache.get(name).fold[Label](DisplayLabel(name, Some(english), Some(welsh)))(l => Label(l, Some(english), Some(welsh))))
 }
 
 object LabelCache {
