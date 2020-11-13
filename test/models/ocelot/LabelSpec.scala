@@ -24,7 +24,10 @@ class LabelSpec extends BaseSpec with ProcessJson {
   val label = """{"name":"BLAH","type":"Value"}"""
   val labelWithValue = """{"name":"BLAH","type":"Value","value":"39.99"}"""
 
-  "Label" must {
+  val displayLabel = """{"name":"BLAH","type":"Display"}"""
+  val displayLabelWithValues = """{"name":"BLAH","english":"Hello","type":"Display","welsh":"Welsh, Hello"}"""
+
+  "ValueLabel" must {
     "deserialise " in {
       Json.parse(label).as[Label] shouldBe ValueLabel("BLAH")
       Json.parse(labelWithValue).as[Label] shouldBe ValueLabel("BLAH", Some("39.99"))
@@ -36,7 +39,31 @@ class LabelSpec extends BaseSpec with ProcessJson {
       val valueLabelWithValue: Label = ValueLabel("BLAH", Some("39.99"))
       Json.toJson(valueLabelWithValue).toString shouldBe labelWithValue
     }
+  }
 
+  "DisplayLabel" must {
+    "deserialise " in {
+      Json.parse(displayLabel).as[Label] shouldBe DisplayLabel("BLAH")
+      Json.parse(displayLabelWithValues).as[Label] shouldBe DisplayLabel("BLAH", Some("Hello"), Some("Welsh, Hello"))
+    }
+
+    "serialise from Label to json" in {
+      val dLabel: Label = DisplayLabel("BLAH")
+      Json.toJson(dLabel).toString shouldBe displayLabel
+      val dLabelWithValues: Label = DisplayLabel("BLAH", Some("Hello"), Some("Welsh, Hello"))
+      Json.toJson(dLabelWithValues).toString shouldBe displayLabelWithValues
+    }
+
+  }
+
+  "Label" must {
+    "contruct Value labels when presented with a single value" in {
+      Label("Name", Some("value")) shouldBe ValueLabel("Name", Some("value"))
+
+    }
+    "contruct Display labels when presented with a two values" in {
+      Label("Name", Some("english"), Some("welsh")) shouldBe DisplayLabel("Name", Some("english"), Some("welsh"))
+    }
   }
 
   "LabelCache" must {

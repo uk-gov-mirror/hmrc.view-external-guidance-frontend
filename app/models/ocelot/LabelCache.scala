@@ -35,9 +35,9 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(), cache: Map[Stri
 
   private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
   private def updateOrAddValueLabel(name: String, value: String): Map[String, Label] =
-    cache + (name -> cache.get(name).fold[Label](ValueLabel(name, Some(value)))(l => Label(l, Some(value))))
+    cache + (name -> cache.get(name).fold[Label](ValueLabel(name, Some(value)))(l => Label(l.name, Some(value))))
   private def updateOrAddDisplayLabel(name: String, english: String, welsh: String): Map[String, Label] =
-    cache + (name -> cache.get(name).fold[Label](DisplayLabel(name, Some(english), Some(welsh)))(l => Label(l, Some(english), Some(welsh))))
+    cache + (name -> cache.get(name).fold[Label](DisplayLabel(name, Some(english), Some(welsh)))(l => Label(l.name, Some(english), Some(welsh))))
 }
 
 object LabelCache {

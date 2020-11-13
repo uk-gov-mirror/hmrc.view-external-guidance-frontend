@@ -63,8 +63,8 @@ object DisplayLabel {
 }
 
 object Label {
-  def apply(lbl: Label, value: Option[String]): Label = ValueLabel(lbl.name, value)
-  def apply(lbl: Label, english: Option[String], welsh: Option[String]): Label = DisplayLabel(lbl.name, english, welsh)
+  def apply(name: String, value: Option[String]): Label = ValueLabel(name, value)
+  def apply(name: String, english: Option[String], welsh: Option[String]): Label = DisplayLabel(name, english, welsh)
 
   implicit val reads: Reads[Label] = (js: JsValue) => {
     (js \ "type").validate[String] match {
