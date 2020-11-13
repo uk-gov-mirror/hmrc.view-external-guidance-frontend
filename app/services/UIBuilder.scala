@@ -113,7 +113,7 @@ class UIBuilder {
       case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      case Important => Seq(ErrorMsg("ID", TextBuilder.fromPhrase(c.text))) // To be Removed along with defn
+      case Important => Seq.empty // Reserved for future use
       case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case YourCall => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
