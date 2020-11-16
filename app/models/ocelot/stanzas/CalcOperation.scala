@@ -23,6 +23,7 @@ import play.api.libs.json.Reads._
 case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String)
 
 object CalcOperation {
+
   implicit val reads: Reads[CalcOperation] =
     (
       (JsPath \ "left").read[String] and
