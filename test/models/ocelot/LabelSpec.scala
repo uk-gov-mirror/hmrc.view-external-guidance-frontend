@@ -49,17 +49,21 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
   }
 
-  "Label" must {
-    "contruct Value labels when presented with a single value" in {
-      Label("Name", Some("value")) shouldBe Label("Name", Some("value"))
-
-    }
-    "contruct Display labels when presented with a two values" in {
-      Label("Name", Some("english"), Some("welsh")) shouldBe Label("Name", Some("english"), Some("welsh"))
-    }
-  }
-
   "LabelCache" must {
+    "contruct single value label" in {
+      val labels = LabelCache()
+      val newLabels = labels.update("Name", "value")
+
+      newLabels.updatedLabels("Name") shouldBe Label("Name", Some("value"))
+    }
+
+    "contruct muli-value label" in {
+      val labels = LabelCache()
+      val newLabels = labels.update("Name", "english", "welsh")
+
+      newLabels.updatedLabels("Name") shouldBe Label("Name", Some("english"), Some("welsh"))
+    }
+
     "Allow reference to the current value of a label" in {
       val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
