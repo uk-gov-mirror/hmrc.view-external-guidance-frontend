@@ -73,7 +73,7 @@ trait ProcessPopulation {
       case i: InputStanza => populateInput(i)
       case c: CalloutStanza => phrase(c.text, id, process).fold(Left(_), text => Right(Callout(c, text)))
       case c: ChoiceStanza => Right(Choice(c))
-      case c: CalculationStanza => Right(Calculation(c))
+      case c: CalculationStanza => populateCalculation(id, c)
       case s: Stanza => Right(s)
     }
   }
@@ -97,5 +97,12 @@ trait ProcessPopulation {
           case Left(err) => Left(err)
         }
     }
+
+  private def populateCalculation(id: String, c: CalculationStanza) : Either[GuidanceError, Calculation] = {
+    c.validate(id) match {
+      case Some(error) => Left(error)
+      case _ => Right(Calculation(c))
+    }
+  }
 
 }

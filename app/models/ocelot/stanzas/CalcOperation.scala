@@ -20,7 +20,27 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String)
+import models.ocelot.{asAnyInt, labelReference}
+import models.ocelot.errors.{InvalidScaleFactorError, GuidanceError}
+
+case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String) {
+
+  def validate(stanzaId: String): Option[GuidanceError] =
+    op match {
+      case Ceiling => validateScaleFactor(stanzaId, right)
+      case Floor => validateScaleFactor(stanzaId, right)
+      case _ => None
+    }
+
+  private def validateScaleFactor(stanzaId: String, scale: String) : Option[GuidanceError] = {
+
+    if(labelReference(scale).isDefined) {
+      None
+    } else if(asAnyInt(scale).isDefined) None else Some(InvalidScaleFactorError(stanzaId, "Invalid scale factor in ceiling or floor calculation operation"))
+
+  }
+
+}
 
 object CalcOperation {
 

@@ -46,7 +46,7 @@ class CalcOperationSpec extends BaseSpec {
       }
     }
 
-    "deserialize JSON representation of subtraction operation" in {
+    "deserialize a valid JSON representation of subtraction operation" in {
       val subtractionOperation: JsValue = getCalcOperationAsJsValue("subtract")
 
       subtractionOperation.validate[CalcOperation] match {
@@ -54,6 +54,25 @@ class CalcOperationSpec extends BaseSpec {
         case e: JsError => fail("Unable to parse valid subtraction operation")
       }
     }
+
+    "deserialize a valid JSON representation of ceiling operation" in {
+      val ceilingOperation: JsValue = getCalcOperationAsJsValue("ceiling")
+
+      ceilingOperation.validate[CalcOperation] match {
+        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "[label:inputA]", Ceiling, "[label:inputB]", "result")
+        case e: JsError => fail("Unable to parse valid subtraction operation")
+      }
+    }
+
+    "deserialize a valid JSON representation of floor operation" in {
+      val floorOperation: JsValue = getCalcOperationAsJsValue("floor")
+
+      floorOperation.validate[CalcOperation] match {
+        case JsSuccess(calcOperation, _) => calcOperation shouldBe CalcOperation( "[label:inputA]", Floor, "[label:inputB]", "result")
+        case e: JsError => fail("Unable to parse valid subtraction operation")
+      }
+    }
+
   }
 
   "Reading invalid JSON representation of calculation operation" should {
@@ -89,6 +108,19 @@ class CalcOperationSpec extends BaseSpec {
       Json.toJson(CalcOperation("[label:inputA]", Subtraction, "[label:inputB]", "result")).toString shouldBe
       """{"left":"[label:inputA]","op":"subtract","right":"[label:inputB]","label":"result"}"""
     }
+
+    "serialize ceiling operation" in {
+
+      Json.toJson(CalcOperation("[label:inputA]", Ceiling, "[label:inputB]", "result")).toString shouldBe
+        """{"left":"[label:inputA]","op":"ceiling","right":"[label:inputB]","label":"result"}"""
+    }
+
+    "serialize floor operation" in {
+
+      Json.toJson(CalcOperation("[label:inputA]", Floor, "[label:inputB]", "result")).toString shouldBe
+        """{"left":"[label:inputA]","op":"floor","right":"[label:inputB]","label":"result"}"""
+    }
+
   }
 
 

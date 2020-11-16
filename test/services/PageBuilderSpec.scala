@@ -414,6 +414,50 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
+    "detect invalid scale factor in floor calculation" in {
+
+      val invalidCalcOperation: CalcOperation = CalcOperation("12.50", Floor, "scale", "output")
+
+      val invalidCalcStanza: CalculationStanza = CalculationStanza(Seq(invalidCalcOperation), Seq("end"), stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/floor", Seq("1"), stack = false),
+        "1" -> invalidCalcStanza,
+        "end" -> EndStanza
+      )
+
+      val process = Process(
+        metaSection, flow,
+        Vector[Phrase](),
+        Vector[Link]()
+      )
+
+      pageBuilder.pagesWithValidation(process) shouldBe
+        Left(List(InvalidScaleFactorError("1","Invalid scale factor in ceiling or floor calculation operation")))
+    }
+
+    "detect invalid scale factor in ceiling calculation" in {
+
+      val invalidCalcOperation: CalcOperation = CalcOperation("12.50", Ceiling, "", "output")
+
+      val invalidCalcStanza: CalculationStanza = CalculationStanza(Seq(invalidCalcOperation), Seq("end"), stack = false)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/floor", Seq("1"), stack = false),
+        "1" -> invalidCalcStanza,
+        "end" -> EndStanza
+      )
+
+      val process = Process(
+        metaSection, flow,
+        Vector[Phrase](),
+        Vector[Link]()
+      )
+
+      pageBuilder.pagesWithValidation(process) shouldBe
+        Left(List(InvalidScaleFactorError("1","Invalid scale factor in ceiling or floor calculation operation")))
+    }
+
     "detect UnknownCalloutType" in {
       val processErrors: List[ProcessError] =
         List(
