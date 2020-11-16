@@ -48,9 +48,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-      KeyedStanza("1", Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
-      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("31"), false)),
-      KeyedStanza("31", Callout(SubSection, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("31"), false)),
+      KeyedStanza("31", SubSectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
 
@@ -224,10 +224,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val embeddedLinkInstructionStanza2 = Instruction(txtWithLinks2, Seq("end"), None, false)
     val embeddedPageLinkInstructionStanza = Instruction(txtWithPageLinks, Seq("end"), None, false)
     val embeddedAllLinkInstructionStanza = Instruction(txtWithAllLinks, Seq("end"), None, false)
-    val embeddedSubsectionCalloutStanza = Callout(SubSection, Phrase(lang5), Seq("3"), false)
-    val importantCalloutStanza = Callout(Important, Phrase(lang0), Seq("3"), false)
-    val valueErrorCalloutStanza = Callout(ValueError, Phrase(lang0), Seq("3"), false)
-    val typeErrorCalloutStanza = Callout(TypeError, Phrase(lang0), Seq("3"), false)
+    val embeddedSubsectionCalloutStanza = SubSectionCallout(Phrase(lang5), Seq("3"), false)
+    val importantCalloutStanza = ImportantCallout(Phrase(lang0), Seq("3"), false)
+    val valueErrorCalloutStanza = ValueErrorCallout(Phrase(lang0), Seq("3"), false)
+    val typeErrorCalloutStanza = TypeErrorCallout(Phrase(lang0), Seq("3"), false)
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
@@ -237,9 +237,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val initialStanza = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
       KeyedStanza("1", Instruction(Phrase(lang2), Seq("2"), None, false)),
-      KeyedStanza("2", Callout(Title, Phrase(lang0), Seq("3"), false)),
-      KeyedStanza("3", Callout(SubTitle, Phrase(lang1), Seq("4"), false)),
-      KeyedStanza("4", Callout(Lede, Phrase(lang2), Seq("5"), false)),
+      KeyedStanza("2", TitleCallout(Phrase(lang0), Seq("3"), false)),
+      KeyedStanza("3", SubTitleCallout(Phrase(lang1), Seq("4"), false)),
+      KeyedStanza("4", LedeCallout(Phrase(lang2), Seq("5"), false)),
       KeyedStanza("5", Instruction(Phrase(lang3), Seq("end"), None, false)),
     )
 
@@ -356,7 +356,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
   "UIBuilder" must {
     "Convert a non-summarylist RowGroup into a table" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 simpleRowGroup))
       p.components match {
         case Seq((h: H1), (tbl: Table)) => succeed
@@ -365,7 +365,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Convert a non-summarylist RowGroup into a table with a heading line" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 captionRowGroup))
       p.components match {
         case Seq((h: H1), Table(None, Some(_), _)) => succeed
@@ -374,7 +374,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(SubSection, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 stackedRowGroup))
       p.components match {
         case Seq(Table(Some(headingText), None, rows)) => succeed
@@ -383,7 +383,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a non-summarylist RowGroup into a table with a right aligned numeric column" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 numericRowGroup))
       p.components match {
         case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).text.isNumericLabelRef) => succeed
@@ -393,7 +393,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three sparse columns including a link and hint into a SummaryList" in new SLTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), sparseRowsWithLinkAndHint, true)))
       p.components match {
         case Seq((h: H1), (sl: SummaryList)) => succeed
@@ -403,7 +403,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "convert a RowGroup with three columns including a link and hint into a SummaryList" in new SLTest {
-      val p = uiBuilder.buildPage("/start", Seq(Callout(Title, headingPhrase, Seq.empty, false),
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
       p.components match {
         case Seq((h: H1), (sl: SummaryList)) => succeed
@@ -649,9 +649,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val phrase7: Phrase = Phrase(Vector("Today we have special brussels sprouts for sale", "Heddiw mae gennym ysgewyll cregyn gleision arbennig ar werth"))
       val phrase8: Phrase = Phrase(Vector("Thank you", "Diolch"))
 
-      val titleCallout: Callout = Callout(Title, phrase1, Seq("1"), false)
+      val titleCallout: Callout = TitleCallout(phrase1, Seq("1"), false)
       val instruction1: Instruction = Instruction(phrase2, Seq("2"), None, false)
-      val subTitleCallout: Callout = Callout(SubTitle, phrase3, Seq("3"), false)
+      val subTitleCallout: Callout = SubTitleCallout(phrase3, Seq("3"), false)
       val instruction2: Instruction = Instruction(phrase4, Seq("4"), None, false)
 
       val instructionGroupInstruction1: Instruction = Instruction(phrase5, Seq("5"), None, true)
@@ -826,8 +826,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-      KeyedStanza("1", Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
-      KeyedStanza("3", Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
     val input1 = models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
@@ -905,15 +905,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val sectionCallOutPhrase: Phrase = Phrase(Vector("Section title", "Welsh, Section title"))
     val subSectionCalloutPhrase: Phrase = Phrase(Vector("Subsection title", "Welsh, Subsection title"))
 
-    val confirmationPanelHeader: Callout = Callout(YourCall, confirmationPanelHeaderPhrase, Seq("2"), stack = false)
-    val stackedConfirmationPanelHeader: Callout = Callout(YourCall, confirmationPanelHeaderPhrase, Seq("2"), stack = true)
-    val confirmationPanelAdditional1: Callout = Callout(YourCall, confirmationPanelAdditionalText1Phrase, Seq("4"), stack = true)
-    val confirmationPanelAdditional2: Callout = Callout(YourCall, confirmationPanelAdditionalText2Phrase, Seq("5"), stack = true)
+    val confirmationPanelHeader: Callout = YourCallCallout(confirmationPanelHeaderPhrase, Seq("2"), stack = false)
+    val stackedConfirmationPanelHeader: Callout = YourCallCallout(confirmationPanelHeaderPhrase, Seq("2"), stack = true)
+    val confirmationPanelAdditional1: Callout = YourCallCallout(confirmationPanelAdditionalText1Phrase, Seq("4"), stack = true)
+    val confirmationPanelAdditional2: Callout = YourCallCallout(confirmationPanelAdditionalText2Phrase, Seq("5"), stack = true)
     val instruction1: Instruction = Instruction(instruction1Phrase, Seq("6"), None, stack = false)
     val stackedInstruction1: Instruction = Instruction(instruction1Phrase, Seq("6"), None, stack = true)
     val instruction2: Instruction = Instruction(instruction2Phrase, Seq("7"), None, stack = false)
-    val sectionCallout: Callout = Callout(Section, sectionCallOutPhrase, Seq("8"), stack = true)
-    val subSectionCallout: Callout = Callout(SubSection, subSectionCalloutPhrase, Seq("8"), stack = true)
+    val sectionCallout: Callout = SectionCallout(sectionCallOutPhrase, Seq("8"), stack = true)
+    val subSectionCallout: Callout = SubSectionCallout(subSectionCalloutPhrase, Seq("8"), stack = true)
 
     val confirmationPanelHeaderText: Text = TextBuilder.fromPhrase(confirmationPanelHeaderPhrase)
     val confirmationPanelAdditional1Text: Text = TextBuilder.fromPhrase(confirmationPanelAdditionalText1Phrase)

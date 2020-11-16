@@ -102,8 +102,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
   "PageRenderer" must {
     "Determine the correct sequence of stanzas within a page with no user input" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
-      val callout1 = Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
-      val callout2 = Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
+      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
 
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                         KeyedStanza("1", callout1),
@@ -123,8 +123,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "Determine the correct sequence of stanzas within the final page of guidance" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
-      val callout1 = Callout(Error, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
-      val callout2 = Callout(Section, Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
+      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
 
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                         KeyedStanza("1", callout1),
@@ -306,8 +306,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "execute calculation stanza when rendering page" in new Test {
 
-      val callout: Callout = Callout(
-        Title,
+      val callout: Callout = TitleCallout(
         Phrase(Vector("Title", "Welsh - Title")),
         Seq("2"),
         stack = false
@@ -366,18 +365,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
     "execute calculation stanza when submitting page" in new Test {
 
-      val valueStanza: ValueStanza = ValueStanza(
-        List(Value(Scalar, "input1", "10")),
-        Seq("2"),
-        stack = true
-      )
-
-      val callout: Callout = Callout(
-        Title,
-        Phrase(Vector("Title", "Welsh - Title")),
-        Seq("3"),
-        stack = false
-      )
+      val valueStanza: ValueStanza = ValueStanza(List(Value(Scalar, "input1", "10")), Seq("2"), true)
+      val callout: Callout = TitleCallout(Phrase(Vector("Title", "Welsh - Title")), Seq("3"), false)
 
       val instruction1: Instruction = Instruction(
         Phrase(Vector("Example of calculation after submit", "Welsh - Example of calculation after submit")),

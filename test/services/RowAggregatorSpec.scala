@@ -56,7 +56,7 @@ class RowAggregatorSpec extends BaseSpec {
 
     val pageStanza: Stanza = PageStanza("/start", Seq(""), stack = false)
 
-    val callout: Callout = Callout(Title, titlePhrase, Seq(""), stack = false)
+    val callout: Callout = TitleCallout(titlePhrase, Seq(""), stack = false)
     val instruction: Instruction = Instruction(instructionPhrase, Seq(""), None, stack = false)
     val instruction1: Instruction = Instruction(instruction1Phrase, Seq(""), None, stack = false)
     val instruction2: Instruction = Instruction(instruction2Phrase, Seq(""), None, stack = false)

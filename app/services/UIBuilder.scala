@@ -57,9 +57,9 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     sg.group match {
-      case (c: Callout) :: (rg: RowGroup) :: xs if c.noteType == SubSection && !rg.isSummaryList =>
+      case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if !rg.isSummaryList =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
-      case (c1:Callout) :: (c2:Callout) :: xs if Seq(c1, c2).forall(_.noteType == YourCall) =>
+      case (c1:YourCallCallout) :: (c2:YourCallCallout) :: xs =>
         fromSequenceWithLeadingYourCallCallouts(sg, formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
@@ -106,18 +106,18 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(c: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
-    c.noteType match {
-      case Title => Seq(H1(TextBuilder.fromPhrase(c.text)))
-      case SubTitle => Seq(H2(TextBuilder.fromPhrase(c.text)))
-      case Section => Seq(H3(TextBuilder.fromPhrase(c.text)))
-      case SubSection => Seq(H4(TextBuilder.fromPhrase(c.text)))
-      case Lede => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
-      case Important => Seq.empty // Reserved for future use
-      case TypeError => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
-      case ValueError => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
-      case YourCall => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
-      case Error =>
+  private def fromCallout(co: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+    co match {
+      case c: TitleCallout => Seq(H1(TextBuilder.fromPhrase(c.text)))
+      case c: SubTitleCallout => Seq(H2(TextBuilder.fromPhrase(c.text)))
+      case c: SectionCallout => Seq(H3(TextBuilder.fromPhrase(c.text)))
+      case c: SubSectionCallout => Seq(H4(TextBuilder.fromPhrase(c.text)))
+      case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
+      case c: ImportantCallout => Seq.empty // Reserved for future use
+      case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
+      case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
+      case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
+      case c: ErrorCallout =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
         // as this linking of messages to form ids has not been resolved, Currently
@@ -173,11 +173,9 @@ class UIBuilder {
   private def fromSequenceWithLeadingYourCallCallouts(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
     val (callouts, visualStanzas): (Seq[Callout], Seq[VisualStanza]) = sg.group.span{
-      case c: Callout if c.noteType == YourCall => true
+      case c: YourCallCallout => true
       case _ => false
-    } match {
-      case (coStanzas, v) => (coStanzas.map{case c: Callout if c.noteType == YourCall => c}, v)
-    }
+    } match {case (coStanzas, v) => (coStanzas.map{case c: YourCallCallout => c}, v)}
 
     fromStanzas(stackStanzas(Nil)(visualStanzas), Seq(fromYourCallGroup(callouts)), formData)
   }
