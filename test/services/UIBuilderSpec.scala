@@ -22,6 +22,7 @@ import models.ocelot._
 import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
 import models.ui.{SummaryList, Table}
 import play.api.data.FormError
+import models.ui.ErrorMsg
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -436,19 +437,21 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components(3) shouldBe models.ui.Paragraph(Text(lang2), true)
     }
 
-    "convert Callout type Important to an ErrorMsg" in new Test {
+    "Dont convert Callout type Important into an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(6) shouldBe models.ui.ErrorMsg("ID", Text(lang0))
+      val errs: Seq[ErrorMsg] = uiPage.components.collect{case err: ErrorMsg => err}
+
+      errs.exists{e => e.id == "ID"} shouldBe false
     }
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(7) shouldBe models.ui.ErrorMsg("Value.ID", Text(lang0))
+      uiPage.components(6) shouldBe models.ui.ErrorMsg("Value.ID", Text(lang0))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(8) shouldBe models.ui.ErrorMsg("Type.ID", Text(lang0))
+      uiPage.components(7) shouldBe models.ui.ErrorMsg("Type.ID", Text(lang0))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
