@@ -17,7 +17,7 @@
 package models.ocelot.stanzas
 
 import models.ocelot.asCurrency
-import models.ocelot.{labelReferences, Labels, ValueLabel, Phrase}
+import models.ocelot.{labelReferences, Labels, Label, Phrase}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -31,7 +31,7 @@ case class InputStanza(
   placeholder: Option[Int],
   stack: Boolean
 ) extends VisualStanza {
-  override val labels = List(ValueLabel(label, None))
+  override val labels = List(Label(label, None))
 }
 
 object InputStanza {

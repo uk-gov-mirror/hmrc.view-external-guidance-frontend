@@ -21,54 +21,47 @@ import play.api.libs.json._
 
 class LabelSpec extends BaseSpec with ProcessJson {
 
-  val label = """{"name":"BLAH","type":"Value"}"""
-  val labelWithValue = """{"name":"BLAH","type":"Value","value":"39.99"}"""
+  val label = """{"name":"BLAH"}"""
+  val labelWithSingleValue = """{"name":"BLAH","english":"39.99"}"""
+  val labelWithValues = """{"name":"BLAH","english":"Hello","welsh":"Welsh, Hello"}"""
 
-  val displayLabel = """{"name":"BLAH","type":"Display"}"""
-  val displayLabelWithValues = """{"name":"BLAH","english":"Hello","type":"Display","welsh":"Welsh, Hello"}"""
-
-  "ValueLabel" must {
+  "Label" must {
     "deserialise " in {
-      Json.parse(label).as[Label] shouldBe ValueLabel("BLAH")
-      Json.parse(labelWithValue).as[Label] shouldBe ValueLabel("BLAH", Some("39.99"))
+      Json.parse(label).as[Label] shouldBe Label("BLAH")
+      Json.parse(labelWithSingleValue).as[Label] shouldBe Label("BLAH", Some("39.99"))
     }
 
     "serialise from Label to json" in {
-      val valueLabel: Label = ValueLabel("BLAH")
+      val valueLabel: Label = Label("BLAH")
       Json.toJson(valueLabel).toString shouldBe label
-      val valueLabelWithValue: Label = ValueLabel("BLAH", Some("39.99"))
-      Json.toJson(valueLabelWithValue).toString shouldBe labelWithValue
-    }
-  }
-
-  "DisplayLabel" must {
-    "deserialise " in {
-      Json.parse(displayLabel).as[Label] shouldBe DisplayLabel("BLAH")
-      Json.parse(displayLabelWithValues).as[Label] shouldBe DisplayLabel("BLAH", Some("Hello"), Some("Welsh, Hello"))
+      val valueLabelWithValue: Label = Label("BLAH", Some("39.99"))
+      Json.toJson(valueLabelWithValue).toString shouldBe labelWithSingleValue
     }
 
-    "serialise from Label to json" in {
-      val dLabel: Label = DisplayLabel("BLAH")
-      Json.toJson(dLabel).toString shouldBe displayLabel
-      val dLabelWithValues: Label = DisplayLabel("BLAH", Some("Hello"), Some("Welsh, Hello"))
-      Json.toJson(dLabelWithValues).toString shouldBe displayLabelWithValues
+    "deserialise label with both english and welsh values" in {
+      Json.parse(labelWithValues).as[Label] shouldBe Label("BLAH", Some("Hello"), Some("Welsh, Hello"))
+    }
+
+    "serialise from Label with both english and welsh values to json" in {
+      val dLabelWithValues: Label = Label("BLAH", Some("Hello"), Some("Welsh, Hello"))
+      Json.toJson(dLabelWithValues).toString shouldBe labelWithValues
     }
 
   }
 
   "Label" must {
     "contruct Value labels when presented with a single value" in {
-      Label("Name", Some("value")) shouldBe ValueLabel("Name", Some("value"))
+      Label("Name", Some("value")) shouldBe Label("Name", Some("value"))
 
     }
     "contruct Display labels when presented with a two values" in {
-      Label("Name", Some("english"), Some("welsh")) shouldBe DisplayLabel("Name", Some("english"), Some("welsh"))
+      Label("Name", Some("english"), Some("welsh")) shouldBe Label("Name", Some("english"), Some("welsh"))
     }
   }
 
   "LabelCache" must {
     "Allow reference to the current value of a label" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y", Some("4")), "Name" -> ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("X") shouldBe Some("33.5")
 
@@ -77,19 +70,19 @@ class LabelSpec extends BaseSpec with ProcessJson {
     }
 
     "Return an empty string if label has no assigned value" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y"), "Name" -> ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("Y") shouldBe Some("")
     }
 
     "Return None if referenced label does not exist" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y"), "Name" -> ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y"), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("Z") shouldBe None
     }
 
     "Allow the current value of the label to be updated" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y", Some("4")), "Name" -> ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" -> Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("X") shouldBe Some("33.5")
 
@@ -100,7 +93,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
     }
 
     "Allow a new label to be added to the cache" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y", Some("4")), "Name" ->ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" ->Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("X") shouldBe Some("33.5")
 
@@ -111,25 +104,25 @@ class LabelSpec extends BaseSpec with ProcessJson {
     }
 
     "Return a map of new and updated labels on request" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y", Some("4")), "Name" ->ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" ->Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
       labels.value("X") shouldBe Some("33.5")
       val labels1 = labels.update("X", "49.5")
 
       val labels2 = labels1.update("Location", "Here")
 
-      labels2.updatedLabels shouldBe Map("X" ->ValueLabel("X",Some("49.5")), "Location" ->ValueLabel("Location",Some("Here")))
+      labels2.updatedLabels shouldBe Map("X" ->Label("X",Some("49.5")), "Location" ->Label("Location",Some("Here")))
 
     }
 
     "Flush updated labels to main store" in {
-      val labelsMap = Map("X"->ValueLabel("X", Some("33.5")), "Y"->ValueLabel("Y", Some("4")), "Name" ->ValueLabel("Name", Some("Coltrane")))
+      val labelsMap = Map("X"->Label("X", Some("33.5")), "Y"->Label("Y", Some("4")), "Name" ->Label("Name", Some("Coltrane")))
       val labels = LabelCache(labelsMap)
 
       val labels1 = labels.update("X", "49.5")
       val labels2 = labels1.update("Location", "Here")
 
-      labels2.updatedLabels shouldBe Map("X" ->ValueLabel("X",Some("49.5")), "Location" ->ValueLabel("Location",Some("Here")))
+      labels2.updatedLabels shouldBe Map("X" ->Label("X",Some("49.5")), "Location" ->Label("Location",Some("Here")))
 
       val labels3 = labels2.flush
 

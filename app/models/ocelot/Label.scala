@@ -18,66 +18,19 @@ package models.ocelot
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.api.i18n.Lang
 
-trait Label {
-  val name: String
-  val value: Option[String]
-  def displayValue(implicit lang: Lang): Option[String] = value
-}
+case class Label(name: String, english: Option[String] = None, welsh: Option[String] = None)
 
-case class ValueLabel(name: String, value: Option[String] = None) extends Label
-
-object ValueLabel {
-  implicit val reads: Reads[ValueLabel] = (
-    (__ \ "name").read[String] and
-      (__ \ "value").readNullable[String]
-  )(ValueLabel.apply _)
-
-  implicit val writes: OWrites[ValueLabel] = (
-    (__ \ "name").write[String] and
-      (__ \ "value").writeNullable[String]
-  )(unlift(ValueLabel.unapply))
-}
-
-case class DisplayLabel(name: String, english: Option[String] = None, welsh: Option[String] = None) extends Label {
-  override val value: Option[String] = english
-  override def displayValue(implicit lang: Lang): Option[String] = lang.code match {
-    case "en" => english
-    case "cy" => welsh
-  }
-}
-
-object DisplayLabel {
-  implicit val reads: Reads[DisplayLabel] = (
+object Label {
+  implicit val reads: Reads[Label] = (
     (__ \ "name").read[String] and
       (__ \ "english").readNullable[String] and
       (__ \ "welsh").readNullable[String]
-  )(DisplayLabel.apply _)
+  )(Label.apply _)
 
-  implicit val writes: OWrites[DisplayLabel] = (
+  implicit val writes: Writes[Label] = (
     (__ \ "name").write[String] and
       (__ \ "english").writeNullable[String] and
       (__ \ "welsh").writeNullable[String]
-  )(unlift(DisplayLabel.unapply))
-}
-
-object Label {
-  def apply(name: String, value: Option[String]): Label = ValueLabel(name, value)
-  def apply(name: String, english: Option[String], welsh: Option[String]): Label = DisplayLabel(name, english, welsh)
-
-  implicit val reads: Reads[Label] = (js: JsValue) => {
-    (js \ "type").validate[String] match {
-      case err @ JsError(_) => err
-      case JsSuccess("Value", _) => js.validate[ValueLabel]
-      case JsSuccess("Display", _) => js.validate[DisplayLabel]
-      case JsSuccess(typeName, _) => JsError(JsonValidationError(Seq("Stanza"), typeName))
-    }
-  }
-
-  implicit val writes: Writes[Label] = {
-    case v: ValueLabel => Json.obj("type" -> "Value") ++ Json.toJsObject[ValueLabel](v)
-    case d: DisplayLabel => Json.obj("type" -> "Display") ++ Json.toJsObject[DisplayLabel](d)
-    case s => Json.toJson("")
-  }
+  )(unlift(Label.unapply))
 }

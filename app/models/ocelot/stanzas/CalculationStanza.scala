@@ -16,14 +16,14 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{asCurrency, labelReference, labelReferences, Label, Labels, ValueLabel}
+import models.ocelot.{asCurrency, labelReference, labelReferences, Label, Labels}
 import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
 case class CalculationStanza(calcs: Seq[CalcOperation], override val next: Seq[String], stack: Boolean) extends Stanza {
-  override val labels: List[Label] = calcs.map(op => ValueLabel(op.label)).toList
+  override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
   override val labelRefs: List[String] = calcs.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
 }
 
@@ -104,7 +104,7 @@ case class Subtract(left: String, right: String, label: String) extends Operatio
 
 case class Calculation(override val next: Seq[String], calcs: Seq[Operation]) extends Stanza with Evaluate {
 
-  override val labels: List[Label] = calcs.map(op => ValueLabel(op.label)).toList
+  override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
   override val labelRefs: List[String] = calcs.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
 
   def eval(labels: Labels): (String, Labels) = {
