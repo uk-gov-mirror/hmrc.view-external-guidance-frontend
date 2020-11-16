@@ -121,13 +121,11 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
     }
 
-    "Input with no body should hide the legend heading" in new Test {
+    "Input with no body should have a label wrapper class on H1" in new Test {
       private val doc = asDocument(components.input(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
-      private val legend = doc.getElementsByTag("legend").first
-      private val attrs = elementAttrs(legend)
-
-      attrs("class").contains("govuk-fieldset__legend") shouldBe true
-      attrs("class").contains("govuk-visually-hidden") shouldBe false
+      private val h1 = doc.getElementsByTag("h1").first
+      private val attrs = elementAttrs(h1)
+      attrs("class").contains("govuk-label-wrapper") shouldBe true
     }
 
     "Input with body should render hint within a span within fieldset" in new Test {
@@ -144,17 +142,17 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
     }
 
-    "input without body should render hint within a span within fieldset" in new Test {
+    "input without body should render hint within a span without a fieldset" in new Test {
       private val doc = asDocument(components.input(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
-        elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
-        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-          val attrs = elementAttrs(span)
-          attrs("id") shouldBe "input-hint"
-          attrs("class").contains("govuk-hint") shouldBe true
-          span.text shouldBe i1Hint(0)
-        }
+
+      Option(fieldset) shouldBe None
+
+      Option(doc.getElementById("input-hint")).fold(fail("Missing hint span")) { span =>
+        val attrs = elementAttrs(span)
+        attrs("id") shouldBe "input-hint"
+        attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe i1Hint(0)
       }
     }
 
