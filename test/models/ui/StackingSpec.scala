@@ -23,8 +23,8 @@ import models.ocelot.stanzas._
 class StackingSpec extends BaseSpec {
 
   trait Test {
-    def stackedTitle(stack: Boolean) = TitleCallout(Phrase(), Seq.empty, stack)
-    def stackedError(stack: Boolean) = ErrorCallout(Phrase(), Seq.empty, stack)
+    def stackedTitle(stack: Boolean): TitleCallout = TitleCallout(Phrase(), Seq.empty, stack)
+    def stackedError(stack: Boolean): ErrorCallout = ErrorCallout(Phrase(), Seq.empty, stack)
     def stackedRowGroup(stack: Boolean): RowGroup = RowGroup(Seq.empty, Seq.empty, stack)
   }
 
