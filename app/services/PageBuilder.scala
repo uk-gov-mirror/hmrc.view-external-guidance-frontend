@@ -69,6 +69,7 @@ class PageBuilder extends ProcessPopulation {
       case x :: xs => duplicateUrlErrors(xs, errors)
     }
 
+  @tailrec
   private def checkQuestionFollowers(p: Seq[String], keyedStanzas: Map[String, Stanza], seen: Seq[String]): List[GuidanceError] =
     p match {
       case Nil => Nil
@@ -130,6 +131,8 @@ class PageBuilder extends ProcessPopulation {
     pages.toList.flatMap { page =>
       page.stanzas.collectFirst {
         case Callout(Title, text, _, _) =>
+          f(page.id, page.url, text.langs(0))
+        case Callout(YourCall, text, _, _) =>
           f(page.id, page.url, text.langs(0))
         case q: Question =>
           f(page.id, page.url, hintRegex.replaceAllIn(q.text.langs(0), ""))
