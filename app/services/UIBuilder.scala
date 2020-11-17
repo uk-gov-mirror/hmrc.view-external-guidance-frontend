@@ -117,6 +117,8 @@ class UIBuilder {
       case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
+      case c: NumberedListCallout => Seq.empty // Reserved for future use
+      case c: NumberedCircleListCallout => Seq.empty // Reserved for future use
       case c: ErrorCallout =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
