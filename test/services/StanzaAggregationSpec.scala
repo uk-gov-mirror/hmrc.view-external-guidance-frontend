@@ -84,7 +84,7 @@ class StanzaAggregatorSpec extends BaseSpec {
 
     // Define stanzas used as input to aggregator
     val pageStanza: Stanza = PageStanza("/aggregator-test", Seq("1"), stack = false)
-    val callout: Callout = Callout(Title, title, Seq("2"), stack = false)
+    val callout: Callout = TitleCallout(title, Seq("2"), stack = false)
     val instruction1: Instruction = Instruction(introduction, Seq("3"), None, stack = false)
     val instruction2: Instruction = Instruction(bp1Item1, Seq("4"), None, stack = false)
     val instruction3: Instruction = Instruction(bp1Item2, Seq("5"), None, stack = true)

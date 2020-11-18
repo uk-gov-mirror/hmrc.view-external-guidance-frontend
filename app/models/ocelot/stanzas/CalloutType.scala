@@ -20,13 +20,11 @@ import play.api.libs.json._
 
 sealed trait CalloutType
 
-trait Heading
-
 // Headings
-case object Title extends CalloutType with Heading
-case object SubTitle extends CalloutType with Heading
-case object Section extends CalloutType with Heading
-case object SubSection extends CalloutType with Heading
+case object Title extends CalloutType
+case object SubTitle extends CalloutType
+case object Section extends CalloutType
+case object SubSection extends CalloutType
 
 // Errors
 case object Error extends CalloutType
@@ -36,6 +34,8 @@ case object TypeError extends CalloutType
 case object Lede extends CalloutType
 case object Important extends CalloutType
 case object YourCall extends CalloutType  // "Your Decision" stanza in Ocelot editor
+case object NumberedList extends CalloutType
+case object NumberedCircleList extends CalloutType
 
 
 object CalloutType {
@@ -51,6 +51,8 @@ object CalloutType {
     case JsString("TypeError") => JsSuccess(TypeError, __)
     case JsString("Important") => JsSuccess(Important, __)
     case JsString("YourCall") => JsSuccess(YourCall, __)
+    case JsString("NumberedList") => JsSuccess(NumberedList, __)
+    case JsString("NumberedCircleList") => JsSuccess(NumberedCircleList, __)
     case typeName: JsString => JsError(JsonValidationError(Seq("CalloutType"), typeName.value))
     case unknown => JsError(JsonValidationError(Seq("CalloutType"), unknown.toString))
   }
@@ -66,6 +68,8 @@ object CalloutType {
     case Lede => Json.toJson("Lede")
     case Important => Json.toJson("Important")
     case YourCall => Json.toJson("YourCall")
+    case NumberedList => Json.toJson("NumberedList")
+    case NumberedCircleList => Json.toJson("NumberedCircleList")
   }
 
 }
