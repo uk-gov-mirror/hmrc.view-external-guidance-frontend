@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OQuestion, Input => OInput, CurrencyInput => OCurrencyInput, _}
+import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui.{NumberedList, NumberedCircleList, _}
 import play.api.Logger
@@ -51,8 +51,8 @@ class UIBuilder {
       case (nl: NumListGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNumListGroup(nl)), formData)
       case (nl: NumCircListGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNumCircListGroup(nl)), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
-      case (in: OInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
-      case (q: OQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
+      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
+      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
       case x :: xs => fromStanzas(xs, acc, formData)
     }
 
@@ -101,7 +101,7 @@ class UIBuilder {
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: OQuestion, components: Seq[UIComponent]): UIComponent = {
+  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
@@ -159,7 +159,7 @@ class UIBuilder {
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(input: OInput, components: Seq[UIComponent])
+  private def fromInput(input: OcelotInput, components: Seq[UIComponent])
                        (implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
@@ -167,7 +167,7 @@ class UIBuilder {
     val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
     // Placeholder not used
     input match {
-      case i: OCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+      case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
     }
   }
 
