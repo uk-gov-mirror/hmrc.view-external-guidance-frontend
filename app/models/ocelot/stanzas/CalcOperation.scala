@@ -20,37 +20,91 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
-import models.ocelot.{asAnyInt, labelReference}
-import models.ocelot.errors.{InvalidScaleFactorError, GuidanceError}
+import models.ocelot.asAnyInt
 
-case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String) {
-
-  def validate(stanzaId: String): Option[GuidanceError] =
-    op match {
-      case Ceiling => validateScaleFactor(stanzaId, right)
-      case Floor => validateScaleFactor(stanzaId, right)
-      case _ => None
-    }
-
-  private def validateScaleFactor(stanzaId: String, scale: String) : Option[GuidanceError] = {
-
-    if(labelReference(scale).isDefined) {
-      None
-    } else if(asAnyInt(scale).isDefined) None else Some(InvalidScaleFactorError(stanzaId, "Invalid scale factor in ceiling or floor calculation operation"))
-
-  }
-
-}
+case class CalcOperation(left:String, op: CalcOperationType, right: String, label: String)
 
 object CalcOperation {
 
-  implicit val reads: Reads[CalcOperation] =
-    (
-      (JsPath \ "left").read[String] and
-        (JsPath \ "op").read[CalcOperationType] and
-        (JsPath \ "right").read[String] and
-        (JsPath \ "label").read[String]
-    )(CalcOperation.apply _)
+  val parseError: String = "error.path.missing.or.property.type.incorrect"
+
+  implicit val reads:Reads[CalcOperation] = new Reads[CalcOperation] {
+
+    def reads(json: JsValue): JsResult[CalcOperation] = {
+
+        json match {
+          case jsValue: JsValue => {
+
+            val leftOpt: Option[String] = (jsValue \ "left").asOpt[String]
+            val opOpt: Option[CalcOperationType] = (jsValue \ "op").asOpt[CalcOperationType]
+            val rightOpt: Option[String] = (jsValue \ "right").asOpt[String]
+            val labelOpt: Option[String] = (jsValue \ "label").asOpt[String]
+
+            populateCalcOperation(json, leftOpt, opOpt, rightOpt, labelOpt)
+          }
+          case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError(Seq("error", "error.expected.jsobject")))))
+        }
+
+    }
+
+    private def populateCalcOperation(
+                                       jsValue: JsValue,
+                                       leftOpt: Option[String],
+                                       opOpt: Option[CalcOperationType],
+                                       rightOpt: Option[String],
+                                       labelOpt: Option[String]): JsResult[CalcOperation] = {
+
+      leftOpt match {
+        case Some(left) => {
+          opOpt match {
+            case Some(op) => {
+              rightOpt match {
+                case Some(right) => {
+                  labelOpt match {
+                    case Some(label) => {
+                      // All required values have been defined so we can apply custom validation
+                      validateOp(left, op, right, label)
+                    }
+                    case None => JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq(parseError)))))
+                  }
+                }
+                case None => JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq(parseError)))))
+              }
+            }
+            case None => handleUndefinedCalculationOperationType(jsValue, opOpt)
+          }
+        }
+        case None => JsError(Seq(JsPath \ "left" -> Seq(JsonValidationError(Seq(parseError)))))
+      }
+
+    }
+
+    private def validateOp(left: String, op: CalcOperationType, right: String, label: String): JsResult[CalcOperation] = {
+
+      op match {
+        case Ceiling | Floor => {
+          asAnyInt(right) match {
+            case Some(value) => JsSuccess(CalcOperation(left, op, right, label))
+            case None => JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq("error", "error.noninteger.scalefactor")))))
+          }
+        }
+        case _ => JsSuccess(CalcOperation(left, op, right, label))
+      }
+
+    }
+
+    private def handleUndefinedCalculationOperationType(jsValue: JsValue, opOpt: Option[CalcOperationType]): JsError = {
+
+      val opAsString: Option[String] = (jsValue \ "op").asOpt[String]
+
+      opAsString match {
+        case Some(value) =>  JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq("CalcOperationType"), value))))
+        case None => JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq(parseError)))))
+      }
+
+    }
+
+  }
 
   implicit val writes: OWrites[CalcOperation] =
     (
@@ -59,4 +113,5 @@ object CalcOperation {
         (JsPath \ "right").write[String] and
         (JsPath \ "label").write[String]
     )(unlift(CalcOperation.unapply))
+
 }

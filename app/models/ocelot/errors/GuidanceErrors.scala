@@ -44,7 +44,6 @@ case class FlowParseError(id: String, msg: String, arg: String) extends FlowErro
 case class MetaParseError(id: String, msg: String, arg: String) extends MetaError
 case class PhrasesParseError(id: String, msg: String, arg: String) extends PhrasesError
 case class LinksParseError(id: String, msg: String, arg: String) extends LinksError
-case class InvalidScaleFactorError(id: String, msg: String) extends FlowError
 
 object GuidanceError {
 

@@ -17,7 +17,6 @@
 package models.ocelot.stanzas
 
 import models.ocelot.{asAnyInt, asCurrency, labelReference, labelReferences, Label, Labels}
-import models.ocelot.errors.GuidanceError
 import play.api.Logger
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -28,14 +27,6 @@ import scala.math.BigDecimal.RoundingMode
 case class CalculationStanza(calcs: Seq[CalcOperation], override val next: Seq[String], stack: Boolean) extends Stanza {
   override val labels: List[Label] = calcs.map(op => Label(op.label)).toList
   override val labelRefs: List[String] = calcs.flatMap(op => labelReferences(op.left) ++ labelReferences(op.right)).toList
-
-  def validate(stanzaId: String): Option[GuidanceError] = {
-
-    val errors: Seq[GuidanceError] = calcs.flatMap(calc => calc.validate(stanzaId))
-
-    errors.headOption
-  }
-
 }
 
 object CalculationStanza {

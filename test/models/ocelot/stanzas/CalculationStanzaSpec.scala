@@ -18,7 +18,7 @@ package models.ocelot.stanzas
 
 import base.BaseSpec
 import models.ocelot.{LabelCache, _}
-import models.ocelot.errors.{GuidanceError, InvalidScaleFactorError, UnknownCalcOperationType}
+import models.ocelot.errors.{FlowParseError, GuidanceError, UnknownCalcOperationType}
 import play.api.libs.json._
 
 class CalculationStanzaSpec extends BaseSpec {
@@ -41,12 +41,12 @@ class CalculationStanzaSpec extends BaseSpec {
         |             },
         |             {"left":"[label:inputC]",
         |             "op":"ceiling",
-        |             "right":"[label:inputD]",
+        |             "right":"0",
         |             "label":"outputC"
         |             },
-        |             {"left":"[label:inputE]",
+        |             {"left":"[label:inputD]",
         |             "op":"floor",
-        |             "right":"[label:inputF]",
+        |             "right":"2",
         |             "label":"outputD"
         |             }
         |           ]
@@ -91,12 +91,14 @@ class CalculationStanzaSpec extends BaseSpec {
     // Define expected deserialization results
     val c1Left: String = "[label:input1A]"
     val c1Right: String = "[label:input1B]"
+    val c1CeilingRight: String = "1"
+    val c1FloorRight: String = "-2"
     val c1Label: String = "outputA"
 
     val c1CalcAdd: CalcOperation = CalcOperation(c1Left, Addition, c1Right, c1Label)
     val c1CalcSub: CalcOperation = CalcOperation(c1Left, Subtraction, c1Right, c1Label)
-    val c1CalcCeiling: CalcOperation = CalcOperation(c1Left, Ceiling, c1Right, c1Label)
-    val c1CalcFloor: CalcOperation = CalcOperation(c1Left, Floor, c1Right, c1Label)
+    val c1CalcCeiling: CalcOperation = CalcOperation(c1Left, Ceiling, c1CeilingRight, c1Label)
+    val c1CalcFloor: CalcOperation = CalcOperation(c1Left, Floor, c1FloorRight, c1Label)
 
     val expectedSingleAdditionCalculationStanza: CalculationStanza =
       CalculationStanza(Seq(c1CalcAdd), Seq("1"), stack = false)
@@ -114,8 +116,8 @@ class CalculationStanzaSpec extends BaseSpec {
       CalculationStanza(
         Seq(CalcOperation("[label:inputA]", Addition, "[label:inputB]", "outputA"),
           CalcOperation("[label:outputA]", Subtraction, "[label:inputC]", "outputB"),
-          CalcOperation("[label:inputC]", Ceiling, "[label:inputD]", "outputC"),
-          CalcOperation("[label:inputE]", Floor, "[label:inputF]", "outputD")
+          CalcOperation("[label:inputC]", Ceiling, "0", "outputC"),
+          CalcOperation("[label:inputD]", Floor, "2", "outputD")
         ),
         Seq("21"),
         stack = true
@@ -284,7 +286,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
     "deserialize calculation stanza with single ceiling operation" in new Test {
 
-      val calcStanzaAsJsValue: JsValue = getSingleCalcCalculationStanzaAsJsValue(c1Left, "ceiling", c1Right, c1Label)
+      val calcStanzaAsJsValue: JsValue = getSingleCalcCalculationStanzaAsJsValue(c1Left, "ceiling", c1CeilingRight, c1Label)
 
       calcStanzaAsJsValue.validate[CalculationStanza] match {
         case JsSuccess(calcStanza, _) => calcStanza shouldBe expectedSingleCeilingCalcCalculationStanza
@@ -294,7 +296,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
     "deserialize calculation stanza with single floor operation" in new Test {
 
-      val calcStanzaAsJsValue: JsValue = getSingleCalcCalculationStanzaAsJsValue(c1Left, "floor", c1Right, c1Label)
+      val calcStanzaAsJsValue: JsValue = getSingleCalcCalculationStanzaAsJsValue(c1Left, "floor", c1FloorRight, c1Label)
 
       calcStanzaAsJsValue.validate[CalculationStanza] match {
         case JsSuccess(calcStanza, _) => calcStanza shouldBe expectedSingleFloorCalcCalculationStanza
@@ -367,7 +369,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
     "serialize a calculation stanza with a single ceiling operation" in new Test {
 
-      val expectedResult: String = getSingleCalcCalculationStanzaAsJsValue(c1Left, "ceiling", c1Right, c1Label).toString()
+      val expectedResult: String = getSingleCalcCalculationStanzaAsJsValue(c1Left, "ceiling", c1CeilingRight, c1Label).toString()
 
       val stanza: Stanza = expectedSingleCeilingCalcCalculationStanza
       val actualResult: String = Json.toJson(stanza).toString()
@@ -377,7 +379,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
     "serialize a calculation stanza with a single floor operation" in new Test {
 
-      val expectedResult: String = getSingleCalcCalculationStanzaAsJsValue(c1Left, "floor", c1Right, c1Label).toString()
+      val expectedResult: String = getSingleCalcCalculationStanzaAsJsValue(c1Left, "floor", c1FloorRight, c1Label).toString()
 
       val stanza: Stanza = expectedSingleFloorCalcCalculationStanza
       val actualResult: String = Json.toJson(stanza).toString()
@@ -396,47 +398,6 @@ class CalculationStanzaSpec extends BaseSpec {
     }
   }
 
-  "Stanza validation" should {
-
-    "pass a valid stanza with scale factors defined as labels" in new Test {
-
-      val validCalculationStanzaAsJsValue: JsValue = getMultipleCalcCalculationStanzaAsJsValue()
-
-      val calculationStanza: CalculationStanza = validCalculationStanzaAsJsValue.as[CalculationStanza]
-
-      calculationStanza.validate(stanzaId) shouldBe None
-
-    }
-
-    "pass a valid stanza with scale factors defined as integers" in new Test {
-
-      val validCalculationStanzaAsJsValue: JsValue = getIntegerScaleFactorCalculationStanzaAsJsValue()
-
-      val calculationStanza: CalculationStanza = validCalculationStanzaAsJsValue.as[CalculationStanza]
-
-      calculationStanza.validate(stanzaId) shouldBe None
-    }
-
-    "raise an error for an invalid scale factor in a calculation of type floor" in new Test {
-
-      val invalidCalculationStanzaAsJsValue: JsValue = getInvalidScaleFactorCalculationStanzaAsJsValue("floor", "")
-
-      val calculationStanza: CalculationStanza = invalidCalculationStanzaAsJsValue.as[CalculationStanza]
-
-      calculationStanza.validate(stanzaId) shouldBe Some(InvalidScaleFactorError(stanzaId, "Invalid scale factor in ceiling or floor calculation operation"))
-    }
-
-    "raise an error for an invalid scale factor in a calculation of type ceiling" in new Test {
-
-      val invalidCalculationStanzaAsJsValue: JsValue = getInvalidScaleFactorCalculationStanzaAsJsValue("ceiling", "x")
-
-      val calculationStanza: CalculationStanza = invalidCalculationStanzaAsJsValue.as[CalculationStanza]
-
-      calculationStanza.validate(stanzaId) shouldBe Some(InvalidScaleFactorError(stanzaId, "Invalid scale factor in ceiling or floor calculation operation"))
-    }
-
-  }
-
   "Page building" must {
 
     "Raise an error for a unknown calculation operation type" in new Test {
@@ -445,12 +406,12 @@ class CalculationStanzaSpec extends BaseSpec {
         onePageJsonWithInvalidCalcOperationType,
         calculationStanzaWithUnknownOperationType
       ).as[JsObject].validate[Process] match {
-        case JsSuccess(_,_) => fail( "A process should not be created from invalid JSON")
+        case JsSuccess(_, _) => fail("A process should not be created from invalid JSON")
         case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
-          case Nil => fail("Nothing to match from guidance error conversion")
-          case UnknownCalcOperationType("3", "sqrt") :: _ => succeed
-          case errs => fail( "An error occurred processing Json validation errors")
-        }
+            case Nil => fail("Nothing to match from guidance error conversion")
+            case UnknownCalcOperationType("3", sqrt) :: _ => succeed
+            case errs => fail("An error occurred processing Json validation errors")
+          }
       }
     }
 
@@ -461,12 +422,13 @@ class CalculationStanzaSpec extends BaseSpec {
         calculationStanzaWithIncorrectType
       ).as[JsObject].validate[Process] match {
         case JsSuccess(_,_) => fail("A process should not be created from invalid JSON")
-        case JsError(errs) => GuidanceError.fromJsonValidationErrors(errs) match {
-          case Nil => fail("Nothing to match from guidance error conversion")
-          case UnknownCalcOperationType("3", "false") :: _ => {
-            succeed
+        case JsError(errs) => {
+          val error = GuidanceError.fromJsonValidationErrors(errs)
+          error match {
+            case Nil => fail("Nothing to match from guidance error conversion")
+            case FlowParseError("3", parseError, "/flow/3/calcs(0)/op") :: _ => succeed
+            case errs => fail("An error occurred processing Json validation errors")
           }
-          case errs => fail("An error occurred processing Json validation errors")
         }
       }
     }
@@ -1004,10 +966,10 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels.value("output2") shouldBe Some("-200")
     }
 
-    "support ceiling operations where both operands are defined by labels" in {
+    "support ceiling operations where the left operand is defined by a label" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(
-        CalcOperation("[label:input1]", Ceiling, "[label:input2]", "output1" )
+        CalcOperation("[label:input1]", Ceiling, "0", "output1" )
       )
 
       val stanza: CalculationStanza = CalculationStanza(calcOperations, Seq("5"), stack = false)
@@ -1015,11 +977,9 @@ class CalculationStanzaSpec extends BaseSpec {
       val calculation: Calculation = Calculation(stanza)
 
       val input1: Label = Label("input1", Some("10.5"))
-      val input2: Label = Label("input2", Some("0"))
 
       val labelMap: Map[String, Label] = Map(
-        input1.name -> input1,
-        input2.name -> input2
+        input1.name -> input1
       )
 
       val labelCache = LabelCache(labelMap)
@@ -1031,10 +991,10 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels.value("output1") shouldBe Some("11")
     }
 
-    "support floor operations where both operands are defined by labels" in {
+    "support floor operations where the left operand is defined by a label" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(
-        CalcOperation("[label:input1]", Floor, "[label:input2]", "output1" )
+        CalcOperation("[label:input1]", Floor, "0", "output1" )
       )
 
       val stanza: CalculationStanza = CalculationStanza(calcOperations, Seq("5"), stack = false)
@@ -1042,11 +1002,9 @@ class CalculationStanzaSpec extends BaseSpec {
       val calculation: Calculation = Calculation(stanza)
 
       val input1: Label = Label("input1", Some("1021.25"))
-      val input2: Label = Label("input2", Some("0"))
 
       val labelMap: Map[String, Label] = Map(
-        input1.name -> input1,
-        input2.name -> input2
+        input1.name -> input1
       )
 
       val labelCache = LabelCache(labelMap)
@@ -1080,7 +1038,7 @@ class CalculationStanzaSpec extends BaseSpec {
     "not support floor operations on operands of incorrect type" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(
-        CalcOperation("11.2", Floor, "scale", "output")
+        CalcOperation("input", Floor, "0", "output")
       )
 
       val stanza: CalculationStanza = CalculationStanza(calcOperations, Seq("25"), stack = false)
