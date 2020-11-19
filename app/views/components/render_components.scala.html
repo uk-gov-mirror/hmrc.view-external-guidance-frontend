@@ -14,7 +14,7 @@
  * limitations under the License.
  *@
 
-@import models.ui.{ConfirmationPanel, Paragraph, H1, H2, H3, H4, BulletPointList, SummaryList, Table, UIComponent}
+@import models.ui.{ConfirmationPanel, Paragraph, H1, H2, H3, H4, BulletPointList, SummaryList, Table, NumberedList, NumberedCircleList, UIComponent}
 @import controllers.routes._
 
 @(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, ctx: PageContext)
@@ -29,6 +29,8 @@
         case s: SummaryList => components.summary_list(s)
         case t: Table => components.table(t)
         case c: ConfirmationPanel => components.confirmation_panel(c)
+        case nl: NumberedList => components.numbered_list(nl)
+        case nl: NumberedCircleList => components.numbered_circle_list(nl)
         case _ =>
       }
   }

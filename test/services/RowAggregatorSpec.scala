@@ -21,7 +21,7 @@ import models.ocelot.stanzas._
 
 import base.BaseSpec
 
-class RowAggregatorSpec extends BaseSpec {
+class AggregatorSpec extends BaseSpec {
 
   private trait Test {
 
@@ -77,7 +77,7 @@ class RowAggregatorSpec extends BaseSpec {
         EndStanza
       ).collect{case s: VisualStanza => s}
 
-      val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
       aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
     }
   }
@@ -94,7 +94,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
   }
@@ -113,7 +113,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
@@ -133,7 +133,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
@@ -153,7 +153,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
@@ -174,7 +174,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
@@ -199,7 +199,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2, row3, row4, row5))
   }
@@ -220,7 +220,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(0) shouldBe RowGroup(Seq(row1, row2))
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row3, row4))
@@ -242,7 +242,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(four) shouldBe RowGroup(Seq(row2))
   }
@@ -270,7 +270,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(3) shouldBe RowGroup(Seq(row1, row2, row3))
     aggregatedStanzas(five) shouldBe RowGroup(Seq(row4, row5))
@@ -286,7 +286,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas shouldBe stanzas
   }
