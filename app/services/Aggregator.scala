@@ -27,39 +27,39 @@ object Aggregator {
     inputSeq match {
       case Nil => acc
       case (x: Row) :: xs =>
-        val rowGroup: Seq[Row] = aggregateRows(xs, Seq (x))
-        aggregateStanzas(acc :+ RowGroup (rowGroup))(xs.drop (rowGroup.size - 1))
+        val (rows: Seq[Row], remainder) = aggregateRows(xs, Seq (x))
+        aggregateStanzas(acc :+ RowGroup (rows))(remainder)
+
       case (x: NumListCallout) :: xs =>
-        val nlCallouts: Seq[NumListCallout] = aggregateNumLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumListGroup(nlCallouts))(xs.drop (nlCallouts.size - 1))
+        val (cos: Seq[NumListCallout], remainder) = aggregateNumLists(xs, Seq (x))
+        aggregateStanzas(acc :+ NumListGroup(cos))(remainder)
+
       case (x: NumCircListCallout) :: xs =>
-        val nclCallouts: Seq[NumCircListCallout] = aggregateNumCircLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumCircListGroup(nclCallouts))(xs.drop (nclCallouts.size - 1))
+        val (cos: Seq[NumCircListCallout], remainder) = aggregateNumCircLists(xs, Seq (x))
+        aggregateStanzas(acc :+ NumCircListGroup(cos))(remainder)
+
       case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
 
   @tailrec
-  private def aggregateRows(inputSeq: Seq[VisualStanza], acc: Seq[Row]): Seq[Row] =
+  private def aggregateRows(inputSeq: Seq[VisualStanza], acc: Seq[Row]): (Seq[Row], Seq[VisualStanza]) =
     inputSeq match {
-      case Nil => acc
       case (x: Row) :: xs if x.stack => aggregateRows(xs, acc :+ x)
-      case _ => acc
+      case xs => (acc, xs)
     }
 
   @tailrec
-  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumListCallout]): Seq[NumListCallout] =
+  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumListCallout]): (Seq[NumListCallout], Seq[VisualStanza]) =
     inputSeq match {
-      case Nil => acc
       case (x: NumListCallout) :: xs if x.stack => aggregateNumLists(xs, acc :+ x)
-      case _ => acc
+      case xs => (acc, xs)
     }
 
   @tailrec
-  private def aggregateNumCircLists(inputSeq: Seq[VisualStanza], acc: Seq[NumCircListCallout]): Seq[NumCircListCallout] =
+  private def aggregateNumCircLists(inputSeq: Seq[VisualStanza], acc: Seq[NumCircListCallout]): (Seq[NumCircListCallout], Seq[VisualStanza]) =
     inputSeq match {
-      case Nil => acc
       case (x: NumCircListCallout) :: xs if x.stack => aggregateNumCircLists(xs, acc :+ x)
-      case _ => acc
+      case xs => (acc, xs)
     }
 
 }
