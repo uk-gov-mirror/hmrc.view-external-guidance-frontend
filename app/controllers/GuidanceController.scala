@@ -98,7 +98,7 @@ class GuidanceController @Inject() (
               val formData = FormData(path, Map(), Seq(FormError("","error.required")))
               Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), form)))
             }{ answer =>
-              service.submitPage(evalContext, s"/$path", answer).map{
+              service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text.filterNot(_==' ')).map{
                 case Right((None, labels)) =>
                   // No valid next page id indicates the guidance has determined there is an error and page should be re-displayed
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")

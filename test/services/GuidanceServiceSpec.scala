@@ -317,7 +317,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .saveUserAnswerAndLabels(processId,"/test-page", "yes", Seq.empty)
         .returns(Future.successful(Right({})))
 
-      target.submitPage(pec, "/test-page", "yes").map{
+      target.submitPage(pec, "/test-page", "yes", "yes").map{
         case Left(err) => fail
         case Right((nxt, lbls)) if nxt.isEmpty => succeed
         case Right(_) => fail
@@ -333,7 +333,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .saveUserAnswerAndLabels(processId,"/test-page", "yes", Seq.empty)
         .returns(Future.successful(Right({})))
 
-      target.submitPage(pec, "/test-page", "yes").map{
+      target.submitPage(pec, "/test-page", "yes", "yes").map{
         case Left(err) => fail
         case Right((Some("4"), _)) => succeed
         case Right(_) => fail
