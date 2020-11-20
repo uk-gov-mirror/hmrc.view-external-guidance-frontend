@@ -45,7 +45,6 @@ trait AppConfig {
   val toMilliSeconds: Int
   val expiryErrorMarginInMilliSeconds: Int
   def feedbackUrl(implicit request: RequestHeader): String
-  val gtmContainer: String
   val host: String
   val adminHost: String
   val baseUrl: String
@@ -79,8 +78,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val privacy: String = config.get[String]("urls.footer.privacy")
   lazy val termsConditions: String = config.get[String]("urls.footer.termsConditions")
   lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
-  lazy val gtmContainer: String = config.get[String]("gtm.container")
-
   lazy val signOutUrl: String = config.get[String]("session-timeout.signOutUrl")
   lazy val defaultSignOutUrl: String = config.get[String]("session-timeout.defaultSignOutUrl")
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")

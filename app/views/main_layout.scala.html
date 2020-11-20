@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
 @import views.components.FooterLinks
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTrackingConsentSnippet
 @import config.AppConfig
 
 @this(layout: GovukLayout,
@@ -29,7 +30,8 @@
         footerLinks: FooterLinks,
         footer: components.govukFooter,
         timeoutDialog: HmrcTimeoutDialog,
-        govukBackLink : GovukBackLink)
+        govukBackLink : GovukBackLink,
+        hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet)
 
 @(
   pageTitle: String,
@@ -65,7 +67,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 }
 
 @head = {
-    <script src='@controllers.routes.Assets.versioned("javascripts/gtm.js")'></script>
+    @hmrcTrackingConsentSnippet()
     <!--[if lte IE 8]><link href=' @controllers.routes.Assets.versioned("stylesheets/application-ie-8.css")' rel="stylesheet" type="text/css" /><![endif]-->
     <!--[if gt IE 8]><!--> <link href='@controllers.routes.Assets.versioned("stylesheets/application.css")' media="screen" rel="stylesheet" type="text/css" />
         <!--<![endif]-->
@@ -109,9 +111,6 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 @scripts = {
     <script src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>
     <script src='@controllers.routes.Assets.versioned("lib/hmrc-frontend/hmrc/all.js")'></script>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=@{appConfig.gtmContainer}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <script>window.GOVUKFrontend.initAll();</script>
     <script>window.HMRCFrontend.initAll();</script>
 }
