@@ -28,7 +28,6 @@ import models.ui.{Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 import base.{ViewSpec, ViewFns}
-import uk.gov.hmrc.hmrcfrontend.views.html.components._
 import uk.gov.hmrc.govukfrontend.views.html.components._
 import views.components.FooterLinks
 
@@ -86,7 +85,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     "contain correct Welsh footer link texts" in new WelshTest {
 
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
+      val doc: Document = asDocument(footer(uk.gov.hmrc.govukfrontend.views.html.components.Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
       val listElement: Element = footerElement.getElementsByTag("ul").first
       val footerItems: List[String] = listElement.getElementsByTag("a").asScala.map(_.text).toList
