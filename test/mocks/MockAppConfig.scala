@@ -43,7 +43,6 @@ object MockAppConfig extends AppConfig {
   override val toMilliSeconds: Int = 1000
   override val expiryErrorMarginInMilliSeconds: Int = 100
   override def feedbackUrl(implicit request: RequestHeader): String = "somefeedbackUrl"
-  override val gtmContainer: String = "someContainer"
   override val baseUrl: String = "/guidance"
   override val host: String = "http://localhost:9741"
   override val adminHost: String = "http://adminhost"
