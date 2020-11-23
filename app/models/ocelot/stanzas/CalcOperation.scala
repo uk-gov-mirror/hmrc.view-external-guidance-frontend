@@ -26,85 +26,19 @@ case class CalcOperation(left:String, op: CalcOperationType, right: String, labe
 
 object CalcOperation {
 
-  val parseError: String = "error.path.missing.or.property.type.incorrect"
-
-  implicit val reads:Reads[CalcOperation] = new Reads[CalcOperation] {
-
-    def reads(json: JsValue): JsResult[CalcOperation] = {
-
-        json match {
-          case jsValue: JsValue => {
-
-            val leftOpt: Option[String] = (jsValue \ "left").asOpt[String]
-            val opOpt: Option[CalcOperationType] = (jsValue \ "op").asOpt[CalcOperationType]
-            val rightOpt: Option[String] = (jsValue \ "right").asOpt[String]
-            val labelOpt: Option[String] = (jsValue \ "label").asOpt[String]
-
-            populateCalcOperation(json, leftOpt, opOpt, rightOpt, labelOpt)
-          }
-          case _ => JsError(Seq(JsPath() -> Seq(JsonValidationError(Seq("error", "error.expected.jsobject")))))
+  implicit val reads: Reads[CalcOperation] = (js: JsValue) =>
+    ((js \ "left").validate[String] and
+      (js \ "op").validate[CalcOperationType] and
+      (js \ "right").validate[String] and
+      (js \ "label").validate[String]).tupled match {
+      case err: JsError => err
+      case JsSuccess((left, op, right, label), _) =>
+        op match {
+          case Floor | Ceiling if asAnyInt(right).isDefined => JsSuccess(CalcOperation(left, op, right, label))
+          case Floor | Ceiling => JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq("error", "error.noninteger.scalefactor")))))
+          case _ => JsSuccess(CalcOperation(left, op, right, label))
         }
-
     }
-
-    private def populateCalcOperation(
-                                       jsValue: JsValue,
-                                       leftOpt: Option[String],
-                                       opOpt: Option[CalcOperationType],
-                                       rightOpt: Option[String],
-                                       labelOpt: Option[String]): JsResult[CalcOperation] = {
-
-      leftOpt match {
-        case Some(left) => {
-          opOpt match {
-            case Some(op) => {
-              rightOpt match {
-                case Some(right) => {
-                  labelOpt match {
-                    case Some(label) => {
-                      // All required values have been defined so we can apply custom validation
-                      validateOp(left, op, right, label)
-                    }
-                    case None => JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq(parseError)))))
-                  }
-                }
-                case None => JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq(parseError)))))
-              }
-            }
-            case None => handleUndefinedCalculationOperationType(jsValue, opOpt)
-          }
-        }
-        case None => JsError(Seq(JsPath \ "left" -> Seq(JsonValidationError(Seq(parseError)))))
-      }
-
-    }
-
-    private def validateOp(left: String, op: CalcOperationType, right: String, label: String): JsResult[CalcOperation] = {
-
-      op match {
-        case Ceiling | Floor => {
-          asAnyInt(right) match {
-            case Some(value) => JsSuccess(CalcOperation(left, op, right, label))
-            case None => JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq("error", "error.noninteger.scalefactor")))))
-          }
-        }
-        case _ => JsSuccess(CalcOperation(left, op, right, label))
-      }
-
-    }
-
-    private def handleUndefinedCalculationOperationType(jsValue: JsValue, opOpt: Option[CalcOperationType]): JsError = {
-
-      val opAsString: Option[String] = (jsValue \ "op").asOpt[String]
-
-      opAsString match {
-        case Some(value) =>  JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq("CalcOperationType"), value))))
-        case None => JsError(Seq(JsPath \ "op" -> Seq(JsonValidationError(Seq(parseError)))))
-      }
-
-    }
-
-  }
 
   implicit val writes: OWrites[CalcOperation] =
     (

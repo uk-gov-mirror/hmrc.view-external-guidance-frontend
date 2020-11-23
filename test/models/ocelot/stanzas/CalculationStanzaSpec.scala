@@ -18,7 +18,7 @@ package models.ocelot.stanzas
 
 import base.BaseSpec
 import models.ocelot.{LabelCache, _}
-import models.ocelot.errors.{FlowParseError, GuidanceError, UnknownCalcOperationType}
+import models.ocelot.errors.{GuidanceError, UnknownCalcOperationType}
 import play.api.libs.json._
 
 class CalculationStanzaSpec extends BaseSpec {
@@ -426,7 +426,7 @@ class CalculationStanzaSpec extends BaseSpec {
           val error = GuidanceError.fromJsonValidationErrors(errs)
           error match {
             case Nil => fail("Nothing to match from guidance error conversion")
-            case FlowParseError("3", parseError, "/flow/3/calcs(0)/op") :: _ => succeed
+            case UnknownCalcOperationType("3", "false") :: _ => succeed
             case errs => fail("An error occurred processing Json validation errors")
           }
         }

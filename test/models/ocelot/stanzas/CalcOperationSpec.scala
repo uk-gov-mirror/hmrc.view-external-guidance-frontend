@@ -35,6 +35,13 @@ class CalcOperationSpec extends BaseSpec {
         |}""".stripMargin
   )
 
+  def getCalcOperationWithMissingPropertiesAsJsValue(): JsValue = Json.parse(
+    s"""|{
+        | "left": "[label:inputA]",
+        | "label": "result"
+        |}""".stripMargin
+  )
+
   val validCalcOperationAsJsObject: JsObject = getCalcOperationAsJsValue("add", rightOperand).as[JsObject]
 
   "Reading a valid JSON representation of calculation operation" should {
@@ -112,6 +119,19 @@ class CalcOperationSpec extends BaseSpec {
       result match {
         case e: JsError => succeed
         case _ => fail("An instance of CalcOperation should not be created for a floor operation with an invalid scale factor")
+      }
+
+    }
+
+    "raise an error on deserialization of JsValue with two missing properties" in {
+
+      val invalidOperation: JsValue = getCalcOperationWithMissingPropertiesAsJsValue()
+
+      val result: JsResult[CalcOperation] = invalidOperation.validate[CalcOperation]
+
+      result match {
+        case e: JsError => succeed
+        case _ => fail("An instance of CalcOperation should not be created when an operand and the operation are missing")
       }
 
     }
