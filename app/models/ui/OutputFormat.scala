@@ -16,7 +16,7 @@
 
 package models.ui
 
-import models.ocelot.{asCurrency}
+import models.ocelot.asCurrency
 import java.util.Locale.UK
 import java.math.RoundingMode
 import java.text.NumberFormat
