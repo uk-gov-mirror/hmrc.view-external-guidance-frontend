@@ -912,12 +912,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     )
     val input1 = models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
+    val inputCurrencyPoundsOnly = models.ocelot.stanzas.CurrencyPoundsOnlyInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputPounds", None, stack = false)
+    val pagePoundsOnly = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputCurrencyPoundsOnly), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
   }
-  "UIBuilder Input processing" must {
+
+
+  "UIBuilder Currency Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
       uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
@@ -963,6 +967,53 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
+  }
+
+  "UIBuilder CurrencyPoundsOnly Input processing" must {
+
+    "Ignore Error Callouts when there are no errors" in new InputTest {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+        case s: InputPage if s.input.errorMsgs.isEmpty => succeed
+        case _: InputPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Include Error messages when there are errors" in new InputTest {
+      val formError = new FormError("test-page", List("error.required"))
+      val formData = Some(FormData("test-page", Map(), List(formError)))
+
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
+        case s: InputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: InputPage => succeed
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Maintain order of components within an Input" in new InputTest {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}) match {
+        case i: InputPage =>
+          i.input.body(0) match {
+            case _: H3 => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+          i.input.body(1) match {
+            case _: Paragraph => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+
+        case x => fail(s"Should return InputPage: found $x")
+      }
+
+    }
+
+    "Include a page hint appended to the input text" in new InputTest {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+        case i: InputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: InputPage => fail("No hint found within Input")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
   }
 
   trait ConfirmationPanelTest {

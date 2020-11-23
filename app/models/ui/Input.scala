@@ -24,3 +24,4 @@ trait Input extends UIComponent {
 }
 
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
+case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input

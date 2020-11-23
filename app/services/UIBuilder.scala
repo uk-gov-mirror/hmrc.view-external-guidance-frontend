@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
+import models.ocelot.stanzas.{CurrencyPoundsOnlyInput => OcelotCurrencyPOInput, Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ui.{NumberedList, NumberedCircleList, _}
 import play.api.Logger
@@ -168,6 +168,7 @@ class UIBuilder {
     // Placeholder not used
     input match {
       case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+      case i: OcelotCurrencyPOInput => CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
     }
   }
 
