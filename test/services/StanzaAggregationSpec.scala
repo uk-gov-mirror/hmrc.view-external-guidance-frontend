@@ -106,7 +106,7 @@ class StanzaAggregatorSpec extends BaseSpec {
     val row9: Row = Row(dl4r1Cells, Seq("21"), stack = true)
     val instruction11: Instruction = Instruction(instruction11Phrase, Seq("end"), None, stack = false)
       val uiPreProcessTransformations: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
-        Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), RowAggregator.aggregateStanzas(Nil))
+        Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil))
   }
 
   "Stanza aggregator" must {

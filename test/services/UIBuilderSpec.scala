@@ -19,7 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage}
+import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage, NumberedList, NumberedCircleList}
 import models.ui.{SummaryList, Table}
 import play.api.data.FormError
 import models.ui.ErrorMsg
@@ -354,7 +354,87 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val headingText = Text(headingPhrase.langs)
   }
 
+  trait NumberListTest extends Test {
+    val headingPhrase = Phrase(Vector("Heading", "Heading"))
+    val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+    val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
+    val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
+    val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
+
+    val num1ListCo = NumListCallout(num1Phrase, Seq(""), false)
+    val num2ListCo = NumListCallout(num2Phrase, Seq(""), true)
+    val num3ListCo = NumListCallout(num3Phrase, Seq(""), true)
+    val num4ListCo = NumListCallout(num4Phrase, Seq(""), true)
+    val num1CircListCo = NumCircListCallout(num1Phrase, Seq(""), false)
+    val num2CircListCo = NumCircListCallout(num2Phrase, Seq(""), true)
+    val num3CircListCo = NumCircListCallout(num3Phrase, Seq(""), true)
+    val num4CircListCo = NumCircListCallout(num4Phrase, Seq(""), true)
+
+    val numberedListGroup = NumListGroup(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
+    val numberedCircListGroup = NumCircListGroup(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
+  }
+
   "UIBuilder" must {
+    "Convert sequence of num list callouts into a numbered list" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                num1ListCo,
+                                                num2ListCo,
+                                                num3ListCo,
+                                                num4ListCo
+                                              ))
+      p.components match {
+        case Seq((h: H1), (nlg: NumberedList)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert sequence of num circ list callouts into a numbered circle list" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                num1CircListCo,
+                                                num2CircListCo,
+                                                num3CircListCo,
+                                                num4CircListCo
+                                              ))
+      p.components match {
+        case Seq((h: H1), (nlg: NumberedCircleList)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert single of unstacked num list callouts into separate a numbered lists" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                num1ListCo
+                                              ))
+      p.components match {
+        case Seq((h: H1), (nlg1: NumberedList)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert sequence of unstacked num list callouts into separate a numbered lists" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                num1ListCo,
+                                                num1ListCo,
+                                                num1ListCo
+                                              ))
+      p.components match {
+        case Seq((h: H1), (nlg1: NumberedList), (nlg2: NumberedList), (nlg3: NumberedList)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert sequence of unstacked num circ list callouts into separate a numbered circle lists" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                num1CircListCo,
+                                                num1CircListCo,
+                                                num1CircListCo
+                                              ))
+      p.components match {
+        case Seq((h: H1), (nlg1: NumberedCircleList), (nlg2: NumberedCircleList), (nlg3: NumberedCircleList)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
     "Convert a non-summarylist RowGroup into a table" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 simpleRowGroup))

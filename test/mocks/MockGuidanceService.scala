@@ -81,10 +81,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, url, sessionId, *)
     }
 
-    def submitPage(evalContext: PageEvaluationContext, url: String, answer: String): CallHandler[Future[RequestOutcome[(Option[String], Labels)]]] = {
+    def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String): CallHandler[Future[RequestOutcome[(Option[String], Labels)]]] = {
       (mockGuidanceService
-        .submitPage(_: PageEvaluationContext, _: String, _: String)(_: ExecutionContext))
-        .expects(evalContext, url, answer, *)
+        .submitPage(_: PageEvaluationContext, _: String, _: String, _: String)(_: ExecutionContext))
+        .expects(evalContext, url, validatedAnswer, submittedAnswer, *)
     }
 
     def saveLabels(docId: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] = {

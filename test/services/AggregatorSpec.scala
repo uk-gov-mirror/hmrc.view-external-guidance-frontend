@@ -21,7 +21,7 @@ import models.ocelot.stanzas._
 
 import base.BaseSpec
 
-class RowAggregatorSpec extends BaseSpec {
+class AggregatorSpec extends BaseSpec {
 
   private trait Test {
 
@@ -63,7 +63,186 @@ class RowAggregatorSpec extends BaseSpec {
     val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction, instruction1, instruction2))
   }
 
-  "Row aggregator" must {
+  private trait NumberedListTest extends Test {
+    val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+    val num2Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+    val num3Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+    val num4Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+
+    val num1ListCo = NumListCallout(num1Phrase, Seq(""), false)
+    val num2ListCo = NumListCallout(num2Phrase, Seq(""), true)
+    val num3ListCo = NumListCallout(num3Phrase, Seq(""), true)
+    val num4ListCo = NumListCallout(num4Phrase, Seq(""), true)
+    val num1CircListCo = NumCircListCallout(num1Phrase, Seq(""), false)
+    val num2CircListCo = NumCircListCallout(num2Phrase, Seq(""), true)
+    val num3CircListCo = NumCircListCallout(num3Phrase, Seq(""), true)
+    val num4CircListCo = NumCircListCallout(num4Phrase, Seq(""), true)
+  }
+
+  "NumberedList aggregation" must {
+
+    "add an isolated number list co with stack equals false into a row group of size 1" in new NumberedListTest {
+      val stanzas: Seq[VisualStanza] =
+        Seq(
+          callout,
+          num1ListCo,
+          instruction)
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
+    }
+
+  "add an isolated number list co with stack equals true into a row group of size 1" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      num1ListCo,
+      instruction
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
+  }
+
+  "create two number list groups for two contiguous rows with stack set to false" in new NumberedListTest {
+
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      num1ListCo,
+      num1ListCo,
+      instruction
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
+  }
+
+  "create a number list group with two entries for two contiguous number list cos with stack set to true" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      num2ListCo,
+      num3ListCo,
+      instruction
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num2ListCo, num3ListCo))
+  }
+
+  "create two number list groups for two contiguous number list cos with stack set to true and false respectively" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      instruction,
+      num2ListCo,
+      num1ListCo,
+      instruction,
+      callout
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num2ListCo))
+    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
+  }
+
+  "create a number list group with two number list co with stack set to false and true respectively" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      instruction,
+      num1ListCo,
+      num2ListCo,
+      instruction,
+      callout
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo))
+  }
+
+  "create a number list group with multiple number list cos" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      num1ListCo,
+      num2ListCo,
+      num3ListCo,
+      num4ListCo,
+      instruction
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo, num3ListCo, num4ListCo))
+  }
+
+  "create two number list groups of size two from four contiguous elems where stack is false for the third elem" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      num2ListCo,
+      num3ListCo,
+      num1ListCo,
+      num4ListCo
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(0) shouldBe NumListGroup(Seq(num2ListCo, num3ListCo))
+    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num4ListCo))
+  }
+
+  "create two number list groups of size one for two non-contiguous elems in sequence of stanzas" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      instruction,
+      num1ListCo,
+      instruction1,
+      num1ListCo,
+      instruction2
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(four) shouldBe NumListGroup(Seq(num1ListCo))
+  }
+
+  "create two number list groups with multiple elems from a complex sequence of stanzas" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      instruction,
+      instruction1,
+      num1ListCo,
+      num2ListCo,
+      num3ListCo,
+      instructionGroup,
+      num1ListCo,
+      num2ListCo,
+      instruction2
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(3) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo, num3ListCo))
+    aggregatedStanzas(five) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo))
+  }
+
+  "create two number circle list groups with multiple elems from a complex sequence of stanzas" in new NumberedListTest {
+    val stanzas: Seq[VisualStanza] = Seq(
+      callout,
+      instruction,
+      instruction1,
+      num1CircListCo,
+      num2CircListCo,
+      num3CircListCo,
+      instructionGroup,
+      num1CircListCo,
+      num2CircListCo,
+      instruction2
+    )
+
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+    aggregatedStanzas(3) shouldBe NumCircListGroup(Seq(num1CircListCo, num2CircListCo, num3CircListCo))
+    aggregatedStanzas(five) shouldBe NumCircListGroup(Seq(num1CircListCo, num2CircListCo))
+  }
+
+}
+
+"Row aggregation" must {
 
     "add an isolated row with stack equals false into a row group of size 1" in new Test {
 
@@ -77,10 +256,9 @@ class RowAggregatorSpec extends BaseSpec {
         EndStanza
       ).collect{case s: VisualStanza => s}
 
-      val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
       aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
     }
-  }
 
   "add an isolated row with stack equals true into a row group of size 1" in new Test {
 
@@ -94,7 +272,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row))
   }
@@ -113,7 +291,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
@@ -133,7 +311,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
@@ -153,7 +331,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row2))
@@ -174,7 +352,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2))
   }
@@ -199,7 +377,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row1, row2, row3, row4, row5))
   }
@@ -220,7 +398,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(0) shouldBe RowGroup(Seq(row1, row2))
     aggregatedStanzas(1) shouldBe RowGroup(Seq(row3, row4))
@@ -242,7 +420,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
     aggregatedStanzas(2) shouldBe RowGroup(Seq(row1))
     aggregatedStanzas(four) shouldBe RowGroup(Seq(row2))
   }
@@ -270,7 +448,7 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas(3) shouldBe RowGroup(Seq(row1, row2, row3))
     aggregatedStanzas(five) shouldBe RowGroup(Seq(row4, row5))
@@ -286,9 +464,10 @@ class RowAggregatorSpec extends BaseSpec {
       EndStanza
     ).collect{case s: VisualStanza => s}
 
-    val aggregatedStanzas: Seq[Stanza] = RowAggregator.aggregateStanzas(Nil)(stanzas)
+    val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
     aggregatedStanzas shouldBe stanzas
   }
+}
 
 }
