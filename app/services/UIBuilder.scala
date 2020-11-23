@@ -19,7 +19,7 @@ package services
 import javax.inject.Singleton
 import models.ocelot.stanzas.{Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
-import models.ui._
+import models.ui.{NumberedList, NumberedCircleList, _}
 import play.api.Logger
 
 import scala.annotation.tailrec
@@ -29,7 +29,7 @@ class UIBuilder {
   val logger: Logger = Logger(getClass)
   val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
     Seq(BulletPointBuilder.groupBulletPointInstructions(Nil),
-        RowAggregator.aggregateStanzas(Nil),
+        Aggregator.aggregateStanzas(Nil),
         stackStanzas(Nil))
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
@@ -48,6 +48,8 @@ class UIBuilder {
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
       case (rg: RowGroup) :: xs if rg.isSummaryList => fromStanzas(xs, acc ++ Seq(fromSummaryListRowGroup(rg)), formData)
       case (rg: RowGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData)
+      case (nl: NumListGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNumListGroup(nl)), formData)
+      case (nl: NumCircListGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNumCircListGroup(nl)), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
@@ -83,8 +85,13 @@ class UIBuilder {
       val tableRows = heading.fold(rows)(_ => rows.tail)
       Table(caption, heading, tableRows)
     }
-
   }
+
+  private def fromNumListGroup(nl: NumListGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
+
+  private def fromNumCircListGroup(nl: NumCircListGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    NumberedCircleList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {
@@ -117,8 +124,8 @@ class UIBuilder {
       case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
-      case c: NumberedListCallout => Seq.empty // Reserved for future use
-      case c: NumberedCircleListCallout => Seq.empty // Reserved for future use
+      case c: NumListCallout => Seq(NumberedList(Seq(TextBuilder.fromPhrase(c.text))))
+      case c: NumCircListCallout => Seq(NumberedCircleList(Seq(TextBuilder.fromPhrase(c.text))))
       case c: ErrorCallout =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData

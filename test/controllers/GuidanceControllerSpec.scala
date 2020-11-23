@@ -219,7 +219,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
@@ -240,7 +240,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Left(DatabaseError)))
 
       override val fakeRequest = FakeRequest("POST", path)
@@ -261,7 +261,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((None, initialLabels))))
 
       override val fakeRequest = FakeRequest("POST", path)
@@ -279,7 +279,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       MockGuidanceService
@@ -471,7 +471,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "/guidance/hello")
+        .submitPage(pec, path, "/guidance/hello", "/guidance/hello")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
@@ -532,7 +532,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
@@ -553,7 +553,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
       MockGuidanceService
-        .submitPage(pec, path, "0")
+        .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
 
       override val fakeRequest = FakeRequest("POST", path)
