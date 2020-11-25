@@ -16,7 +16,7 @@
 
 package connectors.httpParsers
 
-import models.errors.{InternalServerError, InvalidProcessError}
+import models.errors.{InternalServerError, InvalidProcessError, NotFoundError}
 import models.ocelot._
 import models.RequestOutcome
 import play.api.Logger
@@ -35,7 +35,7 @@ object GetProcessHttpParser extends HttpParser {
           Left(InternalServerError)
       }
     case (_, _, response) if response.status == NOT_FOUND =>
-      Left(InvalidProcessError)
+      Left(NotFoundError)
     case (_, _, response) if response.status == BAD_REQUEST =>
       Left(InvalidProcessError)
     case unknown =>

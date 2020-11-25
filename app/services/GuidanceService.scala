@@ -143,7 +143,7 @@ class GuidanceService @Inject() (
   ): Future[RequestOutcome[(String,String)]] =
     retrieveProcessById(processIdentifier).flatMap {
       case Left(err) =>
-        logger.warn(s"Unable to find process using identifier $processIdentifier, error")
+        logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
 
       case Right(process) =>
