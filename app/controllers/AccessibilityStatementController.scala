@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Logger
+import controllers.navigation.Navigation
 import repositories.ProcessContext
 import services.GuidanceService
 import config.ErrorHandler
@@ -44,7 +45,7 @@ class AccessibilityStatementController @Inject() (
   val getPage: Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     val path = controllers.routes.AccessibilityStatementController.getPage.url.drop(appConfig.baseUrl.length + 1)
-    withExistingSession[ProcessContext](service.getProcessContext(_, path)).map {
+    withExistingSession[ProcessContext](service.getProcessContext(_, path, Navigation.getDirection)).map {
       case Right(processContext) =>
         val title = models.ui.Text(processContext.process.title.langs)
         val processCode = processContext.process.meta.processCode

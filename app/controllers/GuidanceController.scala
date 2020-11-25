@@ -23,6 +23,7 @@ import play.api.mvc._
 import play.api.data.{FormError, Form}
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import controllers.navigation.Navigation
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
@@ -55,7 +56,7 @@ class GuidanceController @Inject() (
 
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).flatMap {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", Navigation.getDirection, _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
@@ -84,7 +85,7 @@ class GuidanceController @Inject() (
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", _)).flatMap {
+    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", Navigation.getDirection, _)).flatMap {
       case Right(evalContext) =>
         val form = formProvider(questionName(path))
         form.bindFromRequest.fold(
