@@ -19,7 +19,7 @@
 @import models.ui.{Cell, Table}
 
 @(tbl: Table)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<table class="govuk-table">
+<table class="govuk-table hmrc-responsive-table" role="table">
   @tbl.caption.map{caption =>
   <caption class="govuk-table__caption">
     @components.render_text(caption)
@@ -27,7 +27,7 @@
   }
   @tbl.headingRow.map{headRow =>
   <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
+    <tr class="govuk-table__row" role="row">
     @{
       headRow.map{
         case c: Th => components.table_thcell(c)

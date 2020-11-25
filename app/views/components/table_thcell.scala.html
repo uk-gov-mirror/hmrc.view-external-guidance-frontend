@@ -19,7 +19,7 @@
 @import models.ui.Cell
 
 @(cell: Cell)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<th scope="col" class="govuk-table__header">@components.render_text(cell.text)</th>
+<th scope="col" class="hmrc-responsive-table__heading govuk-table__header">@components.render_text(cell.text)</th>
 @{
      //$COVERAGE-OFF$
 }
