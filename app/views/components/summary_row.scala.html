@@ -22,7 +22,7 @@
   @for(index <- row.indices) {
     @{index match {
       case 0 => <dt class="govuk-summary-list__key">{render_text(row(0))}</dt>
-      case 1 => <dd class="govuk-summary-list__value govuk-table__cell govuk-table__cell--numeric">{render_text(row(1))}</dd>
+      case 1 => <dd class="govuk-summary-list__value">{render_text(row(1))}</dd>
       case x => summary_actioncell(row(x))
       }
     }
