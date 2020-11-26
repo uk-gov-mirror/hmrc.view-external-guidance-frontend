@@ -89,6 +89,10 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
     val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
+    println(s"******************ALL")
+    pec.page.keyedStanzas.foreach(println)
+    println(s"******************VISUAL")
+    visualStanzas.foreach(println)
     val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
     PageContext(pec, uiPage, labels)
   }

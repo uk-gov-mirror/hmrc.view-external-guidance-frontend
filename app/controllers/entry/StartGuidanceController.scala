@@ -18,7 +18,7 @@ package controllers.entry
 
 import config.ErrorHandler
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.I18nSupport
+import play.api.i18n.Messages
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
@@ -27,16 +27,20 @@ import models.RequestOutcome
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import controllers.SessionFrontendController
 import controllers.actions.SessionIdAction
+import views.html.labels_page
+import repositories.ProcessContext
 
 @Singleton
 class StartGuidanceController @Inject() (
     errorHandler: ErrorHandler,
     service: GuidanceService,
     sessionIdAction: SessionIdAction,
+    labelsView: labels_page,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
-    with I18nSupport {
+    with SessionFrontendController {
 
   val logger = Logger(getClass)
 
@@ -65,6 +69,27 @@ class StartGuidanceController @Inject() (
     logger.info(s"Starting approval direct page view journey")
     retrieveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
   }
+
+  def labels: Action[AnyContent] = sessionIdAction.async { implicit request =>
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    withExistingSession[ProcessContext](service.getProcessContext(_)).flatMap {
+      case Right(ctx) =>
+        for(k <- ctx.labels.keys) {
+          println(s"$k -> ${ctx.labels(k)}")
+        }
+        Future.successful(Ok(labelsView(ctx.labels)))
+      case Left(NotFoundError) =>
+        logger.warn(s"Request for ProcessContext returned NotFound, returning NotFound")
+        Future.successful(NotFound(errorHandler.internalServerErrorTemplate))
+      case Left(BadRequestError) =>
+        logger.warn(s"Request for ProcessContext returned BadRequest")
+        Future.successful(BadRequest(errorHandler.internalServerErrorTemplate))
+      case Left(err) =>
+        logger.error(s"Request for ProcessContext returned $err, returning InternalServerError")
+        Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+    }
+  }
+
 
   private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[(String,String)]])(
       implicit request: Request[_]

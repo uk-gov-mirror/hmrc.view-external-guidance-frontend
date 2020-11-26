@@ -41,8 +41,5 @@ package object ocelot {
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 
-  def isLinkOnlyPhrase(phrase: Phrase): Boolean =
-    pageLinkOnlyRegex
-      .findFirstIn(phrase.langs(0))
-      .fold(false)(_ => pageLinkOnlyRegex.findFirstIn(phrase.langs(1)).fold(false)(_ => true))
+  def isLinkOnlyPhrase(phrase: Phrase): Boolean = pageLinkOnlyRegex.findFirstIn(phrase.langs(0)).fold(false)(_ =>  true)
 }
