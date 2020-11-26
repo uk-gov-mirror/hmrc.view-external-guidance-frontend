@@ -26,9 +26,10 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
 import models.PageContext
-import models.ui.{BulletPointList, H1, Page, ErrorMsg, Input, CurrencyInput, Paragraph, InputPage, StandardPage, Text, Question, Answer, QuestionPage}
-import org.jsoup.nodes.{Element, Document}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, ErrorMsg, H1, Input, InputPage, InsetText, NumberedCircleList, NumberedList, Page, Paragraph, Question, QuestionPage, StandardPage, SummaryList, Text}
+import org.jsoup.nodes.{Document, Element}
 import forms.SubmittedAnswerFormProvider
+
 import scala.collection.JavaConverters._
 import play.api.data.FormError
 import base.ViewFns
@@ -62,8 +63,22 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     val para = Paragraph(openingPara)
     val bulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
-
     val simplePage = StandardPage("root", Seq(para, H1(title), bulletPointList))
+
+    val confirmationPanelLeadingText = Text("Calculation Complete", "Welsh, Calculation Complete")
+    val confirmationPanelOne = Text("you need to pay IHT", "welsh, you need to pay IHT")
+    val confirmationPanelTwo = Text("£325,000", "welsh, £325,000")
+    val confirmationPanel = ConfirmationPanel(confirmationPanelLeadingText, Seq(confirmationPanelOne, confirmationPanelTwo))
+    val listOne = Text("Line 1", "Welsh, Line 1")
+    val listTwo = Text("Line 2", "Welsh, Line 2")
+    val listThree = Text("Line 2", "Welsh, Line 3")
+    val numberedList = NumberedList(Seq(listOne, listTwo, listThree))
+    val numberedCircleList = NumberedCircleList(Seq(listOne, listTwo, listThree))
+    val insetOne = Text("Inset 1", "Welsh, Inset 1")
+    val insetTwo = Text("Inset 2", "Welsh, Inset 2")
+    val insetText = InsetText(Seq(insetOne, insetTwo))
+    val summaryList = SummaryList(Seq(Seq(listOne), Seq(listTwo, listThree)))
+    val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList))
 
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
     val ans1 = Vector("Yes", "Welsh, Yes")
@@ -163,6 +178,54 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
+    }
+
+    "generate English html containing a confirmation panel, an inset text and a numbered list" in new Test {
+      val doc = asDocument(standardPageView(outcomePage, pageContext)(fakeRequest, messages))
+
+      val h1s = doc.getElementsByTag("h1")
+      h1s.size shouldBe 1
+      h1s.first.text shouldBe confirmationPanelLeadingText.english.head.toString
+
+      val paras = doc.select("main.govuk-main-wrapper p")
+
+      paras.size shouldBe 2
+
+      val div = doc.getElementsByClass("govuk-inset-text")
+      div.size shouldBe 1
+
+      val insetInfo = div.first().getElementsByTag("p")
+      insetInfo.size shouldBe 2
+
+      val firstPara = insetInfo.eq(0)
+      firstPara.first.text shouldBe insetOne.value(messages.lang).head.toString
+
+      val secondPara = insetInfo.eq(1)
+      secondPara.first.text shouldBe insetTwo.english.head.toString
+
+      val numberedListItem = doc.getElementsByClass("govuk-list--number")
+      numberedListItem.size shouldBe 2
+
+      val actualListItems = numberedListItem.first().getElementsByTag("li").asScala.toList
+
+      val expectedListItems: List[String] =
+        List(listOne.english.head.toString, listTwo.english.head.toString, listThree.english.head.toString)
+
+      assert(actualListItems.map(_.text) == expectedListItems, "\nActual numbered list items do not match those expected")
+
+      val numberedCircleListItem = doc.getElementsByClass("steps")
+      numberedCircleListItem.size shouldBe 1
+
+      val actualCircleListItems = numberedCircleListItem.first().getElementsByTag("li").asScala.toList
+
+      assert(actualCircleListItems.map(_.text) == expectedListItems, "\nActual numbered circle list items do not match those expected")
+
+      val summaryListItem = doc.getElementsByClass("govuk-summary-list")
+      summaryListItem.size shouldBe 1
+
+      val summaryListRows = summaryListItem.first().getElementsByClass("govuk-summary-list__row")
+      summaryListRows.size shouldBe 2
+
     }
 
   }
