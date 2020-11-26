@@ -326,6 +326,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
     val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
     val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
+    val phraseWithLinkAndFakedWelsh = Phrase(Vector("[link:Change[hint:HELLO]:3]", "Welsh, [link:Change[hint:HELLO]:3]"))
+    val rowsWithFakedWelshLinK = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndFakedWelsh), Seq()))
     val sparseRowsWithLinkAndHint = Seq(rowsWithLinkAndHint(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rowsWithLinkAndHint(2))
 
     val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
@@ -485,6 +487,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     "convert a RowGroup with three columns including a link and hint into a SummaryList" in new SLTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
+      p.components match {
+        case Seq((h: H1), (sl: SummaryList)) => succeed
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three columns into a SummaryList and faked welsh link" in new SLTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                RowGroup(Seq("2"), rowsWithFakedWelshLinK, true)))
       p.components match {
         case Seq((h: H1), (sl: SummaryList)) => succeed
         case x => fail(s"Found $x")
