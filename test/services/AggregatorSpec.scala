@@ -242,11 +242,11 @@ class AggregatorSpec extends BaseSpec {
 
 }
 
-"Row aggregation" must {
+  "Row aggregation" must {
 
     "add an isolated row with stack equals false into a row group of size 1" in new Test {
 
-      val row: Row = Row(r1Cells, Seq(""), stack = false)
+      val row: Row = Row(r1Cells, Seq(""))
 
       val stanzas: Seq[VisualStanza] = Seq(
         pageStanza,
@@ -279,8 +279,8 @@ class AggregatorSpec extends BaseSpec {
 
   "create two row groups for two contiguous rows with stack set to false" in new Test {
 
-    val row1: Row = Row(r1Cells, Seq(""), stack = false)
-    val row2: Row = Row(r2Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""))
+    val row2: Row = Row(r2Cells, Seq(""))
 
     val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
@@ -319,7 +319,7 @@ class AggregatorSpec extends BaseSpec {
   "create two row groups for two contiguous rows with stack set to true and false respectively" in new Test {
 
     val row1: Row = Row(r1Cells, Seq(""), stack = true)
-    val row2: Row = Row(r2Cells, Seq(""), stack = false)
+    val row2: Row = Row(r2Cells, Seq(""))
 
     val stanzas: Seq[VisualStanza] = Seq(
       pageStanza,
@@ -339,7 +339,7 @@ class AggregatorSpec extends BaseSpec {
 
   "create a row group with two rows for two contiguous row stanzas with stack set to false and true respectively" in new Test {
 
-    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""))
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
     val stanzas: Seq[VisualStanza] = Seq(
@@ -359,7 +359,7 @@ class AggregatorSpec extends BaseSpec {
 
   "create a row group with multiple rows" in new Test {
 
-    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""))
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
     val row3: Row = Row(r3Cells, Seq(""), stack = true)
     val row4: Row = Row(r4Cells, Seq(""), stack = true)
@@ -386,7 +386,7 @@ class AggregatorSpec extends BaseSpec {
 
     val row1: Row = Row(r1Cells, Seq(""), stack = true)
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
-    val row3: Row = Row(r3Cells, Seq(""), stack = false)
+    val row3: Row = Row(r3Cells, Seq(""))
     val row4: Row = Row(r4Cells, Seq(""), stack = true)
 
     val stanzas: Seq[VisualStanza] = Seq(
@@ -406,7 +406,7 @@ class AggregatorSpec extends BaseSpec {
 
   "create two row groups of size one for two non-contiguous rows in sequence of stanzas" in new Test {
 
-    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""))
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
 
     val stanzas: Seq[VisualStanza] = Seq(
@@ -427,10 +427,10 @@ class AggregatorSpec extends BaseSpec {
 
   "create two row groups with multiple rows from a complex sequence of stanzas" in new Test {
 
-    val row1: Row = Row(r1Cells, Seq(""), stack = false)
+    val row1: Row = Row(r1Cells, Seq(""))
     val row2: Row = Row(r2Cells, Seq(""), stack = true)
     val row3: Row = Row(r3Cells, Seq(""), stack = true)
-    val row4: Row = Row(r4Cells, Seq(""), stack = false)
+    val row4: Row = Row(r4Cells, Seq(""))
     val row5: Row = Row(r5Cells, Seq(""), stack = true)
 
     val stanzas: Seq[VisualStanza] = Seq(
@@ -469,5 +469,161 @@ class AggregatorSpec extends BaseSpec {
     aggregatedStanzas shouldBe stanzas
   }
 }
+
+  "Note aggregation" must {
+
+    trait NoteTest extends Test {
+      val phrase1 = Phrase(Vector("Note 1", "Welsh Note 1"))
+      val phrase2 = Phrase(Vector("Note 2", "Welsh Note 2"))
+      val phrase3 = Phrase(Vector("Note 3", "Welsh Note 3"))
+      val phrase4 = Phrase(Vector("Note 4", "Welsh Note 4"))
+
+      val callout1 = NoteCallout(phrase1, Seq(""), false)
+      val callout2 = NoteCallout(phrase2, Seq(""), true)
+      val callout3 = NoteCallout(phrase3, Seq(""), true)
+      val callout4 = NoteCallout(phrase4, Seq(""), true)
+    }
+
+    "add an isolated note co with stack equals false into a note group of size 1" in new NoteTest {
+      val stanzas: Seq[VisualStanza] =
+        Seq(
+          callout,
+          callout1,
+          instruction)
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
+    }
+
+    "add an isolated note co with stack equals true into a note group of size 1" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
+    }
+
+    "create two note groups for two contiguous rows with stack set to false" in new NoteTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout1,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
+      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
+    }
+
+    "create a note group with two entries for two contiguous note cos with stack set to true" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout2,
+        callout3,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout2, callout3))
+    }
+
+    "create two note groups for two contiguous note cos with stack set to true and false respectively" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction,
+        callout2,
+        callout1,
+        instruction,
+        callout
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout2))
+      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
+    }
+
+    "create a note group with two note co with stack set to false and true respectively" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction,
+        callout1,
+        callout2,
+        instruction,
+        callout
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1, callout2))
+    }
+
+    "create a note group with multiple note cos" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout2,
+        callout3,
+        callout4,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1, callout2, callout3, callout4))
+    }
+
+    "create two note groups of size two from four contiguous elems where stack is false for the third elem" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout2,
+        callout3,
+        callout1,
+        callout4
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(0) shouldBe NoteGroup(Seq(callout2, callout3))
+      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1, callout4))
+    }
+
+    "create two note groups of size one for two non-contiguous elems in sequence of stanzas" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        callout1,
+        instruction1,
+        callout1,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
+      aggregatedStanzas(four) shouldBe NoteGroup(Seq(callout1))
+    }
+
+    "create two note groups with multiple elems from a complex sequence of stanzas" in new NoteTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        instruction1,
+        callout1,
+        callout2,
+        callout3,
+        instructionGroup,
+        callout1,
+        callout2,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(3) shouldBe NoteGroup(Seq(callout1, callout2, callout3))
+      aggregatedStanzas(five) shouldBe NoteGroup(Seq(callout1, callout2))
+    }
+
+  }
 
 }

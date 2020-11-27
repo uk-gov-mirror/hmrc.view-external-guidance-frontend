@@ -53,6 +53,7 @@ class UIBuilder {
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
+      case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), formData)
       case x :: xs => fromStanzas(xs, acc, formData)
     }
 
@@ -126,6 +127,7 @@ class UIBuilder {
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NumListCallout => Seq(NumberedList(Seq(TextBuilder.fromPhrase(c.text))))
       case c: NumCircListCallout => Seq(NumberedCircleList(Seq(TextBuilder.fromPhrase(c.text))))
+      case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
       case c: ErrorCallout =>
         // Ignore error messages if no errors exist within form data
         // TODO this should allocate the messages to errors found within the formData
@@ -196,5 +198,8 @@ class UIBuilder {
 
     ConfirmationPanel(texts.head, texts.tail)
   }
+
+  private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
 }
