@@ -199,7 +199,7 @@ class UIBuilder {
     ConfirmationPanel(texts.head, texts.tail)
   }
 
-  private def fromNoteGroup(nl: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
-    InsetText(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
+  private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
 }

@@ -39,8 +39,8 @@ object Aggregator {
         aggregateStanzas(acc :+ NumCircListGroup(cos))(remainder)
 
       case (x: NoteCallout) :: xs =>
-        val (rows: Seq[NoteCallout], remainder) = aggregateNotes(xs, Seq (x))
-        aggregateStanzas(acc :+ NoteGroup (rows))(remainder)
+        val (cos: Seq[NoteCallout], remainder) = aggregateNotes(xs, Seq (x))
+        aggregateStanzas(acc :+ NoteGroup(cos))(remainder)
 
       case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
