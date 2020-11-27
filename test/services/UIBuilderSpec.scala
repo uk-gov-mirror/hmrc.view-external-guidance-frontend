@@ -458,11 +458,31 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
+    "Convert a non-summarylist one row RowGroup into a table" in new TableTest {
+      val oneRow = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase(Vector("Blah", "Blah"))), Seq())
+
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false), RowGroup(Seq(oneRow))))
+
+      p.components match {
+        case Seq(_: H1, Table(_, None, Seq())) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
     "Convert a non-summarylist RowGroup into a table with a heading line" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 captionRowGroup))
       p.components match {
-        case Seq(_: H1, Table(None, Some(_), _)) => succeed
+        case Seq(_: H1, Table(Text(Seq(Words("HELLO", true)), Seq(Words("HELLO", true))), None, _)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption and a heading" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
+                                                captionRowGroup.copy(stack = true)))
+      p.components match {
+        case Seq(Table(headingText, Some(_), rows)) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -471,7 +491,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 stackedRowGroup))
       p.components match {
-        case Seq(Table(Some(headingText), None, rows)) => succeed
+        case Seq(Table(headingText, None, rows)) => succeed
         case x => fail(s"Found $x")
       }
     }

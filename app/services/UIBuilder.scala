@@ -73,6 +73,18 @@ class UIBuilder {
     SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
 
   private def fromTableRowGroup(caption: Option[Text], rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    def tableFromCaptionAndRows(captionText: Text, rows: Seq[Seq[Cell]]) =
+      rows.headOption.fold(Table(captionText, None, Seq.empty)){row0 =>
+        val heading: Option[Seq[Cell]] = if (row0.collect{case c: Th => c}.length == row0.length) Some(row0) else None
+        val tableRows = heading.fold(rows)(_ => rows.tail)
+        Table(captionText, heading, tableRows)
+      }
+
+    def tableFromRows(rows: Seq[Seq[Cell]]) =
+      rows.headOption.fold(Table(Text(), None, Seq.empty)){row0 =>
+        tableFromCaptionAndRows(row0.headOption.fold(Text())(_.text), rows.tail)
+      }
+
     val rows: Seq[Seq[Cell]] = rg.paddedRows.map{rw =>
       rw.map{phrase =>
         TextBuilder.fromPhrase(phrase) match {
@@ -81,11 +93,8 @@ class UIBuilder {
         }
       }
     }
-    rows.headOption.fold(Table(caption, None, Seq.empty)){row0 =>
-      val heading = if (row0.collect{case c: Th => c}.length == row0.length) Some(row0) else None
-      val tableRows = heading.fold(rows)(_ => rows.tail)
-      Table(caption, heading, tableRows)
-    }
+
+    caption.fold(tableFromRows(rows))(c => tableFromCaptionAndRows(c, rows))
   }
 
   private def fromNumListGroup(nl: NumListGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
