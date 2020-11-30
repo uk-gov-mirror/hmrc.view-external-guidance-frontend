@@ -17,18 +17,15 @@
 package controllers.navigation
 
 import play.api.mvc.Request
-import controllers.navigation.Direction._
 
 object Navigation {
 
-  val backQuery: String = "direction=" + Backwards.toString
+  private val queryKey: String = "p"
+  private val queryValue: String = "1"
+  val PreviousPageLinkQuery: String = s"$queryKey=$queryValue"
 
-  def getDirection(implicit request: Request[_]): Direction.Value =
+  def getPreviousPageByLink()(implicit request: Request[_]): Boolean =
 
-    request.getQueryString("direction") match {
-      case Some(value) if value == Backwards.toString => Backwards
-      case Some(value) => Forwards
-      case None => Forwards
-    }
+  request.getQueryString(queryKey).fold[Boolean](ifEmpty =false){value => if(value == queryValue) true else false}
 
 }

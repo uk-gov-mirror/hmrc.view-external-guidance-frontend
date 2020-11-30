@@ -19,8 +19,6 @@
 package repositories
 
 import config.AppConfig
-import controllers.navigation.Direction
-import controllers.navigation.Navigation.backQuery
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, Json, Writes}
 import models.ocelot._
@@ -53,11 +51,16 @@ object DefaultSessionRepository {
   }
 }
 
-case class ProcessContext(process: Process, answers: Map[String, String], labels: Map[String, Label], backLink: Option[String])
+case class ProcessContext(
+                           process: Process,
+                           answers: Map[String, String],
+                           labels: Map[String, Label],
+                           backLink: Option[String]
+                         )
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
-  def get(key: String, pageUrl: String, direction: Direction.Value): Future[RequestOutcome[ProcessContext]]
+  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
@@ -103,7 +106,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String, pageUrl: String, direction: Direction.Value): Future[RequestOutcome[ProcessContext]] =
+  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
@@ -119,7 +122,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
             //
             // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
             //
-            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, direction, sp.pageHistory)
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
             val processContext = ProcessContext(sp.process, sp.answers, sp.labels, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
               savePageHistory(key, history).map {
@@ -139,18 +142,18 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   private def backlinkAndHistory(
                                   pageUrl: String,
-                                  direction: Direction.Value,
+                                  previousPageByLink: Boolean,
                                   priorHistory: List[String]): (Option[String], Option[List[String]]) = {
 
     priorHistory.reverse match {
       // Initial page
       case Nil => (None, None)
       // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
-      case x :: xs if x == pageUrl => (appendDirectionQueryParam(xs.headOption), Some(priorHistory))
+      case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
       // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case x :: y :: xs if y == pageUrl && direction == Direction.Backwards => (appendDirectionQueryParam(xs.headOption), Some((y :: xs).reverse))
+      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
       // FORWARD: Back link x, pageHistory intact
-      case x :: xs => (appendDirectionQueryParam(Some(x)), None)
+      case x :: xs => (Some(x), None)
     }
 
   }
@@ -247,12 +250,5 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to savePageHistory to session repo with _id=$key")
           Left(DatabaseError)
       }
-
-  private def appendDirectionQueryParam(pageUrl: Option[String]): Option[String] =
-
-    pageUrl match {
-      case Some(url) => Some(url + "?" + backQuery)
-      case None => None
-    }
 
 }

@@ -18,7 +18,6 @@ package services
 
 import config.AppConfig
 import connectors.GuidanceConnector
-import controllers.navigation.Direction
 import javax.inject.{Inject, Singleton}
 import models.ui.FormData
 import models.{PageContext, PageEvaluationContext}
@@ -43,13 +42,13 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String, direction: Direction.Value): Future[RequestOutcome[ProcessContext]] =
-    sessionRepository.get(sessionId, pageUrl, direction)
+  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, direction: Direction.Value, sessionId: String)(
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url", direction).map {
+    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
       case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
@@ -95,9 +94,9 @@ class GuidanceService @Inject() (
     PageContext(pec, uiPage, labels)
   }
 
-  def getPageContext(processCode: String, url: String, direction: Direction.Value, sessionId: String)
+  def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
-    getPageEvaluationContext(processCode, url, direction, sessionId).map{
+    getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
       case Right(evalContext) => Right(getPageContext(evalContext))
       case Left(err) => Left(err)
     }

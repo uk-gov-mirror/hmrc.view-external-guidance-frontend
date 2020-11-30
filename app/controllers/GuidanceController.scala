@@ -56,7 +56,7 @@ class GuidanceController @Inject() (
 
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", Navigation.getDirection, _)).flatMap {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", Navigation.getPreviousPageByLink(), _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
@@ -85,7 +85,7 @@ class GuidanceController @Inject() (
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", Navigation.getDirection, _)).flatMap {
+    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", Navigation.getPreviousPageByLink, _)).flatMap {
       case Right(evalContext) =>
         val form = formProvider(questionName(path))
         form.bindFromRequest.fold(
