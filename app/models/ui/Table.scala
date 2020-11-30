@@ -34,6 +34,6 @@ case class Td(text: Text) extends Cell
 //
 // Not stacked and first row not a thead => plain table of <tr> elements wher cells follow rule 1
 
-case class Table(caption: Option[Text], headingRow: Option[Seq[Cell]], rows: Seq[Seq[Cell]]) extends UIComponent {
-  val text: Text = caption.fold(Text())(t => t)
+case class Table(caption: Text, headingRow: Option[Seq[Cell]], rows: Seq[Seq[Cell]]) extends UIComponent {
+  val text: Text = caption
 }
