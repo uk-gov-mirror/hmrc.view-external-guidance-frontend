@@ -35,15 +35,13 @@ object TextBuilder {
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def labelFormatOpt(m: Match): Option[String] = Option(m.group(3))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(4))
+    def boldLabelNameOpt(m: Match): Option[String] = Option(m.group(5))
+    def boldLabelFormatOpt(m: Match): Option[String] = Option(m.group(7))
     def buttonOrLink(m: Match): Option[String] = Option(m.group(8))
     def linkTypeOpt(m: Match): Option[String] = Option(m.group(9))
     def linkText(m: Match): String = m.group(10)
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
     def linkDest(m: Match): String = m.group(11)
-
-    // Group access when embedded within Bold wrapper
-    def boldLabelNameOpt(m: Match): Option[String] = Option(m.group(5))
-    def boldLabelFormatOpt(m: Match): Option[String] = Option(m.group(7))
   }
 
   import Placeholders._
