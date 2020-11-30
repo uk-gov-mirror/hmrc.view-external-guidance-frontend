@@ -25,7 +25,7 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
 import models.ocelot.{Label, Labels, LabelCache}
-import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words, LabelRef, Currency, CurrencyPoundsOnly}
+import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words, LabelRef, Currency, CurrencyPoundsOnly, Txt}
 import org.jsoup.nodes.{Document, Element}
 
 import scala.collection.JavaConverters._
@@ -49,12 +49,16 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val textWithLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label")),
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label")))
+    val textWithBoldLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", Txt, true), Words(" , price "), LabelRef("A-Label")),
+                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Txt, true), Words(" , price "),LabelRef("A-Label")))
     val textWithNonExistentLabelRef = Text(Seq(Words("The price is ", false),LabelRef("BLAHBLAH", Currency)),
                                 Seq(Words("Welsh The price is ", false),LabelRef("BLAHBLAH", Currency)))
     val textWithCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)),
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", Currency)))
     val textWithCurrencyPOLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly)))
+    val textWithBoldCurrencyPOLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly, true)),
+                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly, true)))
     val textWithInvaldiCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)),
                                 Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)))
     val textLargeValueNoDpsCurrencyLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)),
@@ -76,6 +80,20 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price 33.9"
+    }
+
+    "generate English html containing bold label references with default output formatting" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      val boldElement = p.getElementsByTag("strong").first
+      boldElement.text shouldBe "a value"
+    }
+
+    "generate English html containing bold label references with CurrencyPoundsOnly output formatting" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      val boldElement = p.getElementsByTag("strong").first
+      boldElement.text shouldBe "£33"
     }
 
     "generate English html containing label reference to Label which does not exist" in new Test {
@@ -148,6 +166,20 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
       val p = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price 33.9"
+    }
+
+    "generate Welsh html containing bold label references with default output formatting" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      val boldElement = p.getElementsByTag("strong").first
+      boldElement.text shouldBe "a value"
+    }
+
+    "generate Welsh html containing bold label references with CurrencyPoundsOnly output formatting" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      val boldElement = p.getElementsByTag("strong").first
+      boldElement.text shouldBe "£33"
     }
 
     "generate Welsh html containing label reference to Label which does not exist" in new WelshTest {
