@@ -35,11 +35,11 @@ object TextBuilder {
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def labelFormatOpt(m: Match): Option[String] = Option(m.group(3))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(4))
-    def buttonOrLink(m: Match): Option[String] = Option(m.group(5))
-    def linkTypeOpt(m: Match): Option[String] = Option(m.group(6))
-    def linkText(m: Match): String = m.group(7)
+    def buttonOrLink(m: Match): Option[String] = Option(m.group(8))
+    def linkTypeOpt(m: Match): Option[String] = Option(m.group(9))
+    def linkText(m: Match): String = m.group(10)
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
-    def linkDest(m: Match): String = m.group(8)
+    def linkDest(m: Match): String = m.group(11)
 
     // Group access when embedded within Bold wrapper
     def boldLabelNameOpt(m: Match): Option[String] = Option(m.group(5))
@@ -69,23 +69,13 @@ object TextBuilder {
     }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
-    println(Placeholders.plregex.toString)
     val isEmpty: TextItem => Boolean = _.isEmpty
     val (enTexts, enMatches) = fromPattern(plregex, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(plregex, txt.langs(1))
-    logMatches(enMatches)
     val en = merge(enTexts.map(Words(_)), placeholdersToItems(enMatches), Nil, isEmpty)
     val cy = merge(cyTexts.map(Words(_)), placeholdersToItems(cyMatches), Nil, isEmpty)
     Text(en, cy)
   }
-
-  private def logMatches(matches: List[Match]): Unit =
-    matches.foreach{m =>
-      println(s"GROUPS: ${m.groupCount}")
-      for(idx <- Range(0,m.groupCount)) {
-        println(s"GRP: $idx, ${m.group(idx)}")
-      }
-    }
 
   private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
     val (txts, matches) = fromPattern(answerHintPattern, str)

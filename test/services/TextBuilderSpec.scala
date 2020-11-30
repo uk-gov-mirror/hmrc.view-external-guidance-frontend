@@ -19,6 +19,7 @@ package services
 import base.BaseSpec
 import models.ocelot._
 import models.ui.{Link, Text, Words, LabelRef, Currency, Txt}
+import models.ui.CurrencyPoundsOnly
 
 class TextBuilderSpec extends BaseSpec {
 
@@ -76,6 +77,22 @@ class TextBuilderSpec extends BaseSpec {
 
       txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
 
+    }
+
+    "Convert a label placeholder within a bold placeholder to a bold label ref" in new Test {
+      val p = Phrase("""Sentence with a [bold:[label:BLAH]] label reference""", """Sentence with a [bold:[label:BLAH]]] label reference""")
+
+      val txt = TextBuilder.fromPhrase(p)
+      println(s"BLAH: ${txt.english}")
+      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Txt, true), Words(" label reference"))
+    }
+
+    "Convert a label placeholderwith currency output format within a bold placeholder to a bold label ref" in new Test {
+      val p = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Sentence with a [bold:[label:BLAH]:currencyPoundsOnly]] label reference""")
+
+      val txt = TextBuilder.fromPhrase(p)
+      println(s"BLAH: ${txt.english}")
+      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", CurrencyPoundsOnly, true), Words(" label reference"))
     }
 
     "Convert button link placeholders within phrase to Link as button TextItems" in new Test {
