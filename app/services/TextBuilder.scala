@@ -29,17 +29,21 @@ object TextBuilder {
 
   private object Placeholders { // All the placeholder matching in one place
     val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly))?\\]"
-    val boldPattern = "\\[bold:([^\\]]+)\\]"
+    val boldPattern = s"\\[bold:($labelPattern|[^\\]]+)\\]"
     val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
     val plregex: Regex = s"${labelPattern}|${boldPattern}|${linkPattern}".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
-    def labelTypeOpt(m: Match): Option[String] = Option(m.group(3))
+    def labelFormatOpt(m: Match): Option[String] = Option(m.group(3))
     def boldTextOpt(m: Match): Option[String] = Option(m.group(4))
     def buttonOrLink(m: Match): Option[String] = Option(m.group(5))
     def linkTypeOpt(m: Match): Option[String] = Option(m.group(6))
     def linkText(m: Match): String = m.group(7)
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
     def linkDest(m: Match): String = m.group(8)
+
+    // Group access when embedded within Bold wrapper
+    def boldLabelNameOpt(m: Match): Option[String] = Option(m.group(5))
+    def boldLabelFormatOpt(m: Match): Option[String] = Option(m.group(7))
   }
 
   import Placeholders._
@@ -56,19 +60,32 @@ object TextBuilder {
           val asButton: Boolean = buttonOrLink(m).fold(false)(_ == "button")
           val (lnkText, lnkHint) = singleStringWithOptionalHint(linkText(m))
           Link(dest, lnkText, window, asButton, lnkHint)
-        })(txt => Words(txt, true))
-      })(labelName => LabelRef(labelName, OutputFormat(labelTypeOpt(m))))
+        }){txt =>
+          boldLabelNameOpt(m).fold[TextItem](Words(txt, true)){labelName =>
+            LabelRef(labelName, OutputFormat(boldLabelFormatOpt(m)), true)
+          }
+        }
+      })(labelName => LabelRef(labelName, OutputFormat(labelFormatOpt(m))))
     }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
+    println(Placeholders.plregex.toString)
     val isEmpty: TextItem => Boolean = _.isEmpty
     val (enTexts, enMatches) = fromPattern(plregex, txt.langs(0))
     val (cyTexts, cyMatches) = fromPattern(plregex, txt.langs(1))
-
+    logMatches(enMatches)
     val en = merge(enTexts.map(Words(_)), placeholdersToItems(enMatches), Nil, isEmpty)
     val cy = merge(cyTexts.map(Words(_)), placeholdersToItems(cyMatches), Nil, isEmpty)
     Text(en, cy)
   }
+
+  private def logMatches(matches: List[Match]): Unit =
+    matches.foreach{m =>
+      println(s"GROUPS: ${m.groupCount}")
+      for(idx <- Range(0,m.groupCount)) {
+        println(s"GRP: $idx, ${m.group(idx)}")
+      }
+    }
 
   private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
     val (txts, matches) = fromPattern(answerHintPattern, str)

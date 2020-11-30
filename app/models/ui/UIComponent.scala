@@ -36,7 +36,7 @@ case class Words(s: String, bold: Boolean = false) extends TextItem {
   override def toString: String = s
 }
 
-case class LabelRef(name: String, outputFormat: OutputFormat = Txt) extends TextItem {
+case class LabelRef(name: String, outputFormat: OutputFormat = Txt, bold: Boolean = false) extends TextItem {
   def isEmpty: Boolean = false
   def toWords: Seq[String] = name.split(" +").toSeq
   override def toString: String = s"[label:${name}:$outputFormat]"
