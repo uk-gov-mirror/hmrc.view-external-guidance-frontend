@@ -83,7 +83,6 @@ class TextBuilderSpec extends BaseSpec {
       val p = Phrase("""Sentence with a [bold:[label:BLAH]] label reference""", """Sentence with a [bold:[label:BLAH]]] label reference""")
 
       val txt = TextBuilder.fromPhrase(p)
-      println(s"BLAH: ${txt.english}")
       txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Txt, true), Words(" label reference"))
     }
 
@@ -91,7 +90,6 @@ class TextBuilderSpec extends BaseSpec {
       val p = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Sentence with a [bold:[label:BLAH]:currencyPoundsOnly]] label reference""")
 
       val txt = TextBuilder.fromPhrase(p)
-      println(s"BLAH: ${txt.english}")
       txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", CurrencyPoundsOnly, true), Words(" label reference"))
     }
 
