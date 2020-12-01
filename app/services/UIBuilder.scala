@@ -54,6 +54,7 @@ class UIBuilder {
       case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), formData)
+      case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), formData)
       case x :: xs => fromStanzas(xs, acc, formData)
     }
 
@@ -62,8 +63,6 @@ class UIBuilder {
     sg.group match {
       case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if !rg.isSummaryList =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
-      case (c1:YourCallCallout) :: (c2:YourCallCallout) :: xs =>
-        fromSequenceWithLeadingYourCallCallouts(sg, formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
     }
@@ -129,7 +128,7 @@ class UIBuilder {
       case c: SubTitleCallout => Seq(H2(TextBuilder.fromPhrase(c.text)))
       case c: SectionCallout => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case c: SubSectionCallout => Seq(H4(TextBuilder.fromPhrase(c.text)))
-      case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), true))
+      case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
       case c: ImportantCallout => Seq.empty // Reserved for future use
       case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
@@ -191,24 +190,12 @@ class UIBuilder {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
-  private def fromSequenceWithLeadingYourCallCallouts(sg: StackedGroup, formData: Option[FormData])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
-    val (callouts, visualStanzas): (Seq[Callout], Seq[VisualStanza]) = sg.group.span{
-      case c: YourCallCallout => true
-      case _ => false
-    } match {case (coStanzas, v) => (coStanzas.map{case c: YourCallCallout => c}, v)}
-
-    fromStanzas(stackStanzas(Nil)(visualStanzas), Seq(fromYourCallGroup(callouts)), formData)
-  }
-
-  private def fromYourCallGroup(group: Seq[Callout])(implicit stanzaIdToUrlMap: Map[String, String]) : ConfirmationPanel = {
-
-    val texts: Seq[Text] = group.map(c => TextBuilder.fromPhrase(c.text))
-
-    ConfirmationPanel(texts.head, texts.tail)
-  }
-
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
+
+  private def fromYourCallGroup(ycg: YourCallGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
+    ConfirmationPanel(texts.head, texts.tail)
+  }
 
 }
