@@ -19,10 +19,8 @@ package services
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
-import models.ui.{BulletPointList, ConfirmationPanel, Link, H1, H3, H4, Paragraph, Text, Words, FormData, InputPage, QuestionPage, NumberedList, NumberedCircleList}
-import models.ui.{SummaryList, Table}
+import models.ui.{BulletPointList, ConfirmationPanel, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link, NumberedCircleList, NumberedList, Paragraph, QuestionPage, SummaryList, Table, Text, Words}
 import play.api.data.FormError
-import models.ui.ErrorMsg
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -326,6 +324,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
     val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
     val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
+    val phraseWithLinkAndFakedWelsh = Phrase(Vector("[link:Change[hint:HELLO]:3]", "Welsh, [link:Change[hint:HELLO]:3]"))
+    val rowsWithFakedWelshLinK = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndFakedWelsh), Seq()))
     val sparseRowsWithLinkAndHint = Seq(rowsWithLinkAndHint(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rowsWithLinkAndHint(2))
 
     val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
@@ -342,11 +342,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   }
 
   trait TableTest extends Test {
-    val rows = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), false) +:
+    val rows = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq()) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val simpleRowGroup = RowGroup(rows)
     val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
-    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), false) +:
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq()) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val captionRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
@@ -369,9 +369,23 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val num2CircListCo = NumCircListCallout(num2Phrase, Seq(""), true)
     val num3CircListCo = NumCircListCallout(num3Phrase, Seq(""), true)
     val num4CircListCo = NumCircListCallout(num4Phrase, Seq(""), true)
-
+    
     val numberedListGroup = NumListGroup(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
     val numberedCircListGroup = NumCircListGroup(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
+  }
+
+  trait NoteTest extends Test {
+    val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+    val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
+    val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
+    val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
+
+    val note1Co = NoteCallout(num1Phrase, Seq(""), false)
+    val note2Co = NoteCallout(num2Phrase, Seq(""), true)
+    val note3Co = NoteCallout(num3Phrase, Seq(""), true)
+    val note4Co = NoteCallout(num4Phrase, Seq(""), true)
+
+    val noteGroup = NoteGroup(Seq(note1Co,note2Co,note3Co,note4Co))
   }
 
   "UIBuilder" must {
@@ -383,7 +397,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num4ListCo
                                               ))
       p.components match {
-        case Seq((h: H1), (nlg: NumberedList)) => succeed
+        case Seq(_: H1, _: NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -396,7 +410,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num4CircListCo
                                               ))
       p.components match {
-        case Seq((h: H1), (nlg: NumberedCircleList)) => succeed
+        case Seq(_: H1, _: NumberedCircleList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -406,7 +420,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1ListCo
                                               ))
       p.components match {
-        case Seq((h: H1), (nlg1: NumberedList)) => succeed
+        case Seq(_: H1, _: NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -418,7 +432,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1ListCo
                                               ))
       p.components match {
-        case Seq((h: H1), (nlg1: NumberedList), (nlg2: NumberedList), (nlg3: NumberedList)) => succeed
+        case Seq(_: H1, _: NumberedList, _: NumberedList, _: NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -430,7 +444,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1CircListCo
                                               ))
       p.components match {
-        case Seq((h: H1), (nlg1: NumberedCircleList), (nlg2: NumberedCircleList), (nlg3: NumberedCircleList)) => succeed
+        case Seq(_: H1, _: NumberedCircleList, _: NumberedCircleList, _: NumberedCircleList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -439,7 +453,18 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 simpleRowGroup))
       p.components match {
-        case Seq((h: H1), (tbl: Table)) => succeed
+        case Seq(_: H1, _: Table) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert a non-summarylist one row RowGroup into a table" in new TableTest {
+      val oneRow = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase(Vector("Blah", "Blah"))), Seq())
+
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false), RowGroup(Seq(oneRow))))
+
+      p.components match {
+        case Seq(_: H1, Table(_, None, Seq())) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -448,7 +473,16 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 captionRowGroup))
       p.components match {
-        case Seq((h: H1), Table(None, Some(_), _)) => succeed
+        case Seq(_: H1, Table(Text(Seq(Words("HELLO", true)), Seq(Words("HELLO", true))), None, _)) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption and a heading" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
+                                                captionRowGroup.copy(stack = true)))
+      p.components match {
+        case Seq(Table(headingText, Some(_), rows)) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -457,7 +491,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 stackedRowGroup))
       p.components match {
-        case Seq(Table(Some(headingText), None, rows)) => succeed
+        case Seq(Table(headingText, None, rows)) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -466,7 +500,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 numericRowGroup))
       p.components match {
-        case Seq((h: H1), (tbl: Table)) if tbl.rows.forall(r => r(1).text.isNumericLabelRef) => succeed
+        case Seq(_: H1, tbl: Table) if tbl.rows.forall(r => r(1).text.isNumericLabelRef) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -476,7 +510,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), sparseRowsWithLinkAndHint, true)))
       p.components match {
-        case Seq((h: H1), (sl: SummaryList)) => succeed
+        case Seq(_: H1, _: SummaryList) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -486,7 +520,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
       p.components match {
-        case Seq((h: H1), (sl: SummaryList)) => succeed
+        case Seq(_: H1, _: SummaryList) => succeed
+        case x => fail(s"Found $x")
+      }
+
+    }
+
+    "convert a RowGroup with three columns into a SummaryList and faked welsh link" in new SLTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                RowGroup(Seq("2"), rowsWithFakedWelshLinK, true)))
+      p.components match {
+        case Seq(_: H1, _: SummaryList) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -887,6 +931,30 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
+    "Convert sequence of note callouts into a single inset text" in new NoteTest {
+      val p = uiBuilder.buildPage("/start", Seq(note1Co, note2Co, note3Co, note4Co))
+      p.components match {
+        case Seq(_: InsetText) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert single unstacked note callout into separate inset text" in new NoteTest {
+      val p = uiBuilder.buildPage("/start", Seq(note1Co))
+      p.components match {
+        case Seq(_: InsetText) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert sequence of unstacked note callouts into separate inset texts" in new NoteTest {
+      val p = uiBuilder.buildPage("/start", Seq(note1Co, note1Co, note1Co))
+      p.components match {
+        case Seq(_: InsetText, _: InsetText, _: InsetText) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
   }
 
   trait InputTest {
@@ -1071,8 +1139,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val page = uiBuilder.buildPage("/page-1", stanzas)
 
       page.components.head shouldBe ConfirmationPanel(TextBuilder.fromPhrase(confirmationPanelHeaderPhrase))
-      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
-      page.components.last shouldBe Paragraph(instruction2Text, lede = false)
+      page.components(1) shouldBe Paragraph(instruction1Text)
+      page.components.last shouldBe Paragraph(instruction2Text)
     }
 
     "create a full confirmation panel from three stacked your call callouts" in new ConfirmationPanelTest {
@@ -1096,8 +1164,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val page = uiBuilder.buildPage("/page-1", stanzas)
 
       page.components.head shouldBe expectedConfirmationPanel
-      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
-      page.components.last shouldBe Paragraph(instruction2Text, lede = false)
+      page.components(1) shouldBe Paragraph(instruction1Text)
+      page.components.last shouldBe Paragraph(instruction2Text)
     }
 
     "create a full confirmation panel from 2 YourCall callouts with extra stacked after an instruction" in new ConfirmationPanelTest {
@@ -1138,7 +1206,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       page.components.head shouldBe expectedConfirmationPanel
 
-      page.components(1) shouldBe Paragraph(instruction1Text, lede = false)
+      page.components(1) shouldBe Paragraph(instruction1Text)
     }
 
     "create single text item confirmation panel from stacked your call and section callouts" in new ConfirmationPanelTest {
@@ -1163,7 +1231,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       val page = uiBuilder.buildPage("/page-1", stanzas)
 
-      page.components.head shouldBe Paragraph(instruction2Text, lede = false)
+      page.components.head shouldBe Paragraph(instruction2Text)
       page.components.last shouldBe ConfirmationPanel(confirmationPanelHeaderText)
     }
 
@@ -1185,7 +1253,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       page.components.head shouldBe expectedConfirmationPanel
       page.components(1) shouldBe H3(sectionCalloutText)
-      page.components.last shouldBe Paragraph(instruction1Text, lede = false)
+      page.components.last shouldBe Paragraph(instruction1Text)
     }
 
     "process stacked group with three your call callouts sandwiched within other visual stanza types" in new ConfirmationPanelTest {
@@ -1208,9 +1276,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         )
       )
 
-      page.components.head shouldBe Paragraph(instruction2Text, lede = false)
+      page.components.head shouldBe Paragraph(instruction2Text)
       page.components(1) shouldBe expectedConfirmationPanel
-      page.components.last shouldBe Paragraph(instruction1Text, lede = false)
+      page.components.last shouldBe Paragraph(instruction1Text)
     }
 
     "process stacked group with three your call callouts preceded by two other visual stanza types" in new ConfirmationPanelTest {
@@ -1232,7 +1300,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           confirmationPanelAdditional2Text)
       )
 
-      page.components.head shouldBe Paragraph(instruction1Text, lede = false)
+      page.components.head shouldBe Paragraph(instruction1Text)
       page.components(1) shouldBe H4(subSectionCalloutText)
       page.components.last shouldBe expectedConfirmationPanel
     }

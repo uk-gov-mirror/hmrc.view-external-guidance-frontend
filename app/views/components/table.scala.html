@@ -20,11 +20,10 @@
 
 @(tbl: Table)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <table class="govuk-table">
-  @tbl.caption.map{caption =>
   <caption class="govuk-table__caption">
-    @components.render_text(caption)
+    @components.render_text(tbl.caption)
   </caption>
-  }
+
   @tbl.headingRow.map{headRow =>
   <thead class="govuk-table__head">
     <tr class="govuk-table__row">

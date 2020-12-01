@@ -16,7 +16,7 @@
 
 package services
 
-import models.ocelot.stanzas.{VisualStanza, Row, RowGroup, NumListCallout, NumCircListCallout, NumListGroup, NumCircListGroup}
+import models.ocelot.stanzas._
 
 import scala.annotation.tailrec
 
@@ -37,6 +37,14 @@ object Aggregator {
       case (x: NumCircListCallout) :: xs =>
         val (cos: Seq[NumCircListCallout], remainder) = aggregateNumCircLists(xs, Seq (x))
         aggregateStanzas(acc :+ NumCircListGroup(cos))(remainder)
+
+      case (x: NoteCallout) :: xs =>
+        val (cos: Seq[NoteCallout], remainder) = aggregateNotes(xs, Seq (x))
+        aggregateStanzas(acc :+ NoteGroup(cos))(remainder)
+
+      case (x: YourCallCallout) :: xs =>
+        val (cos: Seq[YourCallCallout], remainder) = aggregateYourCall(xs, Seq (x))
+        aggregateStanzas(acc :+ YourCallGroup(cos))(remainder)
 
       case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
@@ -59,6 +67,20 @@ object Aggregator {
   private def aggregateNumCircLists(inputSeq: Seq[VisualStanza], acc: Seq[NumCircListCallout]): (Seq[NumCircListCallout], Seq[VisualStanza]) =
     inputSeq match {
       case (x: NumCircListCallout) :: xs if x.stack => aggregateNumCircLists(xs, acc :+ x)
+      case xs => (acc, xs)
+    }
+
+  @tailrec
+  private def aggregateNotes(inputSeq: Seq[VisualStanza], acc: Seq[NoteCallout]): (Seq[NoteCallout], Seq[VisualStanza]) =
+    inputSeq match {
+      case (x: NoteCallout) :: xs if x.stack => aggregateNotes(xs, acc :+ x)
+      case xs => (acc, xs)
+    }
+
+  @tailrec
+  private def aggregateYourCall(inputSeq: Seq[VisualStanza], acc: Seq[YourCallCallout]): (Seq[YourCallCallout], Seq[VisualStanza]) =
+    inputSeq match {
+      case (x: YourCallCallout) :: xs if x.stack => aggregateYourCall(xs, acc :+ x)
       case xs => (acc, xs)
     }
 
