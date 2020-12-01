@@ -18,6 +18,7 @@ package models.ui
 
 import base.{BaseSpec, TestConstants}
 import play.api.i18n.Lang
+import controllers.navigation.Navigation.PreviousPageLinkQuery
 
 class UIComponentsSpec extends BaseSpec with TestConstants {
 
@@ -301,6 +302,37 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
     "use Link components which correctly support toString" in {
       val en: String = "Hello"
       Link("4", en).toString shouldBe s"[link:${en}:4:false:None]"
+    }
+
+    "use link components that add a query string marker to the destination when it matches the previous page in the guidance" in {
+
+      val destination: String = "/guidance/test/page-2"
+
+      val link: Link = Link(destination, "See page 2", window = false)
+
+      val backLink: Option[String] = Some(destination)
+
+      link.getDest(backLink) shouldBe s"$destination?$PreviousPageLinkQuery"
+    }
+
+    "use link components that do not add a query string marker to the destination when it does not match the previous page" in {
+
+      val destination: String = "/guidance/test/page-5"
+
+      val link: Link = Link(destination, "See page 5", window = false)
+
+      val backLink: Option[String] = Some("/guidance/test/page-3")
+
+      link.getDest(backLink) shouldBe destination
+    }
+
+    "use link components that do not add a query string marker to the destination when the previous page is not defined" in {
+
+      val destination: String = "/guidance/test/page-4"
+
+      val link: Link = Link(destination, "See page 4", window = true, asButton = true, hint = Some("Hint"))
+
+      link.getDest(None) shouldBe destination
     }
 
     "use LabelRef components which correctly support isEmpty" in {

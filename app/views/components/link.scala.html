@@ -14,13 +14,6 @@
  * limitations under the License.
  *@
 
-@import controllers.navigation.Navigation.PreviousPageLinkQuery
 @import models.ui.Link
 @(link: Link)(implicit ctx: PageContext)
-@getHrefDest(dest: String)(implicit ctx:PageContext) = @{
-  ctx.backLink match {
-    case Some(lv) if dest == lv => s"${dest}?${PreviousPageLinkQuery}"
-    case _ => s"${dest}"
-  }
-}
-<a @if(!link.asButton) {class="govuk-link"} href="@getHrefDest(link.dest)" @if(link.asButton) {class="govuk-button" role="button" data-module="govuk-button"} @if(link.window) {target="_blank"}>@link.text</a>
+<a @if(!link.asButton) {class="govuk-link"} href="@link.getDest(ctx.backLink)" @if(link.asButton) {class="govuk-button" role="button" data-module="govuk-button"} @if(link.window) {target="_blank"}>@link.text</a>

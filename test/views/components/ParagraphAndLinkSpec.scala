@@ -19,15 +19,15 @@ package views.components
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
-import play.api.i18n.{Messages, MessagesApi, Lang}
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
-import play.twirl.api.Html
-import org.jsoup.Jsoup
-import views.html.components.paragraph
-import models.ui.{Paragraph, Text, Link}
-import org.jsoup.nodes.{Document, Element}
+import controllers.navigation.Navigation.PreviousPageLinkQuery
+import views.html.components.{link, link_withHint, paragraph}
+import models.ui.{Link, Paragraph, Text}
+import org.jsoup.nodes.{Attributes, Document, Element}
+
 import scala.collection.JavaConverters._
-import models.ocelot.{Labels, LabelCache}
+import models.ocelot.{LabelCache, Labels}
 
 class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with GuiceOneAppPerSuite {
 
@@ -200,6 +200,104 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
     }
 
+  }
+
+  "link component" should {
+
+    "render link as button if requested" in new Test {
+
+      val linkAsButton: Link = Link("/guidance/test/page-1", "See page 1", window = false, asButton = true, None)
+
+      val doc: Document = asDocument(link(linkAsButton))
+
+      val links = doc.getElementsByTag("a").asScala.toList
+
+      links.size shouldBe 1
+
+      links.head.text shouldBe "See page 1"
+
+      elementAttrs(links.head)("href") shouldBe "/guidance/test/page-1"
+      elementAttrs(links.head)("class") shouldBe "govuk-button"
+      elementAttrs(links.head).contains("role") shouldBe true
+      elementAttrs(links.head)("role") shouldBe "button"
+      elementAttrs(links.head).contains("data-module") shouldBe true
+      elementAttrs(links.head)("data-module") shouldBe "govuk-button"
+
+    }
+  }
+
+  "link_withHint component" should {
+
+    "render link with previous page by link marker if destination matches back link" in new Test {
+
+      val destination: String = "/guidance/test/page-7"
+
+      override implicit val ctx: models.PageContext = models.PageContext(
+        page,
+        "sessionId",
+        None,
+        Text(),
+        "processId",
+        "processCode",
+        labels,
+        Some(destination)
+      )
+
+      val testLink: Link = Link(destination, "See destination", window = true)
+
+      val doc: Document = asDocument(link_withHint(testLink, "Something useful"))
+
+      val links = doc.getElementsByTag("a").asScala.toList
+
+      links.size shouldBe 1
+
+      val firstChildNodeAttributes: Attributes = links.head.childNode(0).attributes()
+
+      firstChildNodeAttributes.get("#text") shouldBe "See destination"
+
+      elementAttrs(links.head)("href") shouldBe s"$destination?$PreviousPageLinkQuery"
+      elementAttrs(links.head)("class") shouldBe "govuk-link"
+      elementAttrs(links.head).contains("target") shouldBe true
+      elementAttrs(links.head)("target") shouldBe "_blank"
+
+      val spans = links.head.getElementsByTag("span").asScala.toList
+
+      spans.size shouldBe 1
+
+      elementAttrs(spans.head)("class") shouldBe "govuk-visually-hidden"
+
+      spans.head.text shouldBe "Something useful"
+    }
+
+    "render link as button if requested" in new Test {
+
+      val linkAsButton: Link = Link("/guidance/test/page-1", "See page 1", window = false, asButton = true)
+
+      val doc: Document = asDocument(link_withHint(linkAsButton, "Something else"))
+
+      val links: List[Element] = doc.getElementsByTag("a").asScala.toList
+
+      links.size shouldBe 1
+
+      val firstChildNodeAttributes: Attributes = links.head.childNode(0).attributes()
+
+      firstChildNodeAttributes.get("#text").trim shouldBe "See page 1"
+
+      elementAttrs(links.head)("href") shouldBe "/guidance/test/page-1"
+      elementAttrs(links.head)("class") shouldBe "govuk-button"
+      elementAttrs(links.head).contains("role") shouldBe true
+      elementAttrs(links.head)("role") shouldBe "button"
+      elementAttrs(links.head).contains("data-module") shouldBe true
+      elementAttrs(links.head)("data-module") shouldBe "govuk-button"
+
+      val spans: List[Element] = links.head.getElementsByTag("span").asScala.toList
+
+      spans.size shouldBe 1
+
+      elementAttrs(spans.head)("class") shouldBe "govuk-visually-hidden"
+
+      spans.head.text shouldBe "Something else"
+    }
   }
 
 }
