@@ -55,6 +55,8 @@ class GuidanceServiceSpec extends BaseSpec {
       pageWithUrl("2", lastPageUrl)
     )
 
+    val lastPage = pageWithUrl("2", lastPageUrl)
+
     val processId = "oct90001"
     val processCode = "CupOfTea"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
@@ -72,7 +74,7 @@ class GuidanceServiceSpec extends BaseSpec {
     val pec = PageEvaluationContext(
                 page,
                 processId,
-                Map(),
+                Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"),
                 Some("/hello"),
                 ui.Text(),
                 processId,
@@ -97,13 +99,12 @@ class GuidanceServiceSpec extends BaseSpec {
 
       override val processCode = "cup-of-tea"
 
-      val lastPage = pageWithUrl("2", lastPageUrl)
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl")
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
-        .buildPage("start", process)
+        .buildPage("2", process)
         .returns(Right(lastPage))
 
       MockPageRenderer
@@ -136,22 +137,22 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl")
-        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
-        .pages(fullProcess)
-        .returns(Right(pages))
+        .buildPage("2", fullProcess)
+        .returns(Right(lastPage))
 
       MockPageRenderer
-        .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas.collect{case s: VisualStanza => s}, labels, None))
+        .renderPage(lastPage, labels)
+        .returns((lastPage.stanzas.collect{case s: VisualStanza => s}, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
@@ -178,8 +179,8 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       MockPageBuilder
-        .pages(process)
-        .returns(Right(pages))
+        .buildPage("2", process)
+        .returns(Right(lastPage))
 
       private val result = target.getPageContext(processCode, url, processId)
 
@@ -200,7 +201,7 @@ class GuidanceServiceSpec extends BaseSpec {
       val processWithUpdatedId = process.copy(meta = process.meta.copy( id = uuid))
 
       MockSessionRepository
-        .set(uuid, processWithUpdatedId, Map())
+        .set(uuid, processWithUpdatedId, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -224,7 +225,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode, Map())
+        .set(sessionRepoId, processWithProcessCode, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -248,7 +249,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode, Map())
+        .set(sessionRepoId, processWithProcessCode, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
