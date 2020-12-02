@@ -17,14 +17,14 @@
 package models.ocelot.stanzas
 
 
-case class NumListGroup (override val next: Seq[String], group: Seq[NumListCallout], stack: Boolean) extends VisualStanza with Populated
+case class NumberedList(override val next: Seq[String], group: Seq[NumberedListItemCallout], stack: Boolean) extends VisualStanza with Populated
 
-object NumListGroup {
-  def apply(group: Seq[NumListCallout]): NumListGroup = NumListGroup(group.last.next, group, group.head.stack)
+object NumberedList {
+  def apply(group: Seq[NumberedListItemCallout]): NumberedList = NumberedList(group.last.next, group, group.head.stack)
 }
 
-case class NumCircListGroup (override val next: Seq[String], group: Seq[NumCircListCallout], stack: Boolean) extends VisualStanza with Populated
+case class NumberedCircleList(override val next: Seq[String], group: Seq[NumberedCircleListItemCallout], stack: Boolean) extends VisualStanza with Populated
 
-object NumCircListGroup {
-  def apply(group: Seq[NumCircListCallout]): NumCircListGroup = NumCircListGroup(group.last.next, group, group.head.stack)
+object NumberedCircleList {
+  def apply(group: Seq[NumberedCircleListItemCallout]): NumberedCircleList = NumberedCircleList(group.last.next, group, group.head.stack)
 }

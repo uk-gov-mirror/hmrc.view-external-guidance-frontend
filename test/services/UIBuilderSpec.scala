@@ -17,8 +17,8 @@
 package services
 
 import base.BaseSpec
-import models.ocelot.stanzas._
 import models.ocelot._
+import models.ocelot.stanzas.{NumberedList => OcelotNumberedList, NumberedCircleList => OcelotNumberedCircleList, _}
 import models.ui.{BulletPointList, ConfirmationPanel, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link, NumberedCircleList, NumberedList, Paragraph, QuestionPage, SummaryList, Table, Text, Words}
 import play.api.data.FormError
 
@@ -361,17 +361,17 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
     val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
 
-    val num1ListCo = NumListCallout(num1Phrase, Seq(""), false)
-    val num2ListCo = NumListCallout(num2Phrase, Seq(""), true)
-    val num3ListCo = NumListCallout(num3Phrase, Seq(""), true)
-    val num4ListCo = NumListCallout(num4Phrase, Seq(""), true)
-    val num1CircListCo = NumCircListCallout(num1Phrase, Seq(""), false)
-    val num2CircListCo = NumCircListCallout(num2Phrase, Seq(""), true)
-    val num3CircListCo = NumCircListCallout(num3Phrase, Seq(""), true)
-    val num4CircListCo = NumCircListCallout(num4Phrase, Seq(""), true)
-    
-    val numberedListGroup = NumListGroup(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
-    val numberedCircListGroup = NumCircListGroup(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
+    val num1ListCo = NumberedListItemCallout(num1Phrase, Seq(""), false)
+    val num2ListCo = NumberedListItemCallout(num2Phrase, Seq(""), true)
+    val num3ListCo = NumberedListItemCallout(num3Phrase, Seq(""), true)
+    val num4ListCo = NumberedListItemCallout(num4Phrase, Seq(""), true)
+    val num1CircListCo = NumberedCircleListItemCallout(num1Phrase, Seq(""), false)
+    val num2CircListCo = NumberedCircleListItemCallout(num2Phrase, Seq(""), true)
+    val num3CircListCo = NumberedCircleListItemCallout(num3Phrase, Seq(""), true)
+    val num4CircListCo = NumberedCircleListItemCallout(num4Phrase, Seq(""), true)
+
+    val numberedListGroup = OcelotNumberedList(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
+    val numberedCircListGroup = OcelotNumberedCircleList(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
   }
 
   trait NoteTest extends Test {

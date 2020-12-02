@@ -30,13 +30,13 @@ object Aggregator {
         val (rows: Seq[Row], remainder) = aggregateRows(xs, Seq (x))
         aggregateStanzas(acc :+ RowGroup (rows))(remainder)
 
-      case (x: NumListCallout) :: xs =>
-        val (cos: Seq[NumListCallout], remainder) = aggregateNumLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumListGroup(cos))(remainder)
+      case (x: NumberedListItemCallout) :: xs =>
+        val (cos: Seq[NumberedListItemCallout], remainder) = aggregateNumLists(xs, Seq (x))
+        aggregateStanzas(acc :+ NumberedList(cos))(remainder)
 
-      case (x: NumCircListCallout) :: xs =>
-        val (cos: Seq[NumCircListCallout], remainder) = aggregateNumCircLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumCircListGroup(cos))(remainder)
+      case (x: NumberedCircleListItemCallout) :: xs =>
+        val (cos: Seq[NumberedCircleListItemCallout], remainder) = aggregateNumCircLists(xs, Seq (x))
+        aggregateStanzas(acc :+ NumberedCircleList(cos))(remainder)
 
       case (x: NoteCallout) :: xs =>
         val (cos: Seq[NoteCallout], remainder) = aggregateNotes(xs, Seq (x))
@@ -57,16 +57,17 @@ object Aggregator {
     }
 
   @tailrec
-  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumListCallout]): (Seq[NumListCallout], Seq[VisualStanza]) =
+  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumberedListItemCallout]): (Seq[NumberedListItemCallout], Seq[VisualStanza]) =
     inputSeq match {
-      case (x: NumListCallout) :: xs if x.stack => aggregateNumLists(xs, acc :+ x)
+      case (x: NumberedListItemCallout) :: xs if x.stack => aggregateNumLists(xs, acc :+ x)
       case xs => (acc, xs)
     }
 
   @tailrec
-  private def aggregateNumCircLists(inputSeq: Seq[VisualStanza], acc: Seq[NumCircListCallout]): (Seq[NumCircListCallout], Seq[VisualStanza]) =
+  private def aggregateNumCircLists(inputSeq: Seq[VisualStanza],
+                                    acc: Seq[NumberedCircleListItemCallout]): (Seq[NumberedCircleListItemCallout], Seq[VisualStanza]) =
     inputSeq match {
-      case (x: NumCircListCallout) :: xs if x.stack => aggregateNumCircLists(xs, acc :+ x)
+      case (x: NumberedCircleListItemCallout) :: xs if x.stack => aggregateNumCircLists(xs, acc :+ x)
       case xs => (acc, xs)
     }
 

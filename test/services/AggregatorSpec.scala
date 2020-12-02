@@ -69,14 +69,14 @@ class AggregatorSpec extends BaseSpec {
     val num3Phrase = Phrase(Vector("Line1", "Welsh Line1"))
     val num4Phrase = Phrase(Vector("Line1", "Welsh Line1"))
 
-    val num1ListCo = NumListCallout(num1Phrase, Seq(""), false)
-    val num2ListCo = NumListCallout(num2Phrase, Seq(""), true)
-    val num3ListCo = NumListCallout(num3Phrase, Seq(""), true)
-    val num4ListCo = NumListCallout(num4Phrase, Seq(""), true)
-    val num1CircListCo = NumCircListCallout(num1Phrase, Seq(""), false)
-    val num2CircListCo = NumCircListCallout(num2Phrase, Seq(""), true)
-    val num3CircListCo = NumCircListCallout(num3Phrase, Seq(""), true)
-    val num4CircListCo = NumCircListCallout(num4Phrase, Seq(""), true)
+    val num1ListCo = NumberedListItemCallout(num1Phrase, Seq(""), false)
+    val num2ListCo = NumberedListItemCallout(num2Phrase, Seq(""), true)
+    val num3ListCo = NumberedListItemCallout(num3Phrase, Seq(""), true)
+    val num4ListCo = NumberedListItemCallout(num4Phrase, Seq(""), true)
+    val num1CircListCo = NumberedCircleListItemCallout(num1Phrase, Seq(""), false)
+    val num2CircListCo = NumberedCircleListItemCallout(num2Phrase, Seq(""), true)
+    val num3CircListCo = NumberedCircleListItemCallout(num3Phrase, Seq(""), true)
+    val num4CircListCo = NumberedCircleListItemCallout(num4Phrase, Seq(""), true)
   }
 
   "NumberedList aggregation" must {
@@ -89,7 +89,7 @@ class AggregatorSpec extends BaseSpec {
           instruction)
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
+      aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo))
     }
 
   "add an isolated number list co with stack equals true into a row group of size 1" in new NumberedListTest {
@@ -101,7 +101,7 @@ class AggregatorSpec extends BaseSpec {
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo))
   }
 
   "create two number list groups for two contiguous rows with stack set to false" in new NumberedListTest {
@@ -115,8 +115,8 @@ class AggregatorSpec extends BaseSpec {
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo))
-    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo))
+    aggregatedStanzas(2) shouldBe NumberedList(Seq(num1ListCo))
   }
 
   "create a number list group with two entries for two contiguous number list cos with stack set to true" in new NumberedListTest {
@@ -128,7 +128,7 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num2ListCo, num3ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num2ListCo, num3ListCo))
   }
 
   "create two number list groups for two contiguous number list cos with stack set to true and false respectively" in new NumberedListTest {
@@ -142,8 +142,8 @@ class AggregatorSpec extends BaseSpec {
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num2ListCo))
-    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num2ListCo))
+    aggregatedStanzas(2) shouldBe NumberedList(Seq(num1ListCo))
   }
 
   "create a number list group with two number list co with stack set to false and true respectively" in new NumberedListTest {
@@ -157,7 +157,7 @@ class AggregatorSpec extends BaseSpec {
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo, num2ListCo))
   }
 
   "create a number list group with multiple number list cos" in new NumberedListTest {
@@ -171,7 +171,7 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo, num3ListCo, num4ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo, num2ListCo, num3ListCo, num4ListCo))
   }
 
   "create two number list groups of size two from four contiguous elems where stack is false for the third elem" in new NumberedListTest {
@@ -183,8 +183,8 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(0) shouldBe NumListGroup(Seq(num2ListCo, num3ListCo))
-    aggregatedStanzas(1) shouldBe NumListGroup(Seq(num1ListCo, num4ListCo))
+    aggregatedStanzas(0) shouldBe NumberedList(Seq(num2ListCo, num3ListCo))
+    aggregatedStanzas(1) shouldBe NumberedList(Seq(num1ListCo, num4ListCo))
   }
 
   "create two number list groups of size one for two non-contiguous elems in sequence of stanzas" in new NumberedListTest {
@@ -198,8 +198,8 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(2) shouldBe NumListGroup(Seq(num1ListCo))
-    aggregatedStanzas(four) shouldBe NumListGroup(Seq(num1ListCo))
+    aggregatedStanzas(2) shouldBe NumberedList(Seq(num1ListCo))
+    aggregatedStanzas(four) shouldBe NumberedList(Seq(num1ListCo))
   }
 
   "create two number list groups with multiple elems from a complex sequence of stanzas" in new NumberedListTest {
@@ -217,8 +217,8 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(3) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo, num3ListCo))
-    aggregatedStanzas(five) shouldBe NumListGroup(Seq(num1ListCo, num2ListCo))
+    aggregatedStanzas(3) shouldBe NumberedList(Seq(num1ListCo, num2ListCo, num3ListCo))
+    aggregatedStanzas(five) shouldBe NumberedList(Seq(num1ListCo, num2ListCo))
   }
 
   "create two number circle list groups with multiple elems from a complex sequence of stanzas" in new NumberedListTest {
@@ -236,8 +236,8 @@ class AggregatorSpec extends BaseSpec {
     )
 
     val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-    aggregatedStanzas(3) shouldBe NumCircListGroup(Seq(num1CircListCo, num2CircListCo, num3CircListCo))
-    aggregatedStanzas(five) shouldBe NumCircListGroup(Seq(num1CircListCo, num2CircListCo))
+    aggregatedStanzas(3) shouldBe NumberedCircleList(Seq(num1CircListCo, num2CircListCo, num3CircListCo))
+    aggregatedStanzas(five) shouldBe NumberedCircleList(Seq(num1CircListCo, num2CircListCo))
   }
 
 }
