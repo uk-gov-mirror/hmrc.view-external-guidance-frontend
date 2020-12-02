@@ -20,20 +20,21 @@ import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
-import play.api.data.{FormError, Form}
+import play.api.data.{Form, FormError}
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
-import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
+import models.ui.{DateInputPage, FormData, InputPage, QuestionPage, StandardPage}
 import models.ocelot.stanzas.DataInput
 import forms.SubmittedAnswerFormProvider
-import views.html.{input_page, standard_page, question_page}
+import views.html.{input_date_page, input_page, question_page, standard_page}
 import play.api.Logger
-import scala.concurrent.Future
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 import play.twirl.api.Html
+
 import scala.concurrent.Future
 import models.ocelot.KeyedStanza
 
@@ -45,13 +46,14 @@ class GuidanceController @Inject() (
     standardView: standard_page,
     questionView: question_page,
     inputView: input_page,
+    dateInputView: input_date_page,
     formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
   with SessionFrontendController {
 
-  val logger = Logger(getClass)
+  val logger: Logger = Logger(getClass)
 
   def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
@@ -69,6 +71,8 @@ class GuidanceController @Inject() (
             Future.successful(Ok(questionView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
           case page: InputPage =>
             Future.successful(Ok(inputView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
+          case page: DateInputPage =>
+            Future.successful(Ok(dateInputView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
