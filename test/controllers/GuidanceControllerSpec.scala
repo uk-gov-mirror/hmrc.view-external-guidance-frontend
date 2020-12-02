@@ -16,8 +16,9 @@
 
 package controllers
 
-import base.{ViewFns, BaseSpec}
-import mocks.{MockAppConfig, MockGuidanceService, MockSessionRepository, MockGuidanceConnector}
+import base.{BaseSpec, ViewFns}
+import config.ErrorHandler
+import mocks.{MockAppConfig, MockGuidanceConnector, MockGuidanceService, MockSessionRepository}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc._
@@ -27,15 +28,16 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import forms.SubmittedAnswerFormProvider
-import models.{PageEvaluationContext, PageContext}
-import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
-import models.ocelot.stanzas.{Question => OcelotQuestion,_}
-import models.ui.{CurrencyInput => UiCurrencyInput,_}
+import models.{PageContext, PageEvaluationContext}
+import models.ocelot.{KeyedStanza, Phrase, Process, ProcessJson, Page => OcelotPage}
+import models.ocelot.stanzas.{Question => OcelotQuestion, _}
+import models.ui.{CurrencyInput => UiCurrencyInput, _}
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
 import models.errors._
 import models.ocelot.LabelCache
+
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import views.html._
@@ -75,13 +77,15 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = block(request)
     }
 
-    lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-    lazy val view = app.injector.instanceOf[views.html.standard_page]
-    lazy val questionView = app.injector.instanceOf[views.html.question_page]
-    lazy val inputView = app.injector.instanceOf[input_page]
-    val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
-    val questionStanza = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
-    val currencyInputStanza = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
+    lazy val errorHandler: ErrorHandler = app.injector.instanceOf[config.ErrorHandler]
+    lazy val view: standard_page = app.injector.instanceOf[views.html.standard_page]
+    lazy val questionView: question_page = app.injector.instanceOf[views.html.question_page]
+    lazy val inputView: input_page = app.injector.instanceOf[input_page]
+    lazy val dateInputView: input_date_page = app.injector.instanceOf[input_date_page]
+
+    val instructionStanza: InstructionStanza = InstructionStanza(3, Seq("3"), None, false)
+    val questionStanza: OcelotQuestion = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
+    val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", questionStanza)
@@ -109,6 +113,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -206,6 +211,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       guidanceService,
       stubMessagesControllerComponents()
@@ -244,7 +250,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -286,7 +292,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
@@ -308,7 +314,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -421,6 +427,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -679,6 +686,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         view,
         questionView,
         inputView,
+        dateInputView,
         new SubmittedAnswerFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
@@ -707,6 +715,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -741,6 +750,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -779,6 +789,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -814,6 +825,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -848,6 +860,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -885,6 +898,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()

@@ -1,0 +1,57 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@(input: models.ui.DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+
+@optionalAria() = @{
+  Seq(input.hint.map(_ => s"$name-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+    case Nil => ""
+    case l => ariaDescribedBy("input-hint")
+  }
+}
+<div class="govuk-date-input" id="date-input">
+    <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+            <label class="govuk-label govuk-date-input__label" for="day">
+              @messages("label.day")
+            </label>
+            <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="day" name="day" type="text" pattern="[0-9]*" inputmode="numeric">
+        </div>
+    </div>
+    <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+            <label class="govuk-label govuk-date-input__label" for="month">
+              @messages("label.month")
+            </label>
+            <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="month" name="month" type="text" pattern="[0-9]*" inputmode="numeric"></div>
+    </div>
+    <div class="govuk-date-input__item">
+        <div class="govuk-form-group">
+            <label class="govuk-label govuk-date-input__label" for="year">
+               @messages("label.year")
+            </label>
+            <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="year" name="year" type="text" pattern="[0-9]*" inputmode="numeric"></div>
+    </div>
+</div>
+@*<div class="govuk-form-group">*@
+@*    <div class="hmrc-currency-input__wrapper">*@
+@*        <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>*@
+@*        <input class="govuk-input govuk-input--width-10" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>*@
+@*    </div>*@
+@*</div>*@
+@{
+     //$COVERAGE-OFF$
+}
