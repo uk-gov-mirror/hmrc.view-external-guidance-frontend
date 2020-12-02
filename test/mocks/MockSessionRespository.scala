@@ -34,10 +34,10 @@ trait MockSessionRepository extends MockFactory {
         .get(_: String, _: String))
         .expects(key, pageUrl)
 
-    def set(key: String, process: Process, labels: Map[String, Label]): CallHandler[Future[RequestOutcome[Unit]]] =
+    def set(key: String, process: Process, urltoPageId: Map[String, String]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
-        .set(_: String, _: Process, _: Map[String, Label]))
-        .expects(key, process, labels)
+        .set(_: String, _: Process, _: Map[String, String]))
+        .expects(key, process, urltoPageId)
 
     def saveUserAnswerAndLabels(docId: String, url: String, answer: String, labels: Seq[Label]): CallHandler[Future[RequestOutcome[Unit]]] = {
       (mockSessionRepository

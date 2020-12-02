@@ -126,12 +126,12 @@ class GuidanceService @Inject() (
       }}
     )
 
-  def retrieveAndCachePublished(processCode: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
-  Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCachePublished(processCode: String, docId: String)
+                               (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processCode, docId, connector.publishedProcess)
 
-  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
-  Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCacheApproval(processId: String, docId: String)
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(

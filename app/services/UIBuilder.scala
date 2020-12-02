@@ -59,14 +59,13 @@ class UIBuilder {
     }
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] = {
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
       case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if !rg.isSummaryList =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas( x +: stackStanzas(Nil)(xs), Nil, formData)
     }
-  }
 
   private def fromSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
@@ -197,5 +196,4 @@ class UIBuilder {
     val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
     ConfirmationPanel(texts.head, texts.tail)
   }
-
 }

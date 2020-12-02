@@ -199,7 +199,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "return a BadRequest response" in new QuestionSubmissionTest {
       MockSessionRepository
         .get(processId, s"tell-hmrc$path")
-        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result = target.submitPage("tell-hmrc", relativePath)(fakeRequest)
