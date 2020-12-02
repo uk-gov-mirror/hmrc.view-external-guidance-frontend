@@ -42,16 +42,16 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
-    val expectedTable = Table(None,
-                              Some(Seq(Th(Text("HELLO","HELLO")), Th(Text("World","World")))),
+    val expectedTable = Table(Text("HELLO","HELLO"),
+                              Some(Seq(Th(Text("First","First")), Th(Text("Second","Second")))),
                               Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    val expectedTableNoHeadings = Table(None,
+    val expectedTableNoHeadings = Table(Text("HELLO","HELLO"),
                                         None,
-                                        Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    val expectedTableWithNumericCells = Table(None,
-                                              Some(Seq(Th(Text("HELLO","HELLO")), Th(Text("World","World")))),
+                                        Seq.fill(2)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
+    val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
+                                              None,
                                               Seq.fill(3)(Seq(Th(Text("HELLO","HELLO")), Td(Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency))))))
-    val expectedTableWithCaption = expectedTable.copy(caption = Some(Text("Caption", "Caption")))
+    val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
@@ -62,44 +62,42 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "English Tables" must {
 
-    "Encode all bold initial row as table headings" in new Test {
+    "Encode table missing caption, with initial row/cell as table caption" in new Test {
       val html: Html = components.table(expectedTable)
       val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
-      table.hasClass("govuk-table") shouldBe true
-      val head = table.getElementsByTag("thead").first
-      val headings = head.getElementsByTag("th").asScala.toList
-      expectedTable.headingRow.fold(fail){row =>
-        headings.size shouldBe row.size
+      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
+        caption.text shouldBe "HELLO"
+
+        table.hasClass("govuk-table") shouldBe true
+
+        val body = table.getElementsByTag("tbody").first
+        val rows = body.getElementsByTag("tr").asScala.toList
+
+        rows.size shouldBe expectedTable.rows.size
       }
-
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
-
-      rows.size shouldBe expectedTable.rows.size
     }
 
     "Encode an initial row not all bold as a standard table body row" in new Test {
       val html: Html = components.table(expectedTableNoHeadings)
       val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
-      table.hasClass("govuk-table") shouldBe true
-      table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
+      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
+        caption.text shouldBe "HELLO"
+        table.hasClass("govuk-table") shouldBe true
+        table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
+        val body = table.getElementsByTag("tbody").first
+        val rows = body.getElementsByTag("tr").asScala.toList
 
-      rows.size shouldBe expectedTable.rows.size
+        rows.size shouldBe expectedTableNoHeadings.rows.size
+      }
     }
 
     "Encode all bold initial row as table headings with a Caption" in new Test {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true
-      expectedTableWithCaption.caption.fold(fail){caption =>
-        val element: Element = table.getElementsByTag("caption").first
-        element.hasClass("govuk-table__caption") shouldBe true
-        element.text shouldBe caption.asString(messages.lang)
-      }
+      val element: Element = table.getElementsByTag("caption").first
+      element.hasClass("govuk-table__caption") shouldBe true
+      element.text shouldBe expectedTableWithCaption.caption.asString(messages.lang)
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
@@ -138,44 +136,42 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "Welsh Tables" must {
 
-    "Encode all bold initial row as table headings" in new WelshTest {
+    "Encode table missing caption, with initial row/cell as table caption" in new WelshTest {
       val html: Html = components.table(expectedTable)
       val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
-      table.hasClass("govuk-table") shouldBe true
-      val head = table.getElementsByTag("thead").first
-      val headings = head.getElementsByTag("th").asScala.toList
-      expectedTable.headingRow.fold(fail){row =>
-        headings.size shouldBe row.size
+      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
+        caption.text shouldBe "HELLO"
+
+        table.hasClass("govuk-table") shouldBe true
+
+        val body = table.getElementsByTag("tbody").first
+        val rows = body.getElementsByTag("tr").asScala.toList
+
+        rows.size shouldBe expectedTable.rows.size
       }
-
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
-
-      rows.size shouldBe expectedTable.rows.size
     }
 
     "Encode an initial row not all bold as a standard table body row" in new WelshTest {
       val html: Html = components.table(expectedTableNoHeadings)
       val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.isEmpty shouldBe true
-      table.hasClass("govuk-table") shouldBe true
-      table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
+      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
+        caption.text shouldBe "HELLO"
+        table.hasClass("govuk-table") shouldBe true
+        table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
+        val body = table.getElementsByTag("tbody").first
+        val rows = body.getElementsByTag("tr").asScala.toList
 
-      rows.size shouldBe expectedTable.rows.size
+        rows.size shouldBe expectedTableNoHeadings.rows.size
+      }
     }
 
     "Encode all bold initial row as table headings with a Caption" in new WelshTest {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true
-      expectedTableWithCaption.caption.fold(fail){caption =>
-        val element: Element = table.getElementsByTag("caption").first
-        element.hasClass("govuk-table__caption") shouldBe true
-        element.text shouldBe caption.asString(messages.lang)
-      }
+      val element: Element = table.getElementsByTag("caption").first
+      element.hasClass("govuk-table__caption") shouldBe true
+      element.text shouldBe expectedTableWithCaption.caption.asString(messages.lang)
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
