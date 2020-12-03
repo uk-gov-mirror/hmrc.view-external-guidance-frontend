@@ -42,12 +42,13 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
+  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, sessionId: String)(
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url").map {
+    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
       case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
         pageBuilder
           .pages(process)
@@ -93,9 +94,9 @@ class GuidanceService @Inject() (
     PageContext(pec, uiPage, labels)
   }
 
-  def getPageContext(processCode: String, url: String, sessionId: String)
+  def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
-    getPageEvaluationContext(processCode, url, sessionId).map{
+    getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
       case Right(evalContext) => Right(getPageContext(evalContext))
       case Left(err) => Left(err)
     }

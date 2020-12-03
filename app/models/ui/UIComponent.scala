@@ -46,6 +46,11 @@ case class Link(dest: String, text: String, window: Boolean = false, asButton: B
   override def toString: String = s"[${if(asButton) "button" else "link"}:$text:$dest:$window:$hint]"
   def isEmpty: Boolean = text.isEmpty
   def toWords: Seq[String] = text.split(" +").toSeq
+  def getDest(backLink: Option[String]): String =
+    backLink match {
+      case Some(bl) if dest == bl => s"$dest?$PreviousPageLinkQuery"
+      case _ => dest
+    }
 }
 
 //

@@ -46,32 +46,65 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
 
   "GET /accessibility" should {
     "return 200" in new Test {
-      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in new Test {
-      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
 
     }
 
     "return InternalServerError when a database error occurs" in new Test {
-      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Left(DatabaseError)))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = false).returns(Future.successful(Left(DatabaseError)))
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
 
   }
 
+  "Get /accessibility?p=1" should {
+
+    "return 200" in new Test {
+
+      // Note this an unlikely scenario as it is not usual for the guidance to contain
+      // links to the accessibility page
+
+      override val fakeRequest = FakeRequest("GET", "/accessibility?p=1").withSession(SessionKeys.sessionId -> "sessionId")
+
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = true).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+
+      val result: Future[Result] = controller.getPage(Some("1"))(fakeRequest)
+
+      status(result) shouldBe Status.OK
+    }
+
+  }
+
   "GET /accessibility" should {
     "generate page with header link url pointing to nominated url" in new Test {
-      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       val processCode = process.meta.processCode
@@ -81,8 +114,11 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
     }
 
     "generate page with header using title of Guidance" in new Test {
-      MockGuidanceService.getProcessContext("sessionId", "accessibility").returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      MockGuidanceService.getProcessContext(
+        "sessionId",
+        "accessibility",
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")

@@ -21,6 +21,9 @@ import models.ocelot.stanzas.{VisualStanza, StackedGroup}
 import scala.annotation.tailrec
 
 package object ui {
+
+  val PreviousPageLinkQuery: String = "p=1"
+
   implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))
 
   @tailrec

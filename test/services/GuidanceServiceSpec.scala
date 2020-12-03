@@ -98,7 +98,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
 
       MockPageBuilder
@@ -117,7 +117,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
 
       whenReady(result) {
         case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
@@ -134,7 +134,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "tell-hmrc"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), None))))
 
       MockPageBuilder
@@ -153,7 +153,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -173,14 +173,14 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(processId, s"$processCode$url")
+        .get(processId, s"$processCode$url", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
 
       MockPageBuilder
         .pages(process)
         .returns(Right(pages))
 
-      private val result = target.getPageContext(processCode, url, processId)
+      private val result = target.getPageContext(processCode, url, previousPageByLink = false, processId)
 
       whenReady(result) {
         _ shouldBe Left(BadRequestError)
