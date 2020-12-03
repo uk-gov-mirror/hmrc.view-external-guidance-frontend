@@ -56,7 +56,9 @@ class UIBuilder {
       case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), formData)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), formData)
-      case x :: xs => fromStanzas(xs, acc, formData)
+      case x :: xs =>
+        logger.warn(s"Encountered unexpected VisualStanza $x")
+        fromStanzas(xs, acc, formData)
     }
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
@@ -129,20 +131,16 @@ class UIBuilder {
       case c: SectionCallout => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case c: SubSectionCallout => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
-      case c: ImportantCallout => Seq.empty // Reserved for future use
       case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
-      case c: NumberedListItemCallout => Seq.empty
-      case c: NumberedCircleListItemCallout => Seq.empty
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
       case c: ErrorCallout =>
         // Ignore error messages if no errors exist within form data
-        // TODO this should allocate the messages to errors found within the formData
-        // as this linking of messages to form ids has not been resolved, Currently
-        // this code will allocate all ErrorMsg elements to the only current error
-        // which is error.required
         formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
+      case _: ImportantCallout => Seq.empty               // Reserved for future use
+      case _: NumberedListItemCallout => Seq.empty        // Unused
+      case _: NumberedCircleListItemCallout => Seq.empty  // Unused
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
