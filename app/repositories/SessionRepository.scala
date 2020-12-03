@@ -41,6 +41,7 @@ object DefaultSessionRepository {
                                   processId: String,
                                   process: Process,
                                   labels: Map[String, Label],
+                                  urlToPageId: Map[String, String],
                                   answers: Map[String, String],
                                   pageHistory: List[String],
                                   lastAccessed: Instant)
@@ -51,17 +52,16 @@ object DefaultSessionRepository {
   }
 }
 
-case class ProcessContext(
-                           process: Process,
-                           answers: Map[String, String],
-                           labels: Map[String, Label],
-                           backLink: Option[String]
-                         )
+case class ProcessContext(process: Process,
+                          answers: Map[String, String],
+                          labels: Map[String, Label],
+                          urlToPageId: Map[String, String],
+                          backLink: Option[String])
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
-  def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]]
+  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
 }
@@ -114,25 +114,25 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       ),
       fetchNewObject = false
     ).flatMap { r =>
-          r.result[DefaultSessionRepository.SessionProcess]
-          .fold {
-            logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${r.lastError}")
-            Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
-          }{ sp =>
-            //
-            // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
-            //
-            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
-            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, backLink)
-            historyUpdate.fold(Future.successful(Right(processContext)))(history =>
-              savePageHistory(key, history).map {
-                case Left(err) =>
-                  logger.error(s"Unable to save backlink history, error = $err")
-                  Right(processContext)
-                case _ => Right(processContext)
-              }
-            )
-          }
+        r.result[DefaultSessionRepository.SessionProcess]
+        .fold {
+          logger.warn(s"Attempt to retrieve cached process from session repo with _id=$key returned no result, lastError ${r.lastError}")
+          Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
+        }{ sp =>
+          //
+          // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
+          //
+          val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
+          val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
+          historyUpdate.fold(Future.successful(Right(processContext)))(history =>
+            savePageHistory(key, history).map {
+              case Left(err) =>
+                logger.error(s"Unable to save backlink history, error = $err")
+                Right(processContext)
+              case _ => Right(processContext)
+            }
+          )
+        }
       }
       .recover {
         case lastError =>
@@ -140,11 +140,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  private def backlinkAndHistory(
-                                  pageUrl: String,
-                                  previousPageByLink: Boolean,
-                                  priorHistory: List[String]): (Option[String], Option[List[String]]) = {
-
+  private def backlinkAndHistory(pageUrl: String,
+                                 previousPageByLink: Boolean,
+                                 priorHistory: List[String]): (Option[String], Option[List[String]]) =
     priorHistory.reverse match {
       // Initial page
       case Nil => (None, None)
@@ -156,10 +154,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs => (Some(x), None)
     }
 
-  }
-
-  def set(key: String, process: Process, labels: Map[String, Label]): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, labels, Map(), Nil, Instant.now))
+  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
     collection
       .update(false)
       .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
@@ -200,11 +196,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def get(key:String): Future[RequestOutcome[ProcessContext]] =
-    find("_id" -> key).map { list =>
-      list.size match {
-        case 0 =>  Left(NotFoundError)
-        case _ => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, None))
-      }
+    find("_id" -> key).map {
+      case Nil =>  Left(NotFoundError)
+      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
     }.recover {
       case lastError =>
       logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")

@@ -20,14 +20,18 @@ import models.ocelot.isLinkOnlyPhrase
 import models.ocelot.Phrase
 
 case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
-  lazy val paddedRows = {
-    val maxRowLength = group.map(_.cells.length).max
-    group.map(row => (row.cells ++ Seq.fill(maxRowLength - row.cells.size)(Phrase())))
-  }
-  lazy val isSummaryList: Boolean = group.map(_.cells.length).max == 3 &&
-                                    group.forall(r => r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2)) || r.cells(2) == Phrase())
+  lazy val maxRowLength:Int = group.headOption.fold(0)(_ => group.map(_.cells.length).max)
+  lazy val paddedRows = group.map(row => (row.cells ++ Seq.fill(maxRowLength - row.cells.size)(Phrase())))
+  lazy val isSummaryList: Boolean = maxRowLength == 3 &&
+                                    group.forall(r => r.cells.length < 3 ||
+                                                      isLinkOnlyPhrase(r.cells(2)) ||
+                                                      r.cells(2) == Phrase())
 }
 
 object RowGroup {
-  def apply(group: Seq[Row]): RowGroup = RowGroup(group.last.next, group, group.head.stack)
+  def apply(group: Seq[Row]): RowGroup =
+    group match {
+      case Nil => RowGroup(Seq.empty, Seq.empty, false)
+      case _ => RowGroup(group.last.next, group, group.head.stack)
+    }
 }

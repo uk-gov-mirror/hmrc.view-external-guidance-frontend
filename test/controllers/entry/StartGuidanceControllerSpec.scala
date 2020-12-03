@@ -29,6 +29,7 @@ import models.ui._
 import models.errors._
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
+import uk.gov.hmrc.http.SessionKeys
 
 class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
@@ -79,12 +80,43 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
         fakeSessionIdAction,
         stubMessagesControllerComponents()
       )
+  }
 
+  trait ExistingSessionProcessTest extends MockGuidanceService with TestData {
+    lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession((SessionKeys.sessionId, s"session-$uuid"))
+
+    lazy val target =
+      new StartGuidanceController(
+        errorHandler,
+        mockGuidanceService,
+        fakeSessionIdAction,
+        stubMessagesControllerComponents()
+      )
   }
 
   "Calling the scratch process endpoint with a valid UUID" should {
 
     trait ScratchTestWithValidUUID extends ProcessTest {
+      val repositoryId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
+      MockGuidanceService
+        .retrieveAndCacheScratch(uuid, repositoryId)
+        .returns(Future.successful(Right((expectedUrl,uuid))))
+      lazy val result = target.scratch(uuid)(fakeRequest)
+    }
+
+    "redirect the caller to another page" in new ScratchTestWithValidUUID {
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "redirect the caller to the start page of the process" in new ScratchTestWithValidUUID {
+      redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$uuid$expectedUrl")
+    }
+
+  }
+
+  "Calling the scratch process endpoint with an existing session id" should {
+
+    trait ScratchTestWithValidUUID extends ExistingSessionProcessTest {
       val repositoryId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
       MockGuidanceService
         .retrieveAndCacheScratch(uuid, repositoryId)

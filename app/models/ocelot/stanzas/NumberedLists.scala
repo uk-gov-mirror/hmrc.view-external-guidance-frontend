@@ -20,11 +20,19 @@ package models.ocelot.stanzas
 case class NumberedList(override val next: Seq[String], group: Seq[NumberedListItemCallout], stack: Boolean) extends VisualStanza with Populated
 
 object NumberedList {
-  def apply(group: Seq[NumberedListItemCallout]): NumberedList = NumberedList(group.last.next, group, group.head.stack)
+  def apply(group: Seq[NumberedListItemCallout]): NumberedList =
+    group match {
+      case Nil => NumberedList(Seq.empty, Seq.empty, false)
+      case _ => NumberedList(group.last.next, group, group.head.stack)
+    }
 }
 
 case class NumberedCircleList(override val next: Seq[String], group: Seq[NumberedCircleListItemCallout], stack: Boolean) extends VisualStanza with Populated
 
 object NumberedCircleList {
-  def apply(group: Seq[NumberedCircleListItemCallout]): NumberedCircleList = NumberedCircleList(group.last.next, group, group.head.stack)
+  def apply(group: Seq[NumberedCircleListItemCallout]): NumberedCircleList =
+    group match {
+      case Nil => NumberedCircleList(Seq.empty, Seq.empty, false)
+      case _ => NumberedCircleList(group.last.next, group, group.head.stack)
+    }
 }

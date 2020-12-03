@@ -49,38 +49,34 @@ class GuidanceService @Inject() (
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, backLink)) if process.meta.processCode == processCode =>
-        pageBuilder
-          .pages(process)
-          .fold(
+      case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
+        urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
+          logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
+          Left(BadRequestError)
+        }{ pageId =>
+          pageBuilder.buildPage(pageId, process).fold(
             err => {
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
-            pages =>
-              pages
-                .find(_.url == url)
-                .fold {
-                  logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
-                  Left(BadRequestError): RequestOutcome[PageEvaluationContext]
-                } { pge =>
-                  Right(
-                    PageEvaluationContext(
-                      pge,
-                      sessionId,
-                      pages.map(p => (p.id, s"${appConfig.baseUrl}/${processCode}${p.url}")).toMap,
-                      process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
-                      process.title,
-                      process.meta.id,
-                      processCode,
-                      LabelCache(labelsMap),
-                      backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
-                      answers.get(url)
-                    )
-                  )
-                }
+            page =>
+              Right(
+                PageEvaluationContext(
+                  page,
+                  sessionId,
+                  urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap,
+                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                  process.title,
+                  process.meta.id,
+                  processCode,
+                  LabelCache(labelsMap),
+                  backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
+                  answers.get(url)
+                )
+              )
           )
-      case Right(ProcessContext(_,_,_,_)) =>
+        }
+      case Right(ProcessContext(_,_,_,_,_)) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
@@ -131,12 +127,12 @@ class GuidanceService @Inject() (
       }}
     )
 
-  def retrieveAndCachePublished(processCode: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
-  Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCachePublished(processCode: String, docId: String)
+                               (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processCode, docId, connector.publishedProcess)
 
-  def retrieveAndCacheApproval(processId: String, docId: String)(implicit hc: HeaderCarrier, context: ExecutionContext):
-  Future[RequestOutcome[(String,String)]] =
+  def retrieveAndCacheApproval(processId: String, docId: String)
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
     retrieveAndCache(processId, docId, connector.approvalProcess)
 
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
@@ -152,7 +148,7 @@ class GuidanceService @Inject() (
             logger.warn(s"Failed to parse process with error $err")
             Future.successful(Left(InvalidProcessError))
         }, pages =>
-          sessionRepository.set(docId, process, uniqueLabels(pages).map(l => (l.name, l)).toMap).map {
+          sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
             case Right(_) => Right((pages.head.url, process.meta.processCode))
             case Left(err) =>
               logger.error(s"Failed to store new parsed process in session respository, $err")

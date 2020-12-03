@@ -49,7 +49,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       MockGuidanceService.getProcessContext(
         "sessionId",
         "accessibility",
-        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
       val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
@@ -58,7 +58,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       MockGuidanceService.getProcessContext(
         "sessionId",
         "accessibility",
-        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
       val result: Future[Result] = controller.getPage(None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
@@ -89,7 +89,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       MockGuidanceService.getProcessContext(
         "sessionId",
         "accessibility",
-        previousPageByLink = true).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        previousPageByLink = true).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       val result: Future[Result] = controller.getPage(Some("1"))(fakeRequest)
 
@@ -103,7 +103,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       MockGuidanceService.getProcessContext(
         "sessionId",
         "accessibility",
-        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
       val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
@@ -117,7 +117,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       MockGuidanceService.getProcessContext(
         "sessionId",
         "accessibility",
-        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
       val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))

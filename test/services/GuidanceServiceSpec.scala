@@ -37,7 +37,7 @@ class GuidanceServiceSpec extends BaseSpec {
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     implicit val stanzaIdToUrl: Map[String, String] = Map[String, String]()
 
-    private def pageWithUrl(id: String, url: String) = Page(id, url, Seq(KeyedStanza("1", EndStanza)), Seq())
+    def pageWithUrl(id: String, url: String) = Page(id, url, Seq(KeyedStanza("1", EndStanza)), Seq())
 
     val process: Process = validOnePageJson.as[Process]
     val processWithProcessCode = validOnePageProcessWithProcessCodeJson.as[Process]
@@ -54,6 +54,8 @@ class GuidanceServiceSpec extends BaseSpec {
       pageWithUrl("1", "/page-1"),
       pageWithUrl("2", lastPageUrl)
     )
+
+    val lastPage = pageWithUrl("2", lastPageUrl)
 
     val processId = "oct90001"
     val processCode = "CupOfTea"
@@ -72,7 +74,7 @@ class GuidanceServiceSpec extends BaseSpec {
     val pec = PageEvaluationContext(
                 page,
                 processId,
-                Map(),
+                Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"),
                 Some("/hello"),
                 ui.Text(),
                 processId,
@@ -91,6 +93,25 @@ class GuidanceServiceSpec extends BaseSpec {
       mockUIBuilder)
   }
 
+  "Calling saveLabels when there labels to save" should {
+
+    "save updated labels" in new Test {
+
+      val changedLabels = labels.update("LabelName", "New value")
+
+      MockSessionRepository
+        .saveLabels(sessionRepoId, changedLabels.updatedLabels.values.toSeq)
+        .returns(Future.successful(Right({})))
+
+      private val result = target.saveLabels(sessionRepoId, changedLabels)
+
+      whenReady(result) {
+        case Right(pc) => succeed
+        case Left(err) => fail(s"sabveLabels returned error $err")
+      }
+    }
+  }
+
   "Calling getPageContext with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
@@ -99,22 +120,22 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
-        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
-        .pages(process)
-        .returns(Right(pages))
+        .buildPage("2", process)
+        .returns(Right(lastPage))
 
       MockPageRenderer
-        .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas.collect{case s: VisualStanza => s}, labels, None))
+        .renderPage(lastPage, labels)
+        .returns((lastPage.stanzas.collect{case s: VisualStanza => s}, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
@@ -135,22 +156,22 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
-        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
-        .pages(fullProcess)
-        .returns(Right(pages))
+        .buildPage("2", fullProcess)
+        .returns(Right(lastPage))
 
       MockPageRenderer
-        .renderPage(pages(2), labels)
-        .returns((pages(2).stanzas.collect{case s: VisualStanza => s}, labels, None))
+        .renderPage(lastPage, labels)
+        .returns((lastPage.stanzas.collect{case s: VisualStanza => s}, labels, None))
 
       MockSessionRepository
         .saveLabels(sessionRepoId, Seq.empty)
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, pages(2).stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
@@ -174,11 +195,11 @@ class GuidanceServiceSpec extends BaseSpec {
 
       MockSessionRepository
         .get(processId, s"$processCode$url", previousPageByLink = false)
-        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       MockPageBuilder
-        .pages(process)
-        .returns(Right(pages))
+        .buildPage("2", process)
+        .returns(Right(lastPage))
 
       private val result = target.getPageContext(processCode, url, previousPageByLink = false, processId)
 
@@ -199,7 +220,7 @@ class GuidanceServiceSpec extends BaseSpec {
       val processWithUpdatedId = process.copy(meta = process.meta.copy( id = uuid))
 
       MockSessionRepository
-        .set(uuid, processWithUpdatedId, Map())
+        .set(uuid, processWithUpdatedId, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -223,7 +244,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode, Map())
+        .set(sessionRepoId, processWithProcessCode, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -247,7 +268,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right(processWithProcessCode)))
 
       MockSessionRepository
-        .set(sessionRepoId, processWithProcessCode, Map())
+        .set(sessionRepoId, processWithProcessCode, Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"))
         .returns(Future.successful(Right(())))
 
       MockPageBuilder
@@ -266,7 +287,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
     "successfully retrieve a process context when the session data contains a single process" in new Test {
 
-      val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), Map(), None)
+      val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), Map(), Map(), None)
 
       MockSessionRepository
         .get(sessionRepoId)

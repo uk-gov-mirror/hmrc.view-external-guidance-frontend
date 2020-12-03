@@ -48,7 +48,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
     lazy val invalidProcessCode = "cup-of-coffee"
 
     lazy val process: Process = validOnePageJson.as[Process]
-    lazy val processContext: ProcessContext = ProcessContext(process, Map(), Map(), None)
+    lazy val processContext: ProcessContext = ProcessContext(process, Map(), Map(), Map(), None)
 
     val timeout = MockAppConfig.timeoutInSeconds * MockAppConfig.toMilliSeconds
 
