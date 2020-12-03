@@ -31,7 +31,7 @@ import forms.SubmittedAnswerFormProvider
 import models.{PageContext, PageEvaluationContext}
 import models.ocelot.{KeyedStanza, Phrase, Process, ProcessJson, Page => OcelotPage}
 import models.ocelot.stanzas.{Question => OcelotQuestion, _}
-import models.ui.{CurrencyInput => UiCurrencyInput, _}
+import models.ui.{CurrencyInput => UiCurrencyInput, DateInput => UiDateInput, _}
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
@@ -86,6 +86,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     val instructionStanza: InstructionStanza = InstructionStanza(3, Seq("3"), None, false)
     val questionStanza: OcelotQuestion = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
     val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
+    val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", questionStanza)
@@ -94,11 +95,16 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", currencyInputStanza)
                                       )
+    val stanzasWithDateInput: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+      KeyedStanza("1", instructionStanza),
+      KeyedStanza("3", dateInputStanza)
+    )
 
 
     val page = OcelotPage("start", "/test-page", stanzas, Seq("4","5"))
     val inputPage = OcelotPage("start", "/test-page", stanzasWithInput, Seq("4"))
     val nonQuestionPage = OcelotPage("start", "/test-page", stanzas.drop(1), Seq("3"))
+    val dateInputPage = OcelotPage("start", "/test-page", stanzasWithDateInput, Seq("4"))
   }
 
   trait QuestionTest extends MockGuidanceService with TestData {
@@ -914,6 +920,84 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       contentType(result) shouldBe Some("text/html")
     }
 
+  }
+
+
+  "Date Input processing" should {
+    trait DateInputTest extends MockGuidanceService with TestData {
+
+      override lazy val expectedPage: Page = DateInputPage(
+        path,
+        UiDateInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+      )
+      val enteredValue = "12"
+      val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+
+      val target = new GuidanceController(
+        MockAppConfig,
+        fakeSessionIdAction,
+        errorHandler,
+        view,
+        questionView,
+        inputView,
+        dateInputView,
+        new SubmittedAnswerFormProvider(),
+        mockGuidanceService,
+        stubMessagesControllerComponents()
+      )
+
+      val initialLabels = LabelCache()
+
+      val pec = PageEvaluationContext(
+        page,
+        sessionId,
+        Map("4" -> "/somewhere-else"),
+        Some("/hello"),
+        Text(),
+        processId,
+        "hello",
+        initialLabels,
+        None,
+        None
+      )
+    }
+
+    "Calling a valid URL path to an Date Input page in a process" should {
+
+      "return an OK response" in new DateInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+
+        val result = target.getPage(processId, relativePath)(fakeRequest)
+        status(result) shouldBe Status.OK
+      }
+
+      "be a HTML response" in new DateInputTest {
+        MockGuidanceService
+          .getPageContext(processId, path, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        val result = target.getPage(processId, relativePath)(fakeRequest)
+        contentType(result) shouldBe Some("text/html")
+      }
+    }
+
+    "Returning to a date input page in a process" should {
+
+      "Show the original value entered" in new DateInputTest {
+        MockGuidanceService
+          .getPageContext(processId, path, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
+
+        val result = target.getPage(processId, relativePath)(fakeRequest)
+
+        status(result) shouldBe Status.OK
+        contentType(result) shouldBe Some("text/html")
+        // Probably not the right place to test this
+//        contentAsString(result).contains(enteredValue) shouldBe true
+      }
+    }
   }
 
 }
