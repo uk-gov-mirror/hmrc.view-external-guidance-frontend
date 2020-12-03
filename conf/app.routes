@@ -6,12 +6,12 @@ GET   /assets/*file                      controllers.Assets.versioned(path="/pub
 
 GET   /language/:lang                    controllers.SwitchLanguageController.switchToLanguage(lang: String)
 
-GET   /accessibility                     controllers.AccessibilityStatementController.getPage
+GET   /accessibility                     controllers.AccessibilityStatementController.getPage(p: Option[String])
 
 GET   /:processCode/session-timeout      controllers.SessionTimeoutPageController.getPage(processCode: String)
 
 GET   /:processCode                      controllers.entry.StartGuidanceController.published(processCode: String)
 
-GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String)
+GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String, p: Option[String])
 POST  /:processCode/*path                controllers.GuidanceController.submitPage(processCode: String, path: String)
 

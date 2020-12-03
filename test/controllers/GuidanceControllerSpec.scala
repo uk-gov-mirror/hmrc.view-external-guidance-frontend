@@ -26,7 +26,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
-import controllers.navigation.Navigation.PreviousPageLinkQuery
 import forms.SubmittedAnswerFormProvider
 import models.{PageEvaluationContext, PageContext}
 import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
@@ -138,7 +137,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
 
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
@@ -146,7 +145,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
     }
   }
@@ -164,7 +163,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .getPageContext(processId, path, previousPageByLink = true, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
 
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, Some("1"))(fakeRequest)
 
       status(result) shouldBe Status.OK
     }
@@ -178,7 +177,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(ansIndexZero)))))
 
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
 
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
@@ -451,7 +450,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
 
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
@@ -459,7 +458,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
     }
   }
@@ -471,7 +470,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .getPageContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
 
-      val result = target.getPage(processId, relativePath)(fakeRequest)
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
 
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
@@ -712,7 +711,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, relativePath)(fakeRequest)
+      lazy val result = target.getPage(processId, relativePath, None)(fakeRequest)
     }
 
     "return a success response" in new Test {
@@ -746,7 +745,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, relativePath)(fakeRequest)
+      lazy val result = target.getPage(processId, relativePath, None)(fakeRequest)
     }
 
     "return an INTERNAL_SERVER_ERROR response" in new Test {
@@ -784,7 +783,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, relativePath)(fakeRequest)
+      lazy val result = target.getPage(processId, relativePath, None)(fakeRequest)
     }
 
     "return an INTERNAL_SERVER_ERROR response" in new Test {
@@ -819,7 +818,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, unknownPath.drop(1))(fakeRequest)
+      lazy val result = target.getPage(processId, unknownPath.drop(1), None)(fakeRequest)
     }
 
     "return a success response" in new Test {
@@ -853,7 +852,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, path)(fakeRequest)
+      lazy val result = target.getPage(processId, path, None)(fakeRequest)
     }
 
     "return a bad request response" in new Test {
@@ -890,7 +889,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, unknownPath)(fakeRequest)
+      lazy val result = target.getPage(processId, unknownPath, None)(fakeRequest)
     }
 
     "return not found response" in new Test {

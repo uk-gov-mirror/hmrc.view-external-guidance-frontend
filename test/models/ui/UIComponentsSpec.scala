@@ -18,7 +18,6 @@ package models.ui
 
 import base.{BaseSpec, TestConstants}
 import play.api.i18n.Lang
-import controllers.navigation.Navigation.PreviousPageLinkQuery
 
 class UIComponentsSpec extends BaseSpec with TestConstants {
 

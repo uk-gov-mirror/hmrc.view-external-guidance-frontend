@@ -21,9 +21,8 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
-import controllers.navigation.Navigation.PreviousPageLinkQuery
 import views.html.components.{link, link_withHint, paragraph}
-import models.ui.{Link, Paragraph, Text}
+import models.ui.{Link, Paragraph, PreviousPageLinkQuery, Text}
 import org.jsoup.nodes.{Attributes, Document, Element}
 
 import scala.collection.JavaConverters._

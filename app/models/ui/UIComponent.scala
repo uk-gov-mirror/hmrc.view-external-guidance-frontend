@@ -18,8 +18,6 @@ package models.ui
 
 import play.api.i18n.Lang
 
-import controllers.navigation.Navigation.PreviousPageLinkQuery
-
 trait UIComponent {
   val text: Text
 }

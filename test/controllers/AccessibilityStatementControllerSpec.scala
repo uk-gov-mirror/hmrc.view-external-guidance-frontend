@@ -50,7 +50,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "sessionId",
         "accessibility",
         previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
@@ -59,7 +59,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "sessionId",
         "accessibility",
         previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
 
@@ -70,7 +70,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "sessionId",
         "accessibility",
         previousPageByLink = false).returns(Future.successful(Left(DatabaseError)))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
@@ -91,7 +91,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "accessibility",
         previousPageByLink = true).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
 
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(Some("1"))(fakeRequest)
 
       status(result) shouldBe Status.OK
     }
@@ -104,7 +104,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "sessionId",
         "accessibility",
         previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       val processCode = process.meta.processCode
@@ -118,7 +118,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
         "sessionId",
         "accessibility",
         previousPageByLink = false).returns(Future.successful(Right(ProcessContext(process, Map(), Map(), None))))
-      val result: Future[Result] = controller.getPage(fakeRequest)
+      val result: Future[Result] = controller.getPage(None)(fakeRequest)
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
