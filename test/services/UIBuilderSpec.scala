@@ -352,6 +352,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
     val headingPhrase = Phrase("Heading", "Heading")
     val headingText = Text(headingPhrase.langs)
+
+    val emptyRows = Seq.fill(3)(Row(Seq.empty, Seq.empty, true))
+    val oddRowGroup = RowGroup(emptyRows)
+    val emptyRowGroup = RowGroup(Seq.empty)
+
   }
 
   trait NumberListTest extends Test {
@@ -372,6 +377,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     val numberedListGroup = OcelotNumberedList(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
     val numberedCircListGroup = OcelotNumberedCircleList(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
+
+    val emptyNumberedList = OcelotNumberedList(Seq.empty)
+    val emptyNumberedCircleList = OcelotNumberedCircleList(Seq.empty)
+
   }
 
   trait NoteTest extends Test {
@@ -386,9 +395,29 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val note4Co = NoteCallout(num4Phrase, Seq(""), true)
 
     val noteGroup = NoteGroup(Seq(note1Co,note2Co,note3Co,note4Co))
+
+    val emptyNoteGroup = NoteGroup(Seq.empty)
   }
 
   "UIBuilder" must {
+    "Convert a empty number list into a NumberList" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                emptyNumberedList))
+      p.components match {
+        case Seq(_: H1, _: NumberedList) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert a empty numbered circle list into a NumberList" in new NumberListTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                emptyNumberedCircleList))
+      p.components match {
+        case Seq(_: H1, _: NumberedCircleList) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
     "Convert sequence of num list callouts into a numbered list" in new NumberListTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 num1ListCo,
@@ -445,6 +474,24 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                               ))
       p.components match {
         case Seq(_: H1, _: NumberedCircleList, _: NumberedCircleList, _: NumberedCircleList) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert a empty RowGroup into a table" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                emptyRowGroup))
+      p.components match {
+        case Seq(_: H1, _: Table) => succeed
+        case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert a RowGroup of empty rows into a table" in new TableTest {
+      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
+                                                oddRowGroup))
+      p.components match {
+        case Seq(_: H1, _: Table) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -928,6 +975,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
           b.listItems.last shouldBe bulletPointFour
 
         case  _ => fail("First component should be a bullet point list")
+      }
+    }
+
+    "Convert a empty note list into a InsetText" in new NoteTest {
+      val p = uiBuilder.buildPage("/start", Seq(emptyNoteGroup))
+      p.components match {
+        case Seq(_: InsetText) => succeed
+        case x => fail(s"Found $x")
       }
     }
 

@@ -53,9 +53,9 @@ class GuidanceController @Inject() (
 
   val logger = Logger(getClass)
 
-  def getPage(processCode: String, path: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
+  def getPage(processCode: String, path: String, p: Option[String]): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", _)).flatMap {
+    withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", p.isDefined, _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
@@ -84,7 +84,7 @@ class GuidanceController @Inject() (
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", _)).flatMap {
+    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(evalContext) =>
         val form = formProvider(questionName(path))
         form.bindFromRequest.fold(
@@ -107,7 +107,7 @@ class GuidanceController @Inject() (
                   // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
                   val url = evalContext.stanzaIdToUrlMap(stanzaId)
                   logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
-                  Redirect(routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2)))
+                  Redirect(routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2), None))
                 case Left(err) =>
                   logger.error(s"Page submission failed: $err")
                   InternalServerError(errorHandler.internalServerErrorTemplate)

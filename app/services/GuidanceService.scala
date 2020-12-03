@@ -42,12 +42,13 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId, pageUrl)
+  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, sessionId: String)(
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url").map {
+    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
       case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
           logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
@@ -89,9 +90,9 @@ class GuidanceService @Inject() (
     PageContext(pec, uiPage, labels)
   }
 
-  def getPageContext(processCode: String, url: String, sessionId: String)
+  def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
-    getPageEvaluationContext(processCode, url, sessionId).map{
+    getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
       case Right(evalContext) => Right(getPageContext(evalContext))
       case Left(err) => Left(err)
     }

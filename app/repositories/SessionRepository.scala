@@ -52,11 +52,15 @@ object DefaultSessionRepository {
   }
 }
 
-case class ProcessContext(process: Process, answers: Map[String, String], labels: Map[String, Label], urlToPageId: Map[String, String], backLink: Option[String])
+case class ProcessContext(process: Process,
+                          answers: Map[String, String],
+                          labels: Map[String, Label],
+                          urlToPageId: Map[String, String],
+                          backLink: Option[String])
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
-  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]]
+  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
@@ -102,7 +106,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String, pageUrl: String): Future[RequestOutcome[ProcessContext]] =
+  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
@@ -118,7 +122,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
             //
             // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
             //
-            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, sp.pageHistory)
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
             val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
               savePageHistory(key, history).map {
@@ -136,14 +140,16 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  private def backlinkAndHistory(pageUrl: String, priorHistory: List[String]): (Option[String], Option[List[String]]) =
+  private def backlinkAndHistory(pageUrl: String,
+                                 previousPageByLink: Boolean,
+                                 priorHistory: List[String]): (Option[String], Option[List[String]]) =
     priorHistory.reverse match {
       // Initial page
       case Nil => (None, None)
       // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
       case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
       // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case x :: y :: xs if y == pageUrl => (xs.headOption, Some((y :: xs).reverse))
+      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
       // FORWARD: Back link x, pageHistory intact
       case x :: xs => (Some(x), None)
     }

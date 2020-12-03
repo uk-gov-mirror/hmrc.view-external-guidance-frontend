@@ -93,6 +93,25 @@ class GuidanceServiceSpec extends BaseSpec {
       mockUIBuilder)
   }
 
+  "Calling saveLabels when there labels to save" should {
+
+    "save updated labels" in new Test {
+
+      val changedLabels = labels.update("LabelName", "New value")
+
+      MockSessionRepository
+        .saveLabels(sessionRepoId, changedLabels.updatedLabels.values.toSeq)
+        .returns(Future.successful(Right({})))
+
+      private val result = target.saveLabels(sessionRepoId, changedLabels)
+
+      whenReady(result) {
+        case Right(pc) => succeed
+        case Left(err) => fail(s"sabveLabels returned error $err")
+      }
+    }
+  }
+
   "Calling getPageContext with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
@@ -100,7 +119,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
@@ -119,7 +138,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
 
       whenReady(result) {
         case Right(pc) => pc.page.urlPath shouldBe lastPageUrl
@@ -136,7 +155,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "tell-hmrc"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl")
+        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
@@ -155,7 +174,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
         .returns(lastUiPage)
 
-      private val result = target.getPageContext(processCode, lastPageUrl, sessionRepoId)
+      private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
 
       whenReady(result) { pageContext =>
         pageContext match {
@@ -175,14 +194,14 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(processId, s"$processCode$url")
+        .get(processId, s"$processCode$url", previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       MockPageBuilder
         .buildPage("2", process)
         .returns(Right(lastPage))
 
-      private val result = target.getPageContext(processCode, url, processId)
+      private val result = target.getPageContext(processCode, url, previousPageByLink = false, processId)
 
       whenReady(result) {
         _ shouldBe Left(BadRequestError)

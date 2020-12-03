@@ -46,7 +46,7 @@ class FooterLinks @Inject() (implicit appConfig: AppConfig) {
 
   def accecssibilityLink()(implicit messages: Messages): FooterItem = FooterItem(
     Some(messages("footer.links.accessibility.text")),
-    Some(routes.AccessibilityStatementController.getPage().url)
+    Some(routes.AccessibilityStatementController.getPage(None).url)
   )
 
   def items(implicit messages: Messages): Seq[FooterItem] = Seq(

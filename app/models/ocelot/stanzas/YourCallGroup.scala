@@ -19,5 +19,9 @@ package models.ocelot.stanzas
 case class YourCallGroup(override val next: Seq[String], group: Seq[YourCallCallout], stack: Boolean) extends VisualStanza with Populated
 
 object YourCallGroup {
-  def apply(group: Seq[YourCallCallout]): YourCallGroup = YourCallGroup(group.last.next, group, group.head.stack)
+  def apply(group: Seq[YourCallCallout]): YourCallGroup =
+    group match {
+      case Nil => YourCallGroup(Seq.empty, Seq.empty, false)
+      case _ => YourCallGroup(group.last.next, group, group.head.stack)
+    }
 }

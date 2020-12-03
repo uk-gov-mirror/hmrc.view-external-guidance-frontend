@@ -19,5 +19,9 @@ package models.ocelot.stanzas
 case class NoteGroup (override val next: Seq[String], group: Seq[NoteCallout], stack: Boolean) extends VisualStanza with Populated
 
 object NoteGroup {
-  def apply(group: Seq[NoteCallout]): NoteGroup = NoteGroup(group.last.next, group, group.head.stack)
+  def apply(group: Seq[NoteCallout]): NoteGroup =
+    group match {
+      case Nil => NoteGroup(Seq.empty, Seq.empty, false)
+      case _ => NoteGroup(group.last.next, group, group.head.stack)
+    }
 }
