@@ -96,15 +96,6 @@ object TextBuilder {
     (Text(phrase.langs), hint)
   }
 
-  // Parses a phrase potentially containing a hint pattern[hint:<Text Hint>]
-  // The string before the first hint will be converted to a Text object
-  // expanding any placeholders contained. All characters after the optional hint
-  // pattern are discarded
-  def fromPhraseWithOptionalHint(txt: Phrase)(implicit urlMap: Map[String, String]): (Text, Option[Text]) = {
-    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
-    (fromPhrase(phrase), hint)
-  }
-
   @tailrec
   def merge[A, B](txts: List[A], links: List[A], acc: Seq[A], isEmpty: A => Boolean): Seq[A] =
     (txts, links) match {

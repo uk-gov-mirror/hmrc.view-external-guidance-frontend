@@ -53,4 +53,11 @@ class HttpParserSpec extends BaseSpec with HttpVerbs with Status with HttpParser
     }
   }
 
+  "Calling validateJson with a non JSON body" should {
+    "return None" in {
+      val response = HttpResponse(OK, "{sl;sdl ")
+      response.validateJson[Person] shouldBe None
+    }
+  }
+
 }

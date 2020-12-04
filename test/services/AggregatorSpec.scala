@@ -484,7 +484,7 @@ class AggregatorSpec extends BaseSpec {
       val callout4 = NoteCallout(phrase4, Seq(""), true)
     }
 
-    "add an isolated note co with stack equals false into a note group of size 1" in new NoteTest {
+    "not create NoteGroups of of length 1 when encountering isolated Note co" in new NoteTest {
       val stanzas: Seq[VisualStanza] =
         Seq(
           callout,
@@ -492,22 +492,11 @@ class AggregatorSpec extends BaseSpec {
           instruction)
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
+      aggregatedStanzas(0) shouldBe callout
+      aggregatedStanzas(1) shouldBe callout1
     }
 
-    "add an isolated note co with stack equals true into a note group of size 1" in new NoteTest {
-      val stanzas: Seq[VisualStanza] = Seq(
-        callout,
-        callout1,
-        instruction
-      )
-
-      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-
-      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
-    }
-
-    "create two note groups for two contiguous rows with stack set to false" in new NoteTest {
+    "leave two note callouts with stack set to false" in new NoteTest {
 
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
@@ -518,8 +507,8 @@ class AggregatorSpec extends BaseSpec {
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1))
-      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
+      aggregatedStanzas(1) shouldBe callout1
+      aggregatedStanzas(2) shouldBe callout1
     }
 
     "create a note group with two entries for two contiguous note cos with stack set to true" in new NoteTest {
@@ -532,21 +521,6 @@ class AggregatorSpec extends BaseSpec {
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
       aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout2, callout3))
-    }
-
-    "create two note groups for two contiguous note cos with stack set to true and false respectively" in new NoteTest {
-      val stanzas: Seq[VisualStanza] = Seq(
-        instruction,
-        callout2,
-        callout1,
-        instruction,
-        callout
-      )
-
-      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-
-      aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout2))
-      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
     }
 
     "create a note group with two note co with stack set to false and true respectively" in new NoteTest {
@@ -590,7 +564,7 @@ class AggregatorSpec extends BaseSpec {
       aggregatedStanzas(1) shouldBe NoteGroup(Seq(callout1, callout4))
     }
 
-    "create two note groups of size one for two non-contiguous elems in sequence of stanzas" in new NoteTest {
+    "leave two note callouts in sequence of stanzas" in new NoteTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         instruction,
@@ -601,8 +575,8 @@ class AggregatorSpec extends BaseSpec {
       )
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(2) shouldBe NoteGroup(Seq(callout1))
-      aggregatedStanzas(four) shouldBe NoteGroup(Seq(callout1))
+      aggregatedStanzas(2) shouldBe callout1
+      aggregatedStanzas(four) shouldBe callout1
     }
 
     "create two note groups with multiple elems from a complex sequence of stanzas" in new NoteTest {
