@@ -110,7 +110,7 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
         dds.size shouldBe 2
 
         val a = dds(1).getElementsByTag("a").first
-        a.text shouldBe "ChangeGoodbye"
+        a.text shouldBe "Change Goodbye"
       }
     }
 
