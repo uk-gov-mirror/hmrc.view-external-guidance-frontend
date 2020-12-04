@@ -96,7 +96,10 @@ class GuidanceController @Inject() (
             validateAnswer(evalContext, submittedAnswer.text).fold{
               // Answer didnt pass page DataInput stanza validation
               val formData = FormData(path, Map(), Seq(FormError("","error.required")))
-              Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), form)))
+              Future.successful(BadRequest(createInputView(evalContext,
+                                                           questionName(path),
+                                                           Some(formData),
+                                                           form.bind(Map(questionName(path) -> submittedAnswer.text)))))
             }{ answer =>
               service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text).map{
                 case Right((None, labels)) =>

@@ -20,21 +20,11 @@
 
 @(tbl: Table)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <table class="govuk-table">
-  <caption class="govuk-table__caption">
-    @components.render_text(tbl.caption)
-  </caption>
-
+  <caption class="govuk-table__caption">@components.render_text(tbl.caption)</caption>
   @tbl.headingRow.map{headRow =>
-  <thead class="govuk-table__head">
-    <tr class="govuk-table__row">
-    @{
-      headRow.map{
-        case c: Th => components.table_thcell(c)
-        case c: Td => components.table_tdcell(c)
-      }
-    }
-    </tr>
-  </thead>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">@{headRow.map(components.table_thcell(_))}</tr>
+    </thead>
   }
   <tbody class="govuk-table__body">
     @tbl.rows.map{row =>
