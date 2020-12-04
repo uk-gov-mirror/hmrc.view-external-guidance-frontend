@@ -115,7 +115,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   }
 
   trait Test extends ProcessJson {
-
+    case class UnsupportedVisualStanza(override val next: Seq[String], stack: Boolean) extends VisualStanza with Populated
     val lang0 = Vector("Some Text", "Welsh, Some Text")
     val lang1 = Vector("Some Text1", "Welsh, Some Text1")
     val lang2 = Vector("Some Text2", "Welsh, Some Text2")
@@ -589,6 +589,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case p if p.urlPath == page.url => succeed
         case p => fail(s"UI page urlPath set incorrectly to ${p.urlPath}")
       }
+    }
+
+    "Ignore unsupported VisualStanzas" in new Test {
+      val visual = Seq(UnsupportedVisualStanza(Seq("end"), false))
+      val uiPage = uiBuilder.buildPage(page.url, visual)
+
+      uiPage.components shouldBe Seq.empty
     }
 
     "convert 1st Callout type Title to H1" in new Test {

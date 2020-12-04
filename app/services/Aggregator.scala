@@ -27,62 +27,64 @@ object Aggregator {
     inputSeq match {
       case Nil => acc
       case (x: Row) :: xs =>
-        val (rows: Seq[Row], remainder) = aggregateRows(xs, Seq (x))
-        aggregateStanzas(acc :+ RowGroup (rows))(remainder)
+        val (vs: VisualStanza, remainder) = aggregateRows(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
 
       case (x: NumberedListItemCallout) :: xs =>
-        val (cos: Seq[NumberedListItemCallout], remainder) = aggregateNumLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumberedList(cos))(remainder)
+        val (vs: VisualStanza, remainder) = aggregateNumLists(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
 
       case (x: NumberedCircleListItemCallout) :: xs =>
-        val (cos: Seq[NumberedCircleListItemCallout], remainder) = aggregateNumCircLists(xs, Seq (x))
-        aggregateStanzas(acc :+ NumberedCircleList(cos))(remainder)
+        val (vs: VisualStanza, remainder) = aggregateNumCircLists(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
 
       case (x: NoteCallout) :: xs =>
-        val (cos: Seq[NoteCallout], remainder) = aggregateNotes(xs, Seq (x))
-        aggregateStanzas(acc :+ NoteGroup(cos))(remainder)
+        val (vs: VisualStanza , remainder) = aggregateNotes(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
 
       case (x: YourCallCallout) :: xs =>
-        val (cos: Seq[YourCallCallout], remainder) = aggregateYourCall(xs, Seq (x))
-        aggregateStanzas(acc :+ YourCallGroup(cos))(remainder)
+        val (vs: VisualStanza, remainder) = aggregateYourCall(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
 
       case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
 
   @tailrec
-  private def aggregateRows(inputSeq: Seq[VisualStanza], acc: Seq[Row]): (Seq[Row], Seq[VisualStanza]) =
+  private def aggregateRows(inputSeq: Seq[VisualStanza], acc: Seq[Row]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
       case (x: Row) :: xs if x.stack => aggregateRows(xs, acc :+ x)
-      case xs => (acc, xs)
+      case xs => (RowGroup(acc), xs)
     }
 
   @tailrec
-  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumberedListItemCallout]): (Seq[NumberedListItemCallout], Seq[VisualStanza]) =
+  private def aggregateNumLists(inputSeq: Seq[VisualStanza], acc: Seq[NumberedListItemCallout]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
       case (x: NumberedListItemCallout) :: xs if x.stack => aggregateNumLists(xs, acc :+ x)
-      case xs => (acc, xs)
+      case xs => (NumberedList(acc), xs)
     }
 
   @tailrec
   private def aggregateNumCircLists(inputSeq: Seq[VisualStanza],
-                                    acc: Seq[NumberedCircleListItemCallout]): (Seq[NumberedCircleListItemCallout], Seq[VisualStanza]) =
+                                    acc: Seq[NumberedCircleListItemCallout]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
       case (x: NumberedCircleListItemCallout) :: xs if x.stack => aggregateNumCircLists(xs, acc :+ x)
-      case xs => (acc, xs)
+      case xs => (NumberedCircleList(acc), xs)
     }
 
   @tailrec
-  private def aggregateNotes(inputSeq: Seq[VisualStanza], acc: Seq[NoteCallout]): (Seq[NoteCallout], Seq[VisualStanza]) =
+  private def aggregateNotes(inputSeq: Seq[VisualStanza], acc: Seq[NoteCallout]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
       case (x: NoteCallout) :: xs if x.stack => aggregateNotes(xs, acc :+ x)
-      case xs => (acc, xs)
+      case xs if acc.length == 1 => (acc.head, xs)
+      case xs => (NoteGroup(acc), xs)
     }
 
   @tailrec
-  private def aggregateYourCall(inputSeq: Seq[VisualStanza], acc: Seq[YourCallCallout]): (Seq[YourCallCallout], Seq[VisualStanza]) =
+  private def aggregateYourCall(inputSeq: Seq[VisualStanza], acc: Seq[YourCallCallout]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
       case (x: YourCallCallout) :: xs if x.stack => aggregateYourCall(xs, acc :+ x)
-      case xs => (acc, xs)
+      case xs if acc.length == 1 => (acc.head, xs)
+      case xs => (YourCallGroup(acc), xs)
     }
 
 }
