@@ -128,20 +128,6 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       attrs("class").contains("govuk-label-wrapper") shouldBe true
     }
 
-    "Input with body should render hint within a span within fieldset" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
-      private val fieldset = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
-        elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
-        Option(fset.getElementsByTag("span").first).fold(fail("Missing hint span within fieldset")) { span =>
-          val attrs = elementAttrs(span)
-          attrs("id") shouldBe "input-hint"
-          attrs("class").contains("govuk-hint") shouldBe true
-          span.text shouldBe i1Hint(0)
-        }
-      }
-    }
-
     "input without body should render hint within a span without a fieldset" in new Test {
       private val doc = asDocument(components.input(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
@@ -156,19 +142,11 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
     }
 
-   "input with hint should include hint id in aria-desribedby on fieldset" in new Test {
-      private val doc = asDocument(components.input(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
-      private val fieldset = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
-        elementAttrs(fset)("aria-describedby") shouldBe "input-hint"
-      }
-   }
-
-   "input with hint in error should include hint id and error id in aria-desribedby on fieldset" in new Test {
+   "input with hint in error should include hint id and error id in aria-desribedby on input" in new Test {
       private val doc = asDocument(components.input(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, ctx))
-      private val fieldset = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){ fset =>
-        elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+
+      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
+        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include("input-hint")
           aria should include("id-error")
         }
