@@ -123,9 +123,10 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
       link3Attrs.contains("target") shouldBe false
 
       val spans = links(3).getElementsByTag("span").asScala.toList
-      spans.length shouldBe 1
-      elementAttrs(spans(0))("class") shouldBe "govuk-visually-hidden"
-      spans(0).text shouldBe "HINT"
+      spans.length shouldBe 2
+      elementAttrs(spans(1))("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "BBC News"
+      spans(1).text shouldBe "HINT"
 
       val link4Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       elementAttrs(links(3))("href") shouldBe dest2
@@ -188,9 +189,11 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
       link3Attrs.contains("target") shouldBe false
 
       val spans = links(3).getElementsByTag("span").asScala.toList
-      spans.length shouldBe 1
-      elementAttrs(spans(0))("class") shouldBe "govuk-visually-hidden"
-      spans(0).text shouldBe "HINT"
+      spans.length shouldBe 2
+      elementAttrs(spans(1))("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "Welsh, BBC News"
+      spans(1).text shouldBe "HINT"
+
 
       val link4Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       elementAttrs(links(3))("href") shouldBe dest2
@@ -250,10 +253,6 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
       links.size shouldBe 1
 
-      val firstChildNodeAttributes: Attributes = links.head.childNode(0).attributes()
-
-      firstChildNodeAttributes.get("#text") shouldBe "See destination"
-
       elementAttrs(links.head)("href") shouldBe s"$destination?$PreviousPageLinkQuery"
       elementAttrs(links.head)("class") shouldBe "govuk-link"
       elementAttrs(links.head).contains("target") shouldBe true
@@ -261,11 +260,12 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
       val spans = links.head.getElementsByTag("span").asScala.toList
 
-      spans.size shouldBe 1
+      spans.size shouldBe 2
 
-      elementAttrs(spans.head)("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "See destination"
+      spans(1).text shouldBe "Something useful"
 
-      spans.head.text shouldBe "Something useful"
+      elementAttrs(spans(1))("class") shouldBe "govuk-visually-hidden"
     }
 
     "render link as button if requested" in new Test {
@@ -278,10 +278,6 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
       links.size shouldBe 1
 
-      val firstChildNodeAttributes: Attributes = links.head.childNode(0).attributes()
-
-      firstChildNodeAttributes.get("#text").trim shouldBe "See page 1"
-
       elementAttrs(links.head)("href") shouldBe "/guidance/test/page-1"
       elementAttrs(links.head)("class") shouldBe "govuk-button"
       elementAttrs(links.head).contains("role") shouldBe true
@@ -291,11 +287,12 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
       val spans: List[Element] = links.head.getElementsByTag("span").asScala.toList
 
-      spans.size shouldBe 1
+      spans.size shouldBe 2
 
-      elementAttrs(spans.head)("class") shouldBe "govuk-visually-hidden"
+      spans(0).text shouldBe "See page 1"
+      spans(1).text shouldBe "Something else"
 
-      spans.head.text shouldBe "Something else"
+      elementAttrs(spans(1))("class") shouldBe "govuk-visually-hidden"
     }
   }
 
