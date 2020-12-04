@@ -47,7 +47,7 @@ class UIBuilder {
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
-      case (rg: RowGroup) :: xs if rg.isSummaryList => fromStanzas(xs, acc ++ Seq(fromSummaryListRowGroup(rg)), formData)
+      case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), formData)
       case (rg: RowGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData)
       case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), formData)
       case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), formData)
@@ -64,13 +64,13 @@ class UIBuilder {
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
-      case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if !rg.isSummaryList =>
+      case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if !rg.isCYASummaryList =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas(x +: stackStanzas(Nil)(xs), Nil, formData)
     }
 
-  private def fromSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+  private def fromCYASummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
 
   private def fromTableRowGroup(caption: Option[Text], rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
@@ -142,6 +142,19 @@ class UIBuilder {
       case _: NumberedListItemCallout => Seq.empty        // Unused
       case _: NumberedCircleListItemCallout => Seq.empty  // Unused
     }
+
+  // private def fromCallout(c: TitleCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H1(TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: SubTitleCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H2(TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: SectionCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H3(TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: SubSectionCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H4(TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: LedeCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
+  // private def fromCallout(c: TypeErrorCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: ValueErrorCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: YourCallCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
+  // private def fromCallout(c: NoteCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
+  // private def fromCallout(c: ErrorCallout, formData: Option[FormData]): Seq[UIComponent] =
+  //   formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
+  // private def fromCallout(c: ImportantCallout, formData: Option[FormData]): Seq[UIComponent] = Seq.empty
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
