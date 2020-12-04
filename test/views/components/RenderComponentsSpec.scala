@@ -45,13 +45,6 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
     val expectedTable = Table(Text("HELLO","HELLO"),
                               Some(Seq(Th(Text("First","First")), Th(Text("Second","Second")))),
                               Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    // val expectedTableNoHeadings = Table(Text("HELLO","HELLO"),
-    //                                     None,
-    //                                     Seq.fill(2)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    // val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
-    //                                           None,
-    //                                           Seq.fill(3)(Seq(Th(Text("HELLO","HELLO")), Td(Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency))))))
-    // val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
