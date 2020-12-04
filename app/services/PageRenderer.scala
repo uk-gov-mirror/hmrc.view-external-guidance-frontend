@@ -36,7 +36,6 @@ class PageRenderer @Inject() () {
           val (next, updatedLabels) = s.eval(labels)
           evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
         case s: VisualStanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
-        case s: Stanza => evaluateStanzas(s.next.head, labels, visualStanzas, seen :+ stanzaId) // Never should happen catch all
       }
     }
 
