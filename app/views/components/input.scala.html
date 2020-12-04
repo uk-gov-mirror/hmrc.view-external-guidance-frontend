@@ -20,33 +20,16 @@
 
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@optionalAria() = @{
-  Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
-    case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
-  }
-}
+<div class="govuk-form-group @if(input.errorMsgs.nonEmpty) {govuk-form-group--error}">
 
-<div class="govuk-form-group @if(!input.errorMsgs.isEmpty) {govuk-form-group--error}">
+  @components.h1_heading_with_label(H1(input.text), name + "-0")
 
-  @if(input.body.isEmpty) {
-      @components.h1_heading_with_label(H1(input.text), name + "-0")
-      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-      @components.error_message(input.errorMsgs)
-      @components.input_field(input, name, form)
-
-  } else {
-    @components.h1_heading(H1(input.text))
+  @if(input.body.nonEmpty) {
     @components.render_components(input.body)
-
-    <fieldset class="govuk-fieldset" @optionalAria()>
-      <label class="govuk-label govuk-label--s" for="@name-0">@components.render_text(input.text)</label>
-      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-      @components.error_message(input.errorMsgs)
-      @components.input_field(input, name, form)
-    </fieldset>
   }
-
+  @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+  @components.error_message(input.errorMsgs)
+  @components.input_field(input, name, form)
 
 </div>
 

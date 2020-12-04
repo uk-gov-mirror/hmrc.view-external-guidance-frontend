@@ -373,15 +373,15 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
-    "set input fieldset aria-describedby correctly when error occurs" in new Test {
+    "set input aria-describedby correctly when error occurs" in new Test {
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
       val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
 
-      val fieldset: Element = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){fset =>
-        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      val inputField: Element = doc.getElementsByTag("input").first
+      Option(inputField).fold(fail("Missing fieldset")){inp =>
+        elementAttrs(inp)("aria-describedby").contains("id-error") shouldBe true
       }
     }
 
@@ -422,15 +422,15 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
 
-    "set Welsh input fieldset aria-describedby correctly when error occurs" in new WelshTest {
+    "set Welsh input aria-describedby correctly when error occurs" in new WelshTest {
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
       val doc = asDocument(inputPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
 
-      val fieldset: Element = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){fset =>
-        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+      val inputField: Element = doc.getElementsByTag("input").first
+      Option(inputField).fold(fail("Missing fieldset")){inp =>
+        elementAttrs(inp)("aria-describedby").contains("id-error") shouldBe true
       }
     }
 
