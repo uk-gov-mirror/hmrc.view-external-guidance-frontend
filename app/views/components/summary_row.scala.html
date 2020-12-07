@@ -21,8 +21,8 @@
 <div class="govuk-summary-list__row">
   @for(index <- row.indices) {
     @{index match {
-      case 0 => <dt class="govuk-summary-list__key">{render_text(row(0))}</dt>
-      case 1 => <dd class="govuk-summary-list__value">{render_text(row(1))}</dd>
+      case 0 => <dt class="govuk-summary-list__key wider">{render_text(row(0))}</dt>
+      case 1 => <dd class="govuk-summary-list__value thinner govuk-table__cell--numeric">{render_text(row(1))}</dd>
       case x => summary_actioncell(row(x))
       }
     }

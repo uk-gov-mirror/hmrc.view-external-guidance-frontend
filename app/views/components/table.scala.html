@@ -23,7 +23,14 @@
   <caption class="govuk-table__caption">@components.render_text(tbl.caption)</caption>
   @tbl.headingRow.map{headRow =>
     <thead class="govuk-table__head">
-      <tr class="govuk-table__row">@{headRow.map(components.table_thcell(_))}</tr>
+      <tr class="govuk-table__row">
+        @{
+          headRow.zipWithIndex.map{
+            case (c, x) if x == 0 => components.table_thcell(c, false)
+            case (c, _) => components.table_thcell(c, true)
+          }
+        }
+      </tr>
     </thead>
   }
   <tbody class="govuk-table__body">

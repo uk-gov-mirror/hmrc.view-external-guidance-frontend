@@ -18,8 +18,8 @@
 @import controllers.routes._
 @import models.ui.Cell
 
-@(cell: Cell)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<th scope="col" class="govuk-table__header">@components.render_text(cell.text)</th>
+@(cell: Cell, alignRight: Boolean = false)(implicit request: Request[_], messages: Messages, ctx: PageContext)
+<th scope="col" class=@if(alignRight){"govuk-table__header govuk-table__cell--numeric"} else {"govuk-table__header"}>@components.render_text(cell.text)</th>
 @{
      //$COVERAGE-OFF$
 }
