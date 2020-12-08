@@ -17,14 +17,6 @@
 // $COVERAGE-OFF$
 
 package models.ui
-
-trait Cell {
-  val text: Text
-  val numeric: Boolean = text.isNumericLabelRef
-}
-case class Th(text: Text) extends Cell
-case class Td(text: Text) extends Cell
-
 //
 // 1. Cell content all bold encoded within a <th>
 // 2. Cell content not bold encoded within a <td>
@@ -34,6 +26,10 @@ case class Td(text: Text) extends Cell
 //
 // Not stacked and first row not a thead => plain table of <tr> elements wher cells follow rule 1
 
-case class Table(caption: Text, headingRow: Option[Seq[Cell]], rows: Seq[Seq[Cell]]) extends UIComponent {
+case class Table(caption: Text, headingRow: Seq[Text], rows: Seq[Seq[Text]]) extends UIComponent {
+  val numericColumns: Seq[Boolean] = (for(colIdx <- headingRow.indices) yield {
+    rows.map(r => r(colIdx).isNumericLabelRef)
+  }).map(l => l.forall(x => x))
+
   val text: Text = caption
 }

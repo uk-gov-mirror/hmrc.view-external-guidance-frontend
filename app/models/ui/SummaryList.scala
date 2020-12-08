@@ -18,6 +18,19 @@
 
 package models.ui
 
-case class SummaryList(rows: Seq[Seq[Text]]) extends UIComponent {
-  val text: Text = Text()
+sealed trait SummaryList extends UIComponent {
+  val columnCount: Int
+  val text = Text()
+  val rows: Seq[Seq[Text]]
+  val numericColumns: Seq[Boolean]
+}
+
+case class CyaSummaryList(val rows: Seq[Seq[Text]], columnCount: Int) extends SummaryList {
+  val numericColumns: Seq[Boolean] = Seq.fill(columnCount)(false)
+}
+
+case class NameValueSummaryList(val rows: Seq[Seq[Text]], columnCount: Int) extends SummaryList {
+  lazy val numericColumns: Seq[Boolean] = (for(colIdx <- Range(0, columnCount)) yield {
+    rows.map(r => r(colIdx).isNumericLabelRef)
+  }).map(l => l.forall(x => x))
 }

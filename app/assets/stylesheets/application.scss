@@ -18,5 +18,4 @@ $govuk-global-styles: true;
 
 @import "_numbered-circle-list";
 
-.govuk-summary-list__key.wider { width: 70% }
-.govuk-summary-list__value.thinner { width: 30% }
+.govuk-summary-list__value.numeric { text-align: right }

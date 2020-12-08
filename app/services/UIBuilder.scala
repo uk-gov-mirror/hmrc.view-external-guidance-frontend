@@ -48,8 +48,8 @@ class UIBuilder {
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), formData)
-      case (rg: RowGroup) :: xs if rg.isTable => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData)
-      case (rg: RowGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromSummaryListRowGroup(rg)), formData)
+      //case (rg: RowGroup) :: xs if rg.isTableCandidate => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData) // Wont pass accessibility
+      case (rg: RowGroup) :: xs if rg.isNameValueSummaryList => fromStanzas(xs, acc ++ Seq(fromNameValueSummaryListRowGroup(rg)), formData)
       case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), formData)
       case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), formData)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
@@ -58,49 +58,30 @@ class UIBuilder {
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), formData)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), formData)
       case x :: xs =>
-        logger.warn(s"Encountered unexpected VisualStanza $x")
+        logger.error(s"Encountered and ignored VisualStanza invalid due to accessibility rules, $x")
         fromStanzas(xs, acc, formData)
     }
 
   private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
-      case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if rg.isTable =>
-        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(Some(TextBuilder.fromPhrase(c.text)), rg)), formData)
+      case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if rg.isTableCandidate =>
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)), formData)
       case x :: xs => // No recognised stacked pattern
         fromStanzas(x +: stackStanzas(Nil)(xs), Nil, formData)
     }
 
   private def fromCYASummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
-    SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+    CyaSummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))), rg.columnCount)
 
-  private def fromSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
-    SummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
+  private def fromNameValueSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    NameValueSummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))), rg.columnCount)
 
-  private def fromTableRowGroup(caption: Option[Text], rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
-    def tableFromCaptionAndRows(captionText: Text, rows: Seq[Seq[Cell]]) =
-      rows.headOption.fold(Table(captionText, None, Seq.empty)){row0 =>
-        val heading: Option[Seq[Cell]] = if (row0.collect{case c: Th => c}.length == row0.length) Some(row0) else None
-        val tableRows = heading.fold(rows)(_ => rows.tail)
-        Table(captionText, heading, tableRows)
-      }
-
-    def tableFromRows(rows: Seq[Seq[Cell]]) =
-      rows.headOption.fold(Table(Text(), None, Seq.empty)){row0 =>
-        tableFromCaptionAndRows(row0.headOption.fold(Text())(_.text), rows.tail)
-      }
-
-    val rows: Seq[Seq[Cell]] = rg.paddedRows.map{rw =>
-      rw.map{phrase =>
-        TextBuilder.fromPhrase(phrase) match {
-          case x if x.isBold => Th(x)
-          case x => Td(x)
-        }
-      }
-    }
-
-    caption.fold(tableFromRows(rows))(c => tableFromCaptionAndRows(c, rows))
+  private def fromTableRowGroup(caption: Text, rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    val tableRows: Seq[Seq[Text]] = rg.paddedRows.map(r => r.map(phrase => TextBuilder.fromPhrase(phrase)))
+    Table(caption, tableRows.head, tableRows.tail)
   }
+
 
   private def fromNumberedList(nl: OcelotNumberedList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
