@@ -967,18 +967,18 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       "return an OK response" in new DateInputTest {
 
         MockGuidanceService
-          .getPageContext(processId, path, processId)
+          .getPageContext(processId, path, previousPageByLink = false, processId)
           .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
 
-        val result = target.getPage(processId, relativePath)(fakeRequest)
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
         status(result) shouldBe Status.OK
       }
 
       "be a HTML response" in new DateInputTest {
         MockGuidanceService
-          .getPageContext(processId, path, processId)
+          .getPageContext(processId, path, previousPageByLink = false, processId)
           .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
-        val result = target.getPage(processId, relativePath)(fakeRequest)
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
         contentType(result) shouldBe Some("text/html")
       }
     }
@@ -987,10 +987,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       "Show the original value entered" in new DateInputTest {
         MockGuidanceService
-          .getPageContext(processId, path, processId)
+          .getPageContext(processId, path, previousPageByLink = false, processId)
           .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
 
-        val result = target.getPage(processId, relativePath)(fakeRequest)
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
 
         status(result) shouldBe Status.OK
         contentType(result) shouldBe Some("text/html")
