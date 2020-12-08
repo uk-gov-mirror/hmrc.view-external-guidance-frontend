@@ -27,9 +27,8 @@ case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boo
                                        group.head.cells.forall(isBoldOnlyPhrase(_)) // Column headings are all bold
   lazy val isCYASummaryList: Boolean = columnCount == 3 && // Considering some short columns, overall column count must be 3
                                        group.forall(r => !isBoldOnlyPhrase(r.cells(0)) && (r.cells.length < 3 || isLinkOnlyPhrase(r.cells(2))))
-  lazy val isNameValueSummaryList: Boolean = columnCount == 2 &&
-                                             group.length > 0 &&
-                                             group.forall(r => !isBoldOnlyPhrase(r.cells(0)))
+  lazy val isNameValueSummaryList: Boolean = columnCount == 2 &&                    // Two columns
+                                             group.forall(r => !isBoldOnlyPhrase(r.cells(0))) // All the initial column cells are not bold
 }
 
 object RowGroup {
