@@ -19,7 +19,8 @@ package services
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas.{NumberedList => OcelotNumberedList, NumberedCircleList => OcelotNumberedCircleList, _}
-import models.ui.{BulletPointList, ConfirmationPanel, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link, NumberedCircleList, NumberedList, Paragraph, QuestionPage, SummaryList, Table, Text, Words}
+import models.ui.{BulletPointList, ConfirmationPanel, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link}
+import models.ui.{NumberedCircleList, NumberedList, Paragraph, QuestionPage, CyaSummaryList, NameValueSummaryList, Table, Text, Words}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -329,15 +330,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val sparseRowsWithLinkAndHint = Seq(rowsWithLinkAndHint(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rowsWithLinkAndHint(2))
 
     val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
-    val expectedDl = SummaryList(dlRows)
+    val expectedDl = CyaSummaryList(dlRows)
     val dlRowsComplete = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
-    val expectedDlComplete = SummaryList(dlRowsComplete)
+    val expectedDlComplete = CyaSummaryList(dlRowsComplete)
     val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
-    val expectedDlSparse = SummaryList(sparseDlRows)
+    val expectedDlSparse = CyaSummaryList(sparseDlRows)
     val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"),
                                                                Text("World","World"),
                                                                Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))
-    val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+    val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
     val headingPhrase = Phrase("Heading", "Heading")
   }
 
@@ -346,9 +347,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val simpleRowGroup = RowGroup(rows)
     val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
-    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq()) +:
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), true) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
-    val captionRowGroup = RowGroup(rowsWithHeading)
+    val tableHeading = rowsWithHeading(0).cells.map(TextBuilder.fromPhrase(_))
+    val tableRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
     val headingPhrase = Phrase("Heading", "Heading")
     val headingText = Text(headingPhrase.langs)
@@ -478,76 +480,57 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       }
     }
 
-    "Convert a empty RowGroup into a table" in new TableTest {
+    "Ignore an empty RowGroup" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 emptyRowGroup))
       p.components match {
-        case Seq(_: H1, _: Table) => succeed
+        case Seq(_: H1) => succeed
         case x => fail(s"Found $x")
       }
     }
 
-    "Convert a RowGroup of empty rows into a table" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
-                                                oddRowGroup))
-      p.components match {
-        case Seq(_: H1, _: Table) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
-    "Convert a non-summarylist RowGroup into a table" in new TableTest {
+    "Convert a simple RowGroup into a NameValueSummaryList" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 simpleRowGroup))
       p.components match {
-        case Seq(_: H1, _: Table) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
-    "Convert a non-summarylist one row RowGroup into a table" in new TableTest {
-      val oneRow = Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), Phrase(Vector("Blah", "Blah"))), Seq())
-
-      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false), RowGroup(Seq(oneRow))))
-
-      p.components match {
-        case Seq(_: H1, Table(_, None, Seq())) => succeed
+        case Seq(_: H1, _: NameValueSummaryList) => succeed
         case x => fail(s"Found $x")
       }
     }
 
     "Convert a non-summarylist RowGroup into a table with a heading line" in new TableTest {
-      val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
-                                                captionRowGroup))
+      println(s"IsCandidate ${tableRowGroup.isTableCandidate}")
+      val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
+                                                tableRowGroup))
       p.components match {
-        case Seq(_: H1, Table(Text(Seq(Words("HELLO", true)), Seq(Words("HELLO", true))), None, _)) => succeed
+        case Seq(Table(Text(headingPhrase,_), tableHeading, _)) => succeed
         case x => fail(s"Found $x")
       }
     }
 
     "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption and a heading" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
-                                                captionRowGroup.copy(stack = true)))
+                                                tableRowGroup.copy(stack = true)))
       p.components match {
-        case Seq(Table(headingText, Some(_), rows)) => succeed
+        case Seq(Table(headingText, _, rows)) => succeed
         case x => fail(s"Found $x")
       }
     }
 
-    "convert a non-summarylist RowGroup stacked to a SubSection into a table with caption" in new TableTest {
+    "convert a summarylist RowGroup stacked to a SubSection into an H4 and a NameValueSummaryList" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 stackedRowGroup))
       p.components match {
-        case Seq(Table(headingText, None, rows)) => succeed
+        case Seq(_: H4, _: NameValueSummaryList) => succeed
         case x => fail(s"Found $x")
       }
     }
 
-    "convert a non-summarylist RowGroup into a table with a right aligned numeric column" in new TableTest {
+    "convert a summarylist RowGroup into a NameValueSummaryList with a right aligned numeric column" in new TableTest {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 numericRowGroup))
       p.components match {
-        case Seq(_: H1, tbl: Table) if tbl.rows.forall(r => r(1).text.isNumericLabelRef) => succeed
+        case Seq(_: H1, nvsl: NameValueSummaryList) if nvsl.rows.forall(r => r(1).isNumericLabelRef) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -557,7 +540,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), sparseRowsWithLinkAndHint, true)))
       p.components match {
-        case Seq(_: H1, _: SummaryList) => succeed
+        case Seq(_: H1, _: CyaSummaryList) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -567,7 +550,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithLinkAndHint, true)))
       p.components match {
-        case Seq(_: H1, _: SummaryList) => succeed
+        case Seq(_: H1, _: CyaSummaryList) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -577,7 +560,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 RowGroup(Seq("2"), rowsWithFakedWelshLinK, true)))
       p.components match {
-        case Seq(_: H1, _: SummaryList) => succeed
+        case Seq(_: H1, _: CyaSummaryList) => succeed
         case x => fail(s"Found $x")
       }
 

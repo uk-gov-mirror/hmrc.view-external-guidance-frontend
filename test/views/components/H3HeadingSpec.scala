@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 
 import play.twirl.api.Html
 
-import models.ui.{H3, Text, SummaryList}
+import models.ui.{H3, Text, CyaSummaryList}
 import views.html.components.h3_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -46,7 +46,7 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     val h3: H3 = H3(Text(h3English, h3Welsh))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val summaryList = SummaryList(Seq.empty)
+    val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
     val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)

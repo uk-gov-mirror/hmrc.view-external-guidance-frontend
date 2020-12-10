@@ -43,8 +43,8 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val expectedTable = Table(Text("HELLO","HELLO"),
-                              Some(Seq(Th(Text("First","First")), Th(Text("Second","Second")))),
-                              Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
+                              Seq(Text("First","First"), Text("Second","Second")),
+                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
