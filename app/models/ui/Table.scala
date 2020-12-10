@@ -18,14 +18,10 @@
 
 package models.ui
 //
-// 1. Cell content all bold encoded within a <th>
-// 2. Cell content not bold encoded within a <td>
-// 3. If First Row all cells non-blank and all bold encode as <thead> containing row of <th> elements
-// 4. If group of rows is stacked to a SubSection Callout, encode callout text as a <caption> within <table>
-// 5. If cell contents numeric (lable ref with output format currency), add the govuk-table__cell--numeric class
-//
-// Not stacked and first row not a thead => plain table of <tr> elements wher cells follow rule 1
-
+// Stanza stacking, Caption and RowGroup requirements
+// 1. First Row all cells non-blank and all bold to encode <thead> containing row of <th> elements
+// 2. RowGroup stacked to a SubSection Callout, encode callout text as a <caption> within <table>
+// 3. Cell contents numeric (lable ref with output format currency), add the govuk-table__cell--numeric class
 case class Table(caption: Text, headingRow: Seq[Text], rows: Seq[Seq[Text]]) extends UIComponent {
   val numericColumns: Seq[Boolean] = (for(colIdx <- headingRow.indices) yield {
     rows.map(r => r(colIdx).isNumericLabelRef)

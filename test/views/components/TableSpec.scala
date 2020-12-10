@@ -48,9 +48,6 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val expectedTable = Table(Text("HELLO","HELLO"),
                               Seq(Text("First","First"), Text("Second","Second")),
                               Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
-    // val expectedTableNoHeadings = Table(Text("HELLO","HELLO"),
-    //                                     None,
-    //                                     Seq.fill(2)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
     val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
                                               Seq(Text("Caption", "Caption"), Text("Caption", "Caption")),
                                               Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency)))))
@@ -62,34 +59,6 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "English Tables" must {
 
-    // "Encode table missing caption, with initial row/cell as table caption" in new Test {
-    //   val html: Html = components.table(expectedTable)
-    //   val table: Element = getSingleElementByTag(html, "Table")
-    //   table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
-    //     caption.text shouldBe "HELLO"
-
-    //     table.hasClass("govuk-table") shouldBe true
-
-    //     val body = table.getElementsByTag("tbody").first
-    //     val rows = body.getElementsByTag("tr").asScala.toList
-
-    //     rows.size shouldBe expectedTable.rows.size
-    //   }
-    // }
-
-    // "Encode an initial row not all bold as a standard table body row" in new Test {
-    //   val html: Html = components.table(expectedTableNoHeadings)
-    //   val table: Element = getSingleElementByTag(html, "Table")
-    //   table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
-    //     caption.text shouldBe "HELLO"
-    //     table.hasClass("govuk-table") shouldBe true
-    //     table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-    //     val body = table.getElementsByTag("tbody").first
-    //     val rows = body.getElementsByTag("tr").asScala.toList
-
-    //     rows.size shouldBe expectedTableNoHeadings.rows.size
-    //   }
-    // }
 
     "Encode all bold initial row as table headings with a Caption" in new Test {
       val html: Html = components.table(expectedTableWithCaption)
@@ -133,35 +102,6 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
   }
 
   "Welsh Tables" must {
-
-    // "Encode table missing caption, with initial row/cell as table caption" in new WelshTest {
-    //   val html: Html = components.table(expectedTable)
-    //   val table: Element = getSingleElementByTag(html, "Table")
-    //   table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
-    //     caption.text shouldBe "HELLO"
-
-    //     table.hasClass("govuk-table") shouldBe true
-
-    //     val body = table.getElementsByTag("tbody").first
-    //     val rows = body.getElementsByTag("tr").asScala.toList
-
-    //     rows.size shouldBe expectedTable.rows.size
-    //   }
-    // }
-
-    // "Encode an initial row not all bold as a standard table body row" in new WelshTest {
-    //   val html: Html = components.table(expectedTableNoHeadings)
-    //   val table: Element = getSingleElementByTag(html, "Table")
-    //   table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
-    //     caption.text shouldBe "HELLO"
-    //     table.hasClass("govuk-table") shouldBe true
-    //     table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-    //     val body = table.getElementsByTag("tbody").first
-    //     val rows = body.getElementsByTag("tr").asScala.toList
-
-    //     rows.size shouldBe expectedTableNoHeadings.rows.size
-    //   }
-    // }
 
     "Encode all bold initial row as table headings with a Caption" in new WelshTest {
       val html: Html = components.table(expectedTableWithCaption)

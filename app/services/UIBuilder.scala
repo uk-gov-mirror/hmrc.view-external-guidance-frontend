@@ -48,7 +48,6 @@ class UIBuilder {
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), formData)
-      //case (rg: RowGroup) :: xs if rg.isTableCandidate => fromStanzas(xs, acc ++ Seq(fromTableRowGroup(None, rg)), formData) // Wont pass accessibility
       case (rg: RowGroup) :: xs if rg.isNameValueSummaryList => fromStanzas(xs, acc ++ Seq(fromNameValueSummaryListRowGroup(rg)), formData)
       case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), formData)
       case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), formData)
@@ -127,19 +126,6 @@ class UIBuilder {
       case _: NumberedListItemCallout => Seq.empty        // Unused
       case _: NumberedCircleListItemCallout => Seq.empty  // Unused
     }
-
-  // private def fromCallout(c: TitleCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H1(TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: SubTitleCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H2(TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: SectionCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H3(TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: SubSectionCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(H4(TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: LedeCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
-  // private def fromCallout(c: TypeErrorCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: ValueErrorCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: YourCallCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
-  // private def fromCallout(c: NoteCallout, formData: Option[FormData]): Seq[UIComponent] = Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
-  // private def fromCallout(c: ErrorCallout, formData: Option[FormData]): Seq[UIComponent] =
-  //   formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
-  // private def fromCallout(c: ImportantCallout, formData: Option[FormData]): Seq[UIComponent] = Seq.empty
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
