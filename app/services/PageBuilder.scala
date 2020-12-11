@@ -63,11 +63,12 @@ class PageBuilder extends ProcessPopulation {
       pages =>
         (checkQuestionPages(pages, Nil) ++
          duplicateUrlErrors(pages.reverse, Nil) ++
-         detectDuplicateStanzaUsage(pages.map(p => (p.id, p.keyedStanzas.map(_.key))))) match {
+         detectDuplicateStanzaUsage(pages.map(p => (p.id, p.keyedStanzas.map(_.key).filterNot(_ == "end"))))) match {
           case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
           case errors => Left(errors)
         }
     )
+
   def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] = {
     @tailrec
     def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[GuidanceError, Seq[Page]] =
