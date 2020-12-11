@@ -27,7 +27,8 @@ import scala.annotation.tailrec
 class PageBuilder extends ProcessPopulation {
   val logger: Logger = Logger(this.getClass)
 
-  def buildPage(key: String, process: Process): Either[GuidanceError, (Page, Seq[String])] = {
+  def buildPage(key: String, process: Process): Either[GuidanceError, Page] = {
+
     @tailrec
     def collectStanzas(keys: Seq[String],
                        pageStanza: Option[PageStanza] = None,
@@ -52,43 +53,11 @@ class PageBuilder extends ProcessPopulation {
       case Right((Some(p), ids, _, _)) if p.url.isEmpty || p.url.equals("/") => Left(PageUrlEmptyOrInvalid(ids.head))
       case Right((Some(p), ids, stanzas, next)) =>
         val ks: Seq[KeyedStanza] = ids.zip(stanzas).map(t => KeyedStanza(t._1, t._2))
-        Right((Page(ks.head.key, p.url, ks, next), ids))
+        Right(Page(ks.head.key, p.url, ks, next))
       case Left(err) => Left(err)
     }
   }
 
-  def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
-    pagesByKeys(process, List(start), Nil, Nil) match {
-      case Left(err) => Left(List(err))
-      case Right((pages, ids)) => Right(pages)
-    }
-
-  def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
-    pagesByKeys(process, List(start), Nil, Nil) match {
-      case Left(err) => Left(List(err))
-      case Right((pages, ids)) =>
-        (checkQuestionPages(pages, Nil) ++
-         duplicateUrlErrors(pages.reverse, Nil) ++
-         detectDuplicateStanzaUsage(pages.map(p => (p.id, p.keyedStanzas.map(_.key))))) match {
-          case Nil =>
-            Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
-          case errors => Left(errors)
-        }
-    }
-
-  def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =
-    pages.toList.flatMap { page =>
-      page.stanzas.collectFirst {
-        case TitleCallout(text, _, _) =>
-          f(page.id, page.url, text.langs(0))
-        case YourCallCallout(text, _, _) =>
-          f(page.id, page.url, text.langs(0))
-        case q: Question =>
-          f(page.id, page.url, hintRegex.replaceAllIn(q.text.langs(0), ""))
-        case i: Input =>
-          f(page.id, page.url, hintRegex.replaceAllIn(i.name.langs(0), ""))
-      }
-    }
 
   private def detectDuplicateStanzaUsage(pages: Seq[(String, Seq[String])]): Seq[GuidanceError] =
     pages.flatMap(_._2).distinct.flatMap{ id =>
@@ -96,21 +65,6 @@ class PageBuilder extends ProcessPopulation {
     }.groupBy(t => t._1)
      .collect{case (k, p) if p.length > 1 => DuplicateStanzaUse(k, p.map(_._2))}
      .toSeq
-
-  @tailrec
-  private def pagesByKeys(process: Process, keys: Seq[String], acc: Seq[Page], accIds: Seq[Seq[String]]): Either[GuidanceError, (Seq[Page], Seq[Seq[String]])] =
-    keys match {
-      case Nil => Right((acc, accIds))
-      case key :: xs if !acc.exists(_.id == key) =>
-        buildPage(key, process) match {
-          case Right((page, ids)) =>
-            pagesByKeys(process, page.next ++ xs ++ page.linked, acc :+ page, ids +: accIds)
-          case Left(err) =>
-            logger.error(s"Page building failed with error - $err")
-            Left(err)
-        }
-      case _ :: xs => pagesByKeys(process, xs, acc, accIds)
-    }
 
   @tailrec
   private def duplicateUrlErrors(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
@@ -147,4 +101,49 @@ class PageBuilder extends ProcessPopulation {
         }
     }
 
+  def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
+    pages(process, start).fold[Either[List[GuidanceError], Seq[Page]]](Left(_),
+      pages =>
+        (checkQuestionPages(pages, Nil) ++
+         duplicateUrlErrors(pages.reverse, Nil) ++
+         detectDuplicateStanzaUsage(pages.map(p => (p.id, p.keyedStanzas.map(_.key))))) match {
+          case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
+          case errors => Left(errors)
+        }
+    )
+  def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] = {
+    @tailrec
+    def pagesByKeys(keys: Seq[String], acc: Seq[Page]): Either[GuidanceError, Seq[Page]] =
+      keys match {
+        case Nil => Right(acc)
+        case key :: xs if !acc.exists(_.id == key) =>
+          buildPage(key, process) match {
+            case Right(page) =>
+              pagesByKeys(page.next ++ xs ++ page.linked, acc :+ page)
+            case Left(err) =>
+              logger.error(s"Page building failed with error - $err")
+              Left(err)
+          }
+        case _ :: xs => pagesByKeys(xs, acc)
+      }
+
+    pagesByKeys(List(start), Nil) match {
+      case Left(err) => Left(List(err))
+      case Right(pages) => Right(pages)
+    }
+  }
+
+  def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =
+    pages.toList.flatMap { page =>
+      page.stanzas.collectFirst {
+        case TitleCallout(text, _, _) =>
+          f(page.id, page.url, text.langs(0))
+        case YourCallCallout(text, _, _) =>
+          f(page.id, page.url, text.langs(0))
+        case q: Question =>
+          f(page.id, page.url, hintRegex.replaceAllIn(q.text.langs(0), ""))
+        case i: Input =>
+          f(page.id, page.url, hintRegex.replaceAllIn(i.name.langs(0), ""))
+      }
+    }
 }
