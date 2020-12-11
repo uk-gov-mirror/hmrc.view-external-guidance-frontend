@@ -59,10 +59,10 @@ class GuidanceService @Inject() (
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
-            page =>
+            pageAndIds =>
               Right(
                 PageEvaluationContext(
-                  page,
+                  pageAndIds._1,
                   sessionId,
                   urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap,
                   process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
