@@ -42,7 +42,7 @@ class PageBuilder extends ProcessPopulation {
           (stanza(key, process), xs ) match {
             case (Right(s: PageStanza), _) if ids.nonEmpty => collectStanzas(xs, pageStanza, ids, stanzas, key +: next) // End page but potentially more paths
             case (Right(s: PageStanza), _) => collectStanzas(xs ++ s.next, Some(s), ids :+ key, stanzas :+ s, next)     // Beginning of page
-            case (Right(EndStanza), _) => collectStanzas(xs, pageStanza, ids, stanzas :+ EndStanza, next)        // End page but potentially more paths
+            case (Right(EndStanza), _) => collectStanzas(xs, pageStanza, ids :+ key, stanzas :+ EndStanza, next)        // End page but potentially more paths
             case (Right(s: Stanza), _) if ids.isEmpty => Left(PageStanzaMissing(key))                                   // None PageStanza at start of page
             case (Right(s: Stanza), _) => collectStanzas(xs ++ s.next, pageStanza, ids :+ key, stanzas :+ s, next)      // None PageStanza within page
             case (Left(err), _) => Left(err)
@@ -57,49 +57,6 @@ class PageBuilder extends ProcessPopulation {
       case Left(err) => Left(err)
     }
   }
-
-
-  private def detectDuplicateStanzaUsage(pages: Seq[(String, Seq[String])]): Seq[GuidanceError] =
-    pages.flatMap(_._2).distinct.flatMap{ id =>
-      pages.collect{case(pId, stanzas) if stanzas.contains(id) => (id, pId)}
-    }.groupBy(t => t._1)
-     .collect{case (k, p) if p.length > 1 => DuplicateStanzaUse(k, p.map(_._2))}
-     .toSeq
-
-  @tailrec
-  private def duplicateUrlErrors(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
-    pages match {
-      case Nil => errors
-      case x :: xs if xs.exists(_.url == x.url) => duplicateUrlErrors(xs, DuplicatePageUrl(x.id, x.url) :: errors)
-      case x :: xs => duplicateUrlErrors(xs, errors)
-    }
-
-  @tailrec
-  private def checkQuestionFollowers(p: Seq[String], keyedStanzas: Map[String, Stanza], seen: Seq[String]): List[GuidanceError] =
-    p match {
-      case Nil => Nil
-      case x :: xs if seen.contains(x) => checkQuestionFollowers(xs, keyedStanzas, seen)
-      case x :: xs if !keyedStanzas.contains(x) => checkQuestionFollowers(xs, keyedStanzas, x +: seen)
-      case x :: xs if keyedStanzas.contains(x) && keyedStanzas(x).visual => List(VisualStanzasAfterQuestion(x))
-      case x :: xs => checkQuestionFollowers(keyedStanzas(x).next ++ xs, keyedStanzas, x +: seen)
-    }
-
-  @tailrec
-  private def checkQuestionPages(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
-    pages match {
-      case Nil => errors
-      case x :: xs =>
-        x.keyedStanzas.find(
-          _.stanza match {
-            case q: Question => true
-            case _ => false
-        }) match {
-          case None => checkQuestionPages(xs, errors)
-          case Some(q) =>
-            val anyErrors = checkQuestionFollowers(q.stanza.next, x.keyedStanzas.map(k => (k.key, k.stanza)).toMap, Nil)
-            checkQuestionPages(xs, anyErrors ++ errors)
-        }
-    }
 
   def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
     pages(process, start).fold[Either[List[GuidanceError], Seq[Page]]](Left(_),
@@ -145,5 +102,47 @@ class PageBuilder extends ProcessPopulation {
         case i: Input =>
           f(page.id, page.url, hintRegex.replaceAllIn(i.name.langs(0), ""))
       }
+    }
+
+  private def detectDuplicateStanzaUsage(pages: Seq[(String, Seq[String])]): Seq[GuidanceError] =
+    pages.flatMap(_._2).distinct.flatMap{ id =>
+      pages.collect{case(pId, stanzas) if stanzas.contains(id) => (id, pId)}
+    }.groupBy(t => t._1)
+     .collect{case (k, p) if p.length > 1 => DuplicateStanzaUse(k, p.map(_._2))}
+     .toSeq
+
+  @tailrec
+  private def duplicateUrlErrors(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
+    pages match {
+      case Nil => errors
+      case x :: xs if xs.exists(_.url == x.url) => duplicateUrlErrors(xs, DuplicatePageUrl(x.id, x.url) :: errors)
+      case x :: xs => duplicateUrlErrors(xs, errors)
+    }
+
+  @tailrec
+  private def checkQuestionFollowers(p: Seq[String], keyedStanzas: Map[String, Stanza], seen: Seq[String]): List[GuidanceError] =
+    p match {
+      case Nil => Nil
+      case x :: xs if seen.contains(x) => checkQuestionFollowers(xs, keyedStanzas, seen)
+      case x :: xs if !keyedStanzas.contains(x) => checkQuestionFollowers(xs, keyedStanzas, x +: seen)
+      case x :: xs if keyedStanzas.contains(x) && keyedStanzas(x).visual => List(VisualStanzasAfterQuestion(x))
+      case x :: xs => checkQuestionFollowers(keyedStanzas(x).next ++ xs, keyedStanzas, x +: seen)
+    }
+
+  @tailrec
+  private def checkQuestionPages(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] =
+    pages match {
+      case Nil => errors
+      case x :: xs =>
+        x.keyedStanzas.find(
+          _.stanza match {
+            case q: Question => true
+            case _ => false
+        }) match {
+          case None => checkQuestionPages(xs, errors)
+          case Some(q) =>
+            val anyErrors = checkQuestionFollowers(q.stanza.next, x.keyedStanzas.map(k => (k.key, k.stanza)).toMap, Nil)
+            checkQuestionPages(xs, anyErrors ++ errors)
+        }
     }
 }
