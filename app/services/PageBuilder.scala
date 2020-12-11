@@ -60,28 +60,21 @@ class PageBuilder extends ProcessPopulation {
   def pages(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
     pagesByKeys(process, List(start), Nil, Nil) match {
       case Left(err) => Left(List(err))
-      case Right((pages, ids)) =>
-        validateStanzaUsage(ids)
-        Right(pages)
+      case Right((pages, ids)) => Right(pages)
     }
 
   def pagesWithValidation(process: Process, start: String = Process.StartStanzaId): Either[List[GuidanceError], Seq[Page]] =
     pagesByKeys(process, List(start), Nil, Nil) match {
       case Left(err) => Left(List(err))
       case Right((pages, ids)) =>
-        validateStanzaUsage(ids)
-        (checkQuestionPages(pages, Nil) ++ duplicateUrlErrors(pages.reverse, Nil)) match {
-          case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
-          case duplicates => Left(duplicates)
+        (checkQuestionPages(pages, Nil) ++
+         duplicateUrlErrors(pages.reverse, Nil) ++
+         detectDuplicateStanzaUsage(pages.map(p => (p.id, p.keyedStanzas.map(_.key))))) match {
+          case Nil =>
+            Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
+          case errors => Left(errors)
         }
     }
-
-    // pages(process, start).fold[Either[List[GuidanceError], Seq[Page]]](Left(_),
-    //   pages => (checkQuestionPages(pages, Nil) ++ duplicateUrlErrors(pages.reverse, Nil)) match {
-    //     case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
-    //     case duplicates => Left(duplicates)
-    //   }
-    // )
 
   def fromPageDetails[A](pages: Seq[Page])(f: (String, String, String) => A): List[A] =
     pages.toList.flatMap { page =>
@@ -97,21 +90,12 @@ class PageBuilder extends ProcessPopulation {
       }
     }
 
-  private def validateStanzaUsage(ids: Seq[Seq[String]]): Unit = {
-    def validate(pageId: String, page: Seq[String], others: Seq[Seq[String]]): Unit = {
-      println(s"PAGE: $pageId")
-      others.foreach{ o =>
-        println(page.intersect(o))
-      }
-    }
-
-    ids.foreach{l =>
-      val others = ids.filterNot(_ == l)
-      val pageId = l.head
-      val page = l.tail
-      validate(pageId, page, others)
-    }
-  }
+  private def detectDuplicateStanzaUsage(pages: Seq[(String, Seq[String])]): Seq[GuidanceError] =
+    pages.flatMap(_._2).distinct.flatMap{ id =>
+      pages.collect{case(pId, stanzas) if stanzas.contains(id) => (id, pId)}
+    }.groupBy(t => t._1)
+     .collect{case (k, p) if p.length > 1 => DuplicateStanzaUse(k, p.map(_._2))}
+     .toSeq
 
   @tailrec
   private def pagesByKeys(process: Process, keys: Seq[String], acc: Seq[Page], accIds: Seq[Seq[String]]): Either[GuidanceError, (Seq[Page], Seq[Seq[String]])] =
