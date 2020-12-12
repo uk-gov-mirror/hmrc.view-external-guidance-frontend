@@ -16,18 +16,35 @@
 
 package forms
 
-import javax.inject.Inject
-import play.api.data.Form
-import play.api.data.Forms._
-import models.ui.SubmittedAnswer
+import play.api.data.Forms.{single, tuple}
+import play.api.data.{Form, Mapping}
 
-class SubmittedAnswerFormProvider @Inject() extends FormProvider {
+trait FormProvider
 
-  def apply(answer: String): Form[SubmittedAnswer] =
+class SingleAnswerFormProvider extends FormProvider {
+
+  def apply(bindData: (String, Mapping[String])): Form[String] =
+
     Form(
-      mapping(
-        answer -> nonEmptyText
-      )(SubmittedAnswer.apply)(SubmittedAnswer.unapply)
+      single(
+        bindData._1-> bindData._2
+      )
     )
 
 }
+
+class Tuple3InputFormProvider extends FormProvider {
+
+  def apply(bindData: Seq[(String, Mapping[String])]): Form[(String, String, String)] =
+
+    Form(
+      tuple(
+        bindData.head._1 -> bindData.head._2,
+        bindData(1)._1 -> bindData(1)._2,
+        bindData.last._1 -> bindData.last._2
+      )
+    )
+
+}
+
+
