@@ -31,7 +31,7 @@ import repositories.ProcessContext
 import views.html.{delete_your_answers, session_timeout}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, Result}
 
 import scala.concurrent.Future
 
@@ -39,9 +39,9 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
   private trait Test extends MockGuidanceService with ProcessJson {
 
-    lazy val errorHandler = app.injector.instanceOf[ErrorHandler]
-    lazy val view = app.injector.instanceOf[session_timeout]
-    lazy val delete_answers_view = app.injector.instanceOf[delete_your_answers]
+    lazy val errorHandler: ErrorHandler = app.injector.instanceOf[ErrorHandler]
+    lazy val view: session_timeout = app.injector.instanceOf[session_timeout]
+    lazy val delete_answers_view: delete_your_answers = app.injector.instanceOf[delete_your_answers]
 
     lazy val processCode = "cup-of-tea"
     lazy val sessionId = "sessionId"
@@ -50,7 +50,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
     lazy val process: Process = validOnePageJson.as[Process]
     lazy val processContext: ProcessContext = ProcessContext(process, Map(), Map(), Map(), None)
 
-    val timeout = MockAppConfig.timeoutInSeconds * MockAppConfig.toMilliSeconds
+    val timeout: Int = MockAppConfig.timeoutInSeconds * MockAppConfig.toMilliSeconds
 
     val target = new SessionTimeoutPageController( MockAppConfig,
       mockGuidanceService,
@@ -67,11 +67,26 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       val now: String = Instant.now.toEpochMilli.toString
 
-      val fakeRequest = FakeRequest("GET", "/").withSession(
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
         SessionKeys.sessionId -> sessionId,
         SessionKeys.lastRequestTimestamp -> now)
 
       MockGuidanceService.getProcessContext(sessionId).returns(Future.successful(Right(processContext)))
+
+      val result: Future[Result] = target.getPage(processCode)(fakeRequest)
+
+      status(result) shouldBe Status.OK
+    }
+
+    "return an OK if the process cannot be found when retrieving the session data" in new Test {
+
+      val now: String = Instant.now.toEpochMilli.toString
+
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
+        SessionKeys.sessionId -> sessionId,
+        SessionKeys.lastRequestTimestamp -> now)
+
+      MockGuidanceService.getProcessContext(sessionId).returns(Future.successful(Left(NotFoundError)))
 
       val result: Future[Result] = target.getPage(processCode)(fakeRequest)
 
@@ -83,7 +98,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       val now: String = Instant.now.toEpochMilli.toString
 
-      val fakeRequest = FakeRequest("GET", "/").withSession(
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
         SessionKeys.sessionId -> sessionId,
         SessionKeys.lastRequestTimestamp -> now)
 
@@ -98,7 +113,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       val now: String = Instant.now.toEpochMilli.toString
 
-      val fakeRequest = FakeRequest("GET", "/").withSession(
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
         SessionKeys.sessionId -> sessionId,
         SessionKeys.lastRequestTimestamp -> now)
 
@@ -115,7 +130,7 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
     "return a successful response if the session has expired" in new Test {
 
-      val fakeRequest = FakeRequest("GET", "/")
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       val result: Future[Result] = target.getPage(processCode)(fakeRequest)
 
@@ -126,9 +141,9 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       // This scenario should not occur but is catered for as a possible extension of the timeout expiry calculation
       val now: Long = Instant.now.toEpochMilli
-      val ts = now - (timeout + (60 * MockAppConfig.toMilliSeconds))
+      val ts: Long = now - (timeout + (60 * MockAppConfig.toMilliSeconds))
 
-      val fakeRequest = FakeRequest("GET", "/").withSession(
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
         SessionKeys.sessionId -> sessionId,
         SessionKeys.lastRequestTimestamp -> ts.toString
       )
@@ -142,9 +157,9 @@ class SessionTimeoutPageControllerSpec extends BaseSpec with GuiceOneAppPerSuite
 
       // This scenario occurs when the timeout dialog disappears fractionally before the session times out
       val now: Long = Instant.now.toEpochMilli
-      val ts = now - (timeout - 10)
+      val ts: Long = now - (timeout - 10)
 
-      val fakeRequest = FakeRequest("GET", "/").withSession(
+      val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/").withSession(
         SessionKeys.sessionId -> sessionId,
         SessionKeys.lastRequestTimestamp -> ts.toString
       )
