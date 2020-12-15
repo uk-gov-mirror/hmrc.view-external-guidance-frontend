@@ -103,7 +103,7 @@ class GuidanceController @Inject() (
             }{ answer =>
               service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text).map{
                 case Right((None, labels)) =>
-                  // No valid next page id indicates the guidance has determined there is an error and page should be re-displayed
+                  // No valid next page id indicates the guidance has determined the page should be re-displayed (probably due to an error)
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")
                   BadRequest(createInputView(evalContext.copy(labels = labels), questionName(path), None, form))
                 case Right((Some(stanzaId), _)) =>
