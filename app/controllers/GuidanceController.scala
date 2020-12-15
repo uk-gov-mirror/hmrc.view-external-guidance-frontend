@@ -152,11 +152,6 @@ class GuidanceController @Inject() (
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
 
-  private def previousPageQueryString(url: String, backLink: Option[String]): Option[String] =
-
-    backLink match {
-      case Some(bl) if url == bl => Some("1")
-      case _ => None
-    }
+  private def previousPageQueryString(url: String, backLink: Option[String]): Option[String] = backLink.collect{case bl if bl == url => "1"}
 
 }
