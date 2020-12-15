@@ -16,12 +16,6 @@
 
 @(input: models.ui.DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@optionalAria() = @{
-  Seq(input.hint.map(_ => s"$name-item-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
-    case Nil => ""
-    case l => ariaDescribedBy("input-hint")
-  }
-}
 <div class="govuk-date-input" id="date-input">
     <div class="govuk-date-input__item">
         <div class="govuk-form-group">

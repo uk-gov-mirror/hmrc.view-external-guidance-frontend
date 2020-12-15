@@ -174,6 +174,12 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       heading.first.text() shouldBe i1(0)
     }
 
+    "render contained a fieldset" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val fieldset = doc.getElementsByTag("fieldset")
+      fieldset.size shouldBe 1
+    }
+
     "render contained paragraphs" in new DateTest {
       private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
 
@@ -210,18 +216,18 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
     }
 
-    "Input with no body should have a label wrapper class on H1" in new DateTest {
+    "render input with no body as a fieldset class on H1" in new DateTest {
       private val doc = asDocument(components.input_date(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val h1 = doc.getElementsByTag("h1").first
       private val attrs = elementAttrs(h1)
-      attrs("class").contains("govuk-label-wrapper") shouldBe true
+      attrs("class").contains("govuk-fieldset__heading") shouldBe true
     }
 
-    "input without body should render hint within a span without a fieldset" in new DateTest {
+    "render input without body within a fieldset" in new DateTest {
       private val doc = asDocument(components.input_date(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
       private val fieldset = doc.getElementsByTag("fieldset").first
 
-      Option(fieldset) shouldBe None
+      Option(fieldset) shouldBe Some(fieldset)
 
       Option(doc.getElementById("input-hint")).fold(fail("Missing hint span")) { span =>
         val attrs = elementAttrs(span)

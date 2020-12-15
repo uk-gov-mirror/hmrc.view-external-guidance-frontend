@@ -15,8 +15,7 @@
  *@
 
 @import models.ui._
-@import controllers.routes._
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
+@import views.html.components.ariaDescribedBy
 
 @(input: models.ui.DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
@@ -30,23 +29,20 @@
 <div class="govuk-form-group @if(input.errorMsgs.nonEmpty) {govuk-form-group--error}">
 
   @if(input.body.isEmpty) {
-      @components.h1_heading_with_label(H1(input.text), name + "-0")
-      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-      @components.error_message(input.errorMsgs)
-      @components.input_date_field(input, name, form)
+    <fieldset class="govuk-fieldset" role="group" @optionalAria()>
+      @components.h1_heading_with_fieldset(H1(input.text))
 
   } else {
     @components.h1_heading(H1(input.text))
     @components.render_components(input.body)
 
-    <fieldset class="govuk-fieldset" @optionalAria()>
-      <label class="govuk-label govuk-label--s" for="@name-0">@components.render_text(input.text)</label>
-      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-      @components.error_message(input.errorMsgs)
-      @components.input_date_field(input, name, form)
-    </fieldset>
+    <fieldset class="govuk-fieldset" role="group" @optionalAria()>
+      <legend class="govuk-fieldset__legend govuk-visually-hidden">@components.render_text(input.text)</legend>
   }
-
+    @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+    @components.error_message(input.errorMsgs)
+    @components.input_date_field(input, name, form)
+  </fieldset>
 
 </div>
 
