@@ -14,7 +14,8 @@
  * limitations under the License.
  *@
 
-@import models.ui.{ConfirmationPanel, Paragraph, H1, H2, H3, H4, InsetText, BulletPointList, SummaryList, Table, NumberedList, NumberedCircleList, UIComponent}
+@import models.ui.{ConfirmationPanel, Paragraph, H1, H2, H3, H4, InsetText, BulletPointList}
+@import models.ui.{SummaryList, Table, NumberedList, NumberedCircleList, UIComponent}
 
 @(elements: Seq[UIComponent])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 @for(cmp <- elements) {

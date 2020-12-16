@@ -17,16 +17,11 @@
 @import controllers.routes._
 @import models.ui.Text
 
-@(row: Seq[Text])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+@(row: Seq[Text], numericColumns: Seq[Boolean])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <div class="govuk-summary-list__row">
-  @for(index <- row.indices) {
-    @{index match {
-      case 0 => <dt class="govuk-summary-list__key">{render_text(row(0))}</dt>
-      case 1 => <dd class="govuk-summary-list__value">{render_text(row(1))}</dd>
-      case x => summary_actioncell(row(x))
-      }
-    }
-  }
+  <dt class=@if(numericColumns(1)){"govuk-summary-list__key govuk-!-width-three-quarters"} else {"govuk-summary-list__key"}>@render_text(row(0))</dt>
+  <dd class=@if(numericColumns(1)){"govuk-summary-list__value govuk-!-width-one-quarter numeric"} else {"govuk-summary-list__value"}>@render_text(row(1))</dd>
+  @{if(row.length > 2) summary_actioncell(row(2)) }
 </div>
 @{
      //$COVERAGE-OFF$

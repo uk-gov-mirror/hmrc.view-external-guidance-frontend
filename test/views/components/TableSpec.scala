@@ -41,55 +41,24 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     implicit val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-
-    val expectedTable = Table(Text("HELLO","HELLO"),
-                              Some(Seq(Th(Text("First","First")), Th(Text("Second","Second")))),
-                              Seq.fill(3)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    val expectedTableNoHeadings = Table(Text("HELLO","HELLO"),
-                                        None,
-                                        Seq.fill(2)(Seq(Td(Text("HELLO","HELLO")), Td(Text("World","World")))))
-    val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
-                                              None,
-                                              Seq.fill(3)(Seq(Th(Text("HELLO","HELLO")), Td(Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency))))))
-    val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
-
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+
+    val expectedTable = Table(Text("HELLO","HELLO"),
+                              Seq(Text("First","First"), Text("Second","Second")),
+                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
+    val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
+                                              Seq(Text("Caption", "Caption"), Text("Caption", "Caption")),
+                                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency)))))
+    val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
+
   }
 
   private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "English Tables" must {
 
-    "Encode table missing caption, with initial row/cell as table caption" in new Test {
-      val html: Html = components.table(expectedTable)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
-        caption.text shouldBe "HELLO"
-
-        table.hasClass("govuk-table") shouldBe true
-
-        val body = table.getElementsByTag("tbody").first
-        val rows = body.getElementsByTag("tr").asScala.toList
-
-        rows.size shouldBe expectedTable.rows.size
-      }
-    }
-
-    "Encode an initial row not all bold as a standard table body row" in new Test {
-      val html: Html = components.table(expectedTableNoHeadings)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
-        caption.text shouldBe "HELLO"
-        table.hasClass("govuk-table") shouldBe true
-        table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-        val body = table.getElementsByTag("tbody").first
-        val rows = body.getElementsByTag("tr").asScala.toList
-
-        rows.size shouldBe expectedTableNoHeadings.rows.size
-      }
-    }
 
     "Encode all bold initial row as table headings with a Caption" in new Test {
       val html: Html = components.table(expectedTableWithCaption)
@@ -101,9 +70,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
-      expectedTableWithCaption.headingRow.fold(fail){row =>
-        headings.size shouldBe row.size
-      }
+      headings.size shouldBe expectedTableWithCaption.headingRow.size
 
       val body = table.getElementsByTag("tbody").first
       val rows = body.getElementsByTag("tr").asScala.toList
@@ -124,7 +91,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
         case (rowElem, tableRow) =>
           val cells = rowElem.children.asScala.toList
           (cells zip tableRow).foreach{
-            case (c, td: Td) if td.numeric =>
+            case (c, td) if td.isNumericLabelRef =>
               c.hasClass("govuk-table__cell--numeric") shouldBe true
 
             case (c, tc) =>
@@ -136,35 +103,6 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "Welsh Tables" must {
 
-    "Encode table missing caption, with initial row/cell as table caption" in new WelshTest {
-      val html: Html = components.table(expectedTable)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
-        caption.text shouldBe "HELLO"
-
-        table.hasClass("govuk-table") shouldBe true
-
-        val body = table.getElementsByTag("tbody").first
-        val rows = body.getElementsByTag("tr").asScala.toList
-
-        rows.size shouldBe expectedTable.rows.size
-      }
-    }
-
-    "Encode an initial row not all bold as a standard table body row" in new WelshTest {
-      val html: Html = components.table(expectedTableNoHeadings)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){caption =>
-        caption.text shouldBe "HELLO"
-        table.hasClass("govuk-table") shouldBe true
-        table.getElementsByTag("thead").asScala.toList.isEmpty shouldBe true
-        val body = table.getElementsByTag("tbody").first
-        val rows = body.getElementsByTag("tr").asScala.toList
-
-        rows.size shouldBe expectedTableNoHeadings.rows.size
-      }
-    }
-
     "Encode all bold initial row as table headings with a Caption" in new WelshTest {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
@@ -175,9 +113,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
-      expectedTableWithCaption.headingRow.fold(fail){row =>
-        headings.size shouldBe row.size
-      }
+      headings.size shouldBe expectedTableWithCaption.headingRow.size
 
       val body = table.getElementsByTag("tbody").first
       val rows = body.getElementsByTag("tr").asScala.toList
@@ -198,7 +134,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
         case (rowElem, tableRow) =>
           val cells = rowElem.children.asScala.toList
           (cells zip tableRow).foreach{
-            case (c, td: Td) if td.numeric =>
+            case (c, td) if td.isNumericLabelRef =>
               c.hasClass("govuk-table__cell--numeric") shouldBe true
 
             case (c, tc) =>
