@@ -21,10 +21,12 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.ui.FormData
 import models.{PageContext, PageEvaluationContext}
+import models.ocelot.stanzas.DataInput
 import play.api.Logger
-import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
+import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
@@ -115,6 +117,13 @@ class GuidanceService @Inject() (
     labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
       sessionRepository.saveLabels(docId, labels.updatedLabels.values.toSeq)
     )
+
+  def getActiveInputStanza(pec: PageEvaluationContext): Option[DataInput] = {
+
+    val (_, _, optionalInput) = pageRenderer.renderPage(pec.page, pec.labels)
+
+    optionalInput
+  }
 
   def retrieveAndCacheScratch(uuid: String, docId: String)
                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =

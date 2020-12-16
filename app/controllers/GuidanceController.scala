@@ -25,9 +25,8 @@ import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
-import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
+import models.ui.{StandardPage, InputPage, QuestionPage, FormData, SubmittedAnswer}
 import models.ocelot.stanzas.DataInput
-import forms.SubmittedAnswerFormProvider
 import views.html.{input_page, standard_page, question_page}
 import play.api.Logger
 import scala.concurrent.Future
@@ -36,8 +35,8 @@ import controllers.actions.SessionIdAction
 import play.twirl.api.Html
 import scala.concurrent.Future
 import models.ocelot.KeyedStanza
-import models.ocelot.stanzas.Stanza
-import forms.FormsHelper.bindFormData
+import models.ui.{Input, Question, UIComponent}
+import forms.FormsHelper.{bindFormData, populateForm}
 
 @Singleton
 class GuidanceController @Inject() (
@@ -47,7 +46,6 @@ class GuidanceController @Inject() (
     standardView: standard_page,
     questionView: question_page,
     inputView: input_page,
-    formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -63,14 +61,26 @@ class GuidanceController @Inject() (
                     s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
         pageContext.page match {
           case page: StandardPage =>
-            service.saveLabels(pageContext.sessionId, pageContext.labels).map{
+            service.saveLabels(pageContext.sessionId, pageContext.labels).map {
               case Right(_) => Ok(standardView(page, pageContext))
               case Left(err) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           case page: QuestionPage =>
-            Future.successful(Ok(questionView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
+            getInputUIComponent(pageContext) match {
+              case Some(uiComponent) => Future.successful(
+                Ok(questionView(page, pageContext, questionName(path), populateForm(uiComponent, questionName(path), pageContext.answer))))
+              case _ =>
+                logger.error(s"Unable to determine input UI component for process ${pageContext.processCode} on page load")
+                Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            }
           case page: InputPage =>
-            Future.successful(Ok(inputView(page, pageContext, questionName(path), populatedForm(pageContext, path))))
+            getInputUIComponent(pageContext) match {
+              case Some(uiComponent) => Future.successful(
+                Ok(inputView(page, pageContext, questionName(path), populateForm(uiComponent, questionName(path), pageContext.answer))))
+              case _ =>
+                logger.error(s"Unable to determine input UI component for process ${pageContext.processCode} on page load")
+                Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            }
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -88,7 +98,7 @@ class GuidanceController @Inject() (
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(evalContext) =>
-        val inputStanza: Option[Stanza] = getInputStanza(evalContext)
+        val inputStanza: Option[DataInput] = service.getActiveInputStanza(evalContext)
         inputStanza match {
           case Some(stanza) => {
             bindFormData(stanza, questionName(path)) match {
@@ -96,8 +106,8 @@ class GuidanceController @Inject() (
                 val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
                 Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
               }
-              case Right((form: Form[_], submittedAnswers: List[String])) => {
-                processBoundFormData(processCode, evalContext, path, form, submittedAnswers)
+              case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) => {
+                processBoundFormData(processCode, evalContext, path, form, submittedAnswer)
               }
             }
           }
@@ -122,17 +132,17 @@ class GuidanceController @Inject() (
                                    evalContext: PageEvaluationContext,
                                    path: String,
                                    form: Form[_],
-                                   submittedAnswers: List[String])
+                                   submittedAnswer: SubmittedAnswer)
                                   (implicit request: Request[_], messages: Messages): Future[Result] = {
-    validateAnswer(evalContext, submittedAnswers.head).fold {
+    validateAnswer(evalContext, submittedAnswer.text).fold {
       // Answer didn't pass page DataInput stanza validation
       val formData = FormData(path, Map(), Seq(FormError("", "error.required")))
       Future.successful(BadRequest(createInputView(evalContext,
         questionName(path),
         Some(formData),
-        form.bind(Map(questionName(path) -> submittedAnswers.head)))))
+        form.bind(Map(questionName(path) -> submittedAnswer.text)))))
     } { answer =>
-      service.submitPage(evalContext, s"/$path", answer, submittedAnswers.head).map {
+      service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text).map {
         case Right((None, labels)) =>
           // No valid next page id indicates the guidance has determined there is an error and page should be re-displayed
           logger.info(s"Post submit page evaluation indicates guidance detected input error")
@@ -162,17 +172,12 @@ class GuidanceController @Inject() (
     }
   }
 
-  private def populatedForm(ctx: PageContext, path: String): Form[_] = ctx.answer.fold(formProvider(questionName(path))) { answer =>
-    formProvider(questionName(path)).bind(Map(questionName(path) -> answer))
-  }
-
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
 
-  private def getInputStanza(ctx: PageEvaluationContext): Option[Stanza] = {
-
-    val inputStanzas: Seq[Stanza] = ctx.page.keyedStanzas.collect{case KeyedStanza(_, i: DataInput) => i}
-
-    inputStanzas.headOption
+  private def getInputUIComponent(ctx: PageContext): Option[UIComponent] = ctx.page.components.collectFirst
+  {
+    case i: Input => i
+    case q: Question => q
   }
 
 }

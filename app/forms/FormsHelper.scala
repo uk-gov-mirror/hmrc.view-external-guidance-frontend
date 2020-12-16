@@ -19,57 +19,62 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
-import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, Stanza, Question}
+import models.ocelot.stanzas.{CurrencyInput => OcelotCurrencyInput, CurrencyPoundsOnlyInput => OcelotCurrencyPoundsOnlyInput}
+import models.ocelot.stanzas.{DataInput => OcelotDataInput, Question => OcelotQuestion}
+import models.ui.{CurrencyInput, CurrencyPoundsOnlyInput, Question, UIComponent}
+import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 
 object FormsHelper {
 
-  def bindFormData(inputStanza: Stanza, path: String)
-                  (implicit request: Request[AnyContent]): Either[Form[_], (Form[_], List[String])] = {
+  def bindFormData(inputStanza: OcelotDataInput, path: String)
+                  (implicit request: Request[AnyContent]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
 
     // Define form mapping for each data input type. Currently, the mapping is the same for
     // the single input data components. A different mapping will be required for dates.
     inputStanza match {
-      case c: CurrencyInput => bindSingleInputValue(path -> nonEmptyText)
-      case cpo: CurrencyPoundsOnlyInput => bindSingleInputValue(path -> nonEmptyText)
-      case q: Question => bindSingleInputValue(path -> nonEmptyText)
+      case c: OcelotCurrencyInput => bindSingleTextAnswer(path -> nonEmptyText)
+      case cpo: OcelotCurrencyPoundsOnlyInput => bindSingleTextAnswer(path -> nonEmptyText)
+      case q: OcelotQuestion => bindSingleTextAnswer(path -> nonEmptyText)
     }
 
   }
 
-  private def bindSingleInputValue(bindData: (String, Mapping[String]))
-                                  (implicit request: Request[AnyContent]): Either[Form[_], (Form[_],List[String])] = {
+  def populateForm(input: UIComponent, path: String, answer: Option[String]): Form[_] = {
 
-    val formProvider: SingleAnswerFormProvider = new SingleAnswerFormProvider()
-
-    val form = formProvider(bindData)
-
-    form.bindFromRequest.fold(
-      formWithErrors => Left(formWithErrors),
-      formData => Right((form, List(formData)))
-    )
-  }
-
-  private def bindTuple3Input(bindData: Seq[(String, Mapping[String])])
-                             (implicit request: Request[AnyContent]): Either[Form[_], (Form[_], List[String])] = {
-
-    val formProvider: Tuple3InputFormProvider = new Tuple3InputFormProvider()
-
-    val form = formProvider(bindData)
-
-    form.bindFromRequest.fold(
-      formWithErrors => Left(formWithErrors),
-      formData => Right((form, convertTuple3(formData)))
-    )
-  }
-
-  private def convertTuple3(tuple: (Any, Any, Any)): List[String] =
-    List( toStr(tuple._1), toStr(tuple._2), toStr(tuple._3))
-
-  private def toStr(any: Any): String =
-
-    any match {
-      case s: String => s
-      case _ => ""
+    input match {
+      case c: CurrencyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case cpo: CurrencyPoundsOnlyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case q: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
     }
+
+  }
+
+
+  private def bindSingleTextAnswer(bindData: (String, Mapping[String]))
+                                  (implicit request: Request[AnyContent]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
+
+    val formProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
+
+    val form = formProvider(bindData)
+
+    form.bindFromRequest()fold(
+      formWithErrors => Left(formWithErrors),
+      formData => Right((form, formData))
+    )
+
+  }
+
+  private def populateSubmittedTextAnswerForm(bindData: (String, Mapping[String]), path: String, answer: Option[String]): Form[SubmittedTextAnswer] = {
+
+    val formProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
+
+    val form = formProvider(bindData)
+
+    answer match {
+      case Some(value) => form.bind(Map(path -> value))
+      case None => form
+    }
+
+  }
 
 }

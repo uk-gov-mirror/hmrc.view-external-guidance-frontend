@@ -16,7 +16,7 @@
 
 package forms
 
-import models.ui.SubmittedAnswer
+import models.ui.SubmittedAnswer1
 import play.api.data.Form
 
 import base.BaseSpec
@@ -31,8 +31,8 @@ class SubmittedAnswerFormProviderSpec extends BaseSpec {
 
     "be able to be able to execute the unapply method held in mapping" in {
 
-      val form: Form[SubmittedAnswer] = provider(answer)
-      val map: Map[String,String] = form.mapping.unbind(SubmittedAnswer(""))
+      val form: Form[SubmittedAnswer1] = provider(answer)
+      val map: Map[String,String] = form.mapping.unbind(SubmittedAnswer1(""))
       val keySet = map.keySet
 
       keySet shouldBe Set(answer)

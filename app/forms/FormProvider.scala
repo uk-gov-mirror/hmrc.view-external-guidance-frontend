@@ -16,35 +16,37 @@
 
 package forms
 
-import play.api.data.Forms.{single, tuple}
 import play.api.data.{Form, Mapping}
+import play.api.data.Forms._
+
+import models.ui.{SubmittedTextAnswer, SubmittedDateAnswer}
 
 trait FormProvider
 
-class SingleAnswerFormProvider extends FormProvider {
+class SubmittedTextAnswerFormProvider extends FormProvider {
 
-  def apply(bindData: (String, Mapping[String])): Form[String] =
+  def apply(bindData: (String, Mapping[String])): Form[SubmittedTextAnswer] =
 
     Form(
-      single(
-        bindData._1-> bindData._2
-      )
+      mapping(
+        bindData._1 -> bindData._2
+      )(SubmittedTextAnswer.apply)(SubmittedTextAnswer.unapply)
     )
-
+  
 }
 
-class Tuple3InputFormProvider extends FormProvider {
+class SubmittedDateAnswerProvider extends FormProvider {
 
-  def apply(bindData: Seq[(String, Mapping[String])]): Form[(String, String, String)] =
+  def apply(): Form[SubmittedDateAnswer] =
 
     Form(
-      tuple(
-        bindData.head._1 -> bindData.head._2,
-        bindData(1)._1 -> bindData(1)._2,
-        bindData.last._1 -> bindData.last._2
-      )
+      mapping(
+        "day" -> nonEmptyText,
+        "month" -> nonEmptyText,
+        "year" -> nonEmptyText
+      )(SubmittedDateAnswer.apply)(SubmittedDateAnswer.unapply)
     )
-
+  
 }
 
 

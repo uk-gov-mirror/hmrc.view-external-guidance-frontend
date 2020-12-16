@@ -19,15 +19,15 @@ package forms
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms._
-import models.ui.SubmittedAnswer
+import models.ui.SubmittedAnswer1
 
 class SubmittedAnswerFormProvider @Inject() extends FormProvider {
 
-  def apply(answer: String): Form[SubmittedAnswer] =
+  def apply(answer: String): Form[SubmittedAnswer1] =
     Form(
       mapping(
         answer -> nonEmptyText
-      )(SubmittedAnswer.apply)(SubmittedAnswer.unapply)
+      )(SubmittedAnswer1.apply)(SubmittedAnswer1.unapply)
     )
 
 }

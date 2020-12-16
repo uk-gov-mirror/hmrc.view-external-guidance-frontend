@@ -16,4 +16,18 @@
 
 package models.ui
 
-case class SubmittedAnswer(text: String)
+case class SubmittedAnswer1(text: String)
+
+trait SubmittedAnswer {
+
+  val text: String
+
+}
+
+case class SubmittedTextAnswer(text: String) extends SubmittedAnswer
+
+case class SubmittedDateAnswer(day: String, month: String, year: String) extends SubmittedAnswer {
+
+    override val text: String = day + "/" + month + "/" + year
+
+}
