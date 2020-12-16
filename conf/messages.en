@@ -1,7 +1,5 @@
 service.name = Guidance
 service.govuk = GOV.UK
-hello.world = Hello world!
-hello.world.currentLanguage = The current language setting is "{0}",
 
 service.phaseName = beta
 feedback.before = This is a new service - your
@@ -12,6 +10,10 @@ backlink.label = Back
 getpagehelp.linkText = Get help with this page (opens in new tab)
 
 site.continue = Continue
+
+label.day=Day
+label.month=Month
+label.year=Year
 
 error.browser.title.prefix = Error:
 error.summary.title = There is a problem

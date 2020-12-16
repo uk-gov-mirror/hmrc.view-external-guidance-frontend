@@ -16,8 +16,9 @@
 
 package controllers
 
-import base.{ViewFns, BaseSpec}
-import mocks.{MockAppConfig, MockGuidanceService, MockSessionRepository, MockGuidanceConnector}
+import base.{BaseSpec, ViewFns}
+import config.ErrorHandler
+import mocks.{MockAppConfig, MockGuidanceConnector, MockGuidanceService, MockSessionRepository}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc._
@@ -27,15 +28,16 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import forms.SubmittedAnswerFormProvider
-import models.{PageEvaluationContext, PageContext}
-import models.ocelot.{Process, ProcessJson, Phrase,KeyedStanza, Page => OcelotPage}
-import models.ocelot.stanzas.{Question => OcelotQuestion,_}
-import models.ui.{CurrencyInput => UiCurrencyInput,_}
+import models.{PageContext, PageEvaluationContext}
+import models.ocelot.{KeyedStanza, Phrase, Process, ProcessJson, Page => OcelotPage}
+import models.ocelot.stanzas.{Question => OcelotQuestion, _}
+import models.ui.{CurrencyInput => UiCurrencyInput, DateInput => UiDateInput, _}
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
 import models.errors._
 import models.ocelot.LabelCache
+
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import views.html._
@@ -75,13 +77,16 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = block(request)
     }
 
-    lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
-    lazy val view = app.injector.instanceOf[views.html.standard_page]
-    lazy val questionView = app.injector.instanceOf[views.html.question_page]
-    lazy val inputView = app.injector.instanceOf[input_page]
-    val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
-    val questionStanza = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
-    val currencyInputStanza = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
+    lazy val errorHandler: ErrorHandler = app.injector.instanceOf[config.ErrorHandler]
+    lazy val view: standard_page = app.injector.instanceOf[views.html.standard_page]
+    lazy val questionView: question_page = app.injector.instanceOf[views.html.question_page]
+    lazy val inputView: input_page = app.injector.instanceOf[input_page]
+    lazy val dateInputView: input_date_page = app.injector.instanceOf[input_date_page]
+
+    val instructionStanza: InstructionStanza = InstructionStanza(3, Seq("3"), None, false)
+    val questionStanza: OcelotQuestion = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
+    val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
+    val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", questionStanza)
@@ -90,11 +95,16 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", currencyInputStanza)
                                       )
+    val stanzasWithDateInput: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+      KeyedStanza("1", instructionStanza),
+      KeyedStanza("3", dateInputStanza)
+    )
 
 
     val page = OcelotPage("start", "/test-page", stanzas, Seq("4","5"))
     val inputPage = OcelotPage("start", "/test-page", stanzasWithInput, Seq("4"))
     val nonQuestionPage = OcelotPage("start", "/test-page", stanzas.drop(1), Seq("3"))
+    val dateInputPage = OcelotPage("start", "/test-page", stanzasWithDateInput, Seq("4"))
   }
 
   trait QuestionTest extends MockGuidanceService with TestData {
@@ -109,6 +119,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -206,6 +217,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       guidanceService,
       stubMessagesControllerComponents()
@@ -248,7 +260,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -298,7 +310,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
@@ -324,7 +336,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
-        .withFormUrlEncodedBody((relativePath -> "0"))
+        .withFormUrlEncodedBody(relativePath -> "0")
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -437,6 +449,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       view,
       questionView,
       inputView,
+      dateInputView,
       new SubmittedAnswerFormProvider(),
       mockGuidanceService,
       stubMessagesControllerComponents()
@@ -789,6 +802,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         view,
         questionView,
         inputView,
+        dateInputView,
         new SubmittedAnswerFormProvider(),
         mockGuidanceService,
         stubMessagesControllerComponents()
@@ -817,6 +831,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -851,6 +866,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -889,6 +905,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -924,6 +941,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -958,6 +976,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -995,6 +1014,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           view,
           questionView,
           inputView,
+          dateInputView,
           new SubmittedAnswerFormProvider(),
           mockGuidanceService,
           stubMessagesControllerComponents()
@@ -1010,6 +1030,84 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       contentType(result) shouldBe Some("text/html")
     }
 
+  }
+
+
+  "Date Input processing" should {
+    trait DateInputTest extends MockGuidanceService with TestData {
+
+      override lazy val expectedPage: Page = DateInputPage(
+        path,
+        UiDateInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+      )
+      val enteredValue = "12"
+      val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
+
+      val target = new GuidanceController(
+        MockAppConfig,
+        fakeSessionIdAction,
+        errorHandler,
+        view,
+        questionView,
+        inputView,
+        dateInputView,
+        new SubmittedAnswerFormProvider(),
+        mockGuidanceService,
+        stubMessagesControllerComponents()
+      )
+
+      val initialLabels = LabelCache()
+
+      val pec = PageEvaluationContext(
+        page,
+        sessionId,
+        Map("4" -> "/somewhere-else"),
+        Some("/hello"),
+        Text(),
+        processId,
+        "hello",
+        initialLabels,
+        None,
+        None
+      )
+    }
+
+    "Calling a valid URL path to an Date Input page in a process" should {
+
+      "return an OK response" in new DateInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+        status(result) shouldBe Status.OK
+      }
+
+      "be a HTML response" in new DateInputTest {
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+        contentType(result) shouldBe Some("text/html")
+      }
+    }
+
+    "Returning to a date input page in a process" should {
+
+      "Show the original value entered" in new DateInputTest {
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.OK
+        contentType(result) shouldBe Some("text/html")
+        // Probably not the right place to test this
+//        contentAsString(result).contains(enteredValue) shouldBe true
+      }
+    }
   }
 
 }
