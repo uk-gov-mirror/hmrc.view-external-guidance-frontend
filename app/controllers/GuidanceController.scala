@@ -91,7 +91,6 @@ class GuidanceController @Inject() (
     }
   }
 
-
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
@@ -103,15 +102,15 @@ class GuidanceController @Inject() (
             Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
           },
           submittedAnswer => {
-            validateAnswer(evalContext, submittedAnswer.text).fold{
-              // Answer didnt pass page DataInput stanza validation
-              val formData = FormData(path, Map(), Seq(FormError("","error.required")))
+            validateAnswer(evalContext, submittedAnswer.text).fold {
+              // Answer didn't pass page DataInput stanza validation
+              val formData = FormData(path, Map(), Seq(FormError("", "error.required")))
               Future.successful(BadRequest(createInputView(evalContext,
-                                                           questionName(path),
-                                                           Some(formData),
-                                                           form.bind(Map(questionName(path) -> submittedAnswer.text)))))
-            }{ answer =>
-              service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text).map{
+                questionName(path),
+                Some(formData),
+                form.bind(Map(questionName(path) -> submittedAnswer.text)))))
+            } { answer =>
+              service.submitPage(evalContext, s"/$path", answer, submittedAnswer.text).map {
                 case Right((None, labels)) =>
                   // No valid next page id indicates the guidance has determined there is an error and page should be re-displayed
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")
@@ -120,7 +119,10 @@ class GuidanceController @Inject() (
                   // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
                   val url = evalContext.stanzaIdToUrlMap(stanzaId)
                   logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
-                  Redirect(routes.GuidanceController.getPage(processCode, url.drop(appConfig.baseUrl.length + processCode.length + 2), None))
+                  Redirect(routes.GuidanceController.getPage(
+                    processCode,
+                    url.drop(appConfig.baseUrl.length + processCode.length + 2),
+                    previousPageQueryString(url, evalContext.backLink)))
                 case Left(err) =>
                   logger.error(s"Page submission failed: $err")
                   InternalServerError(errorHandler.internalServerErrorTemplate)
@@ -141,7 +143,7 @@ class GuidanceController @Inject() (
   }
 
   private def validateAnswer(ctx: PageEvaluationContext, answer: String): Option[String] =
-    ctx.page.keyedStanzas.collect{case KeyedStanza(_, i: DataInput) => i.validInput(answer)}.flatten.headOption
+    ctx.page.keyedStanzas.collect { case KeyedStanza(_, i: DataInput) => i.validInput(answer) }.flatten.headOption
 
   private def createInputView(pec: PageEvaluationContext, inputName: String, formData: Option[FormData], form: Form[_])
                              (implicit request: Request[_], messages: Messages): Html = {
@@ -158,4 +160,7 @@ class GuidanceController @Inject() (
   }
 
   private def questionName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
+
+  private def previousPageQueryString(url: String, backLink: Option[String]): Option[String] = backLink.collect{case bl if bl == url => "1"}
+
 }

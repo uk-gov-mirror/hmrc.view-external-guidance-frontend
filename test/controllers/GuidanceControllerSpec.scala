@@ -556,6 +556,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
   "Submitting an Input page form with a value" should {
 
     "return a SeeOther response" in new InputTest {
+
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
@@ -574,6 +575,80 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .withCSRFToken
       val result = target.submitPage(processId, relativePath)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "redirect to new page with out query string after valid submission" in new InputTest {
+
+      override val pec = PageEvaluationContext(
+        inputPage,
+        sessionId,
+        Map("4" -> "/guidance/ext90002/somewhere-else"),
+        Some("/hello"),
+        Text(),
+        processId,
+        "hello",
+        initialLabels,
+        Some("/guidance/ext90002/another-place"),
+        None
+      )
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "0", "0")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "0")
+        .withCSRFToken
+
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+      redirectLocation(result) shouldBe Some("/guidance/ext90002/somewhere-else")
+    }
+
+    "redirect to previously visited page with query string after valid submission" in new InputTest {
+
+      override val pec = PageEvaluationContext(
+        inputPage,
+        sessionId,
+        Map("4" -> "/guidance/ext90002/somewhere-else"),
+        Some("/hello"),
+        Text(),
+        processId,
+        "hello",
+        initialLabels,
+        Some("/guidance/ext90002/somewhere-else"),
+        None
+      )
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      MockGuidanceService
+        .submitPage(pec, path, "0", "0")
+        .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      override val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody(relativePath -> "0")
+        .withCSRFToken
+
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+      redirectLocation(result) shouldBe Some("/guidance/ext90002/somewhere-else?p=1")
     }
 
     "return a SeeOther response whether the saving of the input succeeds or not" in new InputTest {
