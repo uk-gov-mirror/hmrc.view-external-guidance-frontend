@@ -20,7 +20,7 @@
 
 @(sl: SummaryList)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <dl class="govuk-summary-list govuk-!-margin-bottom-9">
-  @for(row <- sl.rows){@summary_row(row)}
+  @for(row <- sl.rows){@summary_row(row, sl.numericColumns)}
 </dl>
 @{
      //$COVERAGE-OFF$
