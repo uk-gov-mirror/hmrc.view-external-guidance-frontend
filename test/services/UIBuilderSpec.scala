@@ -19,7 +19,8 @@ package services
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas.{NumberedCircleList => OcelotNumberedCircleList, NumberedList => OcelotNumberedList, _}
-import models.ui.{BulletPointList, ConfirmationPanel, DateInputPage, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link, NumberedCircleList, NumberedList, Paragraph, QuestionPage, SummaryList, Table, Text, Words}
+import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, DateInputPage, ErrorMsg, FormData, H1, H3, H4, InputPage}
+import models.ui.{InsetText, Link, NameValueSummaryList, NumberedCircleList, NumberedList, Paragraph, QuestionPage, Table, Text, Words}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
