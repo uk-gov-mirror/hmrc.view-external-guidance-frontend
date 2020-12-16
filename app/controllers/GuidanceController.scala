@@ -26,7 +26,6 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{StandardPage, InputPage, QuestionPage, FormData}
-import models.ocelot.stanzas.DataInput
 import forms.SubmittedAnswerFormProvider
 import views.html.{input_page, standard_page, question_page}
 import play.api.Logger
@@ -35,7 +34,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 import play.twirl.api.Html
 import scala.concurrent.Future
-import models.ocelot.KeyedStanza
 
 @Singleton
 class GuidanceController @Inject() (
@@ -93,7 +91,7 @@ class GuidanceController @Inject() (
             Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
           },
           submittedAnswer => {
-            validateAnswer(evalContext, submittedAnswer.text).fold {
+            service.validateUserResponse(evalContext, submittedAnswer.text).fold {
               // Answer didn't pass page DataInput stanza validation
               val formData = FormData(path, Map(), Seq(FormError("", "error.required")))
               Future.successful(BadRequest(createInputView(evalContext,
@@ -132,9 +130,6 @@ class GuidanceController @Inject() (
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
     }
   }
-
-  private def validateAnswer(ctx: PageEvaluationContext, answer: String): Option[String] =
-    ctx.page.keyedStanzas.collect { case KeyedStanza(_, i: DataInput) => i.validInput(answer) }.flatten.headOption
 
   private def createInputView(pec: PageEvaluationContext, inputName: String, formData: Option[FormData], form: Form[_])
                              (implicit request: Request[_], messages: Messages): Html = {

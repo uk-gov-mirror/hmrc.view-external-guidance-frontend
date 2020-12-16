@@ -235,6 +235,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List())))
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
@@ -254,6 +258,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List())))
@@ -277,6 +285,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
         .getPageContext(pec, None)
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
@@ -297,6 +309,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -516,10 +532,13 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
                 None
               )
 
-
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "invalid input")
+        .returns(None)
 
       MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List(invalidDataFormError))))

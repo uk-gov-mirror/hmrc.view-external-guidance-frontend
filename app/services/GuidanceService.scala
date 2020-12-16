@@ -97,6 +97,11 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
+  def validateUserResponse(evalContext: PageEvaluationContext, response: String): Option[String] = {
+    val (visualStanzas, labels, optionalDataInput) = pageRenderer.renderPage(evalContext.page, evalContext.labels)
+    optionalDataInput.fold[Option[String]](None)(_.validInput(response))
+  }
+
   def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
