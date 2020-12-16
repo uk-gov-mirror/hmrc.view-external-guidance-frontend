@@ -568,6 +568,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
@@ -601,6 +605,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
@@ -640,6 +648,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
         .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
 
@@ -661,6 +673,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))

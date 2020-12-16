@@ -18,7 +18,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-import models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput, PageStanza}
+import models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
 import models.ocelot.{Page, Labels}
 
 @Singleton
@@ -60,7 +60,6 @@ class PageRenderer @Inject() () {
    private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[VisualStanza] = Nil, seen: Seq[String] = Nil)
                               (implicit stanzaMap: Map[String, Stanza]): (Seq[VisualStanza], Labels, Seq[String], String, Option[DataInput]) =
     stanzaMap.get(stanzaId) match {
-      case Some(s: PageStanza) => (visualStanzas, labels, seen, stanzaId, None)
       case None => (visualStanzas, labels, seen, stanzaId, None)
       case Some(s) => s match {
         case EndStanza => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
