@@ -16,11 +16,11 @@
 
 @import models.ui._
 @import controllers.routes._
-@import models.ui.Cell
+@import models.ui.Text
 
-@(cell: Cell)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<td class=@if(cell.text.isNumericLabelRef){"govuk-table__cell govuk-table__cell--numeric"} else{"govuk-table__cell"}>
-  @components.render_text(cell.text)
+@(text: Text, numeric: Boolean)(implicit request: Request[_], messages: Messages, ctx: PageContext)
+<td class=@if(numeric){"govuk-table__cell govuk-table__cell--numeric"} else{"govuk-table__cell"}>
+  @components.render_text(text)
 </td>
 @{
      //$COVERAGE-OFF$

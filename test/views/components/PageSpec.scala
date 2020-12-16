@@ -26,7 +26,8 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.question_page
 import models.PageContext
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, ErrorMsg, H1, Input, InputPage, InsetText, NumberedCircleList, NumberedList, Page, Paragraph, Question, QuestionPage, StandardPage, SummaryList, Text}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, ErrorMsg, H1, Input, InputPage, InsetText}
+import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, QuestionPage, StandardPage, CyaSummaryList, Text}
 import org.jsoup.nodes.{Document, Element}
 import forms.SubmittedAnswerFormProvider
 
@@ -77,7 +78,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val insetOne = Text("Inset 1", "Welsh, Inset 1")
     val insetTwo = Text("Inset 2", "Welsh, Inset 2")
     val insetText = InsetText(Seq(insetOne, insetTwo))
-    val summaryList = SummaryList(Seq(Seq(listOne), Seq(listTwo, listThree)))
+    val summaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
     val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList))
 
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")

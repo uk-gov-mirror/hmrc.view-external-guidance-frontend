@@ -17,3 +17,5 @@ $govuk-global-styles: true;
 }
 
 @import "_numbered-circle-list";
+
+.govuk-summary-list__value.numeric { text-align: right }

@@ -45,11 +45,13 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
     val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
-    val expectedDl = SummaryList(dlRows)
+    val expectedDl = CyaSummaryList(dlRows)
+    val expectedNameValList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
+    val expectedNameValNumericList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("B", Currency), LabelRef("B", Currency)))))
     val dlRowsWithHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
-    val expectedDlWithHint = SummaryList(dlRowsWithHint)
+    val expectedDlWithHint = CyaSummaryList(dlRowsWithHint)
     val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
-    val expectedDlSparse = SummaryList(sparseDlRows)
+    val expectedDlSparse = CyaSummaryList(sparseDlRows)
     val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye","Goodbye"),
                                                 Text("World","World"),
                                                 Text.link("dummy-path",
@@ -57,7 +59,7 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
                                                           false,
                                                           false,
                                                           Some(Vector("Goodbye", "Goodbye")))))
-    val expectedDLWithLinkAndHint = SummaryList(dlRowsWithLinkAndHint)
+    val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.InputPage("/url", currencyInput)
@@ -66,7 +68,7 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
-  "Creating Summary list with some content" must {
+  "Creating CYA Summary list with some content" must {
 
     "display the correct number of rows and columns" in new Test {
       val html: Html = components.summary_list(expectedDlSparse)
@@ -111,6 +113,57 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
         val a = dds(1).getElementsByTag("a").first
         a.text shouldBe "Change Goodbye"
+      }
+    }
+
+  }
+
+  "Creating Name Value Summary list with some content" must {
+
+    "display the correct number of rows and columns" in new Test {
+      val html: Html = components.summary_list(expectedNameValList)
+      val dlElement: Element = getSingleElementByTag(html, "dl")
+
+      dlElement.hasClass("govuk-summary-list") shouldBe true
+      val rows = dlElement.getElementsByTag("div").asScala.toList
+      rows.size shouldBe expectedNameValList.rows.size
+      for( row <- rows ){
+        row.hasClass("govuk-summary-list__row") shouldBe true
+        row.getElementsByTag("dt").asScala.toList.size shouldBe 1
+        row.getElementsByTag("dd").asScala.toList.size shouldBe 1
+      }
+    }
+
+    "display the correct text in columns" in new Test {
+      val html: Html = components.summary_list(expectedNameValList)
+      val dlElement: Element = getSingleElementByTag(html, "dl")
+      dlElement.hasClass("govuk-summary-list") shouldBe true
+      val rows = dlElement.getElementsByTag("div").asScala.toList
+
+      for( row <- rows ){
+        row.hasClass("govuk-summary-list__row") shouldBe true
+        row.getElementsByTag("dt").first.text() shouldBe "HELLO"
+        val dds = row.getElementsByTag("dd").asScala.toList
+        dds.size shouldBe 1
+        dds(0).text shouldBe "World"
+      }
+    }
+
+    "display the correct text in columns with right aligned numeric value column" in new Test {
+      val html: Html = components.summary_list(expectedNameValNumericList)
+      val dlElement: Element = getSingleElementByTag(html, "dl")
+      dlElement.hasClass("govuk-summary-list") shouldBe true
+      val rows = dlElement.getElementsByTag("div").asScala.toList
+
+      for( row <- rows ){
+        row.hasClass("govuk-summary-list__row") shouldBe true
+        val dt = row.getElementsByTag("dt").first
+        dt.text() shouldBe "HELLO"
+        dt.hasClass("govuk-!-width-three-quarters")
+        val dds = row.getElementsByTag("dd").asScala.toList
+        dds.size shouldBe 1
+        dds(0).hasClass("govuk-!-width-one-quarter")
+        dds(0).hasClass("numeric")
       }
     }
 

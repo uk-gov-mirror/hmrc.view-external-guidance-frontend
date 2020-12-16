@@ -47,7 +47,7 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
     val h1: H1 = H1(Text(h1English, h1Welsh))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val summaryList = SummaryList(Seq.empty)
+    val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
     val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
