@@ -18,9 +18,9 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ocelot.stanzas.{NumberedList => OcelotNumberedList, NumberedCircleList => OcelotNumberedCircleList, _}
-import models.ui.{BulletPointList, ConfirmationPanel, ErrorMsg, FormData, H1, H3, H4, InputPage, InsetText, Link}
-import models.ui.{NumberedCircleList, NumberedList, Paragraph, QuestionPage, CyaSummaryList, NameValueSummaryList, Table, Text, Words}
+import models.ocelot.stanzas.{NumberedCircleList => OcelotNumberedCircleList, NumberedList => OcelotNumberedList, _}
+import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, DateInputPage, ErrorMsg, FormData, H1, H3, H4, InputPage}
+import models.ui.{InsetText, Link, NameValueSummaryList, NumberedCircleList, NumberedList, Paragraph, QuestionPage, Table, Text, Words}
 import play.api.data.FormError
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
@@ -1350,5 +1350,81 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
   }
+
+  "UIBuilder Date Input processing" must {
+    trait DateInputTest {
+
+      implicit val urlMap: Map[String, String] =
+        Map(
+          Process.StartStanzaId -> "/blah",
+          "3" -> "dummy-path",
+          "4" -> "dummy-path/input",
+          "5" -> "dummy-path/blah",
+          "6" -> "dummy-path/anotherinput",
+          "34" -> "dummy-path/next"
+        )
+      val inputNext = Seq("4")
+      val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+      val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
+
+      val stanzas = Seq(
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
+        KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+        KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
+        KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
+      )
+      val dateInput = models.ocelot.stanzas.DateInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
+      val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
+
+      val uiBuilder: UIBuilder = new UIBuilder()
+
+    }
+
+    "Ignore Error Callouts when there are no errors" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+        case s: DateInputPage if s.input.errorMsgs.isEmpty => succeed
+        case _: DateInputPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Include Error messages when there are errors" in new DateInputTest {
+      val formError = new FormError("test-page", List("error.required"))
+      val formData = Some(FormData("test-page", Map(), List(formError)))
+
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
+        case s: DateInputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: DateInputPage => succeed
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+    "Maintain order of components within an Input" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}) match {
+        case i: DateInputPage =>
+          i.input.body(0) match {
+            case _: H3 => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+          i.input.body(1) match {
+            case _: Paragraph => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+
+        case x => fail(s"Should return InputPage: found $x")
+      }
+
+    }
+
+    "Include a page hint appended to the input text" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+        case i: DateInputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: DateInputPage => fail("No hint found within Input")
+        case x => fail(s"Should return InputPage: found $x")
+      }
+    }
+
+  }
+
 
 }

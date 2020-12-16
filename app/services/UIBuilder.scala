@@ -17,7 +17,7 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{CurrencyPoundsOnlyInput => OcelotCurrencyPOInput, Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
+import models.ocelot.stanzas.{CurrencyPoundsOnlyInput => OcelotCurrencyPOInput, DateInput => OcelotDateInput, Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
 import models.ocelot.{Phrase, Link => OcelotLink}
 import models.ocelot.stanzas.{NumberedList => OcelotNumberedList, NumberedCircleList => OcelotNumberedCircleList}
 import models.ui.{NumberedList, NumberedCircleList, _}
@@ -159,8 +159,9 @@ class UIBuilder {
     val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
     // Placeholder not used
     input match {
-      case i: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
-      case i: OcelotCurrencyPOInput => CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
+      case _: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
+      case _: OcelotCurrencyPOInput => CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
+      case _: OcelotDateInput => DateInput(name, hint, uiElements, errorMsgs)
     }
   }
 

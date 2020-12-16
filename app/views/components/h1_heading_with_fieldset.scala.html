@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ui
+@import ui.H1
 
-trait Input extends UIComponent {
-  val text: Text
-  val hint: Option[Text]
-  val body: Seq[UIComponent]
-  val errorMsgs: Seq[ErrorMsg]
+@( h1: H1 )( implicit messages: Messages, ctx: PageContext)
+<legend class="govuk-fieldset__legend @if(ctx.page.reduceHeadings){govuk-fieldset__legend--l} else {govuk-fieldset__legend--xl}">
+ <h1 class="govuk-fieldset__heading">
+  @components.render_text(h1.text)
+ </h1>
+</legend>
+@{
+    //$COVERAGE-OFF$
 }
-
-case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
-case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
-case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input

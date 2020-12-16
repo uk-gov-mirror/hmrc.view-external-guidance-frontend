@@ -223,6 +223,11 @@ class CalloutStanzaSpec extends BaseSpec {
         case _ => fail
       }
     }
+
+    "Create YourCallCalloutGroup from empty Seq of stanzas" in {
+      val empty: Seq[YourCallCallout] = Seq()
+      YourCallGroup(empty) shouldBe YourCallGroup(Seq.empty, Seq.empty, stack = false)
+    }
   }
 
   "serialise to json with noteType Title" in {

@@ -4,17 +4,17 @@ import sbt._
 object AppDependencies {
 
   val compile = Seq(
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26",
-    "uk.gov.hmrc" %% "play-language" % "4.4.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "2.0.0",
-    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.53.0-play-26",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.31.0-play-26",
+    "uk.gov.hmrc" %% "play-language" % "4.5.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "2.2.0",
+    "uk.gov.hmrc" %% "play-frontend-govuk" % "0.56.0-play-26",
     "uk.gov.hmrc" %% "play-frontend-hmrc" % "0.23.0-play-26",
     "uk.gov.hmrc" %% "auth-client" % "3.2.0-play-26",
-    "uk.gov.hmrc" %% "logback-json-logger" % "4.8.0"
+    "uk.gov.hmrc" %% "logback-json-logger" % "4.9.0"
   )
 
   val test = Seq(
-    "uk.gov.hmrc" %% "reactivemongo-test" % "4.21.0-play-26",
+    "uk.gov.hmrc" %% "reactivemongo-test" % "4.22.0-play-26",
     "uk.gov.hmrc" %% "bootstrap-play-26" % "1.16.0" % Test classifier "tests",
     "org.scalamock" %% "scalamock" % "4.4.0" % "test",
     "org.scalatest" %% "scalatest" % "3.0.8" % "test",
