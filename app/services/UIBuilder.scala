@@ -81,7 +81,6 @@ class UIBuilder {
     Table(caption, tableRows.head, tableRows.tail)
   }
 
-
   private def fromNumberedList(nl: OcelotNumberedList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
