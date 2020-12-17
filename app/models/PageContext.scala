@@ -20,6 +20,8 @@ import models.ui.{Page => UiPage, Text}
 import models.ocelot.{Page, LabelCache, Labels}
 
 case class PageEvaluationContext(page: Page,
+                                 // visualStanzas: Seq[VisualStanza],
+                                 // dataInput: Option[DataInput],
                                  sessionId: String,
                                  stanzaIdToUrlMap: Map[String, String],
                                  processStartUrl: Option[String],
