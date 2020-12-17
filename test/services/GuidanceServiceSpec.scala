@@ -71,6 +71,8 @@ class GuidanceServiceSpec extends BaseSpec {
                                       )
     val page = Page("start", "/test-page", stanzas, Seq("4","5"))
 
+    val standardPage = Page("start", "/test-page", stanzas.dropRight(1), Seq("4","5"))
+
     val pec = PageEvaluationContext(
                 page,
                 processId,
@@ -83,6 +85,8 @@ class GuidanceServiceSpec extends BaseSpec {
                 None,
                 None
               )
+
+    val standardPagePec = pec.copy(page = standardPage)
 
     lazy val target = new GuidanceService(
       MockAppConfig,
@@ -110,6 +114,45 @@ class GuidanceServiceSpec extends BaseSpec {
         case Left(err) => fail(s"sabveLabels returned error $err")
       }
     }
+  }
+
+  "Calling validateUserResponse" should {
+    "Use page DataInput stanza to validate valid response" in new Test {
+
+      MockPageRenderer
+        .renderPage(pec.page, pec.labels)
+        .returns(new PageRenderer().renderPage(pec.page, pec.labels))
+
+      target.validateUserResponse(pec, "0") match {
+        case Some("0") => succeed
+        case _ => fail
+      }
+    }
+
+    "Use page DataInput stanza to validate invalid response" in new Test {
+
+      MockPageRenderer
+        .renderPage(pec.page, pec.labels)
+        .returns(new PageRenderer().renderPage(pec.page, pec.labels))
+
+      target.validateUserResponse(pec, "hello") match {
+        case None => succeed
+        case _ => fail
+      }
+    }
+
+    "return None of used on a page with no DataInput stanza" in new Test {
+
+      MockPageRenderer
+        .renderPage(standardPagePec.page, standardPagePec.labels)
+        .returns(new PageRenderer().renderPage(standardPagePec.page, standardPagePec.labels))
+
+      target.validateUserResponse(standardPagePec, "hello") match {
+        case None => succeed
+        case _ => fail
+      }
+    }
+
   }
 
   "Calling getPageContext with a valid URL" should {
