@@ -16,18 +16,18 @@
 
 package views.components
 
+import base.ViewSpec
+import models.ocelot.{LabelCache, Labels}
+import models.ui._
 import org.jsoup.nodes.Element
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import models.ocelot.{Labels, LabelCache}
-import models.ui._
-import views.html.components.h2_heading
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import base.ViewSpec
+import views.html.components.{h1_heading, h1_heading_with_label}
 
-class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
+class H1HeadingWithLabelSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   private trait Test {
     implicit val labels: Labels = LabelCache()
@@ -37,10 +37,10 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
-    val h2English: String = "Level 2 heading text"
-    val h2Welsh: String = "Welsh Level 2 heading text"
+    val h1English: String = "Level 1 heading text"
+    val h1Welsh: String = "Welsh Level 1 heading text"
 
-    val h2: H2 = H2(Text(h2English, h2Welsh))
+    val h1: H1 = H1(Text(h1English, h1Welsh))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
@@ -55,42 +55,44 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
   }
 
-  "Creating a level 2 heading with some content" must {
+  "Creating a level 1 heading with some content" must {
 
     "Define the correct GDS standard class" in new Test {
 
-      val markUp: Html = h2_heading(h2)(messages, ctx)
+      val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctx)
 
-      val h2Element: Element = getSingleElementByTag(markUp, "h2")
+      val h1Element: Element = getSingleElementByTag(markUp, "h1")
+      h1Element.hasClass("govuk-label-wrapper") shouldBe true
 
-      h2Element.hasClass("govuk-heading-l") shouldBe true
+      val labelElement: Element = getSingleElementByTag(markUp, "label")
+      labelElement.hasClass("govuk-label--xl") shouldBe true
     }
 
     "Define the correct GDS reduced class" in new Test {
 
-      val markUp: Html = h2_heading(h2)(messages, ctxReduced)
+      val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctxReduced)
 
-      val h2Element: Element = getSingleElementByTag(markUp, "h2")
+      val h1Element: Element = getSingleElementByTag(markUp, "h1")
+      h1Element.hasClass("govuk-label-wrapper") shouldBe true
 
-      h2Element.hasClass("govuk-heading-m") shouldBe true
+      val labelElement: Element = getSingleElementByTag(markUp, "label")
+      labelElement.hasClass("govuk-label--l") shouldBe true
     }
 
     "display text in English" in new Test {
 
-      val markUp: Html = h2_heading(h2)(messages, ctx)
+      val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctx)
 
-      val h2Element: Element = getSingleElementByTag(markUp, "h2")
-
-      h2Element.text() shouldBe h2English
+      val labelElement: Element = getSingleElementByTag(markUp, "label")
+      labelElement.text() shouldBe h1English
     }
 
     "display text in Welsh when requested" in new WelshTest {
 
-      val markUp: Html = h2_heading(h2)(messages, ctx)
+      val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctx)
 
-      val h2Element: Element = getSingleElementByTag(markUp, "h2")
-
-      h2Element.text() shouldBe h2Welsh
+      val labelElement: Element = getSingleElementByTag(markUp, "label")
+      labelElement.text() shouldBe h1Welsh
     }
 
   }

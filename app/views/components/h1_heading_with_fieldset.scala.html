@@ -14,15 +14,14 @@
  * limitations under the License.
  *@
 
-@import controllers.routes._
-@import models.ui.Text
+@import ui.H1
 
-@(row: Seq[Text], numericColumns: Seq[Boolean])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<div class="govuk-summary-list__row">
-  <dt class=@if(numericColumns(1)){"govuk-summary-list__key govuk-!-width-three-quarters"} else {"govuk-summary-list__key"}>@render_text(row(0))</dt>
-  <dd class=@if(numericColumns(1)){"govuk-summary-list__value govuk-!-width-one-quarter numeric"} else {"govuk-summary-list__value"}>@render_text(row(1))</dd>
-  @{if(row.length > 2) summary_actioncell(row(2)) }
-</div>
+@( h1: H1 )( implicit messages: Messages, ctx: PageContext)
+<legend class="govuk-fieldset__legend @if(ctx.page.reduceHeadings){govuk-fieldset__legend--l} else {govuk-fieldset__legend--xl}">
+ <h1 class="govuk-fieldset__heading">
+  @components.render_text(h1.text)
+ </h1>
+</legend>
 @{
-     //$COVERAGE-OFF$
+    //$COVERAGE-OFF$
 }

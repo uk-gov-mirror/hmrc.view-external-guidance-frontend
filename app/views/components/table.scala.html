@@ -16,23 +16,27 @@
 
 @import models.ui._
 @import controllers.routes._
-@import models.ui.{Cell, Table}
+@import models.ui.Table
 
 @(tbl: Table)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <table class="govuk-table">
   <caption class="govuk-table__caption">@components.render_text(tbl.caption)</caption>
-  @tbl.headingRow.map{headRow =>
     <thead class="govuk-table__head">
-      <tr class="govuk-table__row">@{headRow.map(components.table_thcell(_))}</tr>
+      <tr class="govuk-table__row">
+        @{
+          tbl.headingRow.zipWithIndex.map{
+            case (c, idx) => components.table_thcell(c, "col", tbl.numericColumns(idx))
+          }
+        }
+      </tr>
     </thead>
-  }
   <tbody class="govuk-table__body">
     @tbl.rows.map{row =>
       <tr class="govuk-table__row">
+      @components.table_thcell(row.head, "row", false)
       @{
-        row.map{
-          case c: Th => components.table_thcell(c)
-          case c: Td => components.table_tdcell(c)
+        row.tail.zipWithIndex.map{
+          case (c, idx) => components.table_tdcell(c, tbl.numericColumns(idx+1))
         }
       }
       </tr>

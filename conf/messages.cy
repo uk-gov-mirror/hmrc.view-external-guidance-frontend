@@ -12,6 +12,10 @@ getpagehelp.linkText = Help gyda’r dudalen hon (yn agor tab newydd)
 
 site.continue = Yn eich blaen
 
+label.day=Day
+label.month=Month
+label.year=Year
+
 error.browser.title.prefix = Gwall:
 error.summary.title = Mae yna broblem
 

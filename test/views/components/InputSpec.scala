@@ -17,8 +17,8 @@
 package views.components
 
 import forms.SubmittedAnswerFormProvider
-import models.ocelot.{Label, Labels, LabelCache, Phrase}
-import models.ui.{BulletPointList, ErrorMsg, H2, H3, H4, Input, CurrencyInput, Paragraph, Text}
+import models.ocelot.{Label, LabelCache, Labels, Phrase}
+import models.ui.{BulletPointList, CurrencyInput, DateInput, DateInputPage, ErrorMsg, H2, H3, H4, Input, Paragraph, Text}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
 import org.scalatest.{Matchers, WordSpec}
@@ -46,7 +46,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
     private val para1Text = Text("This is a question", "Welsh, This is a question")
-    private val para1 = Paragraph(para1Text)
+    protected val para1 = Paragraph(para1Text)
 
     val i1 = Vector("Enter main residence value", "Welsh, Enter main residence value?")
     val i1Hint = Vector("This is where they lived", "Welsh, This is where they lived")
@@ -58,9 +58,9 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     private val bp3 = Text("pears", "gellyg")
     private val bpList: BulletPointList = BulletPointList(leading, Seq(bp1, bp2, bp3))
 
-    private val h2: H2 = H2(Text("h2","h2"))
-    private val h3: H3 = H3(Text("h3","h3"))
-    private val h4: H4 = H4(Text("h4","h4"))
+    protected val h2: H2 = H2(Text("h2","h2"))
+    protected val h3: H3 = H3(Text("h3","h3"))
+    protected val h4: H4 = H4(Text("h4","h4"))
     val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
     val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
 
@@ -68,7 +68,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
-    private val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    protected val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
@@ -153,4 +153,101 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
    }
   }
+
+  "English Date Input component" must {
+
+    trait DateTest extends Test {
+      override val input: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(h2, h3, h4, para1))
+
+      override val inputWithoutBody: DateInput = DateInput(Text(i1), None, Seq.empty)
+      override val inputWithHintAndNoBody: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
+      override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
+      val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
+      val datePage: DateInputPage = models.ui.DateInputPage("/url", dateInput)
+      override val ctx = PageContext(datePage, "sessionId", None, Text(), "processId", "processCode", labels)
+    }
+
+    "render input text as a header" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val heading = doc.getElementsByTag("h1")
+      heading.size shouldBe 1
+      heading.first.text() shouldBe i1(0)
+    }
+
+    "render contained a fieldset" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val fieldset = doc.getElementsByTag("fieldset")
+      fieldset.size shouldBe 1
+    }
+
+    "render contained paragraphs" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+
+      doc.getElementsByTag("p").asScala.toList.foreach { p =>
+        elementAttrs(p)("class").contains("govuk-body") shouldBe true
+      }
+    }
+
+    "render input as input field" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val inputFields = doc.getElementsByTag("input")
+      inputFields.size shouldBe 3
+    }
+
+    "render input with previous answer entered" in new DateTest {
+      private val form = formProvider("test").bind(Map("day" -> "23", "month" -> "12", "year" -> "2000"))
+      private val doc = asDocument(components.input_date(input, "test", form)(fakeRequest, messages, ctx))
+      private val inputs = doc.getElementsByTag("input").asScala.toList
+      inputs.size shouldBe 3
+      private val dayInput = doc.getElementById("day")
+      dayInput.`val`() shouldBe "23"
+      private val monthInput = doc.getElementById("month")
+      monthInput.`val`() shouldBe "12"
+      private val yearInput = doc.getElementById("year")
+      yearInput.`val`() shouldBe "2000"
+    }
+
+    "render input with hints" in new DateTest {
+      private val doc = asDocument(components.input_date(input, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val hints = doc.getElementsByTag("span").asScala.toList
+      private val firstHint = hints.head
+      private val hint1Attrs = elementAttrs(firstHint)
+      hint1Attrs("class") shouldBe "govuk-hint"
+      firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
+    }
+
+    "render input with no body as a fieldset class on H1" in new DateTest {
+      private val doc = asDocument(components.input_date(inputWithoutBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val h1 = doc.getElementsByTag("h1").first
+      private val attrs = elementAttrs(h1)
+      attrs("class").contains("govuk-fieldset__heading") shouldBe true
+    }
+
+    "render input without body within a fieldset" in new DateTest {
+      private val doc = asDocument(components.input_date(inputWithHintAndNoBody, "test", formProvider("test"))(fakeRequest, messages, ctx))
+      private val fieldset = doc.getElementsByTag("fieldset").first
+
+      Option(fieldset) shouldBe Some(fieldset)
+
+      Option(doc.getElementById("input-hint")).fold(fail("Missing hint span")) { span =>
+        val attrs = elementAttrs(span)
+        attrs("id") shouldBe "input-hint"
+        attrs("class").contains("govuk-hint") shouldBe true
+        span.text shouldBe i1Hint(0)
+      }
+    }
+
+    // TODO Once error handling on multiple fields defined
+//    "input with hint in error should include hint id and error id in aria-desribedby on input" in new DateTest {
+//      private val doc = asDocument(components.input_date(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, ctx))
+//
+//      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
+//        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
+//          aria should include("input-hint")
+//          aria should include("id-error")
+//        }
+//      }
+//    }
+  }
+
 }

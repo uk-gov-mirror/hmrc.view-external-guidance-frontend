@@ -35,7 +35,7 @@ class SubmittedTextAnswerFormProvider extends FormProvider {
   
 }
 
-class SubmittedDateAnswerProvider extends FormProvider {
+class SubmittedDateAnswerFormProvider extends FormProvider {
 
   def apply(): Form[SubmittedDateAnswer] =
 

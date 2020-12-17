@@ -16,6 +16,9 @@
 
 package models.ui
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 trait Input extends UIComponent {
   val text: Text
   val hint: Option[Text]
@@ -25,3 +28,17 @@ trait Input extends UIComponent {
 
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
+case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
+
+object DateInput {
+
+  val submittedDateAnswerFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
+
+  def partitionSubmittedDateAnswer(submittedDateAnswer: String): (String, String, String) = {
+
+    val submittedDate: LocalDate = LocalDate.parse(submittedDateAnswer, submittedDateAnswerFormatter)
+
+    (submittedDate.getDayOfMonth.toString, submittedDate.getMonthValue.toString, submittedDate.getYear.toString)
+  }
+
+}
