@@ -19,8 +19,7 @@ package services
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.FormPage
-import models.{PageContext, PageEvaluationContext, FormEvaluationContext}
+import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
 import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
 import models.RequestOutcome
@@ -45,21 +44,6 @@ class GuidanceService @Inject() (
   def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getFormEvaluationContext(processCode: String,
-                               url: String,
-                               previousPageByLink: Boolean,
-                               sessionId: String)
-                              (implicit context: ExecutionContext): Future[RequestOutcome[FormEvaluationContext]] =
-    getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
-      case Right(ctx) => ctx.uiPage match {
-          case fp: FormPage => Right(FormEvaluationContext(fp, ctx))
-          case _ =>
-            logger.error(s"Found standard page rather than form, possible submission (POST) to non-form page, ctx = $ctx")
-            Left(InternalServerError)
-        }
-      case Left(err) => Left(err)
-    }
-
   def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
@@ -67,16 +51,16 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def getPageContext(fec: FormEvaluationContext): PageContext = {
+  def getPageContext(fec: PageEvaluationContext): PageContext = {
     val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(fec.page, fec.labels)
     val page = uiBuilder.buildPage(fec.page.url, visualStanzas)(fec.stanzaIdToUrlMap)
-    PageContext(page, fec.copy(labels = labels))
+    PageContext(page, labels, fec.copy(dataInput = dataInput))
   }
 
-  def validateUserResponse(evalContext: FormEvaluationContext, response: String): Option[String] =
+  def validateUserResponse(evalContext: PageEvaluationContext, response: String): Option[String] =
     evalContext.dataInput.fold[Option[String]](None)(_.validInput(response))
 
-  def submitPage(evalContext: FormEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
+  def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
 
@@ -135,7 +119,7 @@ class GuidanceService @Inject() (
         )
     }
 
-  private def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
       implicit context: ExecutionContext
   ): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {

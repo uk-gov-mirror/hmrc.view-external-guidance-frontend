@@ -16,22 +16,9 @@
 
 package models
 
-import models.ui.{Page => UiPage, FormPage, Text}
+import models.ui.{Page => UiPage, Text}
 import models.ocelot.{Page, LabelCache, Labels}
 import models.ocelot.stanzas.DataInput
-
-case class FormEvaluationContext(uiPage: FormPage,
-                                 page: Page,
-                                 dataInput: Option[DataInput],
-                                 sessionId: String,
-                                 stanzaIdToUrlMap: Map[String, String],
-                                 processStartUrl: Option[String],
-                                 processTitle: Text,
-                                 processId: String,
-                                 processCode: String,
-                                 labels: Labels = LabelCache(),
-                                 backLink: Option[String] = None,
-                                 answer: Option[String] = None)
 
 case class PageEvaluationContext(uiPage: UiPage,
                                  page: Page,
@@ -46,23 +33,6 @@ case class PageEvaluationContext(uiPage: UiPage,
                                  backLink: Option[String] = None,
                                  answer: Option[String] = None)
 
-object FormEvaluationContext {
-  def apply(page: FormPage, ctx: PageEvaluationContext): FormEvaluationContext =
-    FormEvaluationContext(
-      page,
-      ctx.page,
-      ctx.dataInput,
-      ctx.sessionId,
-      ctx.stanzaIdToUrlMap,
-      ctx.processStartUrl,
-      ctx.processTitle,
-      ctx.processId,
-      ctx.processCode,
-      ctx.labels,
-      ctx.backLink,
-      ctx.answer
-    )
-}
 
 case class PageContext(page: UiPage,
                        sessionId: String,
@@ -75,7 +45,7 @@ case class PageContext(page: UiPage,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(page: UiPage, pec: FormEvaluationContext): PageContext =
+  def apply(page: UiPage, labels: Labels, pec: PageEvaluationContext): PageContext =
     PageContext(
       page,
       pec.sessionId,
@@ -83,7 +53,7 @@ object PageContext {
       pec.processTitle,
       pec.processId,
       pec.processCode,
-      pec.labels,
+      labels,
       pec.backLink,
       pec.answer
     )

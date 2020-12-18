@@ -24,7 +24,7 @@ import play.api.data.{Form}
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
-import models.{PageContext, FormEvaluationContext}
+import models.{PageContext, PageEvaluationContext}
 import models.ui.{FormPage, StandardPage}
 import forms.SubmittedAnswerFormProvider
 import views.html.{form_page, standard_page}
@@ -53,7 +53,6 @@ class GuidanceController @Inject() (
 
   def getPage(processCode: String, path: String, p: Option[String]): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    println(s"GETPAGE: $path")
     withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", p.isDefined, _)).flatMap {
       case Right(pageContext) =>
         logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
@@ -64,7 +63,6 @@ class GuidanceController @Inject() (
               case Left(err) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           case page: FormPage =>
-            println(s"FormPage $page")
             Future.successful(Ok(formView(page, pageContext, formInputName(path), populatedForm(pageContext, path))))
         }
       case Left(NotFoundError) =>
@@ -80,9 +78,8 @@ class GuidanceController @Inject() (
   }
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
-    println(s"SUBMITPAGE: $path")
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
-    withExistingSession[FormEvaluationContext](service.getFormEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
+    withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(evalContext) =>
         val form = formProvider(formInputName(path))
         form.bindFromRequest.fold(
@@ -130,8 +127,8 @@ class GuidanceController @Inject() (
     }
   }
 
-  private def createInputView(fec: FormEvaluationContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages): Html = {
-    val ctx = service.getPageContext(fec)
+  private def createInputView(pec: PageEvaluationContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages): Html = {
+    val ctx = service.getPageContext(pec)
     ctx.page match {
       case page: FormPage => formView(page, ctx, inputName, form)
       case _ => errorHandler.badRequestTemplateWithProcessCode(Some(ctx.processCode))
