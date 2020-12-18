@@ -44,9 +44,9 @@
       @{q.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
   }
 
-  @components.error_message(q.errorMsgs)
+    @components.error_message(q.errorMsgs)
 
-  @components.answers(q, name, form)
+    @components.answers(q, name, form)
 
   </fieldset>
 

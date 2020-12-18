@@ -26,7 +26,9 @@ class PageRenderer @Inject() () {
 
   def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
+
     (visualStanzas, newLabels, optionalInput)
   }
 

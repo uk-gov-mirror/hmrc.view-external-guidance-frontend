@@ -45,7 +45,7 @@ case class PageContext(page: UiPage,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(page: UiPage, labels: Labels, pec: PageEvaluationContext): PageContext =
+  def apply(pec: PageEvaluationContext, page: UiPage, labels: Labels): PageContext =
     PageContext(
       page,
       pec.sessionId,
