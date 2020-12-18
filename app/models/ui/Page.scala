@@ -33,7 +33,6 @@ sealed trait UserResponsePage extends Page {
 }
 
 object Page {
-
   def apply(urlPath: String, components: Seq[UIComponent]): Page =
     components match {
       case (question: Question) :: _ => FormPage(urlPath, question)
@@ -44,7 +43,6 @@ object Page {
 }
 
 case class StandardPage(urlPath: String, components: Seq[UIComponent]) extends Page {
-
   val heading: Text = components
     .find {
       case _: H1 => true

@@ -29,45 +29,39 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
   val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
-    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil),
-        Aggregator.aggregateStanzas(Nil),
-        stackStanzas(Nil))
+    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
 
-  def buildPage(url: String, stanzas: Seq[VisualStanza], formData: Option[FormData] = None)
-               (implicit stanzaIdToUrlMap: Map[String, String]): Page = {
-    val groupedStanzas: Seq[VisualStanza] = stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}
-    Page(url, fromStanzas(groupedStanzas, Nil, formData))
-  }
+  def buildPage(url: String, stanzas: Seq[VisualStanza])(implicit stanzaIdToUrlMap: Map[String, String]): Page =
+    Page(url, fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil))
 
   @tailrec
-  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], formData: Option[FormData])
+  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent])
                  (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     stanzas match {
       case Nil => acc
-      case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, formData), formData)
-      case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), formData)
-      case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), formData)
-      case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), formData)
-      case (rg: RowGroup) :: xs if rg.isNameValueSummaryList => fromStanzas(xs, acc ++ Seq(fromNameValueSummaryListRowGroup(rg)), formData)
-      case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), formData)
-      case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), formData)
-      case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, formData), formData)
-      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), formData)
-      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), formData)
-      case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), formData)
-      case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), formData)
+      case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg))
+      case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)))
+      case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)))
+      case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)))
+      case (rg: RowGroup) :: xs if rg.isNameValueSummaryList => fromStanzas(xs, acc ++ Seq(fromNameValueSummaryListRowGroup(rg)))
+      case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)))
+      case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)))
+      case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c))
+      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)))
+      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)))
+      case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)))
+      case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)))
       case x :: xs =>
         logger.error(s"Encountered and ignored VisualStanza invalid due to accessibility rules, $x")
-        fromStanzas(xs, acc, formData)
+        fromStanzas(xs, acc)
     }
 
-  private def fromStackedGroup(sg: StackedGroup, formData: Option[FormData])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromStackedGroup(sg: StackedGroup)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     sg.group match {
       case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if rg.isTableCandidate =>
-        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)), formData)
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)))
       case x :: xs => // No recognised stacked pattern
-        fromStanzas(x +: stackStanzas(Nil)(xs), Nil, formData)
+        fromStanzas(x +: stackStanzas(Nil)(xs), Nil)
     }
 
   private def fromCYASummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
@@ -107,20 +101,20 @@ class UIBuilder {
     Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(co: Callout, formData: Option[FormData])(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
+  private def fromCallout(co: Callout)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
     co match {
       case c: TitleCallout => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case c: SubTitleCallout => Seq(H2(TextBuilder.fromPhrase(c.text)))
       case c: SectionCallout => Seq(H3(TextBuilder.fromPhrase(c.text)))
       case c: SubSectionCallout => Seq(H4(TextBuilder.fromPhrase(c.text)))
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
-      case c: TypeErrorCallout => Seq(ErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
-      case c: ValueErrorCallout => Seq(ErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
+      case c: TypeErrorCallout => Seq(TypeErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
+      case c: ValueErrorCallout => Seq(ValueErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
-      case c: ErrorCallout =>
-        // Ignore error messages if no errors exist within form data
-        formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
+      case c: ErrorCallout => Seq(RequiredErrorMsg("Exist.ID", TextBuilder.fromPhrase(c.text)))
+        // // Ignore error messages if no errors exist within form data
+        // formData.fold[Seq[UIComponent]](Seq.empty)(data => data.errors.map(err => ErrorMsg(err.key, TextBuilder.fromPhrase(c.text))))
       case _: ImportantCallout => Seq.empty               // Reserved for future use
       case _: NumberedListItemCallout => Seq.empty        // Unused
       case _: NumberedCircleListItemCallout => Seq.empty  // Unused

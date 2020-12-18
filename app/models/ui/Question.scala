@@ -20,13 +20,22 @@ trait FormComponent extends UIComponent {
   val text: Text
   val hint: Option[Text]
   val body: Seq[UIComponent]
-  val errorMsgs: Seq[ErrorMsg]
+  val errors: Seq[ErrorMsg]
+  val errorMsgs: Seq[ValueErrorMsg] = errors.collect{case e: ValueErrorMsg => e}
+  val existError: Option[RequiredErrorMsg] = errors.collect{case e: RequiredErrorMsg => e}.headOption
+  val typeError: Option[TypeErrorMsg] = errors.collect{case e: TypeErrorMsg => e}.headOption
 }
 
 case class Answer(text: Text, hint: Option[Text]) extends UIComponent
 
-case class Question(text: Text, hint: Option[Text], body: Seq[UIComponent], answers: Seq[Answer], errorMsgs: Seq[ErrorMsg] = Nil) extends FormComponent {
-
+case class Question(
+  text: Text,
+  hint: Option[Text],
+  body: Seq[UIComponent],
+  answers: Seq[Answer],
+  errors: Seq[ErrorMsg] = Nil) extends FormComponent {
   val horizontal: Boolean = answers.length == 2 &&
-    answers.forall(ans => ans.hint.isEmpty && ans.text.english.map(_.toWords.length).sum == 1)
+                            answers.forall(ans => ans.hint.isEmpty &&
+                                                  ans.text.english.map(_.toWords.length).sum == 1)
+
 }

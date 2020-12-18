@@ -50,6 +50,10 @@ class PageRenderer @Inject() () {
       }
 
     val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
+    println(visual)
+    println(seen)
+    println(nextPageId)
+    println(optionalInput)
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       val (next, postInputLabels) = dataInputStanza.eval(answer, newLabels)
       next.fold[(Option[String], Labels)]((None, postInputLabels))(evaluatePostInputStanzas(_, postInputLabels, seen))

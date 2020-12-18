@@ -19,8 +19,8 @@ package services
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.FormData
-import models.{PageContext, PageEvaluationContext}
+import models.ui.FormPage
+import models.{PageContext, PageEvaluationContext, FormEvaluationContext}
 import play.api.Logger
 import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
 import models.RequestOutcome
@@ -45,66 +45,41 @@ class GuidanceService @Inject() (
   def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
-      implicit context: ExecutionContext
-  ): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
-        urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
-          logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
-          Left(BadRequestError)
-        }{ pageId =>
-          pageBuilder.buildPage(pageId, process).fold(
-            err => {
-              logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
-              Left(InvalidProcessError)
-            },
-            page =>
-              Right(
-                PageEvaluationContext(
-                  page,
-                  sessionId,
-                  urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap,
-                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
-                  process.title,
-                  process.meta.id,
-                  processCode,
-                  LabelCache(labelsMap),
-                  backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
-                  answers.get(url)
-                )
-              )
-          )
+  def getFormEvaluationContext(processCode: String,
+                               url: String,
+                               previousPageByLink: Boolean,
+                               sessionId: String)
+                              (implicit context: ExecutionContext): Future[RequestOutcome[FormEvaluationContext]] =
+    getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
+      case Right(ctx) => ctx.uiPage match {
+          case fp: FormPage => Right(FormEvaluationContext(fp, ctx))
+          case _ =>
+            logger.error(s"Found standard page rather than form, possible submission (POST) to non-form page, ctx = $ctx")
+            Left(InternalServerError)
         }
-      case Right(ProcessContext(_,_,_,_,_)) =>
-        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
-        Left(InternalServerError)
-      case Left(err) =>
-        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
-        Left(err)
+      case Left(err) => Left(err)
     }
-
-  def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
-    val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
-    PageContext(pec, uiPage, labels)
-  }
 
   def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
-      case Right(evalContext) => Right(getPageContext(evalContext))
+      case Right(evalContext) => Right(PageContext(evalContext))
       case Left(err) => Left(err)
     }
 
-  def validateUserResponse(evalContext: PageEvaluationContext, response: String): Option[String] = {
-    val (visualStanzas, labels, optionalDataInput) = pageRenderer.renderPage(evalContext.page, evalContext.labels)
-    optionalDataInput.fold[Option[String]](None)(_.validInput(response))
-  }
+  def getPageContext(fec: FormEvaluationContext): PageContext = PageContext(fec)
 
-  def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
+  def validateUserResponse(evalContext: FormEvaluationContext, response: String): Option[String] =
+    evalContext.dataInput.fold[Option[String]](None)(_.validInput(response))
+
+  def submitPage(evalContext: FormEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
+    evalContext.labels.labelMap.keys.foreach(k => println(s"S:BEFORE: ${evalContext.labels.labelMap(k)}"))
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
+    println(s"OPTIONAL NEXT $optionalNext")
+    labels.labelMap.keys.foreach(k => println(s"S:MAP: ${labels.labelMap(k)}"))
+    labels.updatedLabels.keys.foreach(k => println(s"S:UPDATED: ${labels.updatedLabels(k)}"))
+
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
       sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
@@ -123,9 +98,7 @@ class GuidanceService @Inject() (
 
   def retrieveAndCacheScratch(uuid: String, docId: String)
                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(
-      uuid,
-      docId,
+    retrieveAndCache(uuid, docId,
       { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
         case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
         case err @ Left(_) => err
@@ -160,5 +133,54 @@ class GuidanceService @Inject() (
               Left(err)
           }
         )
+    }
+
+  private def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
+      implicit context: ExecutionContext
+  ): Future[RequestOutcome[PageEvaluationContext]] =
+    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
+      case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
+        urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
+          logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
+          Left(BadRequestError)
+        }{ pageId =>
+          pageBuilder.buildPage(pageId, process).fold(
+            err => {
+              logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
+              Left(InvalidProcessError)
+            },
+            page => {
+              val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap
+              labelsMap.keys.foreach(k => println(s"BEFORE: ${labelsMap(k)}"))
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
+              labels.labelMap.keys.foreach(k => println(s"MAP: ${labels.labelMap(k)}"))
+              labels.updatedLabels.keys.foreach(k => println(s"UPDATED: ${labels.updatedLabels(k)}"))
+              val uiPage = uiBuilder.buildPage(page.url, visualStanzas)(stanzaIdToUrlMap)
+
+              Right(
+                PageEvaluationContext(
+                  uiPage,
+                  page,
+                  dataInput,
+                  sessionId,
+                  stanzaIdToUrlMap,
+                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                  process.title,
+                  process.meta.id,
+                  processCode,
+                  labels,
+                  backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
+                  answers.get(url)
+                )
+              )
+            }
+          )
+        }
+      case Right(ProcessContext(_,_,_,_,_)) =>
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
+        Left(InternalServerError)
+      case Left(err) =>
+        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
+        Left(err)
     }
 }

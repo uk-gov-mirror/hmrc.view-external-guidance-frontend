@@ -16,4 +16,11 @@
 
 package models.ui
 
-case class ErrorMsg(id: String, text: Text) extends UIComponent
+sealed trait ErrorMsg {
+  val id: String
+  val text: Text
+}
+
+case class RequiredErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent
+case class TypeErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent
+case class ValueErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent

@@ -16,12 +16,13 @@
 
 package models
 
-import models.ui.{Page => UiPage, Text}
+import models.ui.{Page => UiPage, FormPage, Text}
 import models.ocelot.{Page, LabelCache, Labels}
+import models.ocelot.stanzas.DataInput
 
-case class PageEvaluationContext(page: Page,
-                                 // visualStanzas: Seq[VisualStanza],
-                                 // dataInput: Option[DataInput],
+case class FormEvaluationContext(uiPage: FormPage,
+                                 page: Page,
+                                 dataInput: Option[DataInput],
                                  sessionId: String,
                                  stanzaIdToUrlMap: Map[String, String],
                                  processStartUrl: Option[String],
@@ -31,6 +32,37 @@ case class PageEvaluationContext(page: Page,
                                  labels: Labels = LabelCache(),
                                  backLink: Option[String] = None,
                                  answer: Option[String] = None)
+
+case class PageEvaluationContext(uiPage: UiPage,
+                                 page: Page,
+                                 dataInput: Option[DataInput],
+                                 sessionId: String,
+                                 stanzaIdToUrlMap: Map[String, String],
+                                 processStartUrl: Option[String],
+                                 processTitle: Text,
+                                 processId: String,
+                                 processCode: String,
+                                 labels: Labels = LabelCache(),
+                                 backLink: Option[String] = None,
+                                 answer: Option[String] = None)
+
+object FormEvaluationContext {
+  def apply(page: FormPage, ctx: PageEvaluationContext): FormEvaluationContext =
+    FormEvaluationContext(
+      page,
+      ctx.page,
+      ctx.dataInput,
+      ctx.sessionId,
+      ctx.stanzaIdToUrlMap,
+      ctx.processStartUrl,
+      ctx.processTitle,
+      ctx.processId,
+      ctx.processCode,
+      ctx.labels,
+      ctx.backLink,
+      ctx.answer
+    )
+}
 
 case class PageContext(page: UiPage,
                        sessionId: String,
@@ -43,15 +75,28 @@ case class PageContext(page: UiPage,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(pec: PageEvaluationContext, page: UiPage, updatedLabels: Labels): PageContext =
+  def apply(pec: FormEvaluationContext): PageContext =
     PageContext(
-      page,
+      pec.uiPage,
       pec.sessionId,
       pec.processStartUrl,
       pec.processTitle,
       pec.processId,
       pec.processCode,
-      updatedLabels,
+      pec.labels,
+      pec.backLink,
+      pec.answer
+    )
+
+  def apply(pec: PageEvaluationContext): PageContext =
+    PageContext(
+      pec.uiPage,
+      pec.sessionId,
+      pec.processStartUrl,
+      pec.processTitle,
+      pec.processId,
+      pec.processCode,
+      pec.labels,
       pec.backLink,
       pec.answer
     )
