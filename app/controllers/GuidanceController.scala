@@ -131,8 +131,11 @@ class GuidanceController @Inject() (
   }
 
   private def createInputView(fec: FormEvaluationContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages): Html = {
-    println(s"ERRORMSGS: ${fec.uiPage.formComponent.errorMsgs}")
-    formView(fec.uiPage, service.getPageContext(fec), inputName, form)
+    val ctx = service.getPageContext(fec)
+    ctx.page match {
+      case page: FormPage => formView(page, ctx, inputName, form)
+      case _ => errorHandler.badRequestTemplateWithProcessCode(Some(ctx.processCode))
+    }
   }
 
   private def populatedForm(ctx: PageContext, path: String): Form[_] = ctx.answer.fold(formProvider(formInputName(path))) { answer =>

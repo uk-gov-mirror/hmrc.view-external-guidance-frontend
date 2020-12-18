@@ -28,6 +28,8 @@
     @components.render_components(input.body)
   }
   @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+  @println(s"INPAGE: $input")
+  @println(s"INPAGE: ${input.errors}")
   @components.error_message(input.errorMsgs)
   @components.input_field(input, name, form)
 

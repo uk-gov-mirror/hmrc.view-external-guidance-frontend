@@ -67,18 +67,18 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def getPageContext(fec: FormEvaluationContext): PageContext = PageContext(fec)
+  def getPageContext(fec: FormEvaluationContext): PageContext = {
+    val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(fec.page, fec.labels)
+    val page = uiBuilder.buildPage(fec.page.url, visualStanzas)(fec.stanzaIdToUrlMap)
+    PageContext(page, fec.copy(labels = labels))
+  }
 
   def validateUserResponse(evalContext: FormEvaluationContext, response: String): Option[String] =
     evalContext.dataInput.fold[Option[String]](None)(_.validInput(response))
 
   def submitPage(evalContext: FormEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
-    evalContext.labels.labelMap.keys.foreach(k => println(s"S:BEFORE: ${evalContext.labels.labelMap(k)}"))
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
-    println(s"OPTIONAL NEXT $optionalNext")
-    labels.labelMap.keys.foreach(k => println(s"S:MAP: ${labels.labelMap(k)}"))
-    labels.updatedLabels.keys.foreach(k => println(s"S:UPDATED: ${labels.updatedLabels(k)}"))
 
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
@@ -151,10 +151,7 @@ class GuidanceService @Inject() (
             },
             page => {
               val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap
-              labelsMap.keys.foreach(k => println(s"BEFORE: ${labelsMap(k)}"))
               val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
-              labels.labelMap.keys.foreach(k => println(s"MAP: ${labels.labelMap(k)}"))
-              labels.updatedLabels.keys.foreach(k => println(s"UPDATED: ${labels.updatedLabels(k)}"))
               val uiPage = uiBuilder.buildPage(page.url, visualStanzas)(stanzaIdToUrlMap)
 
               Right(

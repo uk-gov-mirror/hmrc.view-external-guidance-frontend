@@ -75,9 +75,9 @@ case class PageContext(page: UiPage,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(pec: FormEvaluationContext): PageContext =
+  def apply(page: UiPage, pec: FormEvaluationContext): PageContext =
     PageContext(
-      pec.uiPage,
+      page,
       pec.sessionId,
       pec.processStartUrl,
       pec.processTitle,
@@ -87,7 +87,6 @@ object PageContext {
       pec.backLink,
       pec.answer
     )
-
   def apply(pec: PageEvaluationContext): PageContext =
     PageContext(
       pec.uiPage,
