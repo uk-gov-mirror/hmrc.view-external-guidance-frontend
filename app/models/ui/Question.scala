@@ -21,8 +21,8 @@ trait FormComponent extends UIComponent {
   val hint: Option[Text]
   val body: Seq[UIComponent]
   val errors: Seq[ErrorMsg]
-  val errorMsgs: Seq[ValueErrorMsg] = errors.collect{case e: ValueErrorMsg => e}
-  val existError: Option[RequiredErrorMsg] = errors.collect{case e: RequiredErrorMsg => e}.headOption
+  val errorMsgs: Seq[ErrorMsg] = errors.collect{case e: ValueErrorMsg => e}
+  val requiredError: Option[RequiredErrorMsg] = errors.collect{case e: RequiredErrorMsg => e}.headOption
   val typeError: Option[TypeErrorMsg] = errors.collect{case e: TypeErrorMsg => e}.headOption
 }
 

@@ -47,7 +47,6 @@ case class StandardPage(urlPath: String, components: Seq[UIComponent]) extends P
 }
 
 case class FormPage(urlPath: String, formComponent: FormComponent) extends Page {
-  val formComponent: FormComponent
   val heading: Text = formComponent.text
   val components: Seq[UIComponent] = Seq(formComponent)
 }
