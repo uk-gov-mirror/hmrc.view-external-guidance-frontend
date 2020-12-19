@@ -28,16 +28,10 @@ sealed trait Page {
   }
 }
 
-sealed trait UserResponsePage extends Page {
-  val formComponent: FormComponent
-}
-
 object Page {
   def apply(urlPath: String, components: Seq[UIComponent]): Page =
     components match {
-      case (question: Question) :: _ => FormPage(urlPath, question)
-      case (input: DateInput) :: _ => FormPage(urlPath, input)
-      case (input: Input) :: _ => FormPage(urlPath, input)
+      case (di: DataInput) :: _ => FormPage(urlPath, di)
       case _ => StandardPage(urlPath, components)
     }
 }
@@ -52,7 +46,8 @@ case class StandardPage(urlPath: String, components: Seq[UIComponent]) extends P
     .fold(Text())(_.text)
 }
 
-case class FormPage(urlPath: String, formComponent: FormComponent) extends UserResponsePage {
+case class FormPage(urlPath: String, formComponent: FormComponent) extends Page {
+  val formComponent: FormComponent
   val heading: Text = formComponent.text
   val components: Seq[UIComponent] = Seq(formComponent)
 }

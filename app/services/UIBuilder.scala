@@ -29,7 +29,9 @@ import scala.annotation.tailrec
 class UIBuilder {
   val logger: Logger = Logger(getClass)
   val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
-    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
+    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil),
+        Aggregator.aggregateStanzas(Nil),
+        stackStanzas(Nil))
 
   def buildPage(url: String, stanzas: Seq[VisualStanza])(implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url, fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil))
