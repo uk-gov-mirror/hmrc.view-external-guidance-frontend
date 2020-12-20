@@ -61,12 +61,11 @@ class GuidanceService @Inject() (
             page => {
               val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap
               val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
-              val uiPage = uiBuilder.buildPage(page.url, visualStanzas)(stanzaIdToUrlMap)
 
               Right(
                 PageEvaluationContext(
-                  uiPage,
                   page,
+                  visualStanzas,
                   dataInput,
                   sessionId,
                   stanzaIdToUrlMap,
@@ -90,16 +89,17 @@ class GuidanceService @Inject() (
         Left(err)
     }
 
-  def getPageContext(pec: PageEvaluationContext): PageContext = {
+  def getPageContext(pec: PageEvaluationContext, errState: ErrorStrategy = NoError): PageContext = {
     val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas)(pec.stanzaIdToUrlMap)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errState)(pec.stanzaIdToUrlMap)
     PageContext(pec.copy(dataInput = dataInput), uiPage, labels)
   }
 
   def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
-      case Right(evalContext) => Right(PageContext(evalContext))
+      case Right(ctx) =>
+        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(ctx.stanzaIdToUrlMap)))
       case Left(err) => Left(err)
     }
 

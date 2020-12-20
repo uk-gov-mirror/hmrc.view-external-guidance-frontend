@@ -29,11 +29,12 @@ sealed trait Page {
 }
 
 object Page {
-  def apply(urlPath: String, components: Seq[UIComponent]): Page =
+  def apply(urlPath: String, components: Seq[UIComponent]): Page = {
     components match {
-      case (di: DataInput) :: _ => FormPage(urlPath, di)
+      case (fc: FormComponent) :: _ => FormPage(urlPath, fc)
       case _ => StandardPage(urlPath, components)
     }
+  }
 }
 
 case class StandardPage(urlPath: String, components: Seq[UIComponent]) extends Page {

@@ -16,17 +16,16 @@
 
 package models
 
-import models.ui.{Page => UiPage, Text}
 import models.ocelot.{Page, LabelCache, Labels}
-import models.ocelot.stanzas.DataInput
+import models.ocelot.stanzas.{VisualStanza,DataInput}
 
-case class PageEvaluationContext(uiPage: UiPage,
-                                 page: Page,
+case class PageEvaluationContext(page: Page,
+                                 visualStanzas: Seq[VisualStanza],
                                  dataInput: Option[DataInput],
                                  sessionId: String,
                                  stanzaIdToUrlMap: Map[String, String],
                                  processStartUrl: Option[String],
-                                 processTitle: Text,
+                                 processTitle: ui.Text,
                                  processId: String,
                                  processCode: String,
                                  labels: Labels = LabelCache(),
@@ -34,10 +33,10 @@ case class PageEvaluationContext(uiPage: UiPage,
                                  answer: Option[String] = None)
 
 
-case class PageContext(page: UiPage,
+case class PageContext(page: ui.Page,
                        sessionId: String,
                        processStartUrl: Option[String],
-                       processTitle: Text,
+                       processTitle: ui.Text,
                        processId: String,
                        processCode: String,
                        labels: Labels = LabelCache(),
@@ -45,7 +44,7 @@ case class PageContext(page: UiPage,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(pec: PageEvaluationContext, page: UiPage, labels: Labels): PageContext =
+  def apply(pec: PageEvaluationContext, page: ui.Page, labels: Labels): PageContext =
     PageContext(
       page,
       pec.sessionId,
@@ -57,9 +56,9 @@ object PageContext {
       pec.backLink,
       pec.answer
     )
-  def apply(pec: PageEvaluationContext): PageContext =
+  def apply(pec: PageEvaluationContext, page: ui.Page): PageContext =
     PageContext(
-      pec.uiPage,
+      page,
       pec.sessionId,
       pec.processStartUrl,
       pec.processTitle,

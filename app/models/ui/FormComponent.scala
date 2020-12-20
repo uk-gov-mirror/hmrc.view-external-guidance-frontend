@@ -16,15 +16,9 @@
 
 package models.ui
 
-case class Answer(text: Text, hint: Option[Text]) extends UIComponent
-
-case class Question(
-  text: Text,
-  hint: Option[Text],
-  body: Seq[UIComponent],
-  answers: Seq[Answer],
-  errorMsgs: Seq[ErrorMsg] = Nil) extends FormComponent {
-  val horizontal: Boolean = answers.length == 2 &&
-                            answers.forall(ans => ans.hint.isEmpty &&
-                                                  ans.text.english.map(_.toWords.length).sum == 1)
+trait FormComponent extends UIComponent {
+  val text: Text
+  val hint: Option[Text]
+  val body: Seq[UIComponent]
+  val errorMsgs: Seq[ErrorMsg]
 }

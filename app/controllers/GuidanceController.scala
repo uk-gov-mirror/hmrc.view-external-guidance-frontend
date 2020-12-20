@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
 import play.api.data.{Form}
-import services.GuidanceService
+import services.{ValueTypeError, ValueMissingError, GuidanceService}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
@@ -83,15 +83,14 @@ class GuidanceController @Inject() (
       case Right(evalContext) =>
         val form = formProvider(formInputName(path))
         form.bindFromRequest.fold(
-          formWithErrors => {
-            //val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
-            Future.successful(BadRequest(createInputView(evalContext, formInputName(path), formWithErrors)))
-          },
+          formWithErrors =>
+            Future.successful(BadRequest(createInputView(service.getPageContext(evalContext, ValueMissingError),
+                                                         formInputName(path),
+                                                         formWithErrors))),
           submittedAnswer => {
             service.validateUserResponse(evalContext, submittedAnswer.text).fold {
               // Answer didn't pass page DataInput stanza validation
-              //val formData = FormData(path, Map(), Seq(FormError("", "error.required")))
-              Future.successful(BadRequest(createInputView(evalContext,
+              Future.successful(BadRequest(createInputView(service.getPageContext(evalContext, ValueTypeError),
                 formInputName(path),
                 form.bind(Map(formInputName(path) -> submittedAnswer.text)))))
             } { answer =>
@@ -99,7 +98,7 @@ class GuidanceController @Inject() (
                 case Right((None, labels)) =>
                   // No valid next page id indicates the guidance has determined the page should be re-displayed (probably due to an error)
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                  BadRequest(createInputView(evalContext.copy(labels = labels), formInputName(path), form))
+                  BadRequest(createInputView(service.getPageContext(evalContext.copy(labels = labels)), formInputName(path), form))
                 case Right((Some(stanzaId), _)) =>
                   // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
                   val url = evalContext.stanzaIdToUrlMap(stanzaId)
@@ -127,13 +126,11 @@ class GuidanceController @Inject() (
     }
   }
 
-  private def createInputView(pec: PageEvaluationContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages): Html = {
-    val ctx = service.getPageContext(pec)
+  private def createInputView(ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages): Html =
     ctx.page match {
       case page: FormPage => formView(page, ctx, inputName, form)
       case _ => errorHandler.badRequestTemplateWithProcessCode(Some(ctx.processCode))
     }
-  }
 
   private def populatedForm(ctx: PageContext, path: String): Form[_] = ctx.answer.fold(formProvider(formInputName(path))) { answer =>
     formProvider(formInputName(path)).bind(Map(formInputName(path) -> answer))
