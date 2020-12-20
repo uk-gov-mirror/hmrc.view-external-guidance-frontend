@@ -103,15 +103,15 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def validateUserResponse(evalContext: PageEvaluationContext, response: String): Option[String] =
-    evalContext.dataInput.fold[Option[String]](None)(_.validInput(response))
+  def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
+    ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
 
-  def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
+  def submitPage(ctx: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
-    val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
+    val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
+      sessionRepository.saveUserAnswerAndLabels(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)

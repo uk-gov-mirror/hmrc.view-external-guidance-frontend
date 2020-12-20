@@ -23,7 +23,6 @@ import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
 import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
-import models.ui.FormData
 import models.ocelot.Labels
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -92,13 +91,13 @@ trait MockGuidanceService extends MockFactory {
     }
 
     def submitPage(
-                    evalContext: PageEvaluationContext,
+                    ctx: PageEvaluationContext,
                     url: String,
                     validatedAnswer: String,
                     submittedAnswer: String): CallHandler[Future[RequestOutcome[(Option[String], Labels)]]] = {
       (mockGuidanceService
         .submitPage(_: PageEvaluationContext, _: String, _: String, _: String)(_: ExecutionContext))
-        .expects(evalContext, url, validatedAnswer, submittedAnswer, *)
+        .expects(ctx, url, validatedAnswer, submittedAnswer, *)
     }
 
     def saveLabels(docId: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] = {

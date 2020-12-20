@@ -17,10 +17,12 @@
 package services
 
 import javax.inject.Singleton
-import models.ocelot.stanzas.{CurrencyPoundsOnlyInput => OcelotCurrencyPOInput, DateInput => OcelotDateInput, Question => OcelotQuestion, Input => OcelotInput, CurrencyInput => OcelotCurrencyInput, _}
-import models.ocelot.{Phrase, Link => OcelotLink}
-import models.ocelot.stanzas.{NumberedList => OcelotNumberedList, NumberedCircleList => OcelotNumberedCircleList}
-import models.ui.{NumberedList, NumberedCircleList, _}
+import models._
+import models.ocelot.stanzas.{CurrencyPoundsOnlyInput, DateInput, Question, Input, CurrencyInput, _}
+import models.ocelot.{Phrase, Link}
+import models.ui.{stackStanzas, UIComponent, Page, Text, Table, Paragraph}
+import models.ui.{CyaSummaryList, NameValueSummaryList, Answer, ErrorMsg, H1, H2, H3, H4, InsetText}
+import models.ui.{ConfirmationPanel, TypeErrorMsg, RequiredErrorMsg, ValueErrorMsg, BulletPointList}
 import play.api.Logger
 
 import scala.annotation.tailrec
@@ -46,8 +48,9 @@ class UIBuilder {
   def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy = NoError)
                (implicit stanzaIdToUrlMap: Map[String, String]): Page =
     Page(url,
-         fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil,
-         errStrategy.default(stanzas)))
+         fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)},
+                     Nil,
+                     errStrategy.default(stanzas)))
 
   @tailrec
   private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], errStrategy: ErrorStrategy)
@@ -59,11 +62,11 @@ class UIBuilder {
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isNameValueSummaryList => fromStanzas(xs, acc ++ Seq(fromNameValueSummaryListRowGroup(rg)), errStrategy)
-      case (nl: OcelotNumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), errStrategy)
-      case (nl: OcelotNumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), errStrategy)
+      case (nl: NumberedList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedList(nl)), errStrategy)
+      case (nl: NumberedCircleList) :: xs => fromStanzas(xs, acc ++ Seq(fromNumberedCircleList(nl)), errStrategy)
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, errStrategy), errStrategy)
-      case (in: OcelotInput) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
-      case (q: OcelotQuestion) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
+      case (in: Input) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
+      case (q: Question) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), errStrategy)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), errStrategy)
       case x :: xs =>
@@ -90,21 +93,21 @@ class UIBuilder {
     Table(caption, tableRows.head, tableRows.tail)
   }
 
-  private def fromNumberedList(nl: OcelotNumberedList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
-    NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
+  private def fromNumberedList(nl: NumberedList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    ui.NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
-  private def fromNumberedCircleList(nl: OcelotNumberedCircleList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
-    NumberedCircleList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
+  private def fromNumberedCircleList(nl: NumberedCircleList)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
+    ui.NumberedCircleList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
   private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     i match {
-      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _, _) if OcelotLink.isLinkableStanzaId(dest) =>
+      case Instruction(txt, _, Some(Link(id, dest, _, window)), _, _) if Link.isLinkableStanzaId(dest) =>
         Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.langs, window))
-      case Instruction(txt, _, Some(OcelotLink(id, dest, _, window)), _, _) => Paragraph(Text.link(dest, txt.langs, window))
+      case Instruction(txt, _, Some(Link(id, dest, _, window)), _, _) => Paragraph(Text.link(dest, txt.langs, window))
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: OcelotQuestion, components: Seq[UIComponent]): UIComponent = {
+  private def fromQuestion(q: Question, components: Seq[UIComponent]): UIComponent = {
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
       Answer(answer, hint)
@@ -112,7 +115,7 @@ class UIBuilder {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
-    Question(question, hint, uiElements, answers, errorMsgs)
+    ui.Question(question, hint, uiElements, answers, errorMsgs)
   }
 
   private def fromCallout(co: Callout, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String]): Seq[UIComponent] =
@@ -157,7 +160,7 @@ class UIBuilder {
     BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
   }
 
-  private def fromInput(input: OcelotInput, components: Seq[UIComponent])
+  private def fromInput(input: Input, components: Seq[UIComponent])
                        (implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
@@ -165,9 +168,9 @@ class UIBuilder {
     val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
     // Placeholder not used
     input match {
-      case _: OcelotCurrencyInput => CurrencyInput(name, hint, uiElements, errorMsgs)
-      case _: OcelotCurrencyPOInput => CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
-      case _: OcelotDateInput => DateInput(name, hint, uiElements, errorMsgs)
+      case _: CurrencyInput => ui.CurrencyInput(name, hint, uiElements, errorMsgs)
+      case _: CurrencyPoundsOnlyInput => ui.CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
+      case _: DateInput => ui.DateInput(name, hint, uiElements, errorMsgs)
     }
   }
 
