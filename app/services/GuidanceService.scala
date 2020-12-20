@@ -89,9 +89,9 @@ class GuidanceService @Inject() (
         Left(err)
     }
 
-  def getPageContext(pec: PageEvaluationContext, errState: ErrorStrategy = NoError): PageContext = {
+  def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError): PageContext = {
     val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errState)(pec.stanzaIdToUrlMap)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(pec.stanzaIdToUrlMap)
     PageContext(pec.copy(dataInput = dataInput), uiPage, labels)
   }
 
