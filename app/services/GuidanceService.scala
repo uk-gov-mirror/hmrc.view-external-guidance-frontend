@@ -103,9 +103,6 @@ class GuidanceService @Inject() (
       case Left(err) => Left(err)
     }
 
-  def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
-    ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
-
   def submitPage(ctx: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
@@ -119,6 +116,9 @@ class GuidanceService @Inject() (
       }
     }
   }
+
+  def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
+    ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
 
   def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
@@ -151,17 +151,17 @@ class GuidanceService @Inject() (
       case Left(err) =>
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
-
       case Right(process) =>
-        pageBuilder.pages(process).fold(err => {
-            logger.warn(s"Failed to parse process with error $err")
-            Future.successful(Left(InvalidProcessError))
-        }, pages =>
-          sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
-            case Right(_) => Right((pages.head.url, process.meta.processCode))
-            case Left(err) =>
-              logger.error(s"Failed to store new parsed process in session respository, $err")
-              Left(err)
+        pageBuilder.pages(process).fold(
+        err => {
+          logger.warn(s"Failed to parse process with error $err")
+          Future.successful(Left(InvalidProcessError))
+        },
+        pages => sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
+          case Right(_) => Right((pages.head.url, process.meta.processCode))
+          case Left(err) =>
+            logger.error(s"Failed to store new parsed process in session respository, $err")
+            Left(err)
           }
         )
     }

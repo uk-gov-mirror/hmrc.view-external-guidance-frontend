@@ -118,7 +118,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageContext = PageContext(simplePage, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
+    val pageCtx = PageContext(simplePage, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
     val questionPageContext = PageContext(questionPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
     val inputPageContext = PageContext(inputPage, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
   }
@@ -130,7 +130,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
   "Standard Page component" should {
 
     "generate English html containing an H1, a text only paragraph and a test only bullet point list" in new Test {
-      val doc = asDocument(standardPageView(simplePage, pageContext)(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, pageCtx)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -157,7 +157,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(standardPageView(simplePage, pageContext)(fakeRequest, messages))
+      val doc = asDocument(standardPageView(simplePage, pageCtx)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -182,7 +182,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     }
 
     "generate English html containing a confirmation panel, an inset text and a numbered list" in new Test {
-      val doc = asDocument(standardPageView(outcomePage, pageContext)(fakeRequest, messages))
+      val doc = asDocument(standardPageView(outcomePage, pageCtx)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
@@ -235,7 +235,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(questionPageView(questionPage, pageContext, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(questionPageView(questionPage, pageCtx, "question", formProvider("url") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -338,7 +338,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(inputPageView(inputPage, pageContext, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(inputPageView(inputPage, pageCtx, "input", formProvider("12000") )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -388,7 +388,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(inputPageView(inputPage, pageContext, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(inputPageView(inputPage, pageCtx, "input", formProvider("12000") )(fakeRequest, messages))
 
       checkTitle(doc)
 

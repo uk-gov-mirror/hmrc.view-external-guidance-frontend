@@ -54,16 +54,16 @@ class GuidanceController @Inject() (
   def getPage(processCode: String, path: String, p: Option[String]): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", p.isDefined, _)).flatMap {
-      case Right(pageContext) =>
-        logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
-                    s" answer = ${pageContext.answer}, backLink = ${pageContext.backLink}")
-        pageContext.page match {
-          case page: StandardPage => service.saveLabels(pageContext.sessionId, pageContext.labels).map {
-              case Right(_) => Ok(standardView(page, pageContext))
+      case Right(pageCtx) =>
+        logger.info(s"Retrieved page at ${pageCtx.page.urlPath}, start at ${pageCtx.processStartUrl}," +
+                    s" answer = ${pageCtx.answer}, backLink = ${pageCtx.backLink}")
+        pageCtx.page match {
+          case page: StandardPage => service.saveLabels(pageCtx.sessionId, pageCtx.labels).map {
+              case Right(_) => Ok(standardView(page, pageCtx))
               case Left(err) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           case page: FormPage =>
-            Future.successful(Ok(formView(page, pageContext, formInputName(path), populatedForm(pageContext, path))))
+            Future.successful(Ok(formView(page, pageCtx, formInputName(path), populatedForm(pageCtx, path))))
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
