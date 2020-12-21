@@ -21,6 +21,7 @@ import java.time.Instant
 import play.twirl.api.Html
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
+import models.errors.NotFoundError
 import models.ui.Text
 import play.api.Logger
 import play.api.i18n.{I18nSupport, Messages}
@@ -44,12 +45,11 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
     extends FrontendController(mcc)
     with I18nSupport {
 
-    val logger = Logger(getClass)
+    val logger: Logger = Logger(getClass)
 
     def getPage(processCode: String): Action[AnyContent] = Action.async { implicit request =>
 
       implicit val messages: Messages = mcc.messagesApi.preferred(request)
-
       hc.sessionId match {
         case Some(id) if !hasSessionExpired(request.session) =>
           service.getProcessContext(id.value).flatMap {
@@ -60,11 +60,15 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
             case Right(processContext) =>
               val title = Text(processContext.process.title.langs)
               Future.successful(Ok(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode)).withNewSession)
+            case Left(NotFoundError) =>
+              logger.error(s"Session Timeout - retrieving processCode $processCode returned NotFound, displaying deleted your answers to user")
+              Future.successful(Ok(createDeleteYourAnswersResponse(messages("session.timeout.header.title"), processCode)).withNewSession)
             case Left(err) =>
               logger.error(s"Error $err occurred retrieving process context for process $processCode when removing session")
               Future.successful(InternalServerError(errorHandler.internalServerErrorTemplateWithProcessCode(Some(processCode))).withNewSession)
           }
-        case _ => Future.successful(Ok(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode)).withNewSession)
+        case x =>
+          Future.successful(Ok(createYourSessionHasExpiredResponse(messages("session.timeout.header.title"), processCode)).withNewSession)
       }
     }
 
