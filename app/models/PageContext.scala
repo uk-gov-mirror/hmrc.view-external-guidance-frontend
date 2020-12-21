@@ -44,6 +44,7 @@ case class PageContext(page: ui.Page,
                        answer: Option[String] = None)
 
 object PageContext {
+  def apply(pec: PageEvaluationContext, page: ui.Page): PageContext = PageContext(pec, page, pec.labels)
   def apply(pec: PageEvaluationContext, page: ui.Page, labels: Labels): PageContext =
     PageContext(
       page,
@@ -53,18 +54,6 @@ object PageContext {
       pec.processId,
       pec.processCode,
       labels,
-      pec.backLink,
-      pec.answer
-    )
-  def apply(pec: PageEvaluationContext, page: ui.Page): PageContext =
-    PageContext(
-      page,
-      pec.sessionId,
-      pec.processStartUrl,
-      pec.processTitle,
-      pec.processId,
-      pec.processCode,
-      pec.labels,
       pec.backLink,
       pec.answer
     )
