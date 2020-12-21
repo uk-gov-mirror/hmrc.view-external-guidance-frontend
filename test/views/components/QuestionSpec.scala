@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup._
 import views.html._
-import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, ErrorMsg}
+import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, RequiredErrorMsg}
 import models.ocelot.{Labels, LabelCache}
 import forms.SubmittedAnswerFormProvider
 import org.jsoup.nodes.{Document, Element}
@@ -71,11 +71,11 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val questionWithoutBody = Question(Text(q1), None, Seq.empty, answers)
     val questionWithHint = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers)
     val questionWithHintAndNoBody = Question(Text(q1), Some(Text(questionHint)), Seq.empty, answers)
-    val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithHintAndErrors = Question(Text(q1), Some(Text(questionHint)), Seq(bpList, para1), answers, Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
@@ -202,7 +202,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include("question-hint")
-          aria should include("id-error")
+          aria should include("required-error")
         }
       }
    }
@@ -223,7 +223,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       } yield {
         elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include(s"test-item-$index-hint")
-          aria should include(s"id-error")
+          aria should include(s"required-error")
         }
       }
    }
@@ -349,7 +349,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       Option(fieldset).fold(fail("Missing fieldset")){ fset =>
         elementAttrs(fset).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include("question-hint")
-          aria should include("id-error")
+          aria should include("required-error")
         }
       }
    }
@@ -370,7 +370,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       } yield {
         elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include(s"test-item-$index-hint")
-          aria should include(s"id-error")
+          aria should include(s"required-error")
         }
       }
    }

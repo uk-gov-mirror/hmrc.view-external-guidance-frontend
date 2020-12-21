@@ -16,12 +16,7 @@
 
 package models.ui
 
-trait Input extends UIComponent {
-  val text: Text
-  val hint: Option[Text]
-  val body: Seq[UIComponent]
-  val errorMsgs: Seq[ErrorMsg]
-}
+trait Input extends FormComponent
 
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input

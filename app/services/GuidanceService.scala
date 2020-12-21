@@ -19,7 +19,6 @@ package services
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
-import models.ui.FormData
 import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
 import models.errors.{BadRequestError, InvalidProcessError, InternalServerError}
@@ -59,21 +58,27 @@ class GuidanceService @Inject() (
               logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
-            page =>
+            page => {
+              val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
+
               Right(
                 PageEvaluationContext(
                   page,
+                  visualStanzas,
+                  dataInput,
                   sessionId,
-                  urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}.toMap,
+                  stanzaIdToUrlMap,
                   process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
                   process.title,
                   process.meta.id,
                   processCode,
-                  LabelCache(labelsMap),
+                  labels,
                   backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
                   answers.get(url)
                 )
               )
+            }
           )
         }
       case Right(ProcessContext(_,_,_,_,_)) =>
@@ -84,30 +89,26 @@ class GuidanceService @Inject() (
         Left(err)
     }
 
-  def getPageContext(pec: PageEvaluationContext, formData: Option[FormData] = None): PageContext = {
-    val (visualStanzas, labels, _) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, formData)(pec.stanzaIdToUrlMap)
-    PageContext(pec, uiPage, labels)
+  def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError): PageContext = {
+    val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(pec.page, pec.labels)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(pec.stanzaIdToUrlMap)
+    PageContext(pec.copy(dataInput = dataInput), uiPage, labels)
   }
 
   def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                     (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
-      case Right(evalContext) => Right(getPageContext(evalContext))
+      case Right(ctx) =>
+        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(ctx.stanzaIdToUrlMap)))
       case Left(err) => Left(err)
     }
 
-  def validateUserResponse(evalContext: PageEvaluationContext, response: String): Option[String] = {
-    val (visualStanzas, labels, optionalDataInput) = pageRenderer.renderPage(evalContext.page, evalContext.labels)
-    optionalDataInput.fold[Option[String]](None)(_.validInput(response))
-  }
-
-  def submitPage(evalContext: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
+  def submitPage(ctx: PageEvaluationContext, url: String, validatedAnswer: String, submittedAnswer: String)
                 (implicit context: ExecutionContext): Future[RequestOutcome[(Option[String], Labels)]] = {
-    val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(evalContext.page, evalContext.labels, validatedAnswer)
+    val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveUserAnswerAndLabels(evalContext.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
+      sessionRepository.saveUserAnswerAndLabels(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)
@@ -115,6 +116,9 @@ class GuidanceService @Inject() (
       }
     }
   }
+
+  def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
+    ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
 
   def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
@@ -147,18 +151,19 @@ class GuidanceService @Inject() (
       case Left(err) =>
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
-
       case Right(process) =>
-        pageBuilder.pages(process).fold(err => {
-            logger.warn(s"Failed to parse process with error $err")
-            Future.successful(Left(InvalidProcessError))
-        }, pages =>
-          sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
-            case Right(_) => Right((pages.head.url, process.meta.processCode))
-            case Left(err) =>
-              logger.error(s"Failed to store new parsed process in session respository, $err")
-              Left(err)
+        pageBuilder.pages(process).fold(
+        err => {
+          logger.warn(s"Failed to parse process with error $err")
+          Future.successful(Left(InvalidProcessError))
+        },
+        pages => sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
+          case Right(_) => Right((pages.head.url, process.meta.processCode))
+          case Left(err) =>
+            logger.error(s"Failed to store new parsed process in session respository, $err")
+            Left(err)
           }
         )
     }
+
 }

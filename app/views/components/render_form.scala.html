@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package mocks
+@import models.ui.{Question, CurrencyInput, CurrencyPoundsOnlyInput, Input, DateInput, UIComponent}
 
-import org.scalamock.handlers.CallHandler
-import org.scalamock.scalatest.MockFactory
-
-import models.ocelot.stanzas.VisualStanza
-import services.{ErrorStrategy, UIBuilder}
-
-trait MockUIBuilder extends MockFactory {
-
-  val mockUIBuilder: UIBuilder = mock[UIBuilder]
-
-  object MockUIBuilder {
-
-    def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy): CallHandler[models.ui.Page] = {
-
-      (mockUIBuilder
-        .buildPage(_: String, _: Seq[VisualStanza], _: ErrorStrategy)(_: Map[String, String]))
-        .expects(url, stanzas, *, *)
-    }
-
+@(formElement: UIComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+  @{formElement match {
+        case q: Question => components.question(q, name, form)
+        case i: CurrencyInput => components.input(i, name, form)
+        case i: CurrencyPoundsOnlyInput => components.input(i, name, form)
+        case di: DateInput => components.input_date(di, name, form)
+        case _ =>
+      }
   }
 
+@{
+     //$COVERAGE-OFF$
 }
+
