@@ -60,7 +60,7 @@ class GuidanceController @Inject() (
         pageCtx.page match {
           case page: StandardPage => service.saveLabels(pageCtx.sessionId, pageCtx.labels).map {
               case Right(_) => Ok(standardView(page, pageCtx))
-              case Left(err) => InternalServerError(errorHandler.internalServerErrorTemplate)
+              case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           case page: FormPage =>
             Future.successful(Ok(formView(page, pageCtx, formInputName(path), populatedForm(pageCtx, path))))
