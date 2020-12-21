@@ -604,7 +604,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(6) shouldBe models.ui.ValueErrorMsg("value", Text(lang0))
+      uiPage.components(6) shouldBe models.ui.ValueErrorMsg("guidance", Text(lang0))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
