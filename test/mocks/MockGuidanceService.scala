@@ -20,7 +20,7 @@ import models.{PageEvaluationContext, PageContext}
 import models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import services.GuidanceService
+import services.{ErrorStrategy, GuidanceService}
 import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
 import models.ocelot.Labels
@@ -62,10 +62,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId)
     }
 
-    def getPageContext(pec: PageEvaluationContext, formData: Option[FormData]): CallHandler[PageContext] = {
+    def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy): CallHandler[PageContext] = {
       (mockGuidanceService
-        .getPageContext(_: PageEvaluationContext, _: Option[FormData]))
-        .expects(pec, formData)
+        .getPageContext(_: PageEvaluationContext, _: ErrorStrategy))
+        .expects(pec, errStrategy)
     }
 
     def getPageContext(processId: String, url: String, previousPageByLink: Boolean, sessionId: String): CallHandler[Future[RequestOutcome[PageContext]]] = {

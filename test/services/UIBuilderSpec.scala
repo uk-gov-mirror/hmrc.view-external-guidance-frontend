@@ -18,10 +18,10 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ocelot.stanzas.{NumberedCircleList => OcelotNumberedCircleList, NumberedList => OcelotNumberedList, _}
-import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, DateInputPage, ErrorMsg, FormData, H1, H3, H4, InputPage}
-import models.ui.{InsetText, Link, NameValueSummaryList, NumberedCircleList, NumberedList, Paragraph, QuestionPage, Table, Text, Words}
-import play.api.data.FormError
+import models.ocelot.stanzas._
+import models.ui
+import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, FormPage, ErrorMsg, H1, H3, H4}
+import models.ui.{InsetText, Link, Paragraph, Table, Text, Words}
 
 class UIBuilderSpec extends BaseSpec with ProcessJson {
 
@@ -66,36 +66,34 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBulider Question processing" must {
 
     "Ignore Error Callouts when there are no errors" in new QuestionTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, None)(urlMap) match {
-        case s: QuestionPage if s.question.errorMsgs.isEmpty => succeed
-        case s: QuestionPage => fail("No error messages should be included on page")
-        case _ => fail("Should return QuestionPage")
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError)(urlMap) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case s: FormPage => fail("No error messages should be included on page")
+        case _ => fail("Should return FormPage")
       }
     }
 
     "Include Error messages when there are errors" in new QuestionTest {
-      val formError = new FormError("test-page", List("error.required"))
-      val formData = Some(FormData("test-page", Map(), List(formError)))
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
-        case s: QuestionPage if s.question.errorMsgs.isEmpty => fail("No error messages found on page")
-        case s: QuestionPage => succeed
-        case _ => fail("Should return QuestionPage")
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case s: FormPage => succeed
+        case _ => fail("Should return FormPage")
       }
     }
 
     "Maintain order of components within a Question" in new QuestionTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, None) match {
-        case q: QuestionPage =>
-          q.question.body(0) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError) match {
+        case q: FormPage =>
+          q.formComponent.body(0) match {
             case h: H3 => succeed
             case _ => fail("Ordering of question body components not maintained")
           }
-          q.question.body(1) match {
+          q.formComponent.body(1) match {
             case h: H4 => succeed
             case _ => fail("Ordering of question body components not maintained")
           }
-          q.question.body(2) match {
+          q.formComponent.body(2) match {
             case h: Paragraph => succeed
             case _ => fail("Ordering of question body components not maintained")
           }
@@ -107,9 +105,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Include a question hint appended to the question text" in new QuestionTest {
       uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case s: QuestionPage if s.question.hint == Some(Text(questionHintString, questionHintString)) => succeed
-        case s: QuestionPage => fail("No hint found within Question")
-        case _ => fail("Should return QuestionPage")
+        case s: FormPage if s.formComponent.hint == Some(Text(questionHintString, questionHintString)) => succeed
+        case s: FormPage => fail("No hint found within Question")
+        case _ => fail("Should return FormPage")
       }
     }
 
@@ -377,11 +375,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val num3CircListCo = NumberedCircleListItemCallout(num3Phrase, Seq(""), true)
     val num4CircListCo = NumberedCircleListItemCallout(num4Phrase, Seq(""), true)
 
-    val numberedListGroup = OcelotNumberedList(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
-    val numberedCircListGroup = OcelotNumberedCircleList(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
+    val numberedListGroup = NumberedList(Seq(num1ListCo,num2ListCo,num3ListCo,num4ListCo))
+    val numberedCircListGroup = NumberedCircleList(Seq(num1CircListCo,num2CircListCo,num3CircListCo,num4CircListCo))
 
-    val emptyNumberedList = OcelotNumberedList(Seq.empty)
-    val emptyNumberedCircleList = OcelotNumberedCircleList(Seq.empty)
+    val emptyNumberedList = NumberedList(Seq.empty)
+    val emptyNumberedCircleList = NumberedCircleList(Seq.empty)
 
   }
 
@@ -406,7 +404,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 emptyNumberedList))
       p.components match {
-        case Seq(_: H1, _: NumberedList) => succeed
+        case Seq(_: H1, _: ui.NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -415,7 +413,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 emptyNumberedCircleList))
       p.components match {
-        case Seq(_: H1, _: NumberedCircleList) => succeed
+        case Seq(_: H1, _: ui.NumberedCircleList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -428,7 +426,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num4ListCo
                                               ))
       p.components match {
-        case Seq(_: H1, _: NumberedList) => succeed
+        case Seq(_: H1, _: ui.NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -441,7 +439,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num4CircListCo
                                               ))
       p.components match {
-        case Seq(_: H1, _: NumberedCircleList) => succeed
+        case Seq(_: H1, _: ui.NumberedCircleList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -451,7 +449,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1ListCo
                                               ))
       p.components match {
-        case Seq(_: H1, _: NumberedList) => succeed
+        case Seq(_: H1, _: ui.NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -463,7 +461,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1ListCo
                                               ))
       p.components match {
-        case Seq(_: H1, _: NumberedList, _: NumberedList, _: NumberedList) => succeed
+        case Seq(_: H1, _: ui.NumberedList, _: ui.NumberedList, _: ui.NumberedList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -475,7 +473,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
                                                 num1CircListCo
                                               ))
       p.components match {
-        case Seq(_: H1, _: NumberedCircleList, _: NumberedCircleList, _: NumberedCircleList) => succeed
+        case Seq(_: H1, _: ui.NumberedCircleList, _: ui.NumberedCircleList, _: ui.NumberedCircleList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -493,7 +491,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 simpleRowGroup))
       p.components match {
-        case Seq(_: H1, _: NameValueSummaryList) => succeed
+        case Seq(_: H1, _: ui.NameValueSummaryList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -520,7 +518,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 stackedRowGroup))
       p.components match {
-        case Seq(_: H4, _: NameValueSummaryList) => succeed
+        case Seq(_: H4, _: ui.NameValueSummaryList) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -529,7 +527,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(TitleCallout(headingPhrase, Seq.empty, false),
                                                 numericRowGroup))
       p.components match {
-        case Seq(_: H1, nvsl: NameValueSummaryList) if nvsl.rows.forall(r => r(1).isNumericLabelRef) => succeed
+        case Seq(_: H1, nvsl: ui.NameValueSummaryList) if nvsl.rows.forall(r => r(1).isNumericLabelRef) => succeed
         case x => fail(s"Found $x")
       }
 
@@ -606,12 +604,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(6) shouldBe models.ui.ErrorMsg("Value.ID", Text(lang0))
+      uiPage.components(6) shouldBe models.ui.ValueErrorMsg("Value.ID", Text(lang0))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
-      val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(7) shouldBe models.ui.ErrorMsg("Type.ID", Text(lang0))
+      val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueTypeError)
+      uiPage.components(7) shouldBe models.ui.TypeErrorMsg("Type.ID", Text(lang0))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
@@ -1037,45 +1035,43 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
       uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case s: InputPage if s.input.errorMsgs.isEmpty => succeed
-        case _: InputPage => fail("No error messages should be included on page")
-        case x => fail(s"Should return InputPage: found $x")
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case _: FormPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Include Error messages when there are errors" in new InputTest {
-      val formError = new FormError("test-page", List("error.required"))
-      val formData = Some(FormData("test-page", Map(), List(formError)))
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
-        case s: InputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
-        case _: InputPage => succeed
-        case x => fail(s"Should return InputPage: found $x")
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Maintain order of components within an Input" in new InputTest {
       uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}) match {
-        case i: InputPage =>
-          i.input.body(0) match {
+        case i: FormPage =>
+          i.formComponent.body(0) match {
             case _: H3 => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
-          i.input.body(1) match {
+          i.formComponent.body(1) match {
             case _: Paragraph => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
 
-        case x => fail(s"Should return InputPage: found $x")
+        case x => fail(s"Should return FormPage: found $x")
       }
 
     }
 
     "Include a page hint appended to the input text" in new InputTest {
       uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: InputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
-        case _: InputPage => fail("No hint found within Input")
-        case x => fail(s"Should return InputPage: found $x")
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: FormPage => fail("No hint found within Input")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
@@ -1085,45 +1081,43 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
       uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case s: InputPage if s.input.errorMsgs.isEmpty => succeed
-        case _: InputPage => fail("No error messages should be included on page")
-        case x => fail(s"Should return InputPage: found $x")
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case _: FormPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Include Error messages when there are errors" in new InputTest {
-      val formError = new FormError("test-page", List("error.required"))
-      val formData = Some(FormData("test-page", Map(), List(formError)))
 
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
-        case s: InputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
-        case _: InputPage => succeed
-        case x => fail(s"Should return InputPage: found $x")
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Maintain order of components within an Input" in new InputTest {
       uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}) match {
-        case i: InputPage =>
-          i.input.body(0) match {
+        case i: FormPage =>
+          i.formComponent.body(0) match {
             case _: H3 => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
-          i.input.body(1) match {
+          i.formComponent.body(1) match {
             case _: Paragraph => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
 
-        case x => fail(s"Should return InputPage: found $x")
+        case x => fail(s"Should return FormPage: found $x")
       }
 
     }
 
     "Include a page hint appended to the input text" in new InputTest {
       uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: InputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
-        case _: InputPage => fail("No hint found within Input")
-        case x => fail(s"Should return InputPage: found $x")
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: FormPage => fail("No hint found within Input")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
   }
@@ -1382,45 +1376,42 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
       uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case s: DateInputPage if s.input.errorMsgs.isEmpty => succeed
-        case _: DateInputPage => fail("No error messages should be included on page")
-        case x => fail(s"Should return InputPage: found $x")
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case _: FormPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Include Error messages when there are errors" in new DateInputTest {
-      val formError = new FormError("test-page", List("error.required"))
-      val formData = Some(FormData("test-page", Map(), List(formError)))
-
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, formData)(urlMap) match {
-        case s: DateInputPage if s.input.errorMsgs.isEmpty => fail("No error messages found on page")
-        case _: DateInputPage => succeed
-        case x => fail(s"Should return InputPage: found $x")
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 
     "Maintain order of components within an Input" in new DateInputTest {
       uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}) match {
-        case i: DateInputPage =>
-          i.input.body(0) match {
+        case i: FormPage =>
+          i.formComponent.body(0) match {
             case _: H3 => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
-          i.input.body(1) match {
+          i.formComponent.body(1) match {
             case _: Paragraph => succeed
             case _ => fail("Ordering of input body components not maintained")
           }
 
-        case x => fail(s"Should return InputPage: found $x")
+        case x => fail(s"Should return FormPage: found $x")
       }
 
     }
 
     "Include a page hint appended to the input text" in new DateInputTest {
       uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: DateInputPage if i.input.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
-        case _: DateInputPage => fail("No hint found within Input")
-        case x => fail(s"Should return InputPage: found $x")
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+        case _: FormPage => fail("No hint found within Input")
+        case x => fail(s"Should return FormPage: found $x")
       }
     }
 

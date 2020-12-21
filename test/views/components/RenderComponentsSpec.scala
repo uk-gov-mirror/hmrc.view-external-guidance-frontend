@@ -47,7 +47,7 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
                               Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 

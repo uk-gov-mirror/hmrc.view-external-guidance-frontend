@@ -19,5 +19,5 @@ package models.ui
 trait Input extends FormComponent
 
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
-case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg]) extends Input
-case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg]) extends Input
+case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
+case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input

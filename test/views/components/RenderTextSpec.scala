@@ -70,7 +70,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val textLargeValueDpsCurrencyPOLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumberDps", CurrencyPoundsOnly)),
                                                    Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 

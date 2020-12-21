@@ -58,7 +58,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
     val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink + linkWithHint)
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 

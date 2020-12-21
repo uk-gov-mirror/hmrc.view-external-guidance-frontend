@@ -24,7 +24,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html._
-import models.ui.{Paragraph, Text, Question, Answer, ErrorMsg}
+import models.ui.{Paragraph, Text, Question, Answer, RequiredErrorMsg}
 import models.ocelot.LabelCache
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
@@ -41,9 +41,9 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val errorStrings = Vector("Please select", "Welsh, Please")
     val fakeRequest = FakeRequest("GET", "/")
     val heading = Text(headStrings)
-    val errorMsgs = Seq(ErrorMsg("id", Text(errorStrings)))
+    val errorMsgs = Seq(RequiredErrorMsg("id", Text(errorStrings)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode")
   }
 
