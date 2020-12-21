@@ -88,7 +88,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val answers = Seq(a1, a2)
     val questionText = Text(q1)
     val question = Question(questionText, None, Seq(para, bulletPointList), answers)
-    val errorMsg = RequiredErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
     val formProvider = new SubmittedAnswerFormProvider()
     val questionPage = FormPage("root", question)
@@ -278,7 +278,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
-        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+        elementAttrs(fset)("aria-describedby").contains("required-error") shouldBe true
       }
     }
 
@@ -327,7 +327,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
-        elementAttrs(fset)("aria-describedby").contains("id-error") shouldBe true
+        elementAttrs(fset)("aria-describedby").contains("required-error") shouldBe true
       }
     }
 
@@ -381,7 +381,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputField: Element = doc.getElementsByTag("input").first
       Option(inputField).fold(fail("Missing fieldset")){inp =>
-        elementAttrs(inp)("aria-describedby").contains("id-error") shouldBe true
+        elementAttrs(inp)("aria-describedby").contains("required-error") shouldBe true
       }
     }
 
@@ -430,7 +430,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputField: Element = doc.getElementsByTag("input").first
       Option(inputField).fold(fail("Missing fieldset")){inp =>
-        elementAttrs(inp)("aria-describedby").contains("id-error") shouldBe true
+        elementAttrs(inp)("aria-describedby").contains("required-error") shouldBe true
       }
     }
 

@@ -68,7 +68,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
-    protected val errorMsg = RequiredErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    protected val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
@@ -148,7 +148,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       doc.getElementsByTag("input").asScala.toList.foreach { inp =>
         elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include("input-hint")
-          aria should include("id-error")
+          aria should include("required-error")
         }
       }
    }

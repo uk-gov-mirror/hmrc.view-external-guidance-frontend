@@ -127,9 +127,9 @@ class UIBuilder {
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
-      case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg("type", TextBuilder.fromPhrase(c.text)))
-      case c: ValueErrorCallout => Seq(ValueErrorMsg("guidance", TextBuilder.fromPhrase(c.text)))
-      case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg("required", TextBuilder.fromPhrase(c.text)))
+      case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg(TextBuilder.fromPhrase(c.text)))
+      case c: ValueErrorCallout => Seq(ValueErrorMsg(TextBuilder.fromPhrase(c.text)))
+      case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg(TextBuilder.fromPhrase(c.text)))
       case _: ImportantCallout => Seq.empty               // Reserved for future use
       case _: NumberedListItemCallout => Seq.empty        // Unused
       case _: NumberedCircleListItemCallout => Seq.empty  // Unused

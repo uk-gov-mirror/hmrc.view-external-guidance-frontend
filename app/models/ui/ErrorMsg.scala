@@ -21,6 +21,12 @@ sealed trait ErrorMsg {
   val text: Text
 }
 
-case class RequiredErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent
-case class TypeErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent
-case class ValueErrorMsg(id: String, text: Text) extends ErrorMsg with UIComponent
+case class RequiredErrorMsg(text: Text) extends ErrorMsg with UIComponent {
+  val id: String = "required"
+}
+case class TypeErrorMsg(text: Text) extends ErrorMsg with UIComponent {
+  val id: String = "type"
+}
+case class ValueErrorMsg(text: Text) extends ErrorMsg with UIComponent {
+  val id: String = "guidance"
+}

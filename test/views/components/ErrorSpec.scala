@@ -41,7 +41,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val errorStrings = Vector("Please select", "Welsh, Please")
     val fakeRequest = FakeRequest("GET", "/")
     val heading = Text(headStrings)
-    val errorMsgs = Seq(RequiredErrorMsg("id", Text(errorStrings)))
+    val errorMsgs = Seq(RequiredErrorMsg(Text(errorStrings)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode")
@@ -67,7 +67,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     "render error message" in new Test {
       val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
-      val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "id-error")
+      val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "required-error")
 
       span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorStrings(0)
     }
