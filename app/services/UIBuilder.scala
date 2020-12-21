@@ -127,8 +127,8 @@ class UIBuilder {
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
-      case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg("Type.ID", TextBuilder.fromPhrase(c.text)))
-      case c: ValueErrorCallout => Seq(ValueErrorMsg("Value.ID", TextBuilder.fromPhrase(c.text)))
+      case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg("type", TextBuilder.fromPhrase(c.text)))
+      case c: ValueErrorCallout => Seq(ValueErrorMsg("value", TextBuilder.fromPhrase(c.text)))
       case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg("required", TextBuilder.fromPhrase(c.text)))
       case _: ImportantCallout => Seq.empty               // Reserved for future use
       case _: NumberedListItemCallout => Seq.empty        // Unused

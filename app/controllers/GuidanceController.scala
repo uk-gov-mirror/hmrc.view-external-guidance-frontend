@@ -20,7 +20,7 @@ import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.Messages
 import play.api.mvc._
-import play.api.data.{Form}
+import play.api.data.Form
 import services.{ValueTypeError, ValueMissingError, GuidanceService}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
