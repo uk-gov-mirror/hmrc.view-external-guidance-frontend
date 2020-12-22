@@ -17,18 +17,23 @@
 package models
 
 import scala.util.matching.Regex
+import scala.util.Try
+import java.time.format.DateTimeFormatter
+import java.time.LocalDate
 
 package object ocelot {
-  val ignoredCurrencyChars = Seq(' ','£', ',')
-  val hintRegex = "\\[hint:([^\\]])+\\]".r
-  val pageLinkOnlyPattern = s"^\\[link:(.+?):(\\d+|${Process.StartStanzaId})\\]$$"
-  val boldOnlyPattern = s"^\\[bold:(.+?)\\]$$"
-  val pageLinkRegex = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]".r
-  val labelRefRegex = s"\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency))?\\]".r
-  val inputCurrencyRegex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)(\\.(\\d{1,2})?)?$".r
-  val inputCurrencyPoundsRegex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)$".r
-  val integerRegex = "^\\d+$".r
-  val anyIntegerRegex = "^[\\-]?\\d+$".r
+  val ignoredCurrencyChars: Seq[Char] = Seq(' ','£', ',')
+  val hintRegex: Regex = "\\[hint:([^\\]])+\\]".r
+  val pageLinkOnlyPattern: String = s"^\\[link:(.+?):(\\d+|${Process.StartStanzaId})\\]$$"
+  val boldOnlyPattern: String = s"^\\[bold:(.+?)\\]$$"
+  val pageLinkRegex: Regex = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]".r
+  val labelRefRegex: Regex = s"\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency))?\\]".r
+  val inputCurrencyRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)(\\.(\\d{1,2})?)?$".r
+  val inputCurrencyPoundsRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)$".r
+  //val inputDateRegex = "^[0-3]\\d/[0-1]\\d/\\[1-2]\\d{3}$".r
+  val integerRegex: Regex = "^\\d+$".r
+  val anyIntegerRegex: Regex = "^[\\-]?\\d+$".r
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/M/yyyy")
 
   def plSingleGroupCaptures(regex: Regex, str: String, index: Int = 1): List[String] = regex.findAllMatchIn(str).map(_.group(index)).toList
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str, 4)
@@ -39,6 +44,7 @@ package object ocelot {
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
+  def asDate(value: String): Option[String] = Try(LocalDate.parse(value.trim, dateFormatter)).map(_ => value.trim).toOption
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 
