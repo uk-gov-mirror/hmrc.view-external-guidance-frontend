@@ -15,35 +15,36 @@
  *@
 
 @import models.PageContext
-@import models.ui.DateInputPage
-@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import models.ui.{Text, FormPage}
+
+@import controllers.routes._
+@import uk.gov.hmrc.govukfrontend.views.html.helpers._
 
 @this(
   layout: main_layout,
-  formWithCSRF: FormWithCSRF,
-  govukButton: GovukButton
+  formWithCSRF: FormWithCSRF
 )
 
-@(page: DateInputPage, ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
+@(page: FormPage, ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
-@pageTitle(page: DateInputPage) = @{
+@pageTitle(page: FormPage) = @{
   val titleText = page.heading.asString(messages.lang)
-  page.input.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} $titleText""")
+  page.formComponent.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
 }
 
 @implicitCtx = @{ctx}
 
 @layout(pageTitle(page), ctx.processTitle.asString(messages.lang), Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
 
-  @components.error_summary(page.input.text, inputName, page.input.errorMsgs)
+  @components.error_summary(page.formComponent.text, inputName, page.formComponent.errorMsgs)
 
   @formWithCSRF(action = controllers.routes.GuidanceController.submitPage(ctx.processCode, page.relativePath)) {
 
-    @components.input_date(page.input, inputName, form)
+    @components.render_form(page.formComponent, inputName, form)
 
-    @govukButton(Button(
-      content = Text(messages("site.continue"))
-    ))
+    <button class="govuk-button" data-module="govuk-button">
+      @messages("site.continue")
+    </button>
   }
 }
 

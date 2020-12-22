@@ -24,25 +24,10 @@ import models.ocelot.{Page, Labels}
 @Singleton
 class PageRenderer @Inject() () {
 
-  @tailrec
-   private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[VisualStanza], seen: Seq[String])
-                              (implicit stanzaMap: Map[String, Stanza]): (Seq[VisualStanza], Labels, Seq[String], String, Option[DataInput]) =
-    stanzaMap.get(stanzaId) match {
-      case None => (visualStanzas, labels, seen, stanzaId, None)
-      case Some(s) => s match {
-        case EndStanza => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
-        case s: VisualStanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
-        case s: Stanza with Evaluate =>
-          val (next, updatedLabels) = s.eval(labels)
-          evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
-        case s: VisualStanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
-      }
-    }
-
   def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels, Option[DataInput]) = {
     implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
 
-    val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
+    val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
 
     (visualStanzas, newLabels, optionalInput)
   }
@@ -52,9 +37,10 @@ class PageRenderer @Inject() () {
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) =
-      stanzaMap.get(next) match {
+      if (next == page.id) (None, labels)                     // next indicates current page
+      else stanzaMap.get(next) match {
         case None => (Some(next), labels)
-        case Some(_) if seen.contains(next) => (None, labels)
+        case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
           case EndStanza => (Some(next), labels)
           case s: Stanza with Evaluate =>
@@ -70,4 +56,18 @@ class PageRenderer @Inject() () {
     }
   }
 
+  @tailrec
+   private def evaluateStanzas(stanzaId: String, labels: Labels, visualStanzas: Seq[VisualStanza] = Nil, seen: Seq[String] = Nil)
+                              (implicit stanzaMap: Map[String, Stanza]): (Seq[VisualStanza], Labels, Seq[String], String, Option[DataInput]) =
+    stanzaMap.get(stanzaId) match {
+      case None => (visualStanzas, labels, seen, stanzaId, None)
+      case Some(s) => s match {
+        case EndStanza => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
+        case s: VisualStanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
+        case s: Stanza with Evaluate =>
+          val (next, updatedLabels) = s.eval(labels)
+          evaluateStanzas(next, updatedLabels, visualStanzas, seen :+ stanzaId)
+        case s: VisualStanza => evaluateStanzas(s.next.head, labels, visualStanzas :+ s, seen :+ stanzaId)
+      }
+    }
 }

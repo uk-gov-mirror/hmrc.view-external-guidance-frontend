@@ -241,9 +241,6 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       newLabels.displayValue(questionLabel)(Lang("cy")) shouldBe Some(answers(0).langs(1))
     }
 
-
-
-
     "Evaluate the stanzas after user input stanza when question answer is end" in new Test {
 
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
@@ -276,6 +273,28 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                         KeyedStanza("3", questionStanza),
                         KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("end","1"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("end", EndStanza)
+                      )
+      val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
+      val labels = LabelCache()
+
+      val (next, _) = renderer.renderPagePostSubmit(page, labels, "0")
+
+      next shouldBe None
+
+    }
+
+    "Evaluate the stanzas after user input stanza when question which indicate a return to current page (identifying page stanza id)" in new Test {
+
+      val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
+      val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
+      val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
+                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("2", instructionStanza),
+                        KeyedStanza("3", questionStanza),
+                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
+                        KeyedStanza("24", Choice(ChoiceStanza(Seq("end","start"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)

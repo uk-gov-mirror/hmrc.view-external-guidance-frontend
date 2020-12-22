@@ -16,16 +16,14 @@
 
 package models.ui
 
-trait SubmittedAnswer {
+import base.BaseSpec
+import models.ocelot.stanzas._
 
-  val text: String
+class GroupSpec extends BaseSpec {
 
-}
-
-case class SubmittedTextAnswer(text: String) extends SubmittedAnswer
-
-case class SubmittedDateAnswer(day: String, month: String, year: String) extends SubmittedAnswer {
-
-    override val text: String = day + "/" + month + "/" + year
-
+  "Grouping no YourCallCallouts into a group" should {
+    "Create an empty group" in {
+      YourCallGroup(Seq.empty) shouldBe YourCallGroup(Seq.empty, Seq.empty, false)
+    }
+  }
 }

@@ -28,9 +28,10 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import models.{PageContext, PageEvaluationContext}
-import models.ocelot.{KeyedStanza, Phrase, Process, ProcessJson, Page => OcelotPage}
-import models.ocelot.stanzas.{Question => OcelotQuestion, _}
-import models.ui.{CurrencyInput => UiCurrencyInput, DateInput => UiDateInput, _}
+import models.ocelot.{Labels, KeyedStanza, Phrase, Process, ProcessJson, Page}
+import models.ocelot.stanzas.{Question,CurrencyInput, DateInput, _}
+import models.ui
+import models.ui._
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
@@ -57,15 +58,15 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")))
     lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")))
 
-    lazy val expectedPage: Page = QuestionPage(
+    lazy val expectedPage: ui.Page = FormPage(
       path,
-      Question(Text("QUESTION", "QUESTION"), None, Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
+      ui.Question(Text("QUESTION", "QUESTION"), None, Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
     )
 
     val standardPagePath = "/std-page"
     val relativeStdPath = standardPagePath.drop(1)
 
-    val standardPage: Page = Page(
+    val standardPage: ui.Page = ui.Page(
       standardPagePath,
       Seq(H1(Text("hello", "Welsh: hello")))
     )
@@ -78,12 +79,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     lazy val errorHandler: ErrorHandler = app.injector.instanceOf[config.ErrorHandler]
     lazy val view: standard_page = app.injector.instanceOf[views.html.standard_page]
-    lazy val questionView: question_page = app.injector.instanceOf[views.html.question_page]
-    lazy val inputView: input_page = app.injector.instanceOf[input_page]
-    lazy val dateInputView: input_date_page = app.injector.instanceOf[input_date_page]
+    lazy val formView: form_page = app.injector.instanceOf[views.html.form_page]
 
     val instructionStanza: InstructionStanza = InstructionStanza(3, Seq("3"), None, false)
-    val questionStanza: OcelotQuestion = OcelotQuestion(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
+    val questionStanza: Question = Question(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
     val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
     val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
@@ -99,11 +98,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       KeyedStanza("3", dateInputStanza)
     )
 
-
-    val page = OcelotPage("start", "/test-page", stanzas, Seq("4","5"))
-    val inputPage = OcelotPage("start", "/test-page", stanzasWithInput, Seq("4"))
-    val nonQuestionPage = OcelotPage("start", "/test-page", stanzas.dropRight(1), Seq("3"))
-    val dateInputPage = OcelotPage("start", "/test-page", stanzasWithDateInput, Seq("4"))
+    val page = Page("start", "/test-page", stanzas, Seq("4","5"))
+    val inputPage = Page("start", "/test-page", stanzasWithInput, Seq("4"))
+    val nonQuestionPage = Page("start", "/test-page", stanzas.drop(1), Seq("3"))
+    val dateInputPage = Page("start", "/test-page", stanzasWithDateInput, Seq("4"))
   }
 
   trait QuestionTest extends MockGuidanceService with TestData {
@@ -116,17 +114,17 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       fakeSessionIdAction,
       errorHandler,
       view,
-      questionView,
-      inputView,
-      dateInputView,
+      formView,
       mockGuidanceService,
       stubMessagesControllerComponents()
     )
 
     val initialLabels = LabelCache()
-
+    val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, initialLabels)
     val pec = PageEvaluationContext(
                 page,
+                vStanzas,
+                di,
                 sessionId,
                 Map("4" -> "/somewhere-else"),
                 Some("/hello"),
@@ -144,7 +142,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "return an OK response" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(
+          PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di)
+        )))
 
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -153,7 +153,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "be a HTML response" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di))))
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
     }
@@ -170,7 +170,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = true, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), di))))
 
       val result = target.getPage(processId, relativePath, Some("1"))(fakeRequest)
 
@@ -184,7 +184,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "Show the original answer selected" in new QuestionTest {
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(ansIndexZero)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, processId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), di, answer = Some(ansIndexZero)))))
 
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
 
@@ -213,9 +213,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       fakeSessionIdAction,
       errorHandler,
       view,
-      questionView,
-      inputView,
-      dateInputView,
+      formView,
       guidanceService,
       stubMessagesControllerComponents()
     )
@@ -244,8 +242,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-          .getActiveInputStanza(pec)
-          .returns(Some(questionStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -265,8 +263,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(questionStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -286,12 +284,12 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(questionStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
-        .getPageContext(pec, None)
-        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -312,12 +310,16 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(questionStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
         .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+      MockGuidanceService
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
@@ -343,6 +345,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "return a BAD_REQUEST response if trying to submit a page which is not a question" in new QuestionTest {
       override val pec = PageEvaluationContext(
             nonQuestionPage,
+            Seq.empty,
+            None,
             sessionId,
             Map(),
             Some("/hello"),
@@ -359,12 +363,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(None)
-
-      MockGuidanceService
-        .getPageContext(pec, Some(FormData(relativeStdPath, Map(), List(new FormError(relativeStdPath, List("error.required"))))))
-        .returns(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, ValueMissingError)
+        .returns(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       override val fakeRequest = FakeRequest("POST", standardPagePath)
         .withSession(SessionKeys.sessionId -> processId)
@@ -419,9 +419,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
   trait InputTest extends MockGuidanceService with TestData {
 
-    override lazy val expectedPage: Page = InputPage(
+    override lazy val expectedPage: ui.Page = FormPage(
       path,
-      UiCurrencyInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+      ui.CurrencyInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
     )
     val enteredValue = "12000"
     val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
@@ -436,17 +436,17 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       fakeSessionIdAction,
       errorHandler,
       view,
-      questionView,
-      inputView,
-      dateInputView,
+      formView,
       mockGuidanceService,
       stubMessagesControllerComponents()
     )
 
     val initialLabels = LabelCache()
-
+    val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, initialLabels)
     val pec = PageEvaluationContext(
                 page,
+                vStanzas,
+                di,
                 sessionId,
                 Map("4" -> "/somewhere-else"),
                 Some("/hello"),
@@ -465,7 +465,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), di))))
 
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
       status(result) shouldBe Status.OK
@@ -485,7 +485,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "Show the original value entered" in new InputTest {
       MockGuidanceService
         .getPageContext(processId, path, previousPageByLink = false, processId)
-        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredValue)))))
+        .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di, Some(enteredValue)))))
 
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
 
@@ -504,12 +504,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(questionStanza))
-
-      MockGuidanceService
-        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, ValueMissingError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "/guidance/hello", "/guidance/hello")
@@ -524,8 +520,11 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
   "Submitting an Input page with an invalid value" should {
 
     "return a BadRequest to the current page" in new InputTest {
+      override val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(inputPage, initialLabels)
       override val pec = PageEvaluationContext(
                 inputPage,
+                vStanzas,
+                di,
                 sessionId,
                 Map("4" -> "/somewhere-else"),
                 Some("/hello"),
@@ -537,18 +536,17 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
                 None
               )
 
-
       MockGuidanceService
         .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(currencyInputStanza))
+        .validateUserResponse(pec, "invalid input")
+        .returns(None)
 
       MockGuidanceService
-        .getPageContext(pec, Some(FormData(relativePath, Map(), List(invalidDataFormError))))
-        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, ValueTypeError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
                                                           .withFormUrlEncodedBody(relativePath -> "invalid input").withCSRFToken
@@ -574,12 +572,12 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(currencyInputStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
 
       MockGuidanceService
-        .getPageContext(pec, Some(FormData(relativePath, Map(), List(formError))))
-        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -594,9 +592,11 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     }
 
     "redirect to new page with out query string after valid submission" in new InputTest {
-
+      override val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(inputPage, initialLabels)
       override val pec = PageEvaluationContext(
         inputPage,
+        vStanzas,
+        di,
         sessionId,
         Map("4" -> "/guidance/ext90002/somewhere-else"),
         Some("/hello"),
@@ -613,8 +613,12 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(currencyInputStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -631,9 +635,11 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     }
 
     "redirect to previously visited page with query string after valid submission" in new InputTest {
-
+      override val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(inputPage, initialLabels)
       override val pec = PageEvaluationContext(
         inputPage,
+        vStanzas,
+        di,
         sessionId,
         Map("4" -> "/guidance/ext90002/somewhere-else"),
         Some("/hello"),
@@ -650,8 +656,12 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(currencyInputStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -673,8 +683,12 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(Some(currencyInputStanza))
+        .validateUserResponse(pec, "0")
+        .returns(Some("0"))
+
+      MockGuidanceService
+        .getPageContext(pec, NoError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       MockGuidanceService
         .submitPage(pec, path, "0", "0")
@@ -741,9 +755,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     }
 
     "return a BAD_REQUEST response when submitted page is not an input or question" in new QuestionTest {
-
       override val pec = PageEvaluationContext(
             nonQuestionPage,
+            Seq.empty,
+            None,
             sessionId,
             Map(),
             Some("/hello"),
@@ -760,12 +775,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(pec)))
 
       MockGuidanceService
-        .getActiveInputStanza(pec)
-        .returns(None)
-
-      MockGuidanceService
-        .getPageContext(pec, Some(FormData(relativeStdPath, Map(), List(new FormError(relativeStdPath, List("error.required"))))))
-        .returns(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+        .getPageContext(pec, ValueMissingError)
+        .returns(PageContext(standardPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode, initialLabels, di))
 
       override val fakeRequest = FakeRequest("POST", path)
         .withSession(SessionKeys.sessionId -> processId)
@@ -785,9 +796,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         fakeSessionIdAction,
         errorHandler,
         view,
-        questionView,
-        inputView,
-        dateInputView,
+        formView,
         mockGuidanceService,
         stubMessagesControllerComponents()
       )
@@ -813,9 +822,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -847,9 +854,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -885,9 +890,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -920,9 +923,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -954,9 +955,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -991,9 +990,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           fakeSessionIdAction,
           errorHandler,
           view,
-          questionView,
-          inputView,
-          dateInputView,
+          formView,
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
@@ -1014,9 +1011,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
   "Date Input processing" should {
     trait DateInputTest extends MockGuidanceService with TestData {
 
-      override lazy val expectedPage: Page = DateInputPage(
+      override lazy val expectedPage: ui.Page = FormPage(
         path,
-        UiDateInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
+        ui.DateInput(Text("Input", "Input"), Some(Text("hint", "hint")), Seq(Paragraph(Text("para", "Para"))))
       )
       val enteredDate = "1/1/2020"
       val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
@@ -1026,17 +1023,17 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         fakeSessionIdAction,
         errorHandler,
         view,
-        questionView,
-        inputView,
-        dateInputView,
+        formView,
         mockGuidanceService,
         stubMessagesControllerComponents()
       )
 
       val initialLabels = LabelCache()
-
+      val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, initialLabels)
       val pec = PageEvaluationContext(
         page,
+        vStanzas,
+        di,
         sessionId,
         Map("4" -> "/somewhere-else"),
         Some("/hello"),
@@ -1055,7 +1052,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
         MockGuidanceService
           .getPageContext(processId, path, previousPageByLink = false, processId)
-          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di))))
 
         val result = target.getPage(processId, relativePath, None)(fakeRequest)
         status(result) shouldBe Status.OK
@@ -1064,7 +1061,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       "be a HTML response" in new DateInputTest {
         MockGuidanceService
           .getPageContext(processId, path, previousPageByLink = false, processId)
-          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di))))
         val result = target.getPage(processId, relativePath, None)(fakeRequest)
         contentType(result) shouldBe Some("text/html")
       }
@@ -1075,7 +1072,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       "Show the original value entered" in new DateInputTest {
         MockGuidanceService
           .getPageContext(processId, path, previousPageByLink = false, processId)
-          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), None, Some(enteredDate)))))
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di, Some(enteredDate)))))
 
         val result = target.getPage(processId, relativePath, None)(fakeRequest)
 

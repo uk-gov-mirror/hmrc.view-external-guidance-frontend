@@ -42,7 +42,7 @@ class StandardPageSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels, Some("/previousPage"))
+    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels, None, Some("/previousPage"))
   }
 
   "Standard Page" must {

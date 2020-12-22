@@ -18,13 +18,11 @@ package mocks
 
 import models.{PageEvaluationContext, PageContext}
 import models.RequestOutcome
-import models.ocelot.stanzas.DataInput
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import services.GuidanceService
+import services.{ErrorStrategy, GuidanceService}
 import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
-import models.ui.FormData
 import models.ocelot.Labels
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -64,10 +62,10 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId)
     }
 
-    def getPageContext(pec: PageEvaluationContext, formData: Option[FormData]): CallHandler[PageContext] = {
+    def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy): CallHandler[PageContext] = {
       (mockGuidanceService
-        .getPageContext(_: PageEvaluationContext, _: Option[FormData]))
-        .expects(pec, formData)
+        .getPageContext(_: PageEvaluationContext, _: ErrorStrategy))
+        .expects(pec, errStrategy)
     }
 
     def getPageContext(processId: String, url: String, previousPageByLink: Boolean, sessionId: String): CallHandler[Future[RequestOutcome[PageContext]]] = {
@@ -86,26 +84,26 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, url, previousPageByLink, sessionId, *)
     }
 
+    def validateUserResponse(pec: PageEvaluationContext, response: String): CallHandler[Option[String]] = {
+      (mockGuidanceService
+        .validateUserResponse(_: PageEvaluationContext, _: String))
+        .expects(pec, response)
+    }
+
     def submitPage(
-                    evalContext: PageEvaluationContext,
+                    ctx: PageEvaluationContext,
                     url: String,
                     validatedAnswer: String,
                     submittedAnswer: String): CallHandler[Future[RequestOutcome[(Option[String], Labels)]]] = {
       (mockGuidanceService
         .submitPage(_: PageEvaluationContext, _: String, _: String, _: String)(_: ExecutionContext))
-        .expects(evalContext, url, validatedAnswer, submittedAnswer, *)
+        .expects(ctx, url, validatedAnswer, submittedAnswer, *)
     }
 
     def saveLabels(docId: String, labels: Labels): CallHandler[Future[RequestOutcome[Unit]]] = {
       (mockGuidanceService
         .saveLabels(_: String, _: Labels))
         .expects(docId, *)
-    }
-
-    def getActiveInputStanza(pec: PageEvaluationContext): CallHandler[Option[DataInput]] = {
-      (mockGuidanceService
-        .getActiveInputStanza(_: PageEvaluationContext))
-        .expects(pec)
     }
 
   }

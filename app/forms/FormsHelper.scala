@@ -19,34 +19,32 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
-import models.ocelot.stanzas.{CurrencyInput => OcelotCurrencyInput, CurrencyPoundsOnlyInput => OcelotCurrencyPoundsOnlyInput}
-import models.ocelot.stanzas.{DateInput => OcelotDateInput, DataInput => OcelotDataInput, Question => OcelotQuestion}
+import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, DataInput, Question}
 import models.ui.DateInput.partitionSubmittedDateAnswer
-import models.ui.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question, UIComponent}
 import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 
 object FormsHelper {
 
-  def bindFormData(inputStanza: OcelotDataInput, path: String)
+  def bindFormData(inputStanza: DataInput, path: String)
                   (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
 
     // Define form mapping for each data input type
     inputStanza match {
-      case c: OcelotCurrencyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
-      case cpo: OcelotCurrencyPoundsOnlyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
-      case q: OcelotQuestion => bindSubmittedTextAnswer(path -> nonEmptyText)
-      case d: OcelotDateInput => bindSubmittedDateAnswer()
+      case _: CurrencyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: CurrencyPoundsOnlyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: DateInput => bindSubmittedDateAnswer()
     }
 
   }
 
-  def populateForm(input: UIComponent, path: String, answer: Option[String]): Form[_] = {
+  def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] = {
 
-    input match {
-      case c: CurrencyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case cpo: CurrencyPoundsOnlyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case q: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case d: DateInput => populateSubmittedDateAnswerForm(answer)
+    inputStanza match {
+      case _: CurrencyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: CurrencyPoundsOnlyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: DateInput => populateSubmittedDateAnswerForm(answer)
     }
 
   }

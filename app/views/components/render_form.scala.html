@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package models.ui
+@import models.ui.{Question, CurrencyInput, CurrencyPoundsOnlyInput, Input, DateInput, UIComponent}
 
-trait SubmittedAnswer {
+@(formElement: UIComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+  @{formElement match {
+        case q: Question => components.question(q, name, form)
+        case i: CurrencyInput => components.input(i, name, form)
+        case i: CurrencyPoundsOnlyInput => components.input(i, name, form)
+        case di: DateInput => components.input_date(di, name, form)
+        case _ =>
+      }
+  }
 
-  val text: String
-
+@{
+     //$COVERAGE-OFF$
 }
 
-case class SubmittedTextAnswer(text: String) extends SubmittedAnswer
-
-case class SubmittedDateAnswer(day: String, month: String, year: String) extends SubmittedAnswer {
-
-    override val text: String = day + "/" + month + "/" + year
-
-}

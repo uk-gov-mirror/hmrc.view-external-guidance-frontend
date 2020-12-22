@@ -20,7 +20,7 @@ import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockPageRenderer, MockSessionRepository, MockUIBuilder}
 import models.errors.{DatabaseError, NotFoundError}
 import models.ocelot.stanzas._
-import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Phrase}
+import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Labels, Phrase}
 import models.ui
 import models.PageEvaluationContext
 import uk.gov.hmrc.http.HeaderCarrier
@@ -61,7 +61,6 @@ class GuidanceServiceSpec extends BaseSpec {
     val processCode = "CupOfTea"
     val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     val sessionRepoId = "683d9aa0-2a0e-4e28-9ac8-65ce453d2731"
-    val labels = LabelCache()
 
     val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
     val questionStanza = Question(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
@@ -71,18 +70,25 @@ class GuidanceServiceSpec extends BaseSpec {
                                       )
     val page = Page("start", "/test-page", stanzas, Seq("4","5"))
 
+    val standardPage = Page("start", "/test-page", stanzas.dropRight(1), Seq("4","5"))
+
+    val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, LabelCache())
     val pec = PageEvaluationContext(
                 page,
+                vStanzas,
+                di,
                 processId,
                 Map("/first-page" -> "start", "/page-1" -> "1", "/last-page" -> "2"),
                 Some("/hello"),
                 ui.Text(),
                 processId,
                 "hello",
-                LabelCache(),
+                labels,
                 None,
                 None
               )
+
+    val standardPagePec = pec.copy(page = standardPage, dataInput = None, visualStanzas = Seq.empty)
 
     lazy val target = new GuidanceService(
       MockAppConfig,
@@ -112,6 +118,78 @@ class GuidanceServiceSpec extends BaseSpec {
     }
   }
 
+  "Calling validateUserResponse" should {
+    "Use page DataInput stanza to validate valid response" in new Test {
+
+      MockPageRenderer
+        .renderPage(pec.page, pec.labels)
+        .returns((pec.visualStanzas, pec.labels, pec.dataInput))
+
+      target.validateUserResponse(pec, "0") match {
+        case Some("0") => succeed
+        case _ => fail
+      }
+    }
+
+    "Use page DataInput stanza to validate invalid response" in new Test {
+
+      MockPageRenderer
+        .renderPage(pec.page, pec.labels)
+        .returns(new PageRenderer().renderPage(pec.page, pec.labels))
+
+      target.validateUserResponse(pec, "hello") match {
+        case None => succeed
+        case _ => fail
+      }
+    }
+
+    "return None of used on a page with no DataInput stanza" in new Test {
+
+      MockPageRenderer
+        .renderPage(standardPagePec.page, standardPagePec.labels)
+        .returns(new PageRenderer().renderPage(standardPagePec.page, standardPagePec.labels))
+
+      target.validateUserResponse(standardPagePec, "hello") match {
+        case None => succeed
+        case _ => fail
+      }
+    }
+
+  }
+
+  "Calling getPageContext with a PageEvaluationContext and ErrorStrategy" should {
+
+    "retrieve a page for the process" in new Test {
+
+      override val processCode = "cup-of-tea"
+
+      MockSessionRepository
+        .get(sessionRepoId, s"$processCode$${page.url}", previousPageByLink = false)
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(page.url -> "2"), None))))
+
+      MockPageBuilder
+        .buildPage("2", process)
+        .returns(Right(page))
+
+      MockPageRenderer
+        .renderPage(page, labels)
+        .returns((page.stanzas.collect{case s: VisualStanza => s}, labels, None))
+
+      MockSessionRepository
+        .saveLabels(sessionRepoId, Seq.empty)
+        .returns(Future.successful(Right({})))
+
+      MockUIBuilder
+        .buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError)
+        .returns(ui.Page(page.url, Seq()))
+
+      val pageCtx = target.getPageContext(pec, NoError)
+
+      pageCtx.page.urlPath shouldBe page.url
+    }
+  }
+
+
   "Calling getPageContext with a valid URL" should {
 
     "retrieve a page for the process" in new Test {
@@ -135,7 +213,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, NoError)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
@@ -171,14 +249,14 @@ class GuidanceServiceSpec extends BaseSpec {
         .returns(Future.successful(Right({})))
 
       MockUIBuilder
-        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, None)
+        .buildPage(lastPageUrl, lastPage.stanzas.collect{case s: VisualStanza => s}, NoError)
         .returns(lastUiPage)
 
       private val result = target.getPageContext(processCode, lastPageUrl, previousPageByLink = false, sessionRepoId)
 
-      whenReady(result) { pageContext =>
-        pageContext match {
-          case Right(PageContext(_, _, _, _, _, _, _, _, Some(answer))) => succeed
+      whenReady(result) { pageCtx =>
+        pageCtx match {
+          case Right(PageContext(_, _, _, _, _, _, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }

@@ -44,7 +44,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")))
     lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")))
 
-    lazy val expectedPage: Page = QuestionPage(
+    lazy val expectedPage: Page = FormPage(
       path,
       Question(Text("QUESTION", "QUESTION"), None, Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
     )
@@ -65,7 +65,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     lazy val errorHandler = app.injector.instanceOf[config.ErrorHandler]
     lazy val view = app.injector.instanceOf[views.html.standard_page]
-    lazy val questionView = app.injector.instanceOf[views.html.question_page]
+    lazy val questionView = app.injector.instanceOf[views.html.form_page]
 
   }
 

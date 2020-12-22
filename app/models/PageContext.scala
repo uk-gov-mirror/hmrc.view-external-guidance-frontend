@@ -16,32 +16,37 @@
 
 package models
 
-import models.ui.{Page => UiPage, Text}
 import models.ocelot.{Page, LabelCache, Labels}
+import models.ocelot.stanzas.{VisualStanza,DataInput}
 
 case class PageEvaluationContext(page: Page,
+                                 visualStanzas: Seq[VisualStanza],
+                                 dataInput: Option[DataInput],
                                  sessionId: String,
                                  stanzaIdToUrlMap: Map[String, String],
                                  processStartUrl: Option[String],
-                                 processTitle: Text,
+                                 processTitle: ui.Text,
                                  processId: String,
                                  processCode: String,
                                  labels: Labels = LabelCache(),
                                  backLink: Option[String] = None,
                                  answer: Option[String] = None)
 
-case class PageContext(page: UiPage,
+
+case class PageContext(page: ui.Page,
                        sessionId: String,
                        processStartUrl: Option[String],
-                       processTitle: Text,
+                       processTitle: ui.Text,
                        processId: String,
                        processCode: String,
                        labels: Labels = LabelCache(),
+                       dataInput: Option[DataInput] = None,
                        backLink: Option[String] = None,
                        answer: Option[String] = None)
 
 object PageContext {
-  def apply(pec: PageEvaluationContext, page: UiPage, updatedLabels: Labels): PageContext =
+  def apply(pec: PageEvaluationContext, page: ui.Page): PageContext = PageContext(pec, page, pec.labels)
+  def apply(pec: PageEvaluationContext, page: ui.Page, labels: Labels): PageContext =
     PageContext(
       page,
       pec.sessionId,
@@ -49,7 +54,8 @@ object PageContext {
       pec.processTitle,
       pec.processId,
       pec.processCode,
-      updatedLabels,
+      labels,
+      pec.dataInput,
       pec.backLink,
       pec.answer
     )

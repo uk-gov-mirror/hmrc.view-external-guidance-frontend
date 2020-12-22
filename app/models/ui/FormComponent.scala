@@ -16,6 +16,9 @@
 
 package models.ui
 
-import play.api.data.FormError
-
-case class FormData(id: String, data: Map[String, String], errors: Seq[FormError])
+trait FormComponent extends UIComponent {
+  val text: Text
+  val hint: Option[Text]
+  val body: Seq[UIComponent]
+  val errorMsgs: Seq[ErrorMsg]
+}

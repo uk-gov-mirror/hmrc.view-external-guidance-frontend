@@ -18,7 +18,7 @@ package views.components
 
 import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.ocelot.{Label, LabelCache, Labels, Phrase}
-import models.ui.{BulletPointList, CurrencyInput, DateInput, DateInputPage, ErrorMsg, H2, H3, H4, Input, Paragraph, Text}
+import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, RequiredErrorMsg, H2, H3, H4, Input, Paragraph, Text}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
 import org.scalatest.{Matchers, WordSpec}
@@ -70,11 +70,11 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
-    protected val errorMsg = ErrorMsg("id", Text("An error has occurred", "Welsh, An error has occurred"))
+    protected val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.InputPage("/url", currencyInput)
+    val page = models.ui.FormPage("/url", currencyInput)
     val ctx = PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
@@ -150,7 +150,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       doc.getElementsByTag("input").asScala.toList.foreach { inp =>
         elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
           aria should include("input-hint")
-          aria should include("id-error")
+          aria should include("required-error")
         }
       }
    }
@@ -165,7 +165,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       override val inputWithHintAndNoBody: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
       override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
-      val datePage: DateInputPage = models.ui.DateInputPage("/url", dateInput)
+      val datePage: FormPage = models.ui.FormPage("/url", dateInput)
       override val ctx = PageContext(datePage, "sessionId", None, Text(), "processId", "processCode", labels)
     }
 

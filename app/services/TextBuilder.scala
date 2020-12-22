@@ -16,7 +16,8 @@
 
 package services
 
-import models.ocelot.{Link => OcelotLink, Phrase, Process}
+import models._
+import models.ocelot.{Link, Phrase, Process}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -54,10 +55,10 @@ object TextBuilder {
       labelNameOpt(m).fold[TextItem]({
         boldTextOpt(m).fold[TextItem]({
           val window: Boolean = linkTypeOpt(m).fold(false)(modifier => modifier == "-tab")
-          val dest: String = if (OcelotLink.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
+          val dest: String = if (Link.isLinkableStanzaId(linkDest(m))) urlMap(linkDest(m)) else linkDest(m)
           val asButton: Boolean = buttonOrLink(m).fold(false)(_ == "button")
           val (lnkText, lnkHint) = singleStringWithOptionalHint(linkText(m))
-          Link(dest, lnkText, window, asButton, lnkHint)
+          ui.Link(dest, lnkText, window, asButton, lnkHint)
         }){txt =>
           boldLabelNameOpt(m).fold[TextItem](Words(txt, true)){labelName =>
             LabelRef(labelName, OutputFormat(boldLabelFormatOpt(m)), true)
