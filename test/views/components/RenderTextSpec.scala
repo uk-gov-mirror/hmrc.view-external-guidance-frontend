@@ -16,6 +16,7 @@
 
 package views.components
 
+import models.PageContext
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
@@ -24,9 +25,10 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import models.ocelot.{Label, Labels, LabelCache}
-import models.ui.{H1, H2, H3, Link, Paragraph, Text, Words, LabelRef, Currency, CurrencyPoundsOnly, Txt}
+import models.ocelot.{Label, LabelCache, Labels}
+import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3, LabelRef, Link, Paragraph, Text, Txt, Words}
 import org.jsoup.nodes.{Document, Element}
+import play.api.mvc.AnyContentAsEmpty
 
 import scala.collection.JavaConverters._
 
@@ -37,41 +39,54 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   trait Test {
     implicit val labels: Labels = LabelCache(Map("Blah" -> Label("Blah", Some("a value")),
                                                  "A-Label" -> Label("A-Label", Some("33.9")),
+                                                 "Date-Label" -> Label("Date-Label", Some("29/2/2020")),
                                                  "BigNumber" -> Label("BigNumber", Some("12345678")),
                                                  "BigNumberDps" -> Label("BigNumber", Some("12345678.45"))))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
-    val fakeRequest = FakeRequest("GET", "/")
+    val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
-    val boldText = Text(Words("Hello", true), Words("Welsh Hello", true))
-    val normalText = Text(Words("Hello", false), Words("Welsh Hello", false))
+    val boldText: Text = Text(Words("Hello", bold = true), Words("Welsh Hello", bold = true))
+    val normalText: Text = Text(Words("Hello"), Words("Welsh Hello"))
 
-    val textWithLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label")),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label")))
-    val textWithBoldLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", Txt, true), Words(" , price "), LabelRef("A-Label")),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Txt, true), Words(" , price "),LabelRef("A-Label")))
-    val textWithNonExistentLabelRef = Text(Seq(Words("The price is ", false),LabelRef("BLAHBLAH", Currency)),
-                                Seq(Words("Welsh The price is ", false),LabelRef("BLAHBLAH", Currency)))
-    val textWithNonExistentCurrencyPoundsOnlyLabelRef = Text(Seq(Words("The price is ", false),LabelRef("BLAHBLAH", CurrencyPoundsOnly)),
-                                Seq(Words("Welsh The price is ", false),LabelRef("BLAHBLAH", CurrencyPoundsOnly)))
-    val textWithCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", Currency)))
-    val textWithCurrencyPOLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly)))
-    val textWithBoldCurrencyPOLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly, true)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly, true)))
-    val textWithInvalidCurrencyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)))
-    val textWithInvalidCurrencyPoundsOnlyLabelRef = Text(Seq(Words("A label must have ", false),LabelRef("Blah", CurrencyPoundsOnly), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
-                                Seq(Words("Welsh A label must have ", false),LabelRef("Blah", CurrencyPoundsOnly), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)))
-    val textLargeValueNoDpsCurrencyLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)),
-                                                   Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumber", Currency)))
-    val textLargeValueDpsCurrencyPOLabelRef = Text(Seq(Words("A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumberDps", CurrencyPoundsOnly)),
-                                                   Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
-    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val textWithLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label")),
+                                      Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label")))
+    val textWithBoldLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah", Txt, bold = true), Words(" , price "), LabelRef("A-Label")),
+                                          Seq(Words("Welsh A label must have "),LabelRef("Blah", Txt, bold = true), Words(" , price "),LabelRef("A-Label")))
+    val textWithNonExistentLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", Currency)),
+                                                 Seq(Words("Welsh The price is "),LabelRef("BLAHBLAH", Currency)))
+    val textWithNonExistentCurrencyPoundsOnlyLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", CurrencyPoundsOnly)),
+                                                                   Seq(Words("Welsh The price is "),LabelRef("BLAHBLAH", CurrencyPoundsOnly)))
+    val textWithCurrencyLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)),
+                                              Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", Currency)))
+    val textWithCurrencyPOLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
+                                                Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly)))
+    val textWithBoldCurrencyPOLabelRef: Text =
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly, bold = true)),
+           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly, bold = true)))
+    val textWithInvalidCurrencyLabelRef: Text =
+      Text(Seq(Words("A label must have "),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)),
+           Seq(Words("Welsh A label must have "),LabelRef("Blah", Currency), Words(" , price "), LabelRef("A-Label", Currency)))
+    val textWithInvalidCurrencyPoundsOnlyLabelRef: Text =
+      Text(Seq(Words("A label must have "),LabelRef("Blah", CurrencyPoundsOnly), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
+           Seq(Words("Welsh A label must have "),LabelRef("Blah", CurrencyPoundsOnly), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)))
+    val textLargeValueNoDpsCurrencyLabelRef: Text =
+      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumber", Currency)),
+           Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumber", Currency)))
+    val textLargeValueDpsCurrencyPOLabelRef: Text =
+      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumberDps", CurrencyPoundsOnly)),
+           Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
+    val textWithStandardDateLabelRef: Text =
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("Date-Label", DateStandard, bold = true)),
+           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", date "),LabelRef("Date-Label", DateStandard, bold = true)))
+    val textWithStandardDateLabelRefWithInvalidDate: Text =
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("A-Label", DateStandard, bold = true)),
+           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", date "),LabelRef("A-Label", DateStandard, bold = true)))
+
+    val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
+    val page: FormPage = models.ui.FormPage("/url", currencyInput)
+    implicit val ctx: PageContext = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -287,5 +302,28 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       pTag.text() shouldBe "this is the first section Link Text, second section should follow link text."
     }
+
+    "generate English html containing label reference with Standard Date output formatting" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "A label must have a value, date 29 February 2020"
+    }
+    "generate Welsh html containing label reference with Standard Date output formatting" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "Welsh A label must have a value, date 29 February 2020"
+    }
+    "generate English html containing label reference with Standard Date output formatting with invalid date" in new Test {
+      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefWithInvalidDate))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "A label must have a value, date 33.9"
+    }
+    "generate Welsh html containing label reference with Standard Date output formatting with invalid date" in new WelshTest {
+      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefWithInvalidDate))(messages, ctx))
+      val p = doc.getElementsByTag("p").first
+      p.text shouldBe "Welsh A label must have a value, date 33.9"
+    }
+
+
   }
 }
