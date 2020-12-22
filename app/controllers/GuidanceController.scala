@@ -69,7 +69,7 @@ class GuidanceController @Inject() (
     }
   }
 
-  private def showPage(path: String, pageContext: PageContext)(implicit request:Request[AnyContent]): Future[Result] = {
+  private def showPage(path: String, pageContext: PageContext)(implicit request:Request[_]): Future[Result] = {
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
 
     logger.info(s"Retrieved page at ${pageContext.page.urlPath}, start at ${pageContext.processStartUrl}," +
@@ -122,14 +122,13 @@ class GuidanceController @Inject() (
                 val formData = FormData(path, formWithErrors.data, formWithErrors.errors)
                 Future.successful(BadRequest(createInputView(evalContext, questionName(path), Some(formData), formWithErrors)))
               }
-              case Right((submittedAnswer: SubmittedAnswer)) => {
-                processBoundFormData(processCode, evalContext, stanza, path, submittedAnswer)
-              }
+              case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
+                processBoundFormData(processCode, evalContext, form, path, submittedAnswer)
             }
           }
           case None => {
             logger.error( s"Unable to locate input stanza for process ${evalContext.processCode} on submission")
-            Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+            Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
           }
         }
       case Left(NotFoundError) =>
@@ -146,7 +145,7 @@ class GuidanceController @Inject() (
 
   private def processBoundFormData(processCode: String,
                                    evalContext: PageEvaluationContext,
-                                   inputStanza: DataInput,
+                                   form: Form[_],
                                    path: String,
                                    submittedAnswer: SubmittedAnswer)
                                   (implicit request: Request[_], messages: Messages): Future[Result] = {
@@ -156,7 +155,7 @@ class GuidanceController @Inject() (
       Future.successful(BadRequest(createInputView(evalContext,
         questionName(path),
         Some(formData),
-        populateForm(inputStanza, questionName(path), Some(submittedAnswer.text)))))
+        form)))
     } { answer =>
         service.submitPage (evalContext, s"/$path", answer, submittedAnswer.text).map {
           case Right ((None, labels) ) =>
@@ -166,7 +165,7 @@ class GuidanceController @Inject() (
               evalContext.copy (labels = labels),
               questionName (path),
               None,
-              populateForm(inputStanza, questionName(path), Some(submittedAnswer.text))))
+              form))
           case Right ((Some (stanzaId), _) ) =>
             // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
             val url = evalContext.stanzaIdToUrlMap (stanzaId)
@@ -179,7 +178,7 @@ class GuidanceController @Inject() (
             logger.error (s"Page submission failed: $err")
             InternalServerError (errorHandler.internalServerErrorTemplate)
         }
-        }
+    }
   }
 
   private def validateAnswer(ctx: PageEvaluationContext, answer: String): Option[String] =

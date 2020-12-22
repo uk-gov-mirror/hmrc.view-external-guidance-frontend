@@ -18,6 +18,7 @@ package mocks
 
 import models.{PageEvaluationContext, PageContext}
 import models.RequestOutcome
+import models.ocelot.stanzas.DataInput
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.GuidanceService
@@ -99,6 +100,12 @@ trait MockGuidanceService extends MockFactory {
       (mockGuidanceService
         .saveLabels(_: String, _: Labels))
         .expects(docId, *)
+    }
+
+    def getActiveInputStanza(pec: PageEvaluationContext): CallHandler[Option[DataInput]] = {
+      (mockGuidanceService
+        .getActiveInputStanza(_: PageEvaluationContext))
+        .expects(pec)
     }
 
   }

@@ -28,10 +28,9 @@ import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 object FormsHelper {
 
   def bindFormData(inputStanza: OcelotDataInput, path: String)
-                  (implicit request: Request[AnyContent]): Either[Form[_], SubmittedAnswer] = {
+                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
 
-    // Define form mapping for each data input type. Currently, the mapping is the same for
-    // the single input data components. A different mapping will be required for dates.
+    // Define form mapping for each data input type
     inputStanza match {
       case c: OcelotCurrencyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
       case cpo: OcelotCurrencyPoundsOnlyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
@@ -40,18 +39,6 @@ object FormsHelper {
     }
 
   }
-
-  def populateForm(inputStanza: OcelotDataInput, path: String, answer: Option[String]): Form[_] = {
-
-    inputStanza match {
-      case c: OcelotCurrencyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case cpo: OcelotCurrencyPoundsOnlyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case q: OcelotQuestion => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case d: OcelotDateInput => populateSubmittedDateAnswerForm(answer)
-    }
-
-  }
-
 
   def populateForm(input: UIComponent, path: String, answer: Option[String]): Form[_] = {
 
@@ -66,7 +53,7 @@ object FormsHelper {
 
 
   private def bindSubmittedTextAnswer(bindData: (String, Mapping[String]))
-                                  (implicit request: Request[AnyContent]): Either[Form[_], SubmittedAnswer] = {
+                                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
 
     val formProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
 
@@ -74,13 +61,13 @@ object FormsHelper {
 
     form.bindFromRequest().fold(
       formWithErrors => Left(formWithErrors),
-      formData => Right(formData)
+      formData => Right((form.fill(formData), formData))
     )
 
   }
 
   private def bindSubmittedDateAnswer()
-                                     (implicit request: Request[AnyContent]): Either[Form[_], SubmittedAnswer] = {
+                                     (implicit request: Request[_] ): Either[Form[_], (Form[_], SubmittedAnswer)] = {
 
     val formProvider: SubmittedDateAnswerFormProvider = new SubmittedDateAnswerFormProvider()
 
@@ -88,7 +75,7 @@ object FormsHelper {
 
     form.bindFromRequest().fold(
       formWithErrors => Left(formWithErrors),
-      formData => Right(formData)
+      formData => Right((form.fill(formData), formData))
     )
 
   }
