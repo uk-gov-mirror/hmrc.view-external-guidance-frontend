@@ -29,7 +29,7 @@ object TextBuilder {
   private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
 
   private object Placeholders { // All the placeholder matching in one place
-    val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly))?\\]"
+    val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly|date))?\\]"
     val boldPattern = s"\\[bold:($labelPattern|[^\\]]+)\\]"
     val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
     val plregex: Regex = s"${labelPattern}|${boldPattern}|${linkPattern}".r
