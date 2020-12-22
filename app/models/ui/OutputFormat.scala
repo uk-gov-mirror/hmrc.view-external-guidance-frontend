@@ -37,7 +37,7 @@ case object Currency extends OutputFormat with Name {
     optValue.fold("")(value =>
       asCurrency(value) match {
         case Some(x) => NumberFormat.getCurrencyInstance(UK).format(x)
-        case None => ""
+        case None => value
       }
     )
 }
@@ -53,7 +53,7 @@ case object CurrencyPoundsOnly extends OutputFormat with Name {
           formatter.setMaximumFractionDigits(0)
           formatter.setRoundingMode(RoundingMode.DOWN)
           formatter.format(x)
-        case None => ""
+        case None => value
       }
     )
 }
