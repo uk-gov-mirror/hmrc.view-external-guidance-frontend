@@ -18,7 +18,7 @@ package models
 
 import scala.util.matching.Regex
 import scala.util.Try
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, ResolverStyle}
 import java.time.LocalDate
 
 package object ocelot {
@@ -33,7 +33,7 @@ package object ocelot {
   //val inputDateRegex = "^[0-3]\\d/[0-1]\\d/\\[1-2]\\d{3}$".r
   val integerRegex: Regex = "^\\d+$".r
   val anyIntegerRegex: Regex = "^[\\-]?\\d+$".r
-  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/M/yyyy")
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/uuuu", java.util.Locale.UK)
 
   def plSingleGroupCaptures(regex: Regex, str: String, index: Int = 1): List[String] = regex.findAllMatchIn(str).map(_.group(index)).toList
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str, 4)
@@ -44,7 +44,7 @@ package object ocelot {
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
-  def asDate(value: String): Option[String] = Try(LocalDate.parse(value.trim, dateFormatter)).map(_ => value.trim).toOption
+  def asDate(value: String): Option[LocalDate] = Try(LocalDate.parse(value.trim, dateFormatter.withResolverStyle(ResolverStyle.STRICT))).map(d => d).toOption
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 
