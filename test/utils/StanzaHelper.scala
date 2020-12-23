@@ -55,7 +55,7 @@ trait StanzaHelper extends TestConstants {
   val sqpQpCallout = SubTitleCallout(phrases(1), Seq("3"), false)
   val sqpQpQuestion = Question(phrases(two), Seq(phrases(three), phrases(four)), Seq("4", "6"), None, false)
   val sqpQpInput = CurrencyInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false)
-  val sqpQpDateInput = DateInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false, mocks.MockAppConfig.dateInputFormatter)
+  val sqpQpDateInput = DateInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false)
 
   // First answer page BEFORE
   val sqpFapPageStanza = PageStanza(sqpFapValue, Seq("5"), false)

@@ -26,7 +26,7 @@ import utils.StanzaHelper
 class GraphPageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   // Define instance of class used in testing
-  val pageBuilder: PageBuilder = new PageBuilder(mocks.MockAppConfig)
+  val pageBuilder: PageBuilder = new PageBuilder()
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
 

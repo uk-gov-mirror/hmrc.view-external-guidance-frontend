@@ -20,10 +20,8 @@ import models.ocelot.stanzas._
 import models.ocelot.{pageLinkIds, Link, Phrase, Process}
 import models.ocelot.errors._
 import scala.annotation.tailrec
-import config.AppConfig
 
 trait ProcessPopulation {
-  val appConfig: AppConfig
 
   def stanza(id: String, process: Process): Either[GuidanceError, Stanza] =
     process.flow.get(id) match {
@@ -55,8 +53,7 @@ trait ProcessPopulation {
       phrase(i.name, id, process).fold(Left(_), name =>
         optionalPhrase(i.help, id, process).fold(Left(_), help =>
           optionalPhrase(i.placeholder, id, process).fold(Left(_), placeholder =>
-            Input(i, name, help, placeholder, appConfig)
-              .fold[Either[GuidanceError, Input]](Left(UnknownInputType(id, i.ipt_type.toString)))(input => Right(input))
+            Input(i, name, help, placeholder).fold[Either[GuidanceError, Input]](Left(UnknownInputType(id, i.ipt_type.toString)))(input => Right(input))
           )
         )
       )

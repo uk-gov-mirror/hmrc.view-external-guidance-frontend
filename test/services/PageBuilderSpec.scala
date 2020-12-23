@@ -28,7 +28,7 @@ import utils.StanzaHelper
 class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   // Define instance of class used in testing
-  val pageBuilder: PageBuilder = new PageBuilder(mocks.MockAppConfig)
+  val pageBuilder: PageBuilder = new PageBuilder()
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
 
@@ -538,7 +538,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
           ProcessError("Unsupported CalloutStanza type UnknownType found at stanza id 4","4"),
           ProcessError("Unsupported ValueStanza Value type AnUnknownType found at stanza id 33","33"),
           ProcessError("Process Meta section parse error, reason: error.path.missing, target: ocelot",""))
-      guidancePages(new PageBuilder(mocks.MockAppConfig), assortedParseErrorsJson).fold(
+      guidancePages(new PageBuilder(), assortedParseErrorsJson).fold(
         {
           case MainError(MainError.UnprocessableEntity, None, Some(errors)) if errors == processErrors => succeed
           case errs => fail(s"Failed with errors: $errs")

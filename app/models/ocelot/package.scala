@@ -32,7 +32,7 @@ package object ocelot {
   val inputCurrencyPoundsRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)$".r
   val integerRegex: Regex = "^\\d+$".r
   val anyIntegerRegex: Regex = "^[\\-]?\\d+$".r
-
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/uuuu", java.util.Locale.UK)
   def plSingleGroupCaptures(regex: Regex, str: String, index: Int = 1): List[String] = regex.findAllMatchIn(str).map(_.group(index)).toList
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str, 4)
   def pageLinkIds(phrases: Seq[Phrase]): List[String] = phrases.flatMap(phrase => pageLinkIds(phrase.langs.head)).toList
@@ -42,9 +42,8 @@ package object ocelot {
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
-  def asDate(value: String)(implicit formatter: DateTimeFormatter): Option[LocalDate] =
-    Try(LocalDate.parse(value.trim, formatter.withResolverStyle(ResolverStyle.STRICT))).map(d => d).toOption
-  def stringFromDate(when: LocalDate)(implicit formatter: DateTimeFormatter): String = when.format(formatter)
+  def asDate(value: String): Option[LocalDate] = Try(LocalDate.parse(value.trim, dateFormatter.withResolverStyle(ResolverStyle.STRICT))).map(d => d).toOption
+  def stringFromDate(when: LocalDate): String = when.format(dateFormatter)
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 

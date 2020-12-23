@@ -47,8 +47,6 @@ import mocks.MockPageRenderer
 
 class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSuite {
 
-  val dateFormatter = MockAppConfig.dateInputFormatter
-
   trait TestData {
     val ansIndexZero = "0"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
@@ -88,7 +86,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     val instructionStanza: InstructionStanza = InstructionStanza(3, Seq("3"), None, false)
     val questionStanza: Question = Question(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
     val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
-    val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false, dateFormatter)
+    val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
     val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                                         KeyedStanza("1", instructionStanza),
                                         KeyedStanza("3", questionStanza)
@@ -208,7 +206,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockAppConfig,
       mockGuidanceConnector,
       mockSessionRepository,
-      new PageBuilder(MockAppConfig),
+      new PageBuilder(),
       new PageRenderer,
       new UIBuilder())
 

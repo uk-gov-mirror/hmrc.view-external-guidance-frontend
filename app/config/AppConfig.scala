@@ -24,7 +24,6 @@ import uk.gov.hmrc.play.bootstrap.binders.SafeRedirectUrl
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.collection.immutable.ListMap
-import java.time.format.DateTimeFormatter
 
 trait AppConfig {
   val assetsPrefix: String
@@ -51,7 +50,6 @@ trait AppConfig {
   val baseUrl: String
   val hostBaseUrl: String
   val adminHostBaseUrl: String
-  val dateInputFormatter: DateTimeFormatter
 }
 
 @Singleton
@@ -67,8 +65,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   val assetsPrefix: String = assetsUrl + config.get[String]("assets.version")
   val analyticsToken: String = config.get[String](s"google-analytics.token")
   val analyticsHost: String = config.get[String](s"google-analytics.host")
-  val dateInputFormat: String = config.get[String](s"date-input.format")
-  val dateInputFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(dateInputFormat, java.util.Locale.UK)
   val reportAProblemPartialUrl: String = s"$contactBaseUrl/contact/problem_reports_ajax?service=$serviceIdentifier"
   val reportAProblemNonJSUrl: String = s"$contactBaseUrl/contact/problem_reports_nonjs?service=$serviceIdentifier"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))

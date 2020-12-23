@@ -236,18 +236,5 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         span.text shouldBe i1Hint(0)
       }
     }
-
-    // TODO Once error handling on multiple fields defined
-//    "input with hint in error should include hint id and error id in aria-desribedby on input" in new DateTest {
-//      private val doc = asDocument(components.input_date(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, ctx))
-//
-//      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
-//        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
-//          aria should include("input-hint")
-//          aria should include("id-error")
-//        }
-//      }
-//    }
   }
-
 }

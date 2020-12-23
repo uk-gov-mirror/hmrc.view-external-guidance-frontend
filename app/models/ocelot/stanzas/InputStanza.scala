@@ -20,8 +20,6 @@ import models.ocelot.{Label, Labels, Phrase, asCurrency, asCurrencyPounds, asDat
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import config.AppConfig
-import java.time.format.DateTimeFormatter
 
 case class InputStanza(
   ipt_type: InputType,
@@ -98,18 +96,17 @@ case class DateInput(
   help: Option[Phrase],
   label: String,
   placeholder: Option[Phrase],
-  stack: Boolean,
-  implicit val formatter: DateTimeFormatter
+  stack: Boolean
 ) extends Input {
   def validInput(value: String): Option[String] = asDate(value).map(stringFromDate(_))
 }
 
 object Input {
-  def apply(stanza: InputStanza, name: Phrase, help: Option[Phrase], placeholder: Option[Phrase], appConfig: AppConfig): Option[Input] =
+  def apply(stanza: InputStanza, name: Phrase, help: Option[Phrase], placeholder: Option[Phrase]): Option[Input] =
     stanza.ipt_type match {
       case Currency => Some(CurrencyInput(stanza.next, name, help, stanza.label, placeholder, stanza.stack))
       case CurrencyPoundsOnly => Some(CurrencyPoundsOnlyInput(stanza.next, name, help, stanza.label, placeholder, stanza.stack))
-      case Date => Some(DateInput(stanza.next, name, help, stanza.label, placeholder, stanza.stack, appConfig.dateInputFormatter))
+      case Date => Some(DateInput(stanza.next, name, help, stanza.label, placeholder, stanza.stack))
       // .... Add additional input types when needed
       case _ => None
     }
