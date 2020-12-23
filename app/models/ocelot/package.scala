@@ -30,7 +30,6 @@ package object ocelot {
   val labelRefRegex: Regex = s"\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency))?\\]".r
   val inputCurrencyRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)(\\.(\\d{1,2})?)?$".r
   val inputCurrencyPoundsRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)$".r
-  //val inputDateRegex = "^[0-3]\\d/[0-1]\\d/\\[1-2]\\d{3}$".r
   val integerRegex: Regex = "^\\d+$".r
   val anyIntegerRegex: Regex = "^[\\-]?\\d+$".r
   val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/uuuu", java.util.Locale.UK)
@@ -45,6 +44,7 @@ package object ocelot {
   def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asDate(value: String): Option[LocalDate] = Try(LocalDate.parse(value.trim, dateFormatter.withResolverStyle(ResolverStyle.STRICT))).map(d => d).toOption
+  def stringFromDate(when: LocalDate): String = when.format(dateFormatter)
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 

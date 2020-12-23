@@ -19,7 +19,7 @@ package forms
 import javax.inject.Inject
 import play.api.data.Form
 import play.api.data.Forms._
-import models.ui.SubmittedAnswer
+import models.ui.{SubmittedDateAnswer, SubmittedAnswer}
 
 trait FormProvider
 
@@ -27,7 +27,17 @@ class SubmittedAnswerFormProvider @Inject() extends FormProvider {
   def apply(answer: String): Form[SubmittedAnswer] =
     Form(
       mapping(
-        answer -> nonEmptyText
+        answer -> nonEmptyText,
       )(SubmittedAnswer.apply)(SubmittedAnswer.unapply)
     )
+
+  def apply(): Form[SubmittedDateAnswer] =
+    Form(
+      mapping(
+        "day" -> nonEmptyText,
+        "month" -> nonEmptyText,
+        "year" -> nonEmptyText
+      )(SubmittedDateAnswer.apply)(SubmittedDateAnswer.unapply)
+    )
+
 }

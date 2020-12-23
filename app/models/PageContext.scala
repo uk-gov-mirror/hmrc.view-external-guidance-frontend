@@ -34,6 +34,7 @@ case class PageEvaluationContext(page: Page,
 
 
 case class PageContext(page: ui.Page,
+                       dataInput: Option[DataInput],
                        sessionId: String,
                        processStartUrl: Option[String],
                        processTitle: ui.Text,
@@ -48,6 +49,7 @@ object PageContext {
   def apply(pec: PageEvaluationContext, page: ui.Page, labels: Labels): PageContext =
     PageContext(
       page,
+      pec.dataInput,
       pec.sessionId,
       pec.processStartUrl,
       pec.processTitle,

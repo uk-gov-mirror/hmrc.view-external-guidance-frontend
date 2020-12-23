@@ -83,11 +83,14 @@ class GuidanceController @Inject() (
       case Right(ctx) =>
         val form = formProvider(formInputName(path))
         form.bindFromRequest.fold(
-          formWithErrors =>
+          formWithErrors => {
+            println(s"FORM ERRORS $formWithErrors")
             Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError),
                                                          formInputName(path),
-                                                         formWithErrors))),
+                                                         formWithErrors)))
+          },
           submittedAnswer => {
+            println(s"FORM ERRORS $submittedAnswer")
             service.validateUserResponse(ctx, submittedAnswer.text).fold {
               // Answer didn't pass page DataInput stanza validation
               Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueTypeError),
