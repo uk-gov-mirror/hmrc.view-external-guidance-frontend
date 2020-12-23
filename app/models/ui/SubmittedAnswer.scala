@@ -17,4 +17,3 @@
 package models.ui
 
 case class SubmittedAnswer(text: String)
- 
