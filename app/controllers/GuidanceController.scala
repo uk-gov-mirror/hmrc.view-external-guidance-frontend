@@ -83,14 +83,11 @@ class GuidanceController @Inject() (
       case Right(ctx) =>
         val form = formProvider(formInputName(path))
         form.bindFromRequest.fold(
-          formWithErrors => {
-            println(s"FORM ERRORS $formWithErrors")
+          formWithErrors =>
             Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError),
                                                          formInputName(path),
-                                                         formWithErrors)))
-          },
+                                                         formWithErrors))),
           submittedAnswer => {
-            println(s"FORM ERRORS $submittedAnswer")
             service.validateUserResponse(ctx, submittedAnswer.text).fold {
               // Answer didn't pass page DataInput stanza validation
               Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueTypeError),
@@ -101,7 +98,8 @@ class GuidanceController @Inject() (
                 case Right((None, labels)) =>
                   // No valid next page id indicates the guidance has determined the page should be re-displayed (probably due to an error)
                   logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                  BadRequest(createInputView(service.getPageContext(ctx.copy(labels = labels)), formInputName(path), form))
+                  val formWithErrorData = form.bind(Map(formInputName(path) -> submittedAnswer.text))
+                  BadRequest(createInputView(service.getPageContext(ctx.copy(labels = labels)), formInputName(path), formWithErrorData))
                 case Right((Some(stanzaId), _)) =>
                   // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
                   val url = ctx.stanzaIdToUrlMap(stanzaId)

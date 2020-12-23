@@ -17,4 +17,4 @@
 package models.ui
 
 case class SubmittedAnswer(text: String)
-case class SubmittedDateAnswer(day: String, month: String, year: String)
+ 
