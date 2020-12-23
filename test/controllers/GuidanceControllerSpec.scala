@@ -44,6 +44,7 @@ import controllers.actions.SessionIdAction
 import play.api.inject.Injector
 import views.html._
 import services._
+import mocks.MockPageRenderer
 
 class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSuite {
 
@@ -424,7 +425,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
   }
 
-  trait InputTest extends MockGuidanceService with TestData {
+  trait InputTest extends MockGuidanceService with MockPageRenderer with TestData {
 
     override lazy val expectedPage: ui.Page = FormPage(
       path,
@@ -587,6 +588,56 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       val inputElement = doc.getElementById(s"$relativePath-0")
 
       elementAttrs(inputElement)("name") shouldBe relativePath
+
+    }
+  }
+
+  "Submitting an Input page with a guidance detected invalid value" should {
+
+    "return a BadRequest to the current page and retain input data" in new InputTest {
+      override val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(inputPage, initialLabels)
+      override val pec = PageEvaluationContext(
+                inputPage,
+                vStanzas,
+                di,
+                sessionId,
+                Map("4" -> "/somewhere-else"),
+                Some("/hello"),
+                Text(),
+                processId,
+                "hello",
+                initialLabels,
+                None,
+                None
+              )
+
+      MockGuidanceService
+        .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+        .returns(Future.successful(Right(pec)))
+
+      MockGuidanceService
+        .validateUserResponse(pec, "150AA")
+        .returns(None)
+
+      MockGuidanceService
+        .submitPage(pec, path, "150AA", "150AA")
+        .returns(Future.successful(Right((None, pec.labels))))
+
+      MockGuidanceService
+        .getPageContext(pec, ValueTypeError)
+        .returns(PageContext(expectedPage, sessionId, Some("/hello"), Text(Nil, Nil), processId, processCode))
+
+      override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId)
+                                                          .withFormUrlEncodedBody(relativePath -> "150AA").withCSRFToken
+      val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val doc = asDocument(contentAsString(result))
+
+      val inputElement = doc.getElementById(s"$relativePath-0")
+
+      elementAttrs(inputElement)("value") shouldBe "150AA"
 
     }
   }
