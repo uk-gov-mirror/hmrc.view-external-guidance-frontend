@@ -20,7 +20,6 @@ import config.AppConfig
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.RequestHeader
-import java.time.format.DateTimeFormatter
 
 import scala.collection.immutable.ListMap
 
@@ -28,8 +27,6 @@ object MockAppConfig extends AppConfig {
   val assetsPrefix: String = "someUrl"
   val languageMap: Map[String, Lang] = ListMap("english" -> Lang("en"), "cymraeg" -> Lang("cy"))
   val config: Configuration = Configuration()
-  val dateInputFormat: String = "d/M/uuuu"
-  val dateInputFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(dateInputFormat, java.util.Locale.UK)
   override val analyticsToken: String = "token"
   override val analyticsHost: String = "host"
   override val reportAProblemPartialUrl: String = "someUrl"
