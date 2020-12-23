@@ -25,7 +25,7 @@ class PrototypeJsonSpec extends WordSpec with Matchers {
   trait Test {
     val jsObject: JsObject = Json.parse(PrototypeJson.json).as[JsObject]
     val process: Process = jsObject.as[Process]
-    val pageBuilder = new PageBuilder()
+    val pageBuilder = new PageBuilder(mocks.MockAppConfig)
   }
 
   "Prototype Json" must {

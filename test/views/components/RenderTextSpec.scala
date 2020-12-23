@@ -71,7 +71,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
                                                    Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, ", false), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {

@@ -63,7 +63,7 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}

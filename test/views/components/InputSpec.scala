@@ -73,7 +73,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    val ctx = PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctx = PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -164,7 +164,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
       val datePage: FormPage = models.ui.FormPage("/url", dateInput)
-      override val ctx = PageContext(datePage, "sessionId", None, Text(), "processId", "processCode", labels)
+      override val ctx = PageContext(datePage, None, "sessionId", None, Text(), "processId", "processCode", labels)
     }
 
     "render input text as a header" in new DateTest {

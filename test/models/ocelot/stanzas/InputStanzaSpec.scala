@@ -19,6 +19,7 @@ package models.ocelot.stanzas
 import base.BaseSpec
 import play.api.libs.json._
 import models.ocelot.{LabelCache, Phrase}
+import mocks.MockAppConfig
 
 class InputStanzaSpec extends BaseSpec {
 
@@ -67,7 +68,7 @@ class InputStanzaSpec extends BaseSpec {
   "CurrencyInput " should {
     "update the input label" in {
 
-      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyInput =>
           val labels = LabelCache()
 
@@ -80,7 +81,7 @@ class InputStanzaSpec extends BaseSpec {
 
     "Determine invalid input to be incorrect" in {
 
-      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("a value") shouldBe None
@@ -93,7 +94,7 @@ class InputStanzaSpec extends BaseSpec {
 
     "Allow for coma separated 1000s" in {
 
-      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("123,345,768") shouldBe Some("123345768")
@@ -104,7 +105,7 @@ class InputStanzaSpec extends BaseSpec {
 
     "Allow -ve values" in {
 
-      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("-567,345") shouldBe Some("-567345")
@@ -115,7 +116,7 @@ class InputStanzaSpec extends BaseSpec {
 
     "Determine valid input to be correct" in {
 
-      Input(expectedCurrencyStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyInput =>
 
           currencyInput.validInput("£33") shouldBe Some("33")
@@ -140,7 +141,7 @@ class InputStanzaSpec extends BaseSpec {
   "CurrencyPoundsOnlyInput " should {
     "update the input label" in {
 
-      Input(expectedCurrencyPoStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyPoStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyPoundsOnlyInput =>
           val labels = LabelCache()
 
@@ -153,7 +154,7 @@ class InputStanzaSpec extends BaseSpec {
 
     "Determine invalid input to be incorrect" in {
 
-      Input(expectedCurrencyPoStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyPoStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyPoundsOnlyInput =>
 
           currencyInput.validInput("a value") shouldBe None
@@ -162,34 +163,31 @@ class InputStanzaSpec extends BaseSpec {
           currencyInput.validInput("") shouldBe None
         case _ => fail
       }
-
     }
 
     "Allow for coma separated 1000s" in {
 
-      Input(expectedCurrencyPoStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyPoStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyPoundsOnlyInput =>
 
           currencyInput.validInput("123,345,768") shouldBe Some("123345768")
         case _ => fail
       }
-
     }
 
     "Allow -ve values" in {
 
-      Input(expectedCurrencyPoStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyPoStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyPoundsOnlyInput =>
 
           currencyInput.validInput("-567,345") shouldBe Some("-567345")
         case _ => fail
       }
-
     }
 
     "Determine valid input to be correct" in {
 
-      Input(expectedCurrencyPoStanza, Phrase("",""), None, None).get match {
+      Input(expectedCurrencyPoStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case currencyInput: CurrencyPoundsOnlyInput =>
 
           currencyInput.validInput("£33") shouldBe Some("33")
@@ -204,14 +202,12 @@ class InputStanzaSpec extends BaseSpec {
           currencyInput.validInput("1,234,567") shouldBe Some("1234567")
         case _ => fail
       }
-
     }
-
   }
 
   "DateInput" should {
     "update the input label" in {
-      Input(expectedDateStanza, Phrase("",""), None, None).get match {
+      Input(expectedDateStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case input: DateInput =>
           val labels = LabelCache()
 
@@ -223,38 +219,38 @@ class InputStanzaSpec extends BaseSpec {
 
     "Determine invalid input to be incorrect" in {
 
-      Input(expectedDateStanza, Phrase("",""), None, None).get match {
+      Input(expectedDateStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case input: DateInput =>
           input.validInput("a value") shouldBe None
           input.validInput("100.78") shouldBe None
           input.validInput("100.7a") shouldBe None
           input.validInput("1,987") shouldBe None
           input.validInput("-87") shouldBe None
+          input.validInput("31/9/2001") shouldBe None
+          input.validInput("29/2/2001") shouldBe None
         case _ => fail
       }
-
     }
 
     "Determine valid input to be correct" in {
 
-      Input(expectedDateStanza, Phrase("",""), None, None).get match {
+      Input(expectedDateStanza, Phrase("",""), None, None, MockAppConfig).get match {
         case input: DateInput =>
 
-          input.validInput("33") shouldBe Some("33")
-          input.validInput("1234") shouldBe Some("1234")
+          input.validInput("5/6/1989") shouldBe Some("5/6/1989")
+          input.validInput("28/2/1999") shouldBe Some("28/2/1999")
+          input.validInput("29/2/2000") shouldBe Some("29/2/2000")
         case _ => fail
       }
-
     }
-
   }
 
   "Creating input with type not currently supported" should {
     "return None for Number Stanza" in {
-      Input(expectedNumberStanza, Phrase("", ""), None, None) shouldBe None
+      Input(expectedNumberStanza, Phrase("", ""), None, None, MockAppConfig) shouldBe None
     }
     "return None for Text Stanza" in {
-      Input(expectedTextStanza, Phrase("", ""), None, None) shouldBe None
+      Input(expectedTextStanza, Phrase("", ""), None, None, MockAppConfig) shouldBe None
     }
   }
 

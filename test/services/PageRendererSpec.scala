@@ -26,7 +26,7 @@ import play.api.i18n.Lang
 class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
 
   // Define instance of class used in testing
-  val pageBuilder = new PageBuilder()
+  val pageBuilder = new PageBuilder(mocks.MockAppConfig)
   val renderer: PageRenderer = new PageRenderer()
 
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
