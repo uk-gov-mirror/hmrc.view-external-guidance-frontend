@@ -1148,8 +1148,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
         status(result) shouldBe Status.OK
         contentType(result) shouldBe Some("text/html")
-        // Probably not the right place to test this
-//        contentAsString(result).contains(enteredValue) shouldBe true
       }
     }
   }
