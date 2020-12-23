@@ -30,9 +30,7 @@ object FormsHelper {
 
     // Define form mapping for each data input type
     inputStanza match {
-      case _: CurrencyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
-      case _: CurrencyPoundsOnlyInput => bindSubmittedTextAnswer(path -> nonEmptyText)
-      case _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: CurrencyInput | _: CurrencyPoundsOnlyInput | _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
       case _: DateInput => bindSubmittedDateAnswer()
     }
 
@@ -41,9 +39,7 @@ object FormsHelper {
   def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] = {
 
     inputStanza match {
-      case _: CurrencyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case _: CurrencyPoundsOnlyInput => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
-      case _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: CurrencyInput | _: CurrencyPoundsOnlyInput | _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
       case _: DateInput => populateSubmittedDateAnswerForm(answer)
     }
 

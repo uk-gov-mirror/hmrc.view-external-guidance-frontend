@@ -16,7 +16,7 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{Label, Labels, Phrase, asCurrency, asCurrencyPounds, asInt, labelReferences}
+import models.ocelot.{Label, Labels, Phrase, asCurrency, asCurrencyPounds, labelReferences}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._

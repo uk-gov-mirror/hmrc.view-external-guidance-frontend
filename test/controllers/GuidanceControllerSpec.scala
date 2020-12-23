@@ -16,6 +16,7 @@
 
 package controllers
 
+import akka.stream.Materializer
 import base.{BaseSpec, ViewFns}
 import config.ErrorHandler
 import mocks.{MockAppConfig, MockGuidanceConnector, MockGuidanceService, MockSessionRepository}
@@ -28,8 +29,8 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import models.{PageContext, PageEvaluationContext}
-import models.ocelot.{Labels, KeyedStanza, Phrase, Process, ProcessJson, Page}
-import models.ocelot.stanzas.{Question,CurrencyInput, DateInput, _}
+import models.ocelot.{KeyedStanza, Labels, Page, Phrase, Process, ProcessJson}
+import models.ocelot.stanzas.{CurrencyInput, DateInput, Question, _}
 import models.ui
 import models.ui._
 import repositories.ProcessContext
@@ -40,12 +41,18 @@ import models.ocelot.LabelCache
 
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
+import play.api.inject.Injector
 import views.html._
 import services._
 
 class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSuite {
 
   trait TestData {
+
+    def injector: Injector = app.injector
+
+    implicit val mat: Materializer = injector.instanceOf[Materializer]
+
     val ansIndexZero = "0"
     lazy val uuid = "683d9aa0-2a0e-4e28-9ac8-65ce453d2730"
     lazy val sessionId = "session-2882605c-8e96-494a-a497-98ae90f52539"
@@ -442,9 +449,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     )
 
     val initialLabels = LabelCache()
-    val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, initialLabels)
+    val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(inputPage, initialLabels)
     val pec = PageEvaluationContext(
-                page,
+                inputPage,
                 vStanzas,
                 di,
                 sessionId,
@@ -457,6 +464,8 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
                 None,
                 None
               )
+
+    val validCurrencyInput: String = "50.00"
   }
 
   "Calling a valid URL path to an Input page in a process" should {
@@ -477,6 +486,25 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode))))
       val result = target.getPage(processId, relativePath, None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
+    }
+  }
+
+
+  "Calling a valid URL path to an Input page where the input has already been input" should {
+
+    "return an OK response" in new InputTest {
+
+      MockGuidanceService
+        .getPageContext(processId, path, previousPageByLink = false, processId)
+        .returns(
+          Future.successful(
+            Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, LabelCache(), di, None, Some(validCurrencyInput)))
+          )
+        )
+
+      val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+      status(result) shouldBe Status.OK
     }
   }
 
@@ -1029,9 +1057,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       )
 
       val initialLabels = LabelCache()
-      val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(page, initialLabels)
+      val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer().renderPage(dateInputPage, initialLabels)
       val pec = PageEvaluationContext(
-        page,
+        dateInputPage,
         vStanzas,
         di,
         sessionId,
@@ -1044,6 +1072,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         None,
         None
       )
+
+      val validSubmittedDateAnswer: String = "10/10/2020"
+      val invalidSubmittedDateAnswer: String = "xx/10/2012"
     }
 
     "Calling a valid URL path to an Date Input page in a process" should {
@@ -1079,7 +1110,166 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         status(result) shouldBe Status.OK
         contentType(result) shouldBe Some("text/html")
         // Probably not the right place to test this
-//        contentAsString(result).contains(enteredValue) shouldBe true
+        // contentAsString(result).contains(enteredValue) shouldBe true
+      }
+    }
+
+    "Calling a date input page where the date has already been entered" should {
+
+      "return an Ok response" in new DateInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di, None, Some(validSubmittedDateAnswer)))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.OK
+      }
+    }
+
+    "Calling a page with a missing date input component" should {
+
+      "return a bad request response" in new DateInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(
+            Future.successful(Right(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels)))
+          )
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.BAD_REQUEST
+
+      }
+    }
+
+    "Submitting a valid answer to a date input page" should {
+
+      "return a see other response" in new DateInputTest {
+
+        MockGuidanceService
+          .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(pec)))
+
+        MockGuidanceService
+          .validateUserResponse(pec, validSubmittedDateAnswer)
+          .returns(Some(validSubmittedDateAnswer))
+
+        MockGuidanceService
+          .submitPage(pec, path, validSubmittedDateAnswer, validSubmittedDateAnswer)
+          .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+        override val fakeRequest = FakeRequest("POST", path)
+          .withSession(SessionKeys.sessionId -> processId)
+          .withFormUrlEncodedBody(
+            "day" -> "10",
+            "month" -> "10",
+            "year" -> "2020"
+          )
+          .withCSRFToken
+
+        val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+        status(result) shouldBe Status.SEE_OTHER
+      }
+
+      "Submitting an incomplete date" should {
+
+        "returns a bad request response" in new DateInputTest {
+
+          MockGuidanceService
+            .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+            .returns(Future.successful(Right(pec)))
+
+          MockGuidanceService
+            .getPageContext(pec, ValueMissingError)
+            .returns(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di))
+
+          override val fakeRequest = FakeRequest("POST", path)
+            .withSession(SessionKeys.sessionId -> processId)
+            .withFormUrlEncodedBody(
+              "day" -> "10",
+              "month" -> "10"
+            )
+            .withCSRFToken
+
+          val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+          status(result) shouldBe Status.BAD_REQUEST
+        }
+
+      }
+
+      "Submitting an invalid date" should {
+
+        "return a bad request response" in new DateInputTest {
+
+          MockGuidanceService
+            .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+            .returns(Future.successful(Right(pec)))
+
+          MockGuidanceService
+            .validateUserResponse(pec, invalidSubmittedDateAnswer)
+            .returns(None)
+
+          MockGuidanceService
+            .getPageContext(pec, ValueTypeError)
+            .returns(PageContext(expectedPage, sessionId, Some("/"), Text(Nil, Nil), processId, processCode, initialLabels, di))
+
+          override val fakeRequest = FakeRequest("POST", path)
+            .withSession(SessionKeys.sessionId -> processId)
+            .withFormUrlEncodedBody(
+              "day" -> "xx",
+              "month" -> "10",
+              "year" -> "2012"
+            )
+            .withCSRFToken
+
+          val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+          status(result) shouldBe Status.BAD_REQUEST
+        }
+      }
+
+      "Submitting to a page without a data input component" should {
+
+        "return a bad request response" in new DateInputTest {
+
+          override val pec = PageEvaluationContext(
+            dateInputPage,
+            vStanzas,
+            None,
+            sessionId,
+            Map("4" -> "/somewhere-else"),
+            Some("/hello"),
+            Text(),
+            processId,
+            "hello",
+            initialLabels,
+            None,
+            None
+          )
+
+          MockGuidanceService
+            .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+            .returns(Future.successful(Right(pec)))
+
+          override val fakeRequest = FakeRequest("POST", path)
+            .withSession(SessionKeys.sessionId -> processId)
+            .withFormUrlEncodedBody(
+              "day" -> "10",
+              "month" -> "10",
+              "year" -> "2020"
+            )
+            .withCSRFToken
+
+          val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+          status(result) shouldBe Status.BAD_REQUEST
+
+        }
       }
     }
   }
