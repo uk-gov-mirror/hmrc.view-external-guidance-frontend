@@ -25,16 +25,14 @@ import services.{ValueTypeError, ValueMissingError, GuidanceService}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import models.errors._
 import models.{PageContext, PageEvaluationContext}
-import models.ui.{FormPage, StandardPage}
-import forms.SubmittedAnswerFormProvider
+import models.ui.{FormPage, StandardPage, SubmittedAnswer}
 import views.html.{form_page, standard_page}
 import play.api.Logger
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 import play.twirl.api.Html
-
 import scala.concurrent.Future
+import forms.FormsHelper.{bindFormData, populatedForm}
 
 @Singleton
 class GuidanceController @Inject() (
@@ -43,7 +41,6 @@ class GuidanceController @Inject() (
     errorHandler: ErrorHandler,
     standardView: standard_page,
     formView: form_page,
-    formProvider: SubmittedAnswerFormProvider,
     service: GuidanceService,
     mcc: MessagesControllerComponents
 ) extends FrontendController(mcc)
@@ -63,7 +60,14 @@ class GuidanceController @Inject() (
               case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
           case page: FormPage =>
-            Future.successful(Ok(formView(page, pageCtx, formInputName(path), populatedForm(pageCtx, path))))
+            pageCtx.dataInput match {
+              case Some(input) =>
+                val inputName: String = formInputName(path)
+                Future.successful(Ok(formView(page, pageCtx, inputName, populatedForm(input, inputName, pageCtx.answer))))
+
+              case _ => logger.error(s"Unable to locate input stanza for process ${pageCtx.processCode} on page load")
+                Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
+            }
         }
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
@@ -81,40 +85,42 @@ class GuidanceController @Inject() (
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(ctx) =>
-        val form = formProvider(formInputName(path))
-        form.bindFromRequest.fold(
-          formWithErrors =>
-            Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError),
-                                                         formInputName(path),
-                                                         formWithErrors))),
-          submittedAnswer => {
-            service.validateUserResponse(ctx, submittedAnswer.text).fold {
-              // Answer didn't pass page DataInput stanza validation
-              Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueTypeError),
-                formInputName(path),
-                form.bind(Map(formInputName(path) -> submittedAnswer.text)))))
-            } { answer =>
-              service.submitPage(ctx, s"/$path", answer, submittedAnswer.text).map {
-                case Right((None, labels)) =>
-                  // No valid next page id indicates the guidance has determined the page should be re-displayed (probably due to an error)
-                  logger.info(s"Post submit page evaluation indicates guidance detected input error")
-                  val formWithErrorData = form.bind(Map(formInputName(path) -> submittedAnswer.text))
-                  BadRequest(createInputView(service.getPageContext(ctx.copy(labels = labels)), formInputName(path), formWithErrorData))
-                case Right((Some(stanzaId), _)) =>
-                  // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
-                  val url = ctx.stanzaIdToUrlMap(stanzaId)
-                  logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
-                  Redirect(routes.GuidanceController.getPage(
-                    processCode,
-                    url.drop(appConfig.baseUrl.length + processCode.length + 2),
-                    previousPageQueryString(url, ctx.backLink)))
-                case Left(err) =>
-                  logger.error(s"Page submission failed: $err")
-                  InternalServerError(errorHandler.internalServerErrorTemplate)
-              }
+        ctx.dataInput match {
+          case Some(input) => {
+            val inputName: String = formInputName(path)
+            bindFormData(input, inputName) match {
+              case Left(formWithErrors: Form[_]) =>
+                  Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError), inputName, formWithErrors)))
+              case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
+                service.validateUserResponse(ctx, submittedAnswer.text).fold {
+                  // Answer didn't pass page DataInput stanza validation
+                  Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueTypeError), inputName, form)))
+                } { answer =>
+                    service.submitPage(ctx, s"/$path", answer, submittedAnswer.text).map {
+                      case Right((None, labels)) =>
+                        // No valid next page id indicates the guidance has determined the page should be re-displayed (probably due to an error)
+                        logger.info(s"Post submit page evaluation indicates guidance detected input error")
+                        BadRequest(createInputView(service.getPageContext(ctx.copy(labels = labels)), formInputName(path), form))
+                      case Right((Some(stanzaId), _)) =>
+                        // Some(stanzaId) here indicates a redirect to the page with id "stanzaId"
+                        val url = ctx.stanzaIdToUrlMap(stanzaId)
+                        logger.info(s"Post submit page evaluation indicates next page at stanzaId: $stanzaId => $url")
+                        Redirect(routes.GuidanceController.getPage(
+                          processCode,
+                          url.drop(appConfig.baseUrl.length + processCode.length + 2),
+                          previousPageQueryString(url, ctx.backLink)))
+                      case Left(err) =>
+                        logger.error(s"Page submission failed: $err")
+                        InternalServerError(errorHandler.internalServerErrorTemplate)
+                    }
+                  }
+                }
+            }
+            case None => {
+              logger.error( s"Unable to locate input stanza for process ${ctx.processCode} on submission")
+              Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
           }
-        )
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
@@ -133,10 +139,7 @@ class GuidanceController @Inject() (
       case _ => errorHandler.badRequestTemplateWithProcessCode(Some(ctx.processCode))
     }
 
-  private def populatedForm(ctx: PageContext, path: String): Form[_] = ctx.answer.fold(formProvider(formInputName(path))) { answer =>
-    formProvider(formInputName(path)).bind(Map(formInputName(path) -> answer))
-  }
-
   private def formInputName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
+
   private def previousPageQueryString(url: String, backLink: Option[String]): Option[String] = backLink.collect{case bl if bl == url => "1"}
 }

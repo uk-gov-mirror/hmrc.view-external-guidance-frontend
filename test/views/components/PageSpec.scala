@@ -18,6 +18,7 @@ package views.components
 
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.data.Forms.nonEmptyText
 import play.api.inject.Injector
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
@@ -29,11 +30,11 @@ import models.PageContext
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText}
 import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text}
 import org.jsoup.nodes.{Document, Element}
-import forms.SubmittedAnswerFormProvider
 
 import scala.collection.JavaConverters._
 import play.api.data.FormError
 import base.ViewFns
+import forms.SubmittedTextAnswerFormProvider
 
 class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
 
@@ -90,7 +91,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val question = Question(questionText, None, Seq(para, bulletPointList), answers)
     val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
-    val formProvider = new SubmittedAnswerFormProvider()
+    val textFormProvider = new SubmittedTextAnswerFormProvider()
     val questionPage = FormPage("root", question)
     val questionPageWithErrors = FormPage("root", questionWithErrors)
 
@@ -234,7 +235,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(formPageView(questionPage, pageCtx, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPage, pageCtx, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -265,7 +266,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
 
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
@@ -274,7 +275,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
 
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
@@ -284,7 +285,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(formPageView(questionPage, questionPageContext, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPage, questionPageContext, "question",  textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -314,7 +315,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
 
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
@@ -323,7 +324,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
 
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", formProvider("url") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
 
       val fieldset: Element = doc.getElementsByTag("fieldset").first
       Option(fieldset).fold(fail("Missing fieldset")){fset =>
@@ -337,7 +338,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate English html containing an H1, a text only paragraph and a text only bullet point list" in new Test {
 
-      val doc = asDocument(formPageView(inputPage, pageCtx, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPage, pageCtx, "input",  textFormProvider("12000" -> nonEmptyText)) (fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -368,7 +369,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
@@ -377,7 +378,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
 
       val inputField: Element = doc.getElementsByTag("input").first
       Option(inputField).fold(fail("Missing fieldset")){inp =>
@@ -387,7 +388,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
 
-      val doc = asDocument(formPageView(inputPage, pageCtx, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPage, pageCtx, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc)
 
@@ -417,7 +418,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
 
       checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
     }
@@ -426,7 +427,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
 
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", formProvider("12000") )(fakeRequest, messages))
+      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
 
       val inputField: Element = doc.getElementsByTag("input").first
       Option(inputField).fold(fail("Missing fieldset")){inp =>
