@@ -17,8 +17,9 @@
 package models
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, ResolverStyle}
 
+import scala.util.Try
 import scala.util.matching.Regex
 
 package object ocelot {
@@ -32,10 +33,7 @@ package object ocelot {
   val inputCurrencyPoundsRegex: Regex = "^-?£?(\\d{1,3}(,\\d{3})*|\\d+)$".r
   val integerRegex: Regex = "^\\d+$".r
   val anyIntegerRegex: Regex = "^[\\-]?\\d+$".r
-  val dateRegex: Regex = """(29/0?2/(2000|2400|2800|(19|2\d(0[48]|[2468][048]|[13579][26]))))|
-      |(([1-9]|0[1-9]|1\d|2[0-8])/(0?2)/((19|2\d)\d{2}))|
-      |(([1-9]|0[1-9]|[12]\d|30)/(0?[469]|11)/((19|2\d)\d{2}))|
-      |(([1-9]|0[1-9]|[12]\d|3[01])/(0?[13578]|10|12)/((19|2\d)\d{2}))""".r
+  val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/uuuu", java.util.Locale.UK)
 
   def plSingleGroupCaptures(regex: Regex, str: String, index: Int = 1): List[String] = regex.findAllMatchIn(str).map(_.group(index)).toList
   def pageLinkIds(str: String): List[String] = plSingleGroupCaptures(pageLinkRegex, str, 4)
@@ -46,14 +44,11 @@ package object ocelot {
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
                                                                         .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
+  def asDate(value: String): Option[LocalDate] = Try(LocalDate.parse(value.trim, dateFormatter.withResolverStyle(ResolverStyle.STRICT))).map(d => d).toOption
+  def stringFromDate(when: LocalDate): String = when.format(dateFormatter)
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
   def asAnyInt(value: String): Option[Int] = anyIntegerRegex.findFirstIn(value).map(_.toInt)
 
-  def asDate(value: String): Option[LocalDate] =
-    value match {
-      case dateRegex(_*) => Some(LocalDate.parse(value, DateTimeFormatter.ofPattern("d/M/yyyy")))
-      case _ => None
-    }
   def isLinkOnlyPhrase(phrase: Phrase): Boolean =phrase.langs(0).matches(pageLinkOnlyPattern)
   def isBoldOnlyPhrase(phrase: Phrase): Boolean =phrase.langs(0).matches(boldOnlyPattern)
 }

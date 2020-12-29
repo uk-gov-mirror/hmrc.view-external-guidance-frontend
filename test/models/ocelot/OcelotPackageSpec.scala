@@ -87,14 +87,6 @@ class OcelotPackageSpec extends BaseSpec {
         case _ => succeed
       }
     }
-
-    "recognise an invalid year" in {
-      val invalidDate: String = "12/3/1800"
-      asDate(invalidDate) match {
-        case Some(_) => fail
-        case _ => succeed
-      }
-    }
   }
 
   "Int conversion" must {
