@@ -44,7 +44,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val errorMsgs = Seq(RequiredErrorMsg(Text(errorStrings)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode")
+    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode")
   }
 
   "error_summary" must {

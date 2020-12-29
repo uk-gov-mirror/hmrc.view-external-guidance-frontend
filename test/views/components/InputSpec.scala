@@ -73,7 +73,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    val ctx = PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctx = PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -164,7 +164,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
       val datePage: FormPage = models.ui.FormPage("/url", dateInput)
-      override val ctx = PageContext(datePage, "sessionId", None, Text(), "processId", "processCode", labels)
+      override val ctx = PageContext(datePage, None, "sessionId", None, Text(), "processId", "processCode", labels)
     }
 
     "render input text as a header" in new DateTest {
@@ -236,18 +236,5 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         span.text shouldBe i1Hint(0)
       }
     }
-
-    // TODO Once error handling on multiple fields defined
-//    "input with hint in error should include hint id and error id in aria-desribedby on input" in new DateTest {
-//      private val doc = asDocument(components.input_date(inputWithHintAndErrors, "test", formProvider("test"))(fakeRequest, messages, ctx))
-//
-//      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
-//        elementAttrs(inp).get("aria-describedby").fold(fail("Missing aria-describedby")){ aria =>
-//          aria should include("input-hint")
-//          aria should include("id-error")
-//        }
-//      }
-//    }
   }
-
 }

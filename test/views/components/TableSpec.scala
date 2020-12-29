@@ -43,7 +43,7 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
 
     val expectedTable = Table(Text("HELLO","HELLO"),
                               Seq(Text("First","First"), Text("Second","Second")),
