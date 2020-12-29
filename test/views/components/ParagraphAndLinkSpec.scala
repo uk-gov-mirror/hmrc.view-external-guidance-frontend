@@ -243,7 +243,6 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
         "processId",
         "processCode",
         labels,
-        None,
         Some(destination)
       )
 

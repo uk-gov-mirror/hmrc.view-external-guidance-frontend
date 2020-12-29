@@ -41,7 +41,6 @@ case class PageContext(page: ui.Page,
                        processId: String,
                        processCode: String,
                        labels: Labels = LabelCache(),
-                       dataInput: Option[DataInput] = None,
                        backLink: Option[String] = None,
                        answer: Option[String] = None)
 
@@ -57,7 +56,6 @@ object PageContext {
       pec.processId,
       pec.processCode,
       labels,
-      pec.dataInput,
       pec.backLink,
       pec.answer
     )
