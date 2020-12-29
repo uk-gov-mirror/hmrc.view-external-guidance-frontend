@@ -87,5 +87,4 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
   lazy val hostBaseUrl: String = s"$host$baseUrl"
   lazy val adminHostBaseUrl: String = s"$adminHost$baseUrl"
-
 }

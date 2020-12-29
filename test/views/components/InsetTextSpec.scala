@@ -41,7 +41,7 @@ class InsetTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
-    implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
     val insetText: InsetText = InsetText(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
   }
 
