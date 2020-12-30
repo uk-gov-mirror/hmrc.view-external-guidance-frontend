@@ -49,8 +49,8 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
-    val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-    val ctxReduced = models.PageContext(summaryPage, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctxReduced = models.PageContext(summaryPage, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {
