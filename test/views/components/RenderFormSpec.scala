@@ -17,11 +17,13 @@
 package views.components
 
 import base.{ViewFns, ViewSpec}
-import forms.SubmittedAnswerFormProvider
+import forms.SubmittedTextAnswerFormProvider
+import models.PageContext
 import models.ocelot.{LabelCache, Labels}
-import models.ui.{Answer, Table, Text}
+import models.ui.{Answer, CurrencyInput, CurrencyPoundsOnlyInput, DateInput, FormPage, Question, Table, Text}
 import org.jsoup.nodes.Element
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.data.Forms.nonEmptyText
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.mvc.AnyContentAsEmpty
@@ -36,8 +38,8 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
-
+//    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
+    val formProvider = new SubmittedTextAnswerFormProvider()
     implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
   }
@@ -47,19 +49,19 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
   "English render_form" must {
 
     "render a text input for a CurrencyInput" in new Test {
-      val currencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test"))
+      val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", currencyInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
       val input: Element = getSingleElementByTag(html, "Input")
       input.id() shouldBe "currency-0"
     }
 
     "render a text input for a CurrencyInputPoundsOnly" in new Test {
-      val currencyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test"))
+      val currencyInput: CurrencyPoundsOnlyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", currencyInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Bank balance?"
       val input: Element = getSingleElementByTag(html, "Input")
@@ -67,10 +69,10 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render three text inputs for a DateInput" in new Test {
-      val dateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", dateInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test"))
+      val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", dateInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Date of birth?"
       val day: Option[Element] = getElementById(html, "day")
@@ -82,14 +84,14 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render a set of radio buttons for a Question" in new Test {
-      val question = models.ui.Question(
+      val question: Question = models.ui.Question(
         Text("Have bank account?", "Welsh, have bank account?"),
         None,
         Seq.empty,
         Seq(Answer(Text("A1","Welsh A1"), None), Answer(Text("A2","Welsh A2"), None)))
-      val page = models.ui.FormPage("/url", question)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(question, "bankAccount", formProvider("test"))
+      val page: FormPage = models.ui.FormPage("/url", question)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(question, "bankAccount", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Have bank account?"
       val radio1: Option[Element] = getElementById(html, "bankAccount-0")
@@ -104,10 +106,10 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   "Welsh render_components" must {
     "render a text input for a CurrencyInput" in new WelshTest {
-      val currencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test"))
+      val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", currencyInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Welsh, Bank balance?"
       val input: Element = getSingleElementByTag(html, "Input")
@@ -115,10 +117,10 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render a text input for a CurrencyInputPoundsOnly" in new WelshTest {
-      val currencyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test"))
+      val currencyInput: CurrencyPoundsOnlyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", currencyInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Welsh, Bank balance?"
       val input: Element = getSingleElementByTag(html, "Input")
@@ -126,10 +128,10 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render three text inputs for a DateInput" in new WelshTest {
-      val dateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
-      val page = models.ui.FormPage("/url", dateInput)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test"))
+      val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
+      val page: FormPage = models.ui.FormPage("/url", dateInput)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Welsh, Date of birth?"
       val day: Option[Element] = getElementById(html, "day")
@@ -141,14 +143,14 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render a set of radio buttons for a Question" in new WelshTest {
-      val question = models.ui.Question(
+      val question: Question = models.ui.Question(
         Text("Have bank account?", "Welsh, have bank account?"),
         None,
         Seq.empty,
         Seq(Answer(Text("A1","Welsh A1"), None), Answer(Text("A2","Welsh A2"), None)))
-      val page = models.ui.FormPage("/url", question)
-      implicit val ctx = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(question, "bankAccount", formProvider("test"))
+      val page: FormPage = models.ui.FormPage("/url", question)
+      implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+      val html: Html = components.render_form(question, "bankAccount", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Welsh, have bank account?"
       val radio1: Option[Element] = getElementById(html, "bankAccount-0")

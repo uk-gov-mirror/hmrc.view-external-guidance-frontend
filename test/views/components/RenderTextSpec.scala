@@ -26,8 +26,9 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
 import models.ocelot.{Label, LabelCache, Labels}
-import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3, LabelRef, Link, Paragraph, Text, Txt, Words}
+import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3, LabelRef, Link, Paragraph, Text, TextItem, Txt, Words}
 import org.jsoup.nodes.{Document, Element}
+import org.jsoup.select.Elements
 import play.api.mvc.AnyContentAsEmpty
 
 class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
@@ -96,7 +97,7 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page: FormPage = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx: PageContext = models.PageContext(page, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {
@@ -106,244 +107,243 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "render_text component" should {
 
     "generate English html containing label references with default output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price 33.9"
     }
 
     "generate English html containing bold label references with default output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
-      val boldElement = p.getElementsByTag("strong").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      val boldElement: Element = p.getElementsByTag("strong").first
       boldElement.text shouldBe "a value"
     }
 
     "generate English html containing bold label references with CurrencyPoundsOnly output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
-      val boldElement = p.getElementsByTag("strong").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      val boldElement: Element = p.getElementsByTag("strong").first
       boldElement.text shouldBe "£33"
     }
 
     "generate English html containing label reference to Label which does not exist" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "The price is"
     }
 
     "generate English html containing label reference to CurrencyPoundsOnly Label which does not exist" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentCurrencyPoundsOnlyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "The price is"
     }
 
     "generate English html containing label references with Currency output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price £33.90"
     }
 
     "generate English html containing label references with CurrencyPoundsOnly output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value , price £33"
     }
 
     "generate English html containing label references with Currency output formatting with invalid data" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithInvalidCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, price text string"
     }
 
     "generate English html containing label references with CurrencyPoundsOnly output formatting with invalid data" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithInvalidCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyPoundsOnlyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, price text string"
     }
 
     "generate English html containing label references with Currency output formatting with large values and no decimal places" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }
 
     "generate English html containing label references with CurrencyPoundsOnly output formatting with large values and decimal places" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueDpsCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueDpsCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A large number stored without decimal places, but rendered with .00, £12,345,678"
     }
 
     "generate English html containing normal text" in new Test {
-      val doc = asDocument(paragraph(Paragraph(normalText)))
-      val strong = doc.getElementsByTag("strong")
+      val doc: Document = asDocument(paragraph(Paragraph(normalText)))
+      val strong: Elements = doc.getElementsByTag("strong")
       strong.size shouldBe 0
     }
 
     "generate English html containing an H1" in new Test {
-      val doc = asDocument(h1_heading(H1(normalText)))
-      val h1 = doc.getElementsByTag("h1")
+      val doc: Document = asDocument(h1_heading(H1(normalText)))
+      val h1: Elements = doc.getElementsByTag("h1")
       h1.size shouldBe 1
     }
 
     "generate English html containing an H2" in new Test {
-      val doc = asDocument(h2_heading(H2(normalText)))
-      val h2 = doc.getElementsByTag("h2")
+      val doc: Document = asDocument(h2_heading(H2(normalText)))
+      val h2: Elements = doc.getElementsByTag("h2")
       h2.size shouldBe 1
     }
 
     "generate English html containing an H3" in new Test {
-      val doc = asDocument(h3_heading(H3(normalText)))
-      val h3 = doc.getElementsByTag("h3")
+      val doc: Document = asDocument(h3_heading(H3(normalText)))
+      val h3: Elements = doc.getElementsByTag("h3")
       h3.size shouldBe 1
     }
 
     "generate English html containing a normal text paragraph" in new Test {
-      val doc = asDocument(paragraph(Paragraph(boldText)))
-      val strong = doc.getElementsByTag("strong")
+      val doc: Document = asDocument(paragraph(Paragraph(boldText)))
+      val strong: Elements = doc.getElementsByTag("strong")
       strong.size shouldBe 1
     }
 
     "generate Welsh html containing label references with default output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price 33.9"
     }
 
     "generate Welsh html containing bold label references with default output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
-      val boldElement = p.getElementsByTag("strong").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      val boldElement: Element = p.getElementsByTag("strong").first
       boldElement.text shouldBe "a value"
     }
 
     "generate Welsh html containing bold label references with CurrencyPoundsOnly output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
-      val boldElement = p.getElementsByTag("strong").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      val boldElement: Element = p.getElementsByTag("strong").first
       boldElement.text shouldBe "£33"
     }
 
     "generate Welsh html containing label reference to Label which does not exist" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh The price is"
     }
 
     "generate Welsh html containing label reference to CurrencyPoundsOnly Label which does not exist" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithNonExistentCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentCurrencyPoundsOnlyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh The price is"
     }
 
     "generate Welsh html containing label references with Currency output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price £33.90"
     }
 
     "generate Welsh html containing label references with CurrencyPoundsOnly output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value , price £33"
     }
 
     "generate Welsh html containing label references with Currency output formatting with invalid data" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithInvalidCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value, price text string"
     }
 
     "generate Welsh html containing label references with CurrencyPoundsOnly output formatting with invalid data" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithInvalidCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyPoundsOnlyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value, price text string"
     }
 
     "generate Welsh html containing label references with Currency output formatting with large values and no decimal places" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678.00"
     }
 
     "generate Welsh html containing label references with CurrencyPoundsOnly output formatting with large values and decimal places" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textLargeValueDpsCurrencyPOLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueDpsCurrencyPOLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678"
     }
 
     "generate Welsh html containing normal text" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(normalText)))
-      val strong = doc.getElementsByTag("strong")
+      val doc: Document = asDocument(paragraph(Paragraph(normalText)))
+      val strong: Elements = doc.getElementsByTag("strong")
       strong.size shouldBe 0
     }
 
     "generate Welsh html containing an H1" in new WelshTest {
-      val doc = asDocument(h1_heading(H1(normalText)))
-      val h1 = doc.getElementsByTag("h1")
+      val doc: Document = asDocument(h1_heading(H1(normalText)))
+      val h1: Elements = doc.getElementsByTag("h1")
       h1.size shouldBe 1
     }
 
     "generate Welsh html containing an H2" in new WelshTest {
-      val doc = asDocument(h2_heading(H2(normalText)))
-      val h2 = doc.getElementsByTag("h2")
+      val doc: Document = asDocument(h2_heading(H2(normalText)))
+      val h2: Elements = doc.getElementsByTag("h2")
       h2.size shouldBe 1
     }
 
     "generate Welsh html containing an H3" in new WelshTest {
-      val doc = asDocument(h3_heading(H3(normalText)))
-      val h3 = doc.getElementsByTag("h3")
+      val doc: Document = asDocument(h3_heading(H3(normalText)))
+      val h3: Elements = doc.getElementsByTag("h3")
       h3.size shouldBe 1
     }
 
     "generate Welsh html containing a normal text paragraph" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(boldText)))
-      val strong = doc.getElementsByTag("strong")
+      val doc: Document = asDocument(paragraph(Paragraph(boldText)))
+      val strong: Elements = doc.getElementsByTag("strong")
       strong.size shouldBe 1
     }
 
     "test links with text to ensure correct spacing" in new Test {
-      val link1 = Link("this/is/a/link", "Link Text")
-      val words1 = Words("this is the first section ")
-      val words2 = Words(", second section should follow link text.")
-      val phrases1 = Seq(words1, link1, words2)
-      val text = Text(phrases1, phrases1)
-      val doc = asDocument(paragraph(Paragraph(text)))
-      val pTag = doc.getElementsByTag("p")
+      val link1: Link = Link("this/is/a/link", "Link Text")
+      val words1: Words = Words("this is the first section ")
+      val words2: Words = Words(", second section should follow link text.")
+      val phrases1: Seq[TextItem] = Seq(words1, link1, words2)
+      val text: Text = Text(phrases1, phrases1)
+      val doc: Document = asDocument(paragraph(Paragraph(text)))
+      val pTag: Elements = doc.getElementsByTag("p")
 
       pTag.text() shouldBe "this is the first section Link Text, second section should follow link text."
     }
 
     "generate English html containing label reference with Standard Date output formatting" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, date 29 February 2020"
     }
     "generate Welsh html containing label reference with Standard Date output formatting" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value, date 29 February 2020"
     }
     "generate English html containing label reference with Standard Date with blank value" in new Test {
-      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, date"
     }
     "generate Welsh html containing label reference with Standard Date with blank value" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A label must have a value, date"
     }
     "generate English html containing label reference with Standard Date output formatting with invalid date" in new Test {
-      val doc = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A date label with an unexpected text format must display the plain text: text string"
     }
     "generate Welsh html containing label reference with Standard Date output formatting with invalid date" in new WelshTest {
-      val doc = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
-      val p = doc.getElementsByTag("p").first
+      val doc: Document = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "Welsh A date label with an unexpected text format must display the plain text: text string"
     }
-
 
   }
 }
