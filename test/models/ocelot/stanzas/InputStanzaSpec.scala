@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -247,9 +247,6 @@ class InputStanzaSpec extends BaseSpec {
   "Creating input with type not currently supported" should {
     "return None for Number Stanza" in {
       Input(expectedNumberStanza, Phrase("", ""), None, None) shouldBe None
-    }
-    "return None for Text Stanza" in {
-      Input(expectedTextStanza, Phrase("", ""), None, None) shouldBe None
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class NumberedListsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
-    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     val numberedList: NumberedList = NumberedList(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
     val numberedCircleList: NumberedCircleList = NumberedCircleList(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
   }

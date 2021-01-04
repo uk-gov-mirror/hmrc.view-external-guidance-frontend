@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,6 +168,7 @@ class UIBuilder {
     val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
     // Placeholder not used
     input match {
+      case _: TextInput => ui.TextInput(name, hint, uiElements, errorMsgs)
       case _: CurrencyInput => ui.CurrencyInput(name, hint, uiElements, errorMsgs)
       case _: CurrencyPoundsOnlyInput => ui.CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
       case _: DateInput => ui.DateInput(name, hint, uiElements, errorMsgs)

@@ -17,13 +17,14 @@
 @import models.ui.{TextInput, CurrencyInput, CurrencyPoundsOnlyInput}
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-<div class="govuk-form-group">
-@{input match {
-    case _: TextInput => components.input_text_field(input, name, form)
-    case _: CurrencyInput | _: CurrencyPoundsOnlyInput => components.input_currency_field(input, name, form)
+@optionalAria() = @{
+  Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+    case Nil => ""
+    case l => ariaDescribedBy(l.mkString(" "))
   }
 }
+
+<div class="hmrc-currency-input__wrapper">
+  <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
+  <input class="govuk-input govuk-input--width-10" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria() />
 </div>
-@{
-     //$COVERAGE-OFF$
-}

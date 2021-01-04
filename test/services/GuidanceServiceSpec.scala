@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,7 +256,7 @@ class GuidanceServiceSpec extends BaseSpec {
 
       whenReady(result) { pageCtx =>
         pageCtx match {
-          case Right(PageContext(_, _, _, _, _, _, _, _, _, Some(answer))) => succeed
+          case Right(PageContext(_, _, _, _, _, _, _, _, _, _, Some(answer))) => succeed
           case Right(wrongContext) => fail(s"Previous answer missing from PageContext, $wrongContext")
           case Left(err) => fail(s"Previous answer missing from PageContext, $err")
         }

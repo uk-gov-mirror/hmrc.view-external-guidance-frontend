@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,19 @@
 
 package models.ui
 
+import models.ocelot.dateFormatter
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-trait Input extends FormComponent
+sealed trait Input extends FormComponent
 
+case class TextInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 
 object DateInput {
-
-  val submittedDateAnswerFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d/M/yyyy")
-
   def partitionSubmittedDateAnswer(submittedDateAnswer: String): (String, String, String) = {
-
-    val submittedDate: LocalDate = LocalDate.parse(submittedDateAnswer, submittedDateAnswerFormatter)
-
+    val submittedDate: LocalDate = LocalDate.parse(submittedDateAnswer, dateFormatter)
     (submittedDate.getDayOfMonth.toString, submittedDate.getMonthValue.toString, submittedDate.getYear.toString)
   }
-
 }

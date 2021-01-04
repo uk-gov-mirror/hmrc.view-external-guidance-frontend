@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ case class PageEvaluationContext(page: Page,
 
 
 case class PageContext(page: ui.Page,
+                       visualStanzas: Seq[VisualStanza],
                        dataInput: Option[DataInput],
                        sessionId: String,
                        processStartUrl: Option[String],
@@ -49,6 +50,7 @@ object PageContext {
   def apply(pec: PageEvaluationContext, page: ui.Page, labels: Labels): PageContext =
     PageContext(
       page,
+      pec.visualStanzas,
       pec.dataInput,
       pec.sessionId,
       pec.processStartUrl,

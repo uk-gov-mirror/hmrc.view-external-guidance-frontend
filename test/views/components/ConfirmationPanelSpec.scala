@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
     val page: StandardPage = StandardPage("/confirmation", Nil)
 
     implicit val labels: Labels = LabelCache()
-    implicit val ctx: PageContext = PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx: PageContext = PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
 

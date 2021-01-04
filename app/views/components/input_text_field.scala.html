@@ -14,12 +14,14 @@
  * limitations under the License.
  *@
 
-@import models.ui._
-@import controllers.routes._
-@import models.ui.Text
+@import models.ui.{TextInput, CurrencyInput, CurrencyPoundsOnlyInput}
+@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@(text: Text, scope: String, numeric: Boolean = false)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<th scope="@scope" class=@if(numeric){"govuk-table__header govuk-table__header--numeric"} else {"govuk-table__header"}>@components.render_text(text)</th>
-@{
-     //$COVERAGE-OFF$
+@optionalAria() = @{
+  Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
+    case Nil => ""
+    case l => ariaDescribedBy(l.mkString(" "))
+  }
 }
+
+<input class="govuk-input govuk-!-width-full" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" @optionalAria()/>

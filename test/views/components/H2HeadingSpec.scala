@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
-    val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
-    val ctxReduced = models.PageContext(summaryPage, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    val ctxReduced = models.PageContext(summaryPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {
