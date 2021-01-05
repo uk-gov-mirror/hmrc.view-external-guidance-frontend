@@ -70,6 +70,13 @@ trait ViewSpec extends WordSpec with Matchers {
     elements.first()
   }
 
+  def getElementById(markUp: Html, id: String): Option[Element] = {
+
+    val document: Document = Jsoup.parse(markUp.toString())
+
+    getElementById(document, id)
+  }
+
   def getElementById(doc: Document, id: String) : Option[Element] = Option(doc.getElementById(id))
 
   def checkClassesForElement(element: Element, expectedClasses: List[String]): Unit = {
