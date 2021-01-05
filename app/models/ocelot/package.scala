@@ -16,10 +16,11 @@
 
 package models
 
-import scala.util.matching.Regex
-import scala.util.Try
-import java.time.format.{DateTimeFormatter, ResolverStyle}
 import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, ResolverStyle}
+
+import scala.util.Try
+import scala.util.matching.Regex
 
 package object ocelot {
   val ignoredCurrencyChars: Seq[Char] = Seq(' ','£', ',')

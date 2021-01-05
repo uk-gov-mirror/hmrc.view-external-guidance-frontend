@@ -18,8 +18,7 @@ package services
 
 import base.BaseSpec
 import models.ocelot._
-import models.ui.{Link, Text, Words, LabelRef, Currency, Txt}
-import models.ui.CurrencyPoundsOnly
+import models.ui.{Currency, CurrencyPoundsOnly, DateStandard, LabelRef, Link, Text, Txt, Words}
 
 class TextBuilderSpec extends BaseSpec {
 
@@ -76,6 +75,14 @@ class TextBuilderSpec extends BaseSpec {
       val txt = TextBuilder.fromPhrase(p)
 
       txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
+
+    }
+    "Convert label reference with date output format placeholders within phrase to LabelRef TextItems" in new Test {
+      val p = Phrase("""Sentence with a [label:BLAH:date] label reference""", """Sentence with a [label:BLAH:date] label reference""")
+
+      val txt = TextBuilder.fromPhrase(p)
+
+      txt.english shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", DateStandard), Words(" label reference"))
 
     }
 
