@@ -78,6 +78,8 @@ class UIBuilder {
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)), errStrategy)
       case (c: SubSectionCallout) :: (ng: NoteGroup) :: xs  =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromSectionAndNoteGroup(TextBuilder.fromPhrase(c.text), ng)), errStrategy)
+      case (c: SubSectionCallout) :: (nc: NoteCallout) :: xs  =>
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromSectionAndNoteCallout(TextBuilder.fromPhrase(c.text), nc)), errStrategy)
       case x :: xs => // No recognised stacked pattern
         fromStanzas(x +: stackStanzas(Nil)(xs), Nil, errStrategy)
     }
@@ -191,6 +193,9 @@ class UIBuilder {
   }
   private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
     Details(caption, ng.group.map(co => TextBuilder.fromPhrase(co.text)))
+  }
+  private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
   }
 
 }
