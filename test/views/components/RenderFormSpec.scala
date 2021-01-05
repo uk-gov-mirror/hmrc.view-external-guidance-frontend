@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package views.components
 
 import base.{ViewFns, ViewSpec}
-import forms.SubmittedTextAnswerFormProvider
+import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.PageContext
 import models.ocelot.{LabelCache, Labels}
-import models.ui.{Answer, CurrencyInput, CurrencyPoundsOnlyInput, DateInput, FormPage, Question, Table, Text}
+import models.ui.{Answer, CurrencyInput, CurrencyPoundsOnlyInput, DateInput, FormPage, Question, Text}
 import org.jsoup.nodes.Element
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.data.Forms.nonEmptyText
@@ -31,15 +31,13 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import views.html.components
 
-import scala.collection.JavaConverters._
-
 class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
   private trait Test {
     implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-//    def formProvider: SubmittedAnswerFormProvider = injector.instanceOf[SubmittedAnswerFormProvider]
-    val formProvider = new SubmittedTextAnswerFormProvider()
+    val formProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
+    val dateFormProvider: SubmittedDateAnswerFormProvider = new SubmittedDateAnswerFormProvider()
     implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
   }
@@ -72,7 +70,7 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", dateInput)
       implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test" -> nonEmptyText))
+      val html: Html = components.render_form(dateInput, "dateOfBirth", dateFormProvider())
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Date of birth?"
       val day: Option[Element] = getElementById(html, "day")
@@ -131,7 +129,7 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", dateInput)
       implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(dateInput, "dateOfBirth", formProvider("test" -> nonEmptyText))
+      val html: Html = components.render_form(dateInput, "dateOfBirth", dateFormProvider())
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Welsh, Date of birth?"
       val day: Option[Element] = getElementById(html, "day")
