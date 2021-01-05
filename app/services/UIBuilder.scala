@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package services
 
 import javax.inject.Singleton
 import models._
-import models.ocelot.stanzas.{CurrencyPoundsOnlyInput, DateInput, Question, Input, CurrencyInput, _}
-import models.ocelot.{Phrase, Link}
-import models.ui.{stackStanzas, UIComponent, Page, Text, Table, Paragraph}
-import models.ui.{CyaSummaryList, NameValueSummaryList, Answer, ErrorMsg, H1, H2, H3, H4, InsetText}
-import models.ui.{ConfirmationPanel, TypeErrorMsg, RequiredErrorMsg, ValueErrorMsg, BulletPointList}
+import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, _}
+import models.ocelot.{Link, Phrase}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
 
 import scala.annotation.tailrec
@@ -78,6 +76,8 @@ class UIBuilder {
     sg.group match {
       case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if rg.isTableCandidate =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)), errStrategy)
+      case (c: SubSectionCallout) :: (ng: NoteGroup) :: xs  =>
+        fromStanzas(stackStanzas(Nil)(xs), Seq(fromSectionAndNoteGroup(TextBuilder.fromPhrase(c.text), ng)), errStrategy)
       case x :: xs => // No recognised stacked pattern
         fromStanzas(x +: stackStanzas(Nil)(xs), Nil, errStrategy)
     }
@@ -189,4 +189,8 @@ class UIBuilder {
     val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
     ConfirmationPanel(texts.head, texts.tail)
   }
+  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+    Details(caption, ng.group.map(co => TextBuilder.fromPhrase(co.text)))
+  }
+
 }
