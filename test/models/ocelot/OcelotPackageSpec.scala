@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,25 @@ class OcelotPackageSpec extends BaseSpec {
         case _ => succeed
       }
     }
+  }
+
+  "Text conversion" must {
+    "recognise a valid text" in {
+      val validNumbers: List[String] = List("Hello", "World", "030")
+      forAll(validNumbers) { entry =>
+        asTextString(entry) match {
+          case Some(_) => succeed
+          case _ => fail(s"Validation of $entry failed - expected success")
+        }
+      }
+    }
+    "recognise a invalid text" in {
+      asTextString("") match {
+        case Some(_) => fail(s"Validation of empty string failed - expected success")
+        case _ => succeed
+      }
+    }
+
   }
 
   "Int conversion" must {
