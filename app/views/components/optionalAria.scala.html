@@ -14,14 +14,14 @@
  * limitations under the License.
  *@
 
-@import models.ui.{TextInput, CurrencyInput, CurrencyPoundsOnlyInput}
-@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+@import models.ui.{Text, ErrorMsg}
 
-<input class="govuk-input govuk-input--width-10"
-       id="@name-0"
-       name="@name"
-       type="text"
-       value="@form(name).value"
-       spellcheck="false"
-       autocomplete="off"
-       @optionalAria("input", input.hint,input.errorMsgs)/>
+@(label: String, hint: Option[Text], errs: Seq[ErrorMsg])
+@{Seq(hint.map(_ => s"$label-hint"), errs.headOption.map(err => s"${err.id}-error")).flatten match {
+  case Nil => ""
+  case l => ariaDescribedBy(l.mkString(" "))
+}}
+@{
+     //$COVERAGE-OFF$
+}
+

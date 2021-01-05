@@ -19,13 +19,6 @@
 
 @(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@optionalAria(a: Answer, i: Int, errs: Seq[ErrorMsg]) = @{
-  Seq(a.hint.map(_ => s"${name}-item-${i}-hint"), errs.headOption.map(err => s"${err.id}-error")).flatten match {
-    case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
-  }
-}
-
 <div class="govuk-radios@{if(q.horizontal) " govuk-radios--inline" else ""}">
   @for((ans, index) <- q.answers.zipWithIndex) {
 
@@ -36,7 +29,7 @@
             type="radio"
             value="@index"
             @if(form(name).value.contains(index.toString)) {checked}
-            @optionalAria(ans, index, q.errorMsgs)>
+            @optionalAria(s"${name}-item-${index}", ans.hint, q.errorMsgs)>
 
       <label class="govuk-label govuk-radios__label" for="@name-@index">
         @components.render_text(ans.text)
