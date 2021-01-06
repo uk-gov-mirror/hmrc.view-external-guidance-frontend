@@ -71,6 +71,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
     protected val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
+    val inputWithErrors: Input = CurrencyInput(Text(i1), None, Seq.empty, Seq(errorMsg))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
@@ -154,6 +155,19 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         }
       }
    }
+
+    "input with errors should have error class assigned" in new Test {
+
+      private val doc = asDocument(components.input(inputWithErrors, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
+
+      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
+        val attrs: Map[String, String] = elementAttrs(inp)
+        attrs("class").contains("govuk-input") shouldBe true
+        attrs("class").contains("govuk-input--width-10") shouldBe true
+        attrs("class").contains("govuk-input--error") shouldBe true
+      }
+    }
+
   }
 
   "English Date Input component" must {
@@ -163,6 +177,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       override val inputWithoutBody: DateInput = DateInput(Text(i1), None, Seq.empty)
       override val inputWithHintAndNoBody: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
+      override val inputWithErrors: DateInput = DateInput(Text(i1), None, Seq.empty, Seq(errorMsg))
       override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
       val datePage: FormPage = models.ui.FormPage("/url", dateInput)
@@ -237,6 +252,37 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         attrs("class").contains("govuk-hint") shouldBe true
         span.text shouldBe i1Hint(0)
       }
+    }
+
+    "render inputs with error class for erroneous input" in new DateTest {
+
+      private val doc: Document = asDocument(components.input_date(inputWithErrors, "test", dateFormProvider())(fakeRequest, messages, ctx))
+
+      private val commonInputClasses: List[String] = List( "govuk-input", "govuk-date-input__input", "govuk-input--error")
+
+      private val dayInput: Element = doc.getElementById("day")
+
+      private val dayAttrs: Map[String, String] = elementAttrs(dayInput)
+
+      commonInputClasses.foreach{ cic => dayAttrs("class").contains(cic) shouldBe true}
+
+      dayAttrs("class").contains("govuk-input--width-2") shouldBe true
+
+      private val monthInput: Element = doc.getElementById("month")
+
+      private val monthAttrs: Map[String, String] = elementAttrs(monthInput)
+
+      commonInputClasses.foreach{ cic => monthAttrs("class").contains(cic) shouldBe true}
+
+      monthAttrs("class").contains("govuk-input--width-2") shouldBe true
+
+      private val yearInput: Element = doc.getElementById("year")
+
+      private val yearAttrs: Map[String, String] = elementAttrs(yearInput)
+
+      commonInputClasses.foreach{ cic => yearAttrs("class").contains(cic) shouldBe true}
+
+      yearAttrs("class").contains("govuk-input--width-4") shouldBe true
     }
   }
 }

@@ -25,7 +25,7 @@
 <div class="govuk-form-group">
     <div class="hmrc-currency-input__wrapper">
         <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
-        <input class="govuk-input govuk-input--width-10" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>
+        <input class="govuk-input govuk-input--width-10@{if(input.errorMsgs.nonEmpty) " govuk-input--error" else ""}" id="@name-0" name="@name" type="text" value="@form(name).value" spellcheck="false" autocomplete="off" inputmode="decimal" @optionalAria()>
     </div>
 </div>
 @{
