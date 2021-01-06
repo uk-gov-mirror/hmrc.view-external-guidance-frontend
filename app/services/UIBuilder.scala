@@ -20,7 +20,8 @@ import javax.inject.Singleton
 import models._
 import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, _}
 import models.ocelot.{Link, Phrase}
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText}
+import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
 
 import scala.annotation.tailrec
@@ -191,11 +192,11 @@ class UIBuilder {
     val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
     ConfirmationPanel(texts.head, texts.tail)
   }
-  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+
+  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     Details(caption, ng.group.map(co => TextBuilder.fromPhrase(co.text)))
-  }
-  private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent = {
+
+  private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String]): UIComponent =
     Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
-  }
 
 }
