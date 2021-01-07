@@ -43,7 +43,7 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {

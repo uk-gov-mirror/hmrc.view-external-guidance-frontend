@@ -77,7 +77,7 @@ class QuestionSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     implicit val labels: Labels = LabelCache()
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   trait WelshTest extends Test {

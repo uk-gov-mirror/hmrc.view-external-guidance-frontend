@@ -47,7 +47,7 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
 
     val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page: FormPage = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx: PageContext = models.PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
   private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}

@@ -42,7 +42,7 @@ class DetailsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val page: StandardPage = StandardPage("/confirmation", Nil)
 
     implicit val labels: Labels = LabelCache()
-    implicit val ctx: PageContext = PageContext(page, None, "sessionId", None, Text(), "processId", "processCode", labels)
+    implicit val ctx: PageContext = PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val englishTitle: String = "Title"
