@@ -118,6 +118,19 @@ class OcelotPackageSpec extends BaseSpec {
         }
       }
     }
+  }
 
+  "Phrase interrogation" must {
+    "recognise link only" in {
+      isLinkOnlyPhrase(Phrase(Vector("[link:Blah:4]", "[link:Blah:4]"))) shouldBe true
+
+      isLinkOnlyPhrase(Phrase(Vector("Blah", "Blah"))) shouldBe false
+    }
+
+    "Recognise bold only" in {
+      isBoldOnlyPhrase(Phrase(Vector("[bold:Blah]", "[bold:Blah]"))) shouldBe true
+
+      isBoldOnlyPhrase(Phrase(Vector("Blah", "Blah"))) shouldBe false
+    }
   }
 }
