@@ -16,12 +16,13 @@
 
 package models.ui
 
-import models.ocelot.{asCurrency, asDate}
-import java.util.Locale.UK
 import java.math.RoundingMode
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
+import java.util.Locale.UK
+
+import models.ocelot.{asCurrency, asDate}
 
 trait Name {
   val name: String
@@ -75,6 +76,10 @@ case object DateStandard extends OutputFormat with Name {
     )
 }
 
+case object Number extends OutputFormat with Name {
+  val name: String = "number"
+}
+
 object OutputFormat {
   def apply(name: Option[String]): OutputFormat =
     name match {
@@ -82,6 +87,7 @@ object OutputFormat {
       case Some(CurrencyPoundsOnly.name) => CurrencyPoundsOnly
       case Some(Txt.name) => Txt
       case Some(DateStandard.name) => DateStandard
+      case Some(Number.name) => Number
       case _ => Txt
     }
 
