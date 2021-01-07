@@ -155,6 +155,19 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         }
       }
    }
+
+    "input with errors should have error class assigned" in new Test {
+
+      private val doc = asDocument(components.input(inputWithErrors, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
+
+      doc.getElementsByTag("input").asScala.toList.foreach { inp =>
+        val attrs: Map[String, String] = elementAttrs(inp)
+        attrs("class").contains("govuk-input") shouldBe true
+        attrs("class").contains("govuk-input--width-10") shouldBe true
+        attrs("class").contains("govuk-input--error") shouldBe true
+      }
+    }
+    
   }
 
   "English Text Input component" must {
@@ -164,6 +177,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
       override val inputWithoutBody: TextInput = TextInput(Text(i1), None, Seq.empty)
       override val inputWithHintAndNoBody: TextInput = TextInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
+      override val inputWithErrors: TextInput = TextInput(Text(i1), None, Seq.empty, Seq(errorMsg))
       override val inputWithHintAndErrors: TextInput = TextInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
       val textInput: TextInput = models.ui.TextInput(Text(), None, Seq.empty)
       val textInputPage: FormPage = models.ui.FormPage("/url", textInput)
