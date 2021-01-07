@@ -18,7 +18,7 @@
 
 <div class="hmrc-currency-input__wrapper">
   <span class="hmrc-currency-input__unit" aria-hidden="true">£</span>
-  <input class="govuk-input govuk-input--width-10@{if(input.errorMsgs.nonEmpty) " govuk-input--error" else ""}"
+  <input class="govuk-input govuk-input--width-10@add_error_class(input)"
          id="@name-0"
          name="@name"
          type="text"

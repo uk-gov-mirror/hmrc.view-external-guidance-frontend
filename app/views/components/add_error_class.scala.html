@@ -14,13 +14,7 @@
  * limitations under the License.
  *@
 
-@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+@import models.ui.Input
 
-<input class="govuk-input govuk-input--width-10@add_error_class(input)"
-       id="@name-0"
-       name="@name"
-       type="text"
-       value="@form(name).value"
-       spellcheck="false"
-       autocomplete="off"
-       @optionalAria("input", input.hint,input.errorMsgs)/>
+@(input: Input)
+@{if(input.errorMsgs.nonEmpty) " govuk-input--error" else ""}

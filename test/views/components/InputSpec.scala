@@ -167,7 +167,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         attrs("class").contains("govuk-input--error") shouldBe true
       }
     }
-    
+
   }
 
   "English Text Input component" must {
