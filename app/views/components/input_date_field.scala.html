@@ -22,7 +22,7 @@
             <label class="govuk-label govuk-date-input__label" for="day">
               @messages("label.day")
             </label>
-            <input class="govuk-input govuk-date-input__input govuk-input--width-2@add_error_class(input)" id="day" name="day" value="@form("day").value" type="text" pattern="[0-9]*" inputmode="numeric">
+            <input class="govuk-input govuk-date-input__input govuk-input--width-2@optionalErrorClass(input)" id="day" name="day" value="@form("day").value" type="text" pattern="[0-9]*" inputmode="numeric">
         </div>
     </div>
     <div class="govuk-date-input__item">
@@ -30,7 +30,7 @@
             <label class="govuk-label govuk-date-input__label" for="month">
               @messages("label.month")
             </label>
-            <input class="govuk-input govuk-date-input__input govuk-input--width-2@add_error_class(input)" id="month" name="month" value="@form("month").value" type="text" pattern="[0-9]*" inputmode="numeric">
+            <input class="govuk-input govuk-date-input__input govuk-input--width-2@optionalErrorClass(input)" id="month" name="month" value="@form("month").value" type="text" pattern="[0-9]*" inputmode="numeric">
         </div>
     </div>
     <div class="govuk-date-input__item">
@@ -38,7 +38,7 @@
             <label class="govuk-label govuk-date-input__label" for="year">
                @messages("label.year")
             </label>
-            <input class="govuk-input govuk-date-input__input govuk-input--width-4@add_error_class(input)" id="year" name="year" value="@form("year").value" type="text" pattern="[0-9]*" inputmode="numeric">
+            <input class="govuk-input govuk-date-input__input govuk-input--width-4@optionalErrorClass(input)" id="year" name="year" value="@form("year").value" type="text" pattern="[0-9]*" inputmode="numeric">
         </div>
     </div>
 </div>
