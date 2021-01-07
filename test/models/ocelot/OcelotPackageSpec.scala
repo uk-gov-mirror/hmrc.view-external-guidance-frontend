@@ -89,6 +89,25 @@ class OcelotPackageSpec extends BaseSpec {
     }
   }
 
+  "Text conversion" must {
+    "recognise a valid text" in {
+      val validTexts: List[String] = List("Hello", "World", "030")
+      forAll(validTexts) { entry =>
+        asTextString(entry) match {
+          case Some(_) => succeed
+          case _ => fail(s"Validation of $entry failed - expected success")
+        }
+      }
+    }
+    "recognise a invalid text" in {
+      asTextString("") match {
+        case Some(_) => fail(s"Validation of empty string failed - expected success")
+        case _ => succeed
+      }
+    }
+
+  }
+
   "Int conversion" must {
     "recognise a valid number" in {
       val validNumbers: List[String] = List("30", "300", "030")

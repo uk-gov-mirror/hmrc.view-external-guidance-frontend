@@ -19,24 +19,17 @@
 
 @(input: models.ui.DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@optionalAria() = @{
-  Seq(input.hint.map(_ => "input-hint"), input.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
-    case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
-  }
-}
-
 <div class="govuk-form-group @if(input.errorMsgs.nonEmpty) {govuk-form-group--error}">
 
   @if(input.body.isEmpty) {
-    <fieldset class="govuk-fieldset" role="group" @optionalAria()>
+    <fieldset class="govuk-fieldset" role="group" @optionalAria("input", input.hint,input.errorMsgs)>
       @components.h1_heading_with_fieldset(H1(input.text))
 
   } else {
     @components.h1_heading(H1(input.text))
     @components.render_components(input.body)
 
-    <fieldset class="govuk-fieldset" role="group" @optionalAria()>
+    <fieldset class="govuk-fieldset" role="group" @optionalAria("input", input.hint,input.errorMsgs)>
       <legend class="govuk-fieldset__legend govuk-visually-hidden">@components.render_text(input.text)</legend>
   }
     @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}

@@ -19,32 +19,25 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
-import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, DataInput, Question}
+import models.ocelot.stanzas.{Input, DateInput, DataInput, Question}
 import models.ui.DateInput.partitionSubmittedDateAnswer
 import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 
 object FormsHelper {
 
   def bindFormData(inputStanza: DataInput, path: String)
-                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
-
+                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] =
     // Define form mapping for each data input type
     inputStanza match {
-      case _: CurrencyInput | _: CurrencyPoundsOnlyInput | _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
       case _: DateInput => bindSubmittedDateAnswer()
+      case _: Input | _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
     }
 
-  }
-
-  def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] = {
-
+  def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] =
     inputStanza match {
-      case _: CurrencyInput | _: CurrencyPoundsOnlyInput | _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
       case _: DateInput => populateSubmittedDateAnswerForm(answer)
+      case _: Input | _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
     }
-
-  }
-
 
   private def bindSubmittedTextAnswer(bindData: (String, Mapping[String]))
                                   (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {

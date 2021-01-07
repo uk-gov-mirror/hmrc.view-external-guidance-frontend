@@ -14,17 +14,14 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Question, Input, DateInput, UIComponent}
+@import models.ui.{Text, ErrorMsg}
 
-@(formElement: UIComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-  @{formElement match {
-        case q: Question => components.question(q, name, form)
-        case di: DateInput => components.input_date(di, name, form)
-        case i: Input => components.input(i, name, form)
-        case _ =>
-      }
-  }
-
+@(label: String, hint: Option[Text], errs: Seq[ErrorMsg])
+@{Seq(hint.map(_ => s"$label-hint"), errs.headOption.map(err => s"${err.id}-error")).flatten match {
+  case Nil => ""
+  case l => ariaDescribedBy(l.mkString(" "))
+}}
 @{
      //$COVERAGE-OFF$
 }
+

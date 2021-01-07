@@ -16,21 +16,15 @@
 
 @import models.ui._
 @import controllers.routes._
+@import views.components._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
 @(q: Question, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@optionalAria(qu: Question) = @{
-  Seq(qu.hint.map(_ => "question-hint"), qu.errorMsgs.headOption.map(err => s"${err.id}-error")).flatten match {
-    case Nil => ""
-    case l => ariaDescribedBy(l.mkString(" "))
-  }
-}
-
 <div class="govuk-form-group @if(!q.errorMsgs.isEmpty) {govuk-form-group--error}">
 
   @if(q.body.isEmpty) {
-    <fieldset class="govuk-fieldset" @optionalAria(q)>
+    <fieldset class="govuk-fieldset" @optionalAria("question", q.hint, q.errorMsgs)>
       <legend class="govuk-fieldset__legend govuk-fieldset__legend--xl">@components.h1_heading(H1(q.text))</legend>
       @{q.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
 
@@ -39,7 +33,7 @@
 
     @components.render_components(q.body)
 
-    <fieldset class="govuk-fieldset" @optionalAria(q)>
+    <fieldset class="govuk-fieldset" @optionalAria("question", q.hint, q.errorMsgs)>
       <legend class="govuk-fieldset__legend govuk-visually-hidden">@components.render_text(q.text)</legend>
       @{q.hint.map(hintText => <span id="question-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
   }

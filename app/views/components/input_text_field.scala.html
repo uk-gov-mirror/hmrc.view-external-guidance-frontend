@@ -14,17 +14,13 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Question, Input, DateInput, UIComponent}
+@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-@(formElement: UIComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-  @{formElement match {
-        case q: Question => components.question(q, name, form)
-        case di: DateInput => components.input_date(di, name, form)
-        case i: Input => components.input(i, name, form)
-        case _ =>
-      }
-  }
-
-@{
-     //$COVERAGE-OFF$
-}
+<input class="govuk-input govuk-input--width-10"
+       id="@name-0"
+       name="@name"
+       type="text"
+       value="@form(name).value"
+       spellcheck="false"
+       autocomplete="off"
+       @optionalAria("input", input.hint,input.errorMsgs)/>
