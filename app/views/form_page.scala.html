@@ -28,13 +28,13 @@
 @(page: FormPage, ctx: PageContext, inputName: String, form: Form[_])(implicit request: Request[_], messages: Messages)
 
 @pageTitle(page: FormPage) = @{
-  val titleText = page.heading.asString(messages.lang)
+  val titleText = page.heading.asString
   page.formComponent.errorMsgs.headOption.fold(titleText)(_ => s"""${messages("error.browser.title.prefix")} ${titleText}""")
 }
 
 @implicitCtx = @{ctx}
 
-@layout(pageTitle(page), ctx.processTitle.asString(messages.lang), Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
+@layout(pageTitle(page), ctx.processTitle.asString, Some(ctx.processCode), ctx.processStartUrl, ctx.backLink) {
 
   @components.error_summary(page.formComponent.text, inputName, page.formComponent.errorMsgs)
 

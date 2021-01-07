@@ -18,13 +18,14 @@ package models
 
 import models.ocelot.Phrase
 import models.ocelot.stanzas.{VisualStanza, StackedGroup}
+import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 package object ui {
 
   val PreviousPageLinkQuery: String = "p=1"
 
-  implicit def toText(p: Phrase): Text = Text(p.langs(0), p.langs(1))
+  implicit def toText(p: Phrase)(implicit lang: Lang): Text = Text(p.value(lang))
 
   @tailrec
   def stackStanzas(acc: Seq[Seq[VisualStanza]])(stanzas: Seq[VisualStanza]): Seq[VisualStanza] =

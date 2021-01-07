@@ -16,8 +16,6 @@
 
 package models.ui
 
-import play.api.i18n.Lang
-
 trait UIComponent {
   val text: Text
 }
@@ -54,20 +52,20 @@ case class Link(dest: String, text: String, window: Boolean = false, asButton: B
 }
 
 //
-// Bilingual
+// Monolingual
 //
-case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
-  def value(implicit lang: Lang): Seq[TextItem] = if (lang.code.equals("cy")) welsh else english
-  def isEmpty(implicit lang: Lang): Boolean = if (lang.code.equals("cy")) welsh.isEmpty else english.isEmpty
-  def toWords(implicit lang: Lang): Seq[String] = value(lang).flatMap(_.toWords)
-  def asString(implicit lang: Lang): String = toWords.mkString(" ")
-  override def toString: String = s"[${english.map(t => t.toString).mkString("")}:${welsh.map(t => t.toString).mkString("")}]"
-  def +(other: Text): Text = Text(english ++ other.english, welsh ++ other.welsh)
-  lazy val isBold: Boolean = english.length == 1 && (english.head match {
+case class Text(items: Seq[TextItem]) {
+  def value: Seq[TextItem] = items
+  def isEmpty: Boolean = items.isEmpty
+  def toWords: Seq[String] = value.flatMap(_.toWords)
+  def asString: String = toWords.mkString(" ")
+  override def toString: String = s"[${items.map(t => t.toString).mkString("")}]"
+  def +(other: Text): Text = Text(items ++ other.items)
+  lazy val isBold: Boolean = items.length == 1 && (items.head match {
     case w: Words => w.bold
     case _ => false
   })
-  lazy val isNumericLabelRef: Boolean = english.length == 1 && (english.head match {
+  lazy val isNumericLabelRef: Boolean = items.length == 1 && (items.head match {
     case l: LabelRef if l.outputFormat == Currency => true
     case l: LabelRef if l.outputFormat == CurrencyPoundsOnly => true
     case _ => false
@@ -75,12 +73,11 @@ case class Text(english: Seq[TextItem], welsh: Seq[TextItem]) {
 }
 
 object Text {
-  def apply(english: TextItem, welsh: TextItem): Text = Text(Seq(english), Seq(welsh))
-  def apply(english: String, welsh: String): Text = Text(Words(english), Words(welsh))
-  def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
-  def apply(): Text = Text(Nil, Nil)
-
-  def labelRef(name: String): Text = Text(LabelRef(name), LabelRef(name))
-  def link(dest: String, phrase: Vector[String], window: Boolean = false, asButton: Boolean = false, hint: Option[Vector[String]] = None): Text =
-    Text(Link(dest, phrase(0), window, asButton, hint.map(_(0))), Link(dest, phrase(1), window, asButton, hint.map(_(1))))
+  def apply(item: TextItem): Text = Text(Seq(item))
+  def apply(itemText: String): Text = Text(Words(itemText))
+  //def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
+  def apply(): Text = Text(Nil)
+  def labelRef(name: String): Text = Text(LabelRef(name))
+  def link(dest: String, phraseString: String, window: Boolean = false, asButton: Boolean = false, hint: Option[String] = None): Text =
+    Text(Link(dest, phraseString, window, asButton, hint.map(h => h)))
 }

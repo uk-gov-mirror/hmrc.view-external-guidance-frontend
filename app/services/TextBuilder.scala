@@ -21,6 +21,7 @@ import models.ocelot.{Link, Phrase, Process}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
+import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 object TextBuilder {
@@ -67,13 +68,10 @@ object TextBuilder {
       })(labelName => LabelRef(labelName, OutputFormat(labelFormatOpt(m))))
     }
 
-  def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String]): Text = {
+  def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String], lang: Lang): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty
-    val (enTexts, enMatches) = fromPattern(plregex, txt.langs(0))
-    val (cyTexts, cyMatches) = fromPattern(plregex, txt.langs(1))
-    val en = merge(enTexts.map(Words(_)), placeholdersToItems(enMatches), Nil, isEmpty)
-    val cy = merge(cyTexts.map(Words(_)), placeholdersToItems(cyMatches), Nil, isEmpty)
-    Text(en, cy)
+    val (texts, matches) = fromPattern(plregex, txt.value(lang))
+    Text(merge(texts.map(Words(_)), placeholdersToItems(matches), Nil, isEmpty))
   }
 
   private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
@@ -82,19 +80,20 @@ object TextBuilder {
     (txts.head.trim, hint)
   }
 
-  private def singlePhraseWithOptionalHint(txt: Phrase): (Phrase, Option[Text]) = {
-    val (en, enHint) = singleStringWithOptionalHint(txt.langs(0))
-    val (cy, cyHint) = singleStringWithOptionalHint(txt.langs(1))
-    (Phrase(en, cy), enHint.map(Text(_, cyHint.getOrElse(""))))
-  }
+  // private def singlePhraseWithOptionalHint(txt: Phrase)(implicit lang: Lang): (Phrase, Option[Text]) = {
+  //   val (txt, hint) = singleStringWithOptionalHint(txt.value(lang))
+  //   val (en, enHint) = singleStringWithOptionalHint(txt.langs(0))
+  //   val (cy, cyHint) = singleStringWithOptionalHint(txt.langs(1))
+  //   (Phrase(en, cy), hint.map(Text(_)))
+  // }
 
   // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
   // The string before the first hint will be converted to a Text object
   // and returned along with optional hint
   // All characters after the optional hint pattern are discarded
-  def singleTextWithOptionalHint(txt: Phrase): (Text, Option[Text]) = {
-    val (phrase, hint) = singlePhraseWithOptionalHint(txt)
-    (Text(phrase.langs), hint)
+  def singleTextWithOptionalHint(txt: Phrase)(implicit lang: Lang): (Text, Option[Text]) = {
+    val (str, hint) = singleStringWithOptionalHint(txt.value(lang))
+    (Text(str), hint.map(Text(_)))
   }
 
   @tailrec

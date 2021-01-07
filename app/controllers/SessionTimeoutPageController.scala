@@ -22,9 +22,8 @@ import play.twirl.api.Html
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
 import models.errors.NotFoundError
-import models.ui.Text
 import play.api.Logger
-import play.api.i18n.{I18nSupport, Messages}
+import play.api.i18n.{I18nSupport, Messages, Lang}
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.http.SessionKeys._
@@ -50,6 +49,7 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
     def getPage(processCode: String): Action[AnyContent] = Action.async { implicit request =>
 
       implicit val messages: Messages = mcc.messagesApi.preferred(request)
+      implicit val lang: Lang = messages.lang
       hc.sessionId match {
         case Some(id) if !hasSessionExpired(request.session) =>
           service.getProcessContext(id.value).flatMap {
@@ -58,8 +58,7 @@ class SessionTimeoutPageController @Inject()(appConfig: AppConfig,
                 s"Expected code $processCode; actual code ${processContext.process.meta.processCode}")
               Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate).withNewSession)
             case Right(processContext) =>
-              val title = Text(processContext.process.title.langs)
-              Future.successful(Ok(createDeleteYourAnswersResponse(title.asString(messages.lang), processCode)).withNewSession)
+              Future.successful(Ok(createDeleteYourAnswersResponse(processContext.process.title.value(lang), processCode)).withNewSession)
             case Left(NotFoundError) =>
               logger.error(s"Session Timeout - retrieving processCode $processCode returned NotFound, displaying deleted your answers to user")
               Future.successful(Ok(createDeleteYourAnswersResponse(messages("session.timeout.header.title"), processCode)).withNewSession)

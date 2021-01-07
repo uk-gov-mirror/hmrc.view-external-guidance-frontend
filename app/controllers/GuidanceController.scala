@@ -18,7 +18,7 @@ package controllers
 
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
-import play.api.i18n.Messages
+import play.api.i18n.{Lang, Messages}
 import play.api.mvc._
 import play.api.data.Form
 import services.{ValueTypeError, ValueMissingError, GuidanceService}
@@ -50,6 +50,7 @@ class GuidanceController @Inject() (
 
   def getPage(processCode: String, path: String, p: Option[String]): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    implicit val lang: Lang = messages.lang
     withExistingSession[PageContext](service.getPageContext(processCode, s"/$path", p.isDefined, _)).flatMap {
       case Right(pageCtx) =>
         logger.info(s"Retrieved page at ${pageCtx.page.urlPath}, start at ${pageCtx.processStartUrl}," +
@@ -82,7 +83,8 @@ class GuidanceController @Inject() (
   }
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
-    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    //implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    implicit val lang: Lang = mcc.messagesApi.preferred(request).lang
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(ctx) =>
         ctx.dataInput match {
