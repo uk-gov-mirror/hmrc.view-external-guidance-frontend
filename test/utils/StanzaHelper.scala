@@ -49,6 +49,7 @@ trait StanzaHelper extends TestConstants {
 
   val sqpQpInputStanza = InputStanza(Currency, Seq("4"), two, Some(three), "label", None, false)
   val sqpQpDateInputStanza = InputStanza(Date, Seq("4"), two, Some(three), "label", None, false)
+  val sqpQpNumberInputStanza = InputStanza(Number, Seq("4"), two, Some(three), "label", None, false)
 
   // Question page - After
   val sqpQpInstruction = Instruction(phrases(0), Seq("2"), None, false)
@@ -56,6 +57,7 @@ trait StanzaHelper extends TestConstants {
   val sqpQpQuestion = Question(phrases(two), Seq(phrases(three), phrases(four)), Seq("4", "6"), None, false)
   val sqpQpInput = CurrencyInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false)
   val sqpQpDateInput = DateInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false)
+  val sqpQpNumberInput = NumberInput(Seq("4"), phrases(two), Some(phrases(three)), "label", None, false)
 
   // First answer page BEFORE
   val sqpFapPageStanza = PageStanza(sqpFapValue, Seq("5"), false)
@@ -139,6 +141,23 @@ trait StanzaHelper extends TestConstants {
       Process.StartStanzaId -> sqpQpPageStanza,
       "1" -> sqpQpInstructionStanza,
       "2" -> sqpQpDateInputStanza,
+      "4" -> sqpFapPageStanza,
+      "5" -> sqpFapInstructionStanza,
+      "6" -> sqpSapPageStanza,
+      "7" -> sqpSapInstructionStanza,
+      "8" -> sqpSapCalloutStanza,
+      "end" -> EndStanza
+    )
+
+  }
+
+  def simpleNumberInputPage: Map[String, Stanza] = {
+
+    // Define Map of Stanzas to be processed
+    Map(
+      Process.StartStanzaId -> sqpQpPageStanza,
+      "1" -> sqpQpInstructionStanza,
+      "2" -> sqpQpNumberInputStanza,
       "4" -> sqpFapPageStanza,
       "5" -> sqpFapInstructionStanza,
       "6" -> sqpSapPageStanza,

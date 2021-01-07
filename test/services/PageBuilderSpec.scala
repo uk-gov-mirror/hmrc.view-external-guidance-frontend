@@ -97,31 +97,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect UnknownInputType (currently unsupported type) error" in {
-      val flow = Map(
-        Process.StartStanzaId -> PageStanza("/url", Seq("1"), true),
-        "1" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> InputStanza(Number, Seq("4"), 0, Some(0), "Label", None, false),
-        "4" -> InstructionStanza(0, Seq("end"), None, false),
-        "end" -> EndStanza
-      )
-      val process = Process(
-        metaSection,
-        flow,
-        Vector[Phrase](
-          Phrase(Vector("Some Text", "Welsh, Some Text")),
-          Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-        ),
-        Vector[Link]()
-      )
-      pageBuilder.buildPage("start", process) match {
-        case Left(UnknownInputType("2", "Number")) => succeed
-        case err => fail(s"UnknownInputType not detected $err")
-      }
-    }
-
     "detect SharedDataInputStanza error" in {
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/url", Seq("1"), true),
@@ -835,6 +810,30 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         case Left(err) => fail(s"Flow error $err")
       }
     }
+
+    "When processing a simple number input page" must {
+
+      val process: Process = Process(meta, simpleNumberInputPage, phrases, links)
+
+      pageBuilder.pagesWithValidation(process) match {
+
+        case Right(pages) =>
+          "Determine the correct number of pages to be displayed" in {
+
+            pages shouldNot be(Nil)
+
+            pages.length shouldBe 2
+          }
+
+          val indexedSeqOfPages = pages.toIndexedSeq
+
+          // Test contents of individual pages
+          testSimpleNumberInputPage(indexedSeqOfPages(0))
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
   }
 
   "When processing guidance containing zero or more row stanzas" must {
@@ -1330,6 +1329,25 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       page.stanzas.size shouldBe 3
 
       page.stanzas shouldBe Seq(sqpQpPageStanza, sqpQpInstruction, sqpQpDateInput)
+
+      page.next shouldBe Seq("4")
+    }
+
+  }
+
+  /**
+   * Test input page in simple number input page test
+   *
+   * @param page the input page to test
+   */
+  def testSimpleNumberInputPage(page: Page): Unit = {
+
+    "Define the input page correctly" in {
+
+      page.id shouldBe Process.StartStanzaId
+      page.stanzas.size shouldBe 3
+
+      page.stanzas shouldBe Seq(sqpQpPageStanza, sqpQpInstruction, sqpQpNumberInput)
 
       page.next shouldBe Seq("4")
     }

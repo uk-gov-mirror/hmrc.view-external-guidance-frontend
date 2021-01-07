@@ -172,6 +172,7 @@ class UIBuilder {
     // Placeholder not used
     input match {
       case _: TextInput => ui.TextInput(name, hint, uiElements, errorMsgs)
+      case _: NumberInput => ui.NumberInput(name, hint, uiElements, errorMsgs)
       case _: CurrencyInput => ui.CurrencyInput(name, hint, uiElements, errorMsgs)
       case _: CurrencyPoundsOnlyInput => ui.CurrencyPoundsOnlyInput(name, hint, uiElements, errorMsgs)
       case _: DateInput => ui.DateInput(name, hint, uiElements, errorMsgs)
