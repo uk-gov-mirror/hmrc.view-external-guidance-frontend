@@ -83,7 +83,6 @@ class GuidanceController @Inject() (
   }
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
-    //implicit val messages: Messages = mcc.messagesApi.preferred(request)
     implicit val lang: Lang = mcc.messagesApi.preferred(request).lang
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(ctx) =>

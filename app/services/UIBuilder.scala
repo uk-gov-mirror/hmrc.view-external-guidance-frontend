@@ -46,10 +46,7 @@ class UIBuilder {
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy = NoError)
                (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Page =
-    Page(url,
-         fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)},
-                     Nil,
-                     errStrategy.default(stanzas)))
+    Page(url, fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil, errStrategy.default(stanzas)))
 
   @tailrec
   private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], errStrategy: ErrorStrategy)
@@ -131,12 +128,12 @@ class UIBuilder {
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
       case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg(TextBuilder.fromPhrase(c.text)))
-      case c: ValueErrorCallout => Seq(ValueErrorMsg(TextBuilder.fromPhrase(c.text)))
       case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg(TextBuilder.fromPhrase(c.text)))
-      case _: ImportantCallout => Seq.empty               // Reserved for future use
-      case _: NumberedListItemCallout => Seq.empty        // Unused
-      case _: NumberedCircleListItemCallout => Seq.empty  // Unused
-      case _ => Seq.empty                                 // Consume unmatched Error callouts
+      case c: ValueErrorCallout => Seq(ValueErrorMsg(TextBuilder.fromPhrase(c.text)))
+      case _: TypeErrorCallout | _: ErrorCallout => Seq.empty   // Consume unmatched Error callouts
+      case _: ImportantCallout => Seq.empty                     // Reserved for future use
+      case _: NumberedListItemCallout => Seq.empty              // Unused
+      case _: NumberedCircleListItemCallout => Seq.empty        // Unused
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {

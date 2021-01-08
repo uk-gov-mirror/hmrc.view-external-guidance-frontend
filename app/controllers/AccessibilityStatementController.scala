@@ -46,9 +46,8 @@ class AccessibilityStatementController @Inject() (
     val path = controllers.routes.AccessibilityStatementController.getPage(None).url.drop(appConfig.baseUrl.length + 1)
     withExistingSession[ProcessContext](service.getProcessContext(_, path, p.isDefined)).map {
       case Right(processContext) =>
-        val title: String = processContext.process.title.value(messages.lang)
         val processCode = processContext.process.meta.processCode
-        Ok(view(title,
+        Ok(view(processContext.process.title.value(messages.lang),
                 Some(processCode),
                 processContext.process.startUrl.map(url => s"${appConfig.baseUrl}/${processCode}${url}"),
                 processContext.backLink.map(url => s"${appConfig.baseUrl}/${url}")))
