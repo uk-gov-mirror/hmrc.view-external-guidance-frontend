@@ -50,8 +50,13 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
                               Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
     val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
                                               Seq(Text("Caption", "Caption"), Text("Caption", "Caption")),
-                                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency)))))
+                                              Seq(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency))),
+                                                Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", CurrencyPoundsOnly), LabelRef("Blah", CurrencyPoundsOnly))),
+                                                Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Number), LabelRef("Blah", Number)))))
     val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
+    val expectedTableWithTxtCells = Table(Text("HELLO","HELLO"),
+      Seq(Text("Caption", "Caption"), Text("Caption", "Caption")),
+      Seq(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Txt), LabelRef("Blah", Txt)))))
 
   }
 
@@ -95,6 +100,26 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
               c.hasClass("govuk-table__cell--numeric") shouldBe true
 
             case (c, tc) =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe false
+          }
+      }
+    }
+
+    "Encode table with txt cells without using govuk numeric class" in new Test {
+      val html: Html = components.table(expectedTableWithTxtCells)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.hasClass("govuk-table") shouldBe true
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTableWithTxtCells.rows.size
+
+      (rows zip expectedTableWithTxtCells.rows).foreach{
+        case (rowElem, tableRow) =>
+          val cells = rowElem.children.asScala.toList
+          (cells zip tableRow).foreach{
+            case (c, td) if td.isNumericLabelRef => fail()
+            case (c, _) =>
               c.hasClass("govuk-table__cell--numeric") shouldBe false
           }
       }
