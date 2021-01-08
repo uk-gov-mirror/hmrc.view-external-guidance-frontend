@@ -37,26 +37,17 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-
     val h3English: String = "Level 3 heading text"
     val h3Welsh: String = "Welsh Level 3 heading text"
-
-    val h3: H3 = H3(Text(h3English, h3Welsh))
+    val h3: H3 = H3(Text(h3English))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
     val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     val ctxReduced = models.PageContext(summaryPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-  }
-
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
   }
 
   "Creating a level 3 heading with some content" must {
@@ -87,16 +78,5 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
 
       h3Element.text() shouldBe h3English
     }
-
-    "display text in Welsh when requested" in new WelshTest {
-
-      val markUp: Html = h3_heading(h3)(messages, ctx)
-
-      val h3Element: Element = getSingleElementByTag(markUp, "h3")
-
-      h3Element.text() shouldBe h3Welsh
-    }
-
   }
-
 }

@@ -41,12 +41,12 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
     lazy val expectedUrl = "/start-url"
     lazy val processId = "ext90002"
 
-    lazy val ans1 = Answer(Text("ANS1", "ANS1"), Some(Text("", "")))
-    lazy val ans2 = Answer(Text("ANS2", "ANS2"), Some(Text("", "")))
+    lazy val ans1 = Answer(Text("ANS1"), Some(Text("")))
+    lazy val ans2 = Answer(Text("ANS2"), Some(Text("")))
 
     lazy val expectedPage: Page = FormPage(
       path,
-      Question(Text("QUESTION", "QUESTION"), None, Seq(Paragraph(Text("QUESTION", "QUESTION"))), Seq(ans1, ans2))
+      Question(Text("QUESTION"), None, Seq(Paragraph(Text("QUESTION"))), Seq(ans1, ans2))
     )
 
     val standardPagePath = "/std-page"
@@ -54,7 +54,7 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     val standardPage: Page = Page(
       standardPagePath,
-      Seq(H1(Text("hello", "Welsh: hello")))
+      Seq(H1(Text("hello")))
     )
 
     val fakeSessionIdAction = new SessionIdAction {

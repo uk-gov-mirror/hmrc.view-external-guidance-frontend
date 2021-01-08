@@ -18,7 +18,7 @@ package mocks
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-
+import play.api.i18n.Lang
 import models.ocelot.stanzas.VisualStanza
 import services.{ErrorStrategy, UIBuilder}
 
@@ -31,8 +31,8 @@ trait MockUIBuilder extends MockFactory {
     def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy): CallHandler[models.ui.Page] = {
 
       (mockUIBuilder
-        .buildPage(_: String, _: Seq[VisualStanza], _: ErrorStrategy)(_: Map[String, String]))
-        .expects(url, stanzas, *, *)
+        .buildPage(_: String, _: Seq[VisualStanza], _: ErrorStrategy)(_: Map[String, String], _: Lang))
+        .expects(url, stanzas, *, *, *)
     }
 
   }

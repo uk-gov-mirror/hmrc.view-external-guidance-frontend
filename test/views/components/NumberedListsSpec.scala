@@ -45,11 +45,9 @@ class NumberedListsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-    val numberedList: NumberedList = NumberedList(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
-    val numberedCircleList: NumberedCircleList = NumberedCircleList(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
+    val numberedList: NumberedList = NumberedList(Seq(Text("Line1"), Text("Line2")))
+    val numberedCircleList: NumberedCircleList = NumberedCircleList(Seq(Text("Line1"), Text("Line2")))
   }
-
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "English Numbered Lists" must {
 
@@ -83,38 +81,4 @@ class NumberedListsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       lis(1).text shouldBe "Line2"
     }
   }
-
-  "Welsh Numbered Lists" must {
-
-    "be rendered as an <ol> with govuk classes and <li> elements" in new WelshTest {
-      val html: Html = numbered_list(numberedList)
-      val ol: Element = getSingleElementByTag(html, "ol")
-
-      ol.hasClass("govuk-list") shouldBe true
-      ol.hasClass("govuk-list--number") shouldBe true
-
-      val lis = ol.getElementsByTag("li").asScala.toList
-      lis.length shouldBe 2
-      lis(0).text shouldBe "Welsh, Line1"
-      lis(1).text shouldBe "Welsh, Line2"
-    }
-  }
-
-  "Welsh Numbered Circle Lists" must {
-
-    "be rendered as an <ol> with govuk classes and <li> elements" in new WelshTest {
-      val html: Html = numbered_circle_list(numberedCircleList)
-      val ol: Element = getSingleElementByTag(html, "ol")
-
-      ol.hasClass("govuk-list") shouldBe true
-      ol.hasClass("govuk-list--number") shouldBe true
-      ol.hasClass("steps") shouldBe true
-
-      val lis = ol.getElementsByTag("li").asScala.toList
-      lis.length shouldBe 2
-      lis(0).text shouldBe "Welsh, Line1"
-      lis(1).text shouldBe "Welsh, Line2"
-    }
-  }
-
 }

@@ -16,16 +16,16 @@
 
 package services
 
-import base.BaseSpec
+import base.{EnglishLanguage, BaseSpec}
 import models.ocelot._
 import models.ocelot.stanzas._
 import models.ui
 import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, Words}
+import play.api.i18n.Lang
 
-class UIBuilderSpec extends BaseSpec with ProcessJson {
+class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
 
-  trait QuestionTest {
-
+  trait QuestionTest extends EnglishLanguage {
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -65,7 +65,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBulider Question processing" must {
 
     "Ignore Error Callouts when there are no errors" in new QuestionTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError)(urlMap) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError)(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case s: FormPage => fail("No error messages should be included on page")
         case _ => fail("Should return FormPage")
@@ -74,7 +74,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Include Error messages when there are errors" in new QuestionTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => succeed
         case _ => fail("Should return FormPage")
@@ -99,20 +99,18 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
         case _ => fail("Page should be a Question page")
       }
-
     }
 
     "Include a question hint appended to the question text" in new QuestionTest {
-      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case s: FormPage if s.formComponent.hint == Some(Text(questionHintString, questionHintString)) => succeed
+      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case s: FormPage if s.formComponent.hint == Some(Text(questionHintString)) => succeed
         case s: FormPage => fail("No hint found within Question")
         case _ => fail("Should return FormPage")
       }
     }
-
   }
 
-  trait Test extends ProcessJson {
+  trait Test extends ProcessJson with EnglishLanguage {
     case class UnsupportedVisualStanza(override val next: Seq[String], stack: Boolean) extends VisualStanza with Populated
     val lang0 = Vector("Some Text", "Welsh, Some Text")
     val lang1 = Vector("Some Text1", "Welsh, Some Text1")
@@ -121,9 +119,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val lang4 = Vector("Some Text4", "Welsh, Some Text4")
     val lang5 = Vector("Some Text5", "Welsh, Some Text5")
 
-    val ltxt1 = Text(Words("This is a ", true), Words("Welsh, This is a ", true))
-    val ltxt2 = Text(" followed by ", " Welsh, followed by ")
-    val ltxt3 = Text(" and nothing", " Welsh, and nothing")
+    val ltxt1 = Text(Words("This is a ", true))
+    val ltxt2 = Text(" followed by ")
+    val ltxt3 = Text(" and nothing")
     val link1TxtEn = "A link"
     val link1TxtCy = "Welsh, A link"
     val link2TxtEn = "Another Link"
@@ -148,9 +146,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
     val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
 
-    val hint1 = Text("You agree with the assertion", "Welsh, You agree with the assertion")
-    val hint2 = Text("You DONT agree with the assertion", "Welsh, You DONT agree with the assertion")
-    val hint3 = Text("You dont know", "Welsh, You dont know")
+    val hint1 = Text("You agree with the assertion")
+    val hint2 = Text("You DONT agree with the assertion")
+    val hint3 = Text("You dont know")
 
     val link1En = Link("https://www.bbc.co.uk", link1TxtEn)
     val link2En = Link("https://www.gov.uk", link2TxtEn)
@@ -276,18 +274,18 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val pageWithH4 = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
 
     val textItems = ltxt1 +
-      Text(link1En, link1Cy) +
+      Text(link1En) +
       ltxt2 +
-      Text(link2En, link2Cy) +
+      Text(link2En) +
       ltxt3
-    val textItems2 = Text(link2_1En, link2_1Cy) + ltxt2 + Text(link2_2En, link2_2Cy)
+    val textItems2 = Text(link2_1En) + ltxt2 + Text(link2_2En)
 
     val pageLinkTextItems = ltxt1 +
-      Text(pageLink1En, pageLink1Cy) +
+      Text(pageLink1En) +
       ltxt2 +
-      Text(pageLink2En, pageLink2Cy) +
+      Text(pageLink2En) +
       ltxt3
-    val allLinksTextItems = Text(link2_1En, link2_1Cy) + ltxt2 + Text(pageLink1En, pageLink1Cy) + Text(startLinkEn, startLinkCy)
+    val allLinksTextItems = Text(link2_1En) + ltxt2 + Text(pageLink1En) + Text(startLinkEn)
 
     val pageWithEmbeddLinks: Page = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
 
@@ -326,15 +324,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val rowsWithFakedWelshLinK = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndFakedWelsh), Seq()))
     val sparseRowsWithLinkAndHint = Seq(rowsWithLinkAndHint(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rowsWithLinkAndHint(2))
 
-    val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
+    val dlRows = Seq.fill(3)(Seq(Text("HELLO"), Text("World"), Text("")))
     val expectedDl = CyaSummaryList(dlRows)
-    val dlRowsComplete = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
+    val dlRowsComplete = Seq.fill(3)(Seq(Text("HELLO"), Text("World"), Text("Blah")))
     val expectedDlComplete = CyaSummaryList(dlRowsComplete)
-    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
+    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO"), Text(""), Text("")), dlRows(2))
     val expectedDlSparse = CyaSummaryList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"),
-                                                               Text("World","World"),
-                                                               Text.link("dummy-path",Vector("Change", "Change"), false, false, Some(Vector("HELLO", "HELLO")))))
+    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("HELLO"),
+                                                               Text("World"),
+                                                               Text.link("dummy-path","Change", false, false, Some("HELLO"))))
     val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
     val headingPhrase = Phrase("Heading", "Heading")
   }
@@ -350,7 +348,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     val tableRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
     val headingPhrase = Phrase("Heading", "Heading")
-    val headingText = Text(headingPhrase.langs)
+    val headingText = Text(headingPhrase.value(lang))
 
     val emptyRows = Seq.fill(3)(Row(Seq.empty, Seq.empty, true))
     val oddRowGroup = RowGroup(emptyRows)
@@ -499,7 +497,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 tableRowGroup))
       p.components match {
-        case Seq(Table(Text(headingPhrase,_), tableHeading, _)) => succeed
+        case Seq(Table(Text(headingPhrase), tableHeading, _)) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -579,19 +577,19 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert 1st Callout type Title to H1" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(1) shouldBe models.ui.H1(Text(lang0))
+      uiPage.components(1) shouldBe models.ui.H1(Text(Phrase(lang0).value(lang)))
     }
 
     "convert 2nd Callout type SubTitle to H2" in new Test {
 
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(2) shouldBe models.ui.H2(Text(lang1))
+      uiPage.components(2) shouldBe models.ui.H2(Text(Phrase(lang1).value(lang)))
     }
 
     "convert Callout type Lede to lede Paragraph" in new Test {
 
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(3) shouldBe models.ui.Paragraph(Text(lang2), true)
+      uiPage.components(3) shouldBe models.ui.Paragraph(Text(Phrase(lang2).value(lang)), true)
     }
 
     "Dont convert Callout type Important into an ErrorMsg" in new Test {
@@ -603,26 +601,24 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(6) shouldBe models.ui.ValueErrorMsg(Text(lang0))
+      uiPage.components(6) shouldBe models.ui.ValueErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueTypeError)
-      uiPage.components(7) shouldBe models.ui.TypeErrorMsg(Text(lang0))
+      uiPage.components(7) shouldBe models.ui.TypeErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(four) shouldBe models.ui.Paragraph(Text(lang3), false)
+      uiPage.components(four) shouldBe models.ui.Paragraph(Text(Phrase(lang3).value(lang)), false)
     }
 
     "convert Link instruction to Paragraph" in new Test {
 
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      val en = Link("dummy-path/blah", lang4(0))
-      val cy = Link("dummy-path/blah", lang4(1))
-      uiPage.components(five) shouldBe models.ui.Paragraph(Text(en, cy))
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(Link("dummy-path/blah", Phrase(lang4).value(lang))))
     }
 
     "convert page with instruction stanza containing a sequence of Text and Link items" in new Test {
@@ -642,7 +638,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert Callout type SubSection to H4" in new Test {
       val uiPage = uiBuilder.buildPage(pageWithEmbeddH4.url, pageWithEmbeddH4.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(five) shouldBe models.ui.H4(Text(lang5))
+      uiPage.components(five) shouldBe models.ui.H4(Text(Phrase(lang5).value(lang)))
     }
 
     "convert page with instruction stanza text containing PageLinks, HyperLinks and Text" in new Test {
@@ -652,12 +648,12 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert page including a PageLink instruction stanza" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3En, link3Cy), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3En), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
       val uiPage = uiBuilder.buildPage(hyperLinkPage.url, hyperLinkPage.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4En, link4Cy), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4En), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {
@@ -668,15 +664,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case q: models.ui.Question =>
           q.answers.length shouldBe 3
-
           q.body.length shouldBe 2
-
-          q.answers.head shouldBe models.ui.Answer(Text(ans1), None)
-
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2), None)
-
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3), None)
-
+          q.answers.head shouldBe models.ui.Answer(Text(ans1(0)), None)
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2(0)), None)
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3(0)), None)
         case _ => fail("Found non question UIComponent")
       }
     }
@@ -689,15 +680,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.head match {
         case q: models.ui.Question =>
           q.answers.length shouldBe 3
-
           q.body.length shouldBe 2
-
-          q.answers.head shouldBe models.ui.Answer(Text(ans1), Some(hint1))
-
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2), Some(hint2))
-
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3), Some(hint3))
-
+          q.answers.head shouldBe models.ui.Answer(Text(ans1(0)), Some(hint1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2(0)), Some(hint2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3(0)), Some(hint3))
         case _ => fail("Found non question UIComponent")
       }
     }
@@ -724,10 +710,10 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text(Words("My favourite sweets are"), Words("Fy hoff losin yw"))
+      val leadingTextItems: Text = Text(Words("My favourite sweets are"))
 
-      val bulletPointOne: Text = Text("wine gums", "deintgig gwin")
-      val bulletPointTwo: Text = Text("humbugs", "humbugs")
+      val bulletPointOne: Text = Text("wine gums")
+      val bulletPointTwo: Text = Text("humbugs")
 
       uiPage.components.head match {
         case b: BulletPointList =>
@@ -774,21 +760,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text(
-        "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:",
-        "Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi:"
-      )
+      val leadingTextItems: Text = Text("In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:")
 
-      val bulletPointOne: Text = Text("selling goods or services (trading)", "gwerthu nwyddau neu wasanaethau (masnachu)")
-      val bulletPointTwo: Text = Text("renting land or property", "rhentu tir neu eiddo")
+      val bulletPointOne: Text = Text("selling goods or services (trading)")
+      val bulletPointTwo: Text = Text("renting land or property")
 
       uiPage.components.head match {
         case b: BulletPointList =>
-
           b.text shouldBe leadingTextItems
-
           b.listItems.size shouldBe 2
-
           b.listItems.head shouldBe bulletPointOne
           b.listItems.last shouldBe bulletPointTwo
         case _ => fail("Did not find bullet point list")
@@ -837,11 +817,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       complexUiPage.components.size shouldBe 6
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text("Today we have special", "Heddiw mae gennym")
+      val leadingTextItems: Text = Text("Today we have special")
 
-      val bulletPointOne: Text = Text("parsnips for sale", "bananas arbennig ar werth")
-      val bulletPointTwo: Text = Text("purple carrots for sale", "foron porffor arbennig ar werth")
-      val bulletPointThree: Text = Text("brussels sprouts for sale", "ysgewyll cregyn gleision arbennig ar werth")
+      val bulletPointOne: Text = Text("parsnips for sale")
+      val bulletPointTwo: Text = Text("purple carrots for sale")
+      val bulletPointThree: Text = Text("brussels sprouts for sale")
 
       complexUiPage.components(four) match {
         case b: BulletPointList =>
@@ -856,7 +836,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         case _ => fail("Did not find bullet point list")
       }
 
-      val finalParagraph: Paragraph = Paragraph(Text("Thank you", "Diolch"))
+      val finalParagraph: Paragraph = Paragraph(Text("Thank you"))
 
       complexUiPage.components(five) match {
         case p: Paragraph =>
@@ -901,14 +881,14 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
       uiPage.components.length shouldBe 1
 
-      val leadingTextItems: Text = Text("You must have", "Rhaid")
+      val leadingTextItems: Text = Text("You must have")
 
-      val bulletPointOne: Text = Text("a tea bag", "i chi gael bag te")
-      val bulletPointTwo: Text = Text("a cup", "i chi gael cwpan")
-      val bulletPointThree: Text = Text("a teaspoon", "i chi gael llwy de")
-      val bulletPointFour: Text = Text("water", "i chi gael dŵr")
-      val bulletPointFive: Text = Text("an electric kettle", "bod gennych chi degell trydan")
-      val bulletPointSix: Text = Text("an electricity supply", "bod gennych gyflenwad trydan")
+      val bulletPointOne: Text = Text("a tea bag")
+      val bulletPointTwo: Text = Text("a cup")
+      val bulletPointThree: Text = Text("a teaspoon")
+      val bulletPointFour: Text = Text("water")
+      val bulletPointFive: Text = Text("an electric kettle")
+      val bulletPointSix: Text = Text("an electricity supply")
 
       uiPage.components.head match {
 
@@ -931,22 +911,13 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
-
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
-      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap)
-
-      val leadingTextItems: Text = Text( "You've received income that you have not yet paid tax on from:",
-                                         "Welsh: You've received income that you have not yet paid tax on from:")
-
-      val bulletPointOne: Text = Text( "a business you own or control (such as a partnership or limited company)",
-                                       "a business you own or control (such as a partnership or limited company)")
-
-      val bulletPointTwo: Text = Text("a business a relative owns or controls", "a business a relative owns or controls")
-
-      val bulletPointThree: Text = Text("your employer (for example for freelance services outside your normal contract hours)",
-                                        "your employer (for example for freelance services outside your normal contract hours)")
-
-      val bulletPointFour: Text = Text("the employer of your spouse or civil partner", "the employer of your spouse or civil partner")
+      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap, lang)
+      val leadingTextItems: Text = Text("You've received income that you have not yet paid tax on from:")
+      val bulletPointOne: Text = Text("a business you own or control (such as a partnership or limited company)")
+      val bulletPointTwo: Text = Text("a business a relative owns or controls")
+      val bulletPointThree: Text = Text("your employer (for example for freelance services outside your normal contract hours)")
+      val bulletPointFour: Text = Text("the employer of your spouse or civil partner")
 
       uiPage.components.head match {
         case b: BulletPointList =>
@@ -999,7 +970,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   }
 
   trait InputTest {
-
+    implicit val lang: Lang = Lang("en")
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -1033,7 +1004,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   "UIBuilder Currency Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1042,7 +1013,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1063,23 +1034,20 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
         case x => fail(s"Should return FormPage: found $x")
       }
-
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }
     }
-
   }
 
   "UIBuilder CurrencyPoundsOnly Input processing" must {
-
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1087,8 +1055,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Include Error messages when there are errors" in new InputTest {
-
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1113,8 +1080,8 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }
@@ -1122,7 +1089,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
   }
 
   trait ConfirmationPanelTest {
-
+    implicit val lang: Lang = Lang("en")
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/page-1",
@@ -1319,7 +1286,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "process stacked group with three your call callouts preceded by two other visual stanza types" in new ConfirmationPanelTest {
-
       val stanzas: Seq[VisualStanza] = Seq(
         instruction1,
         subSectionCallout,
@@ -1327,9 +1293,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
         confirmationPanelAdditional1,
         confirmationPanelAdditional2
       )
-
       val page = uiBuilder.buildPage("/page-1", stanzas)
-
       val expectedConfirmationPanel: ConfirmationPanel = ConfirmationPanel(
         confirmationPanelHeaderText,
         Seq(
@@ -1341,12 +1305,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       page.components(1) shouldBe H4(subSectionCalloutText)
       page.components.last shouldBe expectedConfirmationPanel
     }
-
   }
 
   "UIBuilder Date Input processing" must {
     trait DateInputTest {
-
+      implicit val lang: Lang = Lang("en")
       implicit val urlMap: Map[String, String] =
         Map(
           Process.StartStanzaId -> "/blah",
@@ -1359,7 +1322,6 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val inputNext = Seq("4")
       val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
       val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
-
       val stanzas = Seq(
         KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
         KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
@@ -1368,13 +1330,11 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       )
       val dateInput = DateInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
       val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
-
       val uiBuilder: UIBuilder = new UIBuilder()
-
     }
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1382,7 +1342,7 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
     }
 
     "Include Error messages when there are errors" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1403,17 +1363,15 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
 
         case x => fail(s"Should return FormPage: found $x")
       }
-
     }
 
     "Include a page hint appended to the input text" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text", "Welsh, Help text")) => succeed
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }
     }
-
   }
 
   "UIBuilder Details Component processing" must {
@@ -1423,11 +1381,9 @@ class UIBuilderSpec extends BaseSpec with ProcessJson {
       val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
       val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
       val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
-
       val stackedNote1 = NoteCallout(num1Phrase, Seq(""), stack = true)
       val stackedNote2 = NoteCallout(num2Phrase, Seq(""), stack = true)
       val unstackedNote = NoteCallout(num2Phrase, Seq(""), stack = false)
-
       val subSectionCallout: Callout = SubSectionCallout(sectionPhrase, Seq("8"), stack = false)
     }
 

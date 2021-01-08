@@ -44,29 +44,28 @@ class SummaryListSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
-    val dlRows = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("","")))
+    val dlRows = Seq.fill(3)(Seq(Text("HELLO"), Text("World"), Text("")))
     val expectedDl = CyaSummaryList(dlRows)
-    val expectedNameValList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
-    val expectedNameValNumericList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("B", Currency), LabelRef("B", Currency)))))
-    val dlRowsWithHint = Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"), Text("Blah","Blah")))
+    val expectedNameValList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO"), Text("World"))))
+    val expectedNameValNumericList = NameValueSummaryList(Seq.fill(3)(Seq(Text("HELLO"), Text(LabelRef("B", Currency)))))
+    val dlRowsWithHint = Seq.fill(3)(Seq(Text("HELLO"), Text("World"), Text("Blah")))
     val expectedDlWithHint = CyaSummaryList(dlRowsWithHint)
-    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO","HELLO"), Text("",""), Text("","")), dlRows(2))
+    val sparseDlRows = Seq(dlRows(0), Seq(Text("HELLO"), Text(""), Text("")), dlRows(2))
     val expectedDlSparse = CyaSummaryList(sparseDlRows)
-    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye","Goodbye"),
-                                                Text("World","World"),
+    val dlRowsWithLinkAndHint = Seq.fill(3)(Seq(Text("Goodbye"),
+                                                Text("World"),
                                                 Text.link("dummy-path",
-                                                          Vector("Change", "Change"),
+                                                          "Change",
                                                           false,
                                                           false,
-                                                          Some(Vector("Goodbye", "Goodbye")))))
+                                                          Some("Goodbye"))))
+
     val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
 
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
-
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
 
   "Creating CYA Summary list with some content" must {
 

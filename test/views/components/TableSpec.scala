@@ -45,28 +45,24 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
 
-    val expectedTable = Table(Text("HELLO","HELLO"),
-                              Seq(Text("First","First"), Text("Second","Second")),
-                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
-    val expectedTableWithNumericCells = Table(Text("HELLO","HELLO"),
-                                              Seq(Text("Caption", "Caption"), Text("Caption", "Caption")),
-                                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text(LabelRef("Blah", Currency), LabelRef("Blah", Currency)))))
-    val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption", "Caption"))
+    val expectedTable = Table(Text("HELLO"),
+                              Seq(Text("First"), Text("Second")),
+                              Seq.fill(3)(Seq(Text("HELLO"), Text("World"))))
+    val expectedTableWithNumericCells = Table(Text("HELLO"),
+                                              Seq(Text("Caption"), Text("Caption")),
+                                              Seq.fill(3)(Seq(Text("HELLO"), Text(LabelRef("Blah", Currency)))))
+    val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption"))
 
   }
 
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
-
   "English Tables" must {
-
-
     "Encode all bold initial row as table headings with a Caption" in new Test {
       val html: Html = components.table(expectedTableWithCaption)
       val table: Element = getSingleElementByTag(html, "Table")
       table.hasClass("govuk-table") shouldBe true
       val element: Element = table.getElementsByTag("caption").first
       element.hasClass("govuk-table__caption") shouldBe true
-      element.text shouldBe expectedTableWithCaption.caption.asString(messages.lang)
+      element.text shouldBe expectedTableWithCaption.caption.asString
 
       val head = table.getElementsByTag("thead").first
       val headings = head.getElementsByTag("th").asScala.toList
@@ -100,48 +96,4 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       }
     }
   }
-
-  "Welsh Tables" must {
-
-    "Encode all bold initial row as table headings with a Caption" in new WelshTest {
-      val html: Html = components.table(expectedTableWithCaption)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.hasClass("govuk-table") shouldBe true
-      val element: Element = table.getElementsByTag("caption").first
-      element.hasClass("govuk-table__caption") shouldBe true
-      element.text shouldBe expectedTableWithCaption.caption.asString(messages.lang)
-
-      val head = table.getElementsByTag("thead").first
-      val headings = head.getElementsByTag("th").asScala.toList
-      headings.size shouldBe expectedTableWithCaption.headingRow.size
-
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
-
-      rows.size shouldBe expectedTable.rows.size
-    }
-
-    "Encode table with numeric cells using govuk numeric class" in new WelshTest {
-      val html: Html = components.table(expectedTableWithNumericCells)
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.hasClass("govuk-table") shouldBe true
-      val body = table.getElementsByTag("tbody").first
-      val rows = body.getElementsByTag("tr").asScala.toList
-
-      rows.size shouldBe expectedTable.rows.size
-
-      (rows zip expectedTableWithNumericCells.rows).foreach{
-        case (rowElem, tableRow) =>
-          val cells = rowElem.children.asScala.toList
-          (cells zip tableRow).foreach{
-            case (c, td) if td.isNumericLabelRef =>
-              c.hasClass("govuk-table__cell--numeric") shouldBe true
-
-            case (c, tc) =>
-              c.hasClass("govuk-table__cell--numeric") shouldBe false
-          }
-      }
-    }
-  }
-
 }

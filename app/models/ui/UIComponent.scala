@@ -51,9 +51,6 @@ case class Link(dest: String, text: String, window: Boolean = false, asButton: B
     }
 }
 
-//
-// Monolingual
-//
 case class Text(items: Seq[TextItem]) {
   def value: Seq[TextItem] = items
   def isEmpty: Boolean = items.isEmpty
@@ -75,7 +72,6 @@ case class Text(items: Seq[TextItem]) {
 object Text {
   def apply(item: TextItem): Text = Text(Seq(item))
   def apply(itemText: String): Text = Text(Words(itemText))
-  //def apply(phrase: Vector[String]): Text = Text(phrase(0), phrase(1))
   def apply(): Text = Text(Nil)
   def labelRef(name: String): Text = Text(LabelRef(name))
   def link(dest: String, phraseString: String, window: Boolean = false, asButton: Boolean = false, hint: Option[String] = None): Text =

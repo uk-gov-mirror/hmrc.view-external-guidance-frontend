@@ -25,6 +25,7 @@ import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
 import models.ocelot.Labels
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.i18n.Lang
 
 trait MockGuidanceService extends MockFactory {
 
@@ -64,14 +65,14 @@ trait MockGuidanceService extends MockFactory {
 
     def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy): CallHandler[PageContext] = {
       (mockGuidanceService
-        .getPageContext(_: PageEvaluationContext, _: ErrorStrategy))
-        .expects(pec, errStrategy)
+        .getPageContext(_: PageEvaluationContext, _: ErrorStrategy)(_: Lang))
+        .expects(pec, errStrategy, *)
     }
 
     def getPageContext(processId: String, url: String, previousPageByLink: Boolean, sessionId: String): CallHandler[Future[RequestOutcome[PageContext]]] = {
       (mockGuidanceService
-        .getPageContext(_: String, _: String, _: Boolean, _: String)(_: ExecutionContext))
-        .expects(processId, url, previousPageByLink, sessionId, *)
+        .getPageContext(_: String, _: String, _: Boolean, _: String)(_: ExecutionContext, _: Lang))
+        .expects(processId, url, previousPageByLink, sessionId, *, *)
     }
 
     def getPageEvaluationContext(
@@ -80,8 +81,8 @@ trait MockGuidanceService extends MockFactory {
                                   previousPageByLink: Boolean,
                                   sessionId: String): CallHandler[Future[RequestOutcome[PageEvaluationContext]]] = {
       (mockGuidanceService
-        .getPageEvaluationContext(_: String, _: String, _: Boolean,  _: String)(_: ExecutionContext))
-        .expects(processId, url, previousPageByLink, sessionId, *)
+        .getPageEvaluationContext(_: String, _: String, _: Boolean,  _: String)(_: ExecutionContext, _: Lang))
+        .expects(processId, url, previousPageByLink, sessionId, *, *)
     }
 
     def validateUserResponse(pec: PageEvaluationContext, response: String): CallHandler[Option[String]] = {

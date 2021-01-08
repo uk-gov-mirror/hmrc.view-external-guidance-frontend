@@ -32,28 +32,22 @@ import views.html._
 import scala.collection.JavaConverters._
 
 class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
-
   private trait Test {
     implicit val labels: Labels = LabelCache()
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-
     implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-
-    val expectedTable: Table = Table(Text("HELLO","HELLO"),
-                              Seq(Text("First","First"), Text("Second","Second")),
-                              Seq.fill(3)(Seq(Text("HELLO","HELLO"), Text("World","World"))))
+    val expectedTable: Table = Table(Text("HELLO"),
+                              Seq(Text("First"), Text("Second")),
+                              Seq.fill(3)(Seq(Text("HELLO"), Text("World"))))
 
     val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page: FormPage = models.ui.FormPage("/url", currencyInput)
     implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
-
   "English render_components" must {
-
     "Encode table missing caption, with initial row/cell as table caption" in new Test {
       val html: Html = components.render_components(Seq(expectedTable))
       val table: Element = getSingleElementByTag(html, "Table")
@@ -70,7 +64,7 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
     }
 
     "generate a Details section when required" in new Test {
-      val details: Details = Details(Text("Detail header","Welsh Detail header"), Seq(Text("hidden text","Welsh hidden text")))
+      val details: Details = Details(Text("Detail header"), Seq(Text("hidden text")))
       val html: Html = components.render_components(Seq(details))
       val detailsSection: Element = getSingleElementByTag(html, "details")
 
@@ -80,37 +74,6 @@ class RenderComponentsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuit
 
       val bodyDiv: Element = getSingleElementByTag(detailsSection, "div")
       bodyDiv.text() shouldBe "hidden text"
-      checkClassForElement(bodyDiv, "govuk-details__text")
-    }
-  }
-
-  "Welsh render_components" must {
-
-    "Encode table missing caption, with initial row/cell as table caption" in new WelshTest {
-      val html: Html = components.render_components(Seq(expectedTable))
-      val table: Element = getSingleElementByTag(html, "Table")
-      table.getElementsByTag("caption").asScala.toList.headOption.fold(fail){ caption =>
-        caption.text shouldBe "HELLO"
-
-        table.hasClass("govuk-table") shouldBe true
-
-        val body = table.getElementsByTag("tbody").first
-        val rows = body.getElementsByTag("tr").asScala.toList
-
-        rows.size shouldBe expectedTable.rows.size
-      }
-    }
-    "generate a Details section when required" in new WelshTest {
-      val details: Details = Details(Text("Detail header","Welsh Detail header"), Seq(Text("hidden text","Welsh hidden text")))
-      val html: Html = components.render_components(Seq(details))
-      val detailsSection: Element = getSingleElementByTag(html, "details")
-
-      val header: Element = getSingleElementByTag(detailsSection, "span")
-      header.text() shouldBe "Welsh Detail header"
-      checkClassForElement(header, "govuk-details__summary-text")
-
-      val bodyDiv: Element = getSingleElementByTag(detailsSection, "div")
-      bodyDiv.text() shouldBe "Welsh hidden text"
       checkClassForElement(bodyDiv, "govuk-details__text")
     }
   }

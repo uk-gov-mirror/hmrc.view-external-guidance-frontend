@@ -37,8 +37,8 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest = FakeRequest("GET", "/")
 
-    val paraText1 = Text("Hello", "Welsh Hello")
-    val paraText2 = Text("World", "Welsh World")
+    val paraText1 = Text("Hello")
+    val paraText2 = Text("World")
 
     val ledePara = Paragraph(paraText1, lede = true)
     val para = Paragraph(paraText1)
@@ -47,23 +47,16 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
     val link1En = Link(dest1, "The BBC", window = true)
     val link2En = Link(dest2, "BBC News")
     val pageLinkEn = Link(dest2, "BBC News")
-    val link1Cy = Link(dest1, "Welsh, The BBC", window = true)
-    val link2Cy = Link(dest2, "Welsh, BBC News")
-    val pageLinkCy = Link(dest2, "Welsh, BBC News")
 
-    val link1 = Text(link1En, link1Cy)
-    val link2 = Text(link2En, link2Cy)
-    val pageLink = Text(pageLinkEn, pageLinkCy)
-    val linkWithHint = Text(Link(dest2, "BBC News", false, false, Some("HINT")), Link(dest2, "Welsh, BBC News", false, false, Some("HINT")))
+    val link1 = Text(link1En)
+    val link2 = Text(link2En)
+    val pageLink = Text(pageLinkEn)
+    val linkWithHint = Text(Link(dest2, "BBC News", false, false, Some("HINT")))
 
     val paraWithMultipleLinks = Paragraph(paraText1 + link1 + paraText2 + link2 + pageLink + linkWithHint)
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-  }
-
-  trait WelshTest extends Test {
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
   "Paragraph component" should {
@@ -73,7 +66,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
       val doc = asDocument(paragraph(ledePara))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english.head.toString
+      paras.first.text shouldBe paraText1.asString
       paras.first.classNames.toString shouldBe "[govuk-body-l]"
     }
 
@@ -82,7 +75,7 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
       val doc = asDocument(paragraph(para))
       val paras = doc.getElementsByTag("p")
       paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.english.head.toString
+      paras.first.text shouldBe paraText1.asString
       paras.first.classNames.toString shouldBe "[govuk-body]"
     }
 
@@ -97,8 +90,8 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
 
       val txtNodes = paras.first.textNodes().asScala
       txtNodes.length shouldBe 3
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
+      txtNodes(0).text().trim shouldBe paraText1.asString
+      txtNodes(1).text().trim shouldBe paraText2.asString
 
       val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
       link1Attrs.contains("href") shouldBe true
@@ -133,75 +126,6 @@ class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with
       elementAttrs(links(3))("class") shouldBe "govuk-link"
       elementAttrs(links(3)).get("target") shouldBe None
     }
-
-    "generate Welsh html containing a lede text paragraph" in new WelshTest {
-
-      val doc = asDocument(paragraph(ledePara))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh.head.toString
-      paras.first.classNames.toString shouldBe "[govuk-body-l]"
-    }
-
-    "generate Welsh html containing a normal text paragraph" in new WelshTest {
-
-      val doc = asDocument(paragraph(para))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-      paras.first.text shouldBe paraText1.welsh.head.toString
-      paras.first.classNames.toString shouldBe "[govuk-body]"
-    }
-
-    "generate Welsh html containing Text and links" in new WelshTest {
-
-      val doc = asDocument(paragraph(paraWithMultipleLinks))
-      val paras = doc.getElementsByTag("p")
-      paras.size shouldBe 1
-
-      val links = paras.first.getElementsByTag("a").asScala
-      links.length shouldBe 4
-
-      val txtNodes = paras.first.textNodes().asScala
-      txtNodes.length shouldBe 3
-      txtNodes(0).text().trim shouldBe paraText1.value(messages.lang).head.toString
-      txtNodes(1).text().trim shouldBe paraText2.value(messages.lang).head.toString
-
-      val link1Attrs = links(0).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link1Attrs.contains("href") shouldBe true
-      link1Attrs("href") shouldBe dest1
-      link1Attrs.contains("class") shouldBe true
-      link1Attrs("class") shouldBe "govuk-link"
-      link1Attrs.contains("target") shouldBe true
-      link1Attrs("target") shouldBe "_blank"
-
-      val link2Attrs = links(1).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link2Attrs.contains("href") shouldBe true
-      link2Attrs("href") shouldBe dest2
-      link2Attrs.contains("class") shouldBe true
-      link2Attrs("class") shouldBe "govuk-link"
-      link2Attrs.contains("target") shouldBe false
-
-      val link3Attrs = links(2).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      link3Attrs.contains("href") shouldBe true
-      link3Attrs("href") shouldBe dest2
-      link3Attrs.contains("class") shouldBe true
-      link3Attrs("class") shouldBe "govuk-link"
-      link3Attrs.contains("target") shouldBe false
-
-      val spans = links(3).getElementsByTag("span").asScala.toList
-      spans.length shouldBe 2
-      elementAttrs(spans(1))("class") shouldBe "govuk-visually-hidden"
-      spans(0).text shouldBe "Welsh, BBC News"
-      spans(1).text shouldBe "HINT"
-
-
-      val link4Attrs = links(3).attributes.asScala.toList.map(attr => (attr.getKey, attr.getValue)).toMap
-      elementAttrs(links(3))("href") shouldBe dest2
-      elementAttrs(links(3))("class") shouldBe "govuk-link"
-      elementAttrs(links(3)).get("target") shouldBe None
-
-    }
-
   }
 
   "link component" should {

@@ -39,49 +39,27 @@ class H4HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
     val englishText: String = "English text"
-    val welshText: String = "Welsh text"
 
-    val h4: H4 = H4(Text(englishText, welshText))
+    val h4: H4 = H4(Text(englishText))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
-  }
-
   "Creating a level 4 heading with some content" must {
 
     "Define the correct GDS class" in new Test {
-
       val markUp: Html = h4_heading(h4)
-
       val element: Element = getSingleElementByTag(markUp, "h4")
 
       element.hasClass("govuk-heading-s") shouldBe true
     }
 
     "display text in English" in new Test {
-
       val markUp: Html = h4_heading(h4)
-
       val element: Element = getSingleElementByTag(markUp, "h4")
 
       element.text() shouldBe englishText
     }
-
-    "display text in Welsh when requested" in new WelshTest {
-
-      val markUp: Html = h4_heading(h4)
-
-      val element: Element = getSingleElementByTag(markUp, "h4")
-
-      element.text() shouldBe welshText
-    }
-
   }
-
 }

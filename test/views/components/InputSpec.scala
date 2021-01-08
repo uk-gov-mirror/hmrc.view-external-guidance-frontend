@@ -47,22 +47,22 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     def dateFormProvider: SubmittedDateAnswerFormProvider = injector.instanceOf[SubmittedDateAnswerFormProvider]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-    private val para1Text = Text("This is a question", "Welsh, This is a question")
+    private val para1Text = Text("This is a question")
     protected val para1 = Paragraph(para1Text)
 
-    val i1 = Vector("Enter main residence value", "Welsh, Enter main residence value?")
-    val i1Hint = Vector("This is where they lived", "Welsh, This is where they lived")
+    val i1 = "Enter main residence value"
+    val i1Hint = "This is where they lived"
 
     val inputValue1: String = "200"
-    private val leading = Text("You can buy", "Gwallwch brynu")
-    private val bp1 = Text("apples", "afalau")
-    private val bp2 = Text("oranges", "orennau")
-    private val bp3 = Text("pears", "gellyg")
+    private val leading = Text("You can buy")
+    private val bp1 = Text("apples")
+    private val bp2 = Text("oranges")
+    private val bp3 = Text("pears")
     private val bpList: BulletPointList = BulletPointList(leading, Seq(bp1, bp2, bp3))
 
-    protected val h2: H2 = H2(Text("h2","h2"))
-    protected val h3: H3 = H3(Text("h3","h3"))
-    protected val h4: H4 = H4(Text("h4","h4"))
+    protected val h2: H2 = H2(Text("h2"))
+    protected val h3: H3 = H3(Text("h3"))
+    protected val h4: H4 = H4(Text("h4"))
     val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
     val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
 
@@ -70,7 +70,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
-    protected val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
+    protected val errorMsg = RequiredErrorMsg(Text("An error has occurred"))
     val inputWithErrors: Input = CurrencyInput(Text(i1), None, Seq.empty, Seq(errorMsg))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
@@ -79,17 +79,13 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val ctx = PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  trait WelshTest extends Test {
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-  }
-
   "English Currency Input components" must {
 
     "render input text as a header" in new Test {
       private val doc = asDocument(components.input(input, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
       private val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
-      heading.first.text() shouldBe i1(0)
+      heading.first.text() shouldBe i1
     }
 
     "render contained paragraphs" in new Test {
@@ -121,7 +117,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
+      firstHint.text() shouldBe Text(i1Hint).items.head.toString
     }
 
     "Input with no body should have a label wrapper class on H1" in new Test {
@@ -141,7 +137,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "input-hint"
         attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe i1Hint(0)
+        span.text shouldBe i1Hint
       }
     }
 
@@ -188,7 +184,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val doc = asDocument(components.input(input, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
       private val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
-      heading.first.text() shouldBe i1(0)
+      heading.first.text() shouldBe i1
     }
 
     "render contained paragraphs" in new Test {
@@ -220,7 +216,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
+      firstHint.text() shouldBe Text(i1Hint).items.head.toString
     }
 
     "Input with no body should have a label wrapper class on H1" in new Test {
@@ -240,7 +236,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "input-hint"
         attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe i1Hint(0)
+        span.text shouldBe i1Hint
       }
     }
 
@@ -287,7 +283,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val doc = asDocument(components.input_date(input, "test", dateFormProvider())(fakeRequest, messages, ctx))
       private val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
-      heading.first.text() shouldBe i1(0)
+      heading.first.text() shouldBe i1
     }
 
     "render contained a fieldset" in new DateTest {
@@ -329,7 +325,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
+      firstHint.text() shouldBe Text(i1Hint).asString
     }
 
     "render input with no body as a fieldset class on H1" in new DateTest {
@@ -349,7 +345,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "input-hint"
         attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe i1Hint(0)
+        span.text shouldBe i1Hint
       }
     }
 

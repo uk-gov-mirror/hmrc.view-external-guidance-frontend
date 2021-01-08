@@ -42,12 +42,10 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
   }
 
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
-
   "English render_form" must {
 
     "render a text input for a TextInput" in new Test {
-      val textInput: TextInput = models.ui.TextInput(Text("Name?", "Welsh, Name?"), None, Seq.empty)
+      val textInput: TextInput = models.ui.TextInput(Text("Name?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", textInput)
       implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
       val html: Html = components.render_form(textInput, "text", formProvider("test" -> nonEmptyText))
@@ -56,7 +54,7 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render a text input for a CurrencyInput" in new Test {
-      val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text("Bank balance?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", currencyInput)
       implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
       val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
@@ -65,7 +63,7 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render a text input for a CurrencyInputPoundsOnly" in new Test {
-      val currencyInput: CurrencyPoundsOnlyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
+      val currencyInput: CurrencyPoundsOnlyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", currencyInput)
       implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
       val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
@@ -76,7 +74,7 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     }
 
     "render three text inputs for a DateInput" in new Test {
-      val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
+      val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?"), None, Seq.empty)
       val page: FormPage = models.ui.FormPage("/url", dateInput)
       implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
       val html: Html = components.render_form(dateInput, "dateOfBirth", dateFormProvider())
@@ -92,86 +90,15 @@ class RenderFormSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
     "render a set of radio buttons for a Question" in new Test {
       val question: Question = models.ui.Question(
-        Text("Have bank account?", "Welsh, have bank account?"),
+        Text("Have bank account?"),
         None,
         Seq.empty,
-        Seq(Answer(Text("A1","Welsh A1"), None), Answer(Text("A2","Welsh A2"), None)))
+        Seq(Answer(Text("A1"), None), Answer(Text("A2"), None)))
       val page: FormPage = models.ui.FormPage("/url", question)
       implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
       val html: Html = components.render_form(question, "bankAccount", formProvider("test" -> nonEmptyText))
       val h1: Element = getSingleElementByTag(html, "H1")
       h1.text() shouldBe "Have bank account?"
-      val radio1: Option[Element] = getElementById(html, "bankAccount-0")
-      radio1.isDefined shouldBe true
-      radio1.get.`val`() shouldBe "0"
-      val radio2: Option[Element] = getElementById(html, "bankAccount-1")
-      radio2.isDefined shouldBe true
-      radio2.get.`val`() shouldBe "1"
-    }
-
-  }
-
-  "Welsh render_components" must {
-
-    "render a text input for a TextInput" in new WelshTest {
-      val textInput: TextInput = models.ui.TextInput(Text("Name?", "Welsh, Name?"), None, Seq.empty)
-      val page: FormPage = models.ui.FormPage("/url", textInput)
-      implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(textInput, "text", formProvider("test" -> nonEmptyText))
-      val h1: Element = getSingleElementByTag(html, "H1")
-      h1.text() shouldBe "Welsh, Name?"
-      val input: Element = getSingleElementByTag(html, "Input")
-      input.id() shouldBe "text-0"
-    }
-
-    "render a text input for a CurrencyInput" in new WelshTest {
-      val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page: FormPage = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
-      val h1: Element = getSingleElementByTag(html, "H1")
-      h1.text() shouldBe "Welsh, Bank balance?"
-      val input: Element = getSingleElementByTag(html, "Input")
-      input.id() shouldBe "currency-0"
-    }
-
-    "render a text input for a CurrencyInputPoundsOnly" in new WelshTest {
-      val currencyInput: CurrencyPoundsOnlyInput = models.ui.CurrencyPoundsOnlyInput(Text("Bank balance?", "Welsh, Bank balance?"), None, Seq.empty)
-      val page: FormPage = models.ui.FormPage("/url", currencyInput)
-      implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(currencyInput, "currency", formProvider("test" -> nonEmptyText))
-      val h1: Element = getSingleElementByTag(html, "H1")
-      h1.text() shouldBe "Welsh, Bank balance?"
-      val input: Element = getSingleElementByTag(html, "Input")
-      input.id() shouldBe "currency-0"
-    }
-
-    "render three text inputs for a DateInput" in new WelshTest {
-      val dateInput: DateInput = models.ui.DateInput(Text("Date of birth?", "Welsh, Date of birth?"), None, Seq.empty)
-      val page: FormPage = models.ui.FormPage("/url", dateInput)
-      implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(dateInput, "dateOfBirth", dateFormProvider())
-      val h1: Element = getSingleElementByTag(html, "H1")
-      h1.text() shouldBe "Welsh, Date of birth?"
-      val day: Option[Element] = getElementById(html, "day")
-      day.isDefined shouldBe true
-      val month: Option[Element] = getElementById(html, "month")
-      month.isDefined shouldBe true
-      val year: Option[Element] = getElementById(html, "year")
-      year.isDefined shouldBe true
-    }
-
-    "render a set of radio buttons for a Question" in new WelshTest {
-      val question: Question = models.ui.Question(
-        Text("Have bank account?", "Welsh, have bank account?"),
-        None,
-        Seq.empty,
-        Seq(Answer(Text("A1","Welsh A1"), None), Answer(Text("A2","Welsh A2"), None)))
-      val page: FormPage = models.ui.FormPage("/url", question)
-      implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-      val html: Html = components.render_form(question, "bankAccount", formProvider("test" -> nonEmptyText))
-      val h1: Element = getSingleElementByTag(html, "H1")
-      h1.text() shouldBe "Welsh, have bank account?"
       val radio1: Option[Element] = getElementById(html, "bankAccount-0")
       radio1.isDefined shouldBe true
       radio1.get.`val`() shouldBe "0"

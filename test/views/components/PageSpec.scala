@@ -46,59 +46,50 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
     val standardPageView = app.injector.instanceOf[views.html.standard_page]
     val formPageView = app.injector.instanceOf[views.html.form_page]
-    val title = Text("Telling HMRC about extra income", "Tudalen Arddangos Yn Adrodd HMRC am incwm ychwanegol")
+    val title = Text("Telling HMRC about extra income")
 
-    val openingPara = Text(
-      "Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.",
-      "Gwiriwch a oes angen i chi ddweud wrth HMRC am arian ychwanegol rydych chi " +
-        "wedi'i wneud trwy werthu nwyddau neu wasanaethau, neu rentu tir neu eiddo."
-    )
+    val openingPara = Text("Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.")
 
-    val bulletPointLeadingText = Text("For example:", "Er enghraifft:")
+    val bulletPointLeadingText = Text("For example:")
 
-    val bulletPointOne = Text("selling items online or face to face", "gwerthu eitemau ar-lein neu wyneb yn wyneb")
+    val bulletPointOne = Text("selling items online or face to face")
 
     val bulletPointTwo =
-      Text("selling freelance services (such as gardening or babysitting)", "gwerthu gwasanaethau ar eu liwt eu hunain (fel garddio neu warchod plant)")
-    val bulletPointThree = Text("hiring out personal equipment (such as power tools)", "llogi offer personol (fel offer pŵer)")
+      Text("selling freelance services (such as gardening or babysitting)")
+    val bulletPointThree = Text("hiring out personal equipment (such as power tools)")
 
     val para = Paragraph(openingPara)
     val bulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
     val simplePage = StandardPage("root", Seq(para, H1(title), bulletPointList))
 
-    val confirmationPanelLeadingText = Text("Calculation Complete", "Welsh, Calculation Complete")
-    val confirmationPanelOne = Text("you need to pay IHT", "welsh, you need to pay IHT")
-    val confirmationPanelTwo = Text("£325,000", "welsh, £325,000")
+    val confirmationPanelLeadingText = Text("Calculation Complete")
+    val confirmationPanelOne = Text("you need to pay IHT")
+    val confirmationPanelTwo = Text("£325,000")
     val confirmationPanel = ConfirmationPanel(confirmationPanelLeadingText, Seq(confirmationPanelOne, confirmationPanelTwo))
-    val listOne = Text("Line 1", "Welsh, Line 1")
-    val listTwo = Text("Line 2", "Welsh, Line 2")
-    val listThree = Text("Line 2", "Welsh, Line 3")
+    val listOne = Text("Line 1")
+    val listTwo = Text("Line 2")
+    val listThree = Text("Line 2")
     val numberedList = NumberedList(Seq(listOne, listTwo, listThree))
     val numberedCircleList = NumberedCircleList(Seq(listOne, listTwo, listThree))
-    val insetOne = Text("Inset 1", "Welsh, Inset 1")
-    val insetTwo = Text("Inset 2", "Welsh, Inset 2")
+    val insetOne = Text("Inset 1")
+    val insetTwo = Text("Inset 2")
     val insetText = InsetText(Seq(insetOne, insetTwo))
     val summaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
     val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList))
 
-    val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
-    val ans1 = Vector("Yes", "Welsh, Yes")
-    val ans2 = Vector("No", "Welsh, Yes")
-    val a1 = Answer(Text(ans1), None)
-    val a2 = Answer(Text(ans2), None)
+    val a1 = Answer(Text("Yes"), None)
+    val a2 = Answer(Text("No"), None)
     val answers = Seq(a1, a2)
-    val questionText = Text(q1)
+    val questionText = Text("Do you agree?")
     val question = Question(questionText, None, Seq(para, bulletPointList), answers)
-    val errorMsg = RequiredErrorMsg(Text("An error has occurred", "Welsh, An error has occurred"))
+    val errorMsg = RequiredErrorMsg(Text("An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
     val textFormProvider = new SubmittedTextAnswerFormProvider()
     val questionPage = FormPage("root", question)
     val questionPageWithErrors = FormPage("root", questionWithErrors)
 
-    val i1 = Vector("What is value of your house?", "Welsh, What is value of your house?")
-    val inputText = Text(i1)
-    val i1Hint = Vector("use market value", "Welsh, use market value?")
-    val inputHint = Text(i1Hint)
+    val inputText = Text("What is value of your house?")
+    val inputHint = Text("use market value")
     val input = CurrencyInput(inputText, Some(inputHint), Seq(para, bulletPointList))
     val inputWithErrors = CurrencyInput(inputText, Some(inputHint), Seq(para, bulletPointList), Seq(errorMsg))
     val inputPage = FormPage("root", input)
@@ -118,13 +109,9 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageCtx = PageContext(simplePage, Seq.empty, None, "sessionId", Some("/"), Text("Title", "Title"), "processId", "processCode")
-    val questionPageContext = PageContext(questionPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
-    val inputPageContext = PageContext(inputPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title", "Title"), "processId", "processCode")
-  }
-
-  trait WelshTest extends Test {
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
+    val pageCtx = PageContext(simplePage, Seq.empty, None, "sessionId", Some("/"), Text("Title"), "processId", "processCode")
+    val questionPageContext = PageContext(questionPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
+    val inputPageContext = PageContext(inputPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
   }
 
   "Standard Page component" should {
@@ -134,49 +121,22 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe title.english.head.toString
+      h1s.first.text shouldBe title.asString
 
       val paras = doc.select("main.govuk-main-wrapper p")
 
       paras.size shouldBe 2
 
       val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+      firstPara.first.text shouldBe openingPara.asString
 
       val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
+      secondPara.first.text shouldBe bulletPointLeadingText.asString
 
       val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
       actualListItems.size shouldBe 3
 
-      val expectedListItems: List[String] =
-        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
-
-      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
-    }
-
-    "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
-
-      val doc = asDocument(standardPageView(simplePage, pageCtx)(fakeRequest, messages))
-
-      val h1s = doc.getElementsByTag("h1")
-      h1s.size shouldBe 1
-      h1s.first.text shouldBe title.welsh.head.toString
-
-      val paras = doc.select("main.govuk-main-wrapper p")
-
-      paras.size shouldBe 2
-
-      val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.welsh.head.toString
-
-      val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
-
-      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
-      actualListItems.size shouldBe 3
-
-      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
+      val expectedListItems: List[String] = List(bulletPointOne.asString, bulletPointTwo.asString, bulletPointThree.asString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
@@ -186,7 +146,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe confirmationPanelLeadingText.english.head.toString
+      h1s.first.text shouldBe confirmationPanelLeadingText.asString
 
       val paras = doc.select("main.govuk-main-wrapper p")
 
@@ -199,10 +159,10 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       insetInfo.size shouldBe 2
 
       val firstPara = insetInfo.eq(0)
-      firstPara.first.text shouldBe insetOne.value(messages.lang).head.toString
+      firstPara.first.text shouldBe insetOne.asString
 
       val secondPara = insetInfo.eq(1)
-      secondPara.first.text shouldBe insetTwo.english.head.toString
+      secondPara.first.text shouldBe insetTwo.asString
 
       val numberedListItem = doc.getElementsByClass("govuk-list--number")
       numberedListItem.size shouldBe 2
@@ -210,7 +170,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       val actualListItems = numberedListItem.first().getElementsByTag("li").asScala.toList
 
       val expectedListItems: List[String] =
-        List(listOne.english.head.toString, listTwo.english.head.toString, listThree.english.head.toString)
+        List(listOne.asString, listTwo.asString, listThree.asString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual numbered list items do not match those expected")
 
@@ -241,23 +201,23 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe questionText.english.head.toString
+      h1s.first.text shouldBe questionText.asString
 
       val paras = doc.select("main.govuk-main-wrapper p")
 
       paras.size shouldBe 2
 
       val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+      firstPara.first.text shouldBe openingPara.asString
 
       val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
+      secondPara.first.text shouldBe bulletPointLeadingText.asString
 
       val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] =
-        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
+        List(bulletPointOne.asString, bulletPointTwo.asString, bulletPointThree.asString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
@@ -283,55 +243,6 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       }
     }
 
-    "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
-
-      val doc = asDocument(formPageView(questionPage, questionPageContext, "question",  textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
-
-      checkTitle(doc)
-
-      val h1s = doc.getElementsByTag("h1")
-      h1s.size shouldBe 1
-      h1s.first.text shouldBe questionText.welsh.head.toString
-
-      val paras = doc.select("main.govuk-main-wrapper p")
-
-      paras.size shouldBe 2
-
-      val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.welsh.head.toString
-
-      val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
-
-      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
-      actualListItems.size shouldBe 3
-
-      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
-
-      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
-    }
-
-    "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
-
-      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
-
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
-
-      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
-    }
-
-    "set radios fieldset aria-describedby correctly when error occurs" in new WelshTest {
-
-      val questionPageContextWithErrs = questionPageContext.copy(page = questionPageWithErrors)
-
-      val doc = asDocument(formPageView(questionPageWithErrors, questionPageContextWithErrs, "question", textFormProvider("url" -> nonEmptyText) )(fakeRequest, messages))
-
-      val fieldset: Element = doc.getElementsByTag("fieldset").first
-      Option(fieldset).fold(fail("Missing fieldset")){fset =>
-        elementAttrs(fset)("aria-describedby").contains("required-error") shouldBe true
-      }
-    }
-
   }
 
   "Input Page component" should {
@@ -344,23 +255,23 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val h1s = doc.getElementsByTag("h1")
       h1s.size shouldBe 1
-      h1s.first.text shouldBe inputText.english.head.toString
+      h1s.first.text shouldBe inputText.asString
 
       val paras = doc.select("main.govuk-main-wrapper p")
 
       paras.size shouldBe 2
 
       val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.value(messages.lang).head.toString
+      firstPara.first.text shouldBe openingPara.asString
 
       val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.english.head.toString
+      secondPara.first.text shouldBe bulletPointLeadingText.asString
 
       val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
       actualListItems.size shouldBe 3
 
       val expectedListItems: List[String] =
-        List(bulletPointOne.english.head.toString, bulletPointTwo.english.head.toString, bulletPointThree.english.head.toString)
+        List(bulletPointOne.asString, bulletPointTwo.asString, bulletPointThree.asString)
 
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
@@ -385,56 +296,5 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         elementAttrs(inp)("aria-describedby").contains("required-error") shouldBe true
       }
     }
-
-    "generate Welsh html containing an H1 and a text only paragraph" in new WelshTest {
-
-      val doc = asDocument(formPageView(inputPage, pageCtx, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
-
-      checkTitle(doc)
-
-      val h1s = doc.getElementsByTag("h1")
-      h1s.size shouldBe 1
-      h1s.first.text shouldBe inputText.welsh.head.toString
-
-      val paras = doc.select("main.govuk-main-wrapper p")
-
-      paras.size shouldBe 2
-
-      val firstPara = paras.eq(0)
-      firstPara.first.text shouldBe openingPara.welsh.head.toString
-
-      val secondPara = paras.eq(1)
-      secondPara.first.text shouldBe bulletPointLeadingText.welsh.head.toString
-
-      val actualListItems = doc.select("main.govuk-main-wrapper li").asScala.toList
-      actualListItems.size shouldBe 3
-
-      val expectedListItems: List[String] = List(bulletPointOne.welsh.head.toString, bulletPointTwo.welsh.head.toString, bulletPointThree.welsh.head.toString)
-
-      assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
-    }
-
-    "generate Welsh title prefixed by Error: when errors are displayed" in new WelshTest {
-
-      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
-
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
-
-      checkTitle(doc, None, Some(messages("error.browser.title.prefix")))
-    }
-
-    "set Welsh input aria-describedby correctly when error occurs" in new WelshTest {
-
-      val inputPageContextWithErrs = inputPageContext.copy(page = inputPageWithErrors)
-
-      val doc = asDocument(formPageView(inputPageWithErrors, inputPageContextWithErrs, "input", textFormProvider("12000" -> nonEmptyText) )(fakeRequest, messages))
-
-      val inputField: Element = doc.getElementsByTag("input").first
-      Option(inputField).fold(fail("Missing fieldset")){inp =>
-        elementAttrs(inp)("aria-describedby").contains("required-error") shouldBe true
-      }
-    }
-
   }
-
 }
