@@ -17,7 +17,6 @@
 package models.ui
 
 import base.{BaseSpec, TestConstants}
-import play.api.i18n.Lang
 
 class UIComponentsSpec extends BaseSpec with TestConstants {
   val h1English: String = "Heading level 1 text"
@@ -38,8 +37,6 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
   val welBulletPointOneText = "Welsh bullet point 1"
   val engBulletPointTwoText = "Bullet point 2"
   val welBulletPointTwoText = "Welsh bullet point 2"
-  val englishLang: Lang = Lang("en")
-  val welshLang: Lang = Lang("cy")
 
   "UIComponents" must {
 
