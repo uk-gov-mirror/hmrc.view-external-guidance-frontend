@@ -20,24 +20,19 @@ import base.{WelshLanguage, BaseSpec}
 import models.ocelot._
 import models.ui.{Currency, CurrencyPoundsOnly, DateStandard, LabelRef, Link, Text, Txt, Words}
 
-class WelshTextBuilderSpec extends BaseSpec {
+class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
 
-  trait Test extends ProcessJson with WelshLanguage {
+  trait Test extends ProcessJson {
     val lEnWords1 = Words("This is a ", true)
-    val lCyWords1 = Words("Welsh, This is a ", true)
     val lEnWords2 = Words(" followed by ")
-    val lCyWords2 = Words(" Welsh, followed by ")
     val lEnWords3 = Words(" and nothing")
-    val lCyWords3 = Words(" Welsh, and nothing")
     val link1EnWords = "A link"
     val link1CyWords = "Welsh, A link"
     val link2EnWords = "Another Link"
     val link2CyWords = "Welsh, Another Link"
 
     val linkEn1 = Link("https://www.bbc.co.uk", link1EnWords, false)
-    val linkCy1 = Link("https://www.bbc.co.uk", link1CyWords, false)
     val linkEn2 = Link("https://www.gov.uk", link2EnWords, false)
-    val linkCy2 = Link("https://www.gov.uk", link2CyWords, false)
     val urlMap1: Map[String, String] = Map("start" -> "dummy-path/start", "3" -> "dummy-path", "5" -> "dummy-path/blah", "34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(

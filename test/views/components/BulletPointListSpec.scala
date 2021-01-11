@@ -51,38 +51,21 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
     "Render a simple bullet point list with text elements only" must {
 
       val enLeadingText: String = "You can buy"
-      val cyLeadingText: String = "Gwallwch brynu"
-
       val enBpOne: String = "apples"
-      val cyBpOne: String = "afalau"
-
       val enBpTwo: String = "oranges"
-      val cyBpTwo: String = "orennau"
-
       val enBpThree: String = "pears"
-      val cyBpThree: String = "gellyg"
-
       val leadingText: Text = Text(enLeadingText)
-
-      val listItems: Seq[Text] = Seq(
-        Text(enBpOne),
-        Text(enBpTwo),
-        Text(enBpThree)
-      )
-
+      val listItems: Seq[Text] = Seq(Text(enBpOne), Text(enBpTwo), Text(enBpThree))
       val simpleBpList: BulletPointList = BulletPointList(leadingText, listItems)
 
       "Render simple bullet point list in English" in new Test {
 
         val markUp: Html = bullet_point_list(simpleBpList)
-
         val document: Document = Jsoup.parse(markUp.toString())
-
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
         paragraph.hasClass("govuk-body") shouldBe true
-
         paragraph.text() shouldBe enLeadingText
 
         // Test list items
@@ -91,7 +74,6 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         checkClassesForElement(ul, List("govuk-list", "govuk-list--bullet"))
 
         val expectedListItems = List(enBpOne, enBpTwo, enBpThree)
-
         val actualListItems = getMultipleElementsByTag(document, "li", 3).asScala.toList
 
         assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
@@ -101,33 +83,19 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
     "Render a bullet point list with a link embedded in the leading text" must {
 
       val enLeading1: String = "To view your options"
-      val cyLeading1: String = "Welsh to view your options"
-
       val linkUrl: String = "http://optionsUrl"
       val linkEnglishText: String = "Click here"
-      val linkWelshText: String = "Welsh click here"
-
       val enLeadingTextPartTwo: String = "Or just give up"
-      val cyLeadingTextPartTwo: String = "Welsh or just give up"
-
       val enBpOneText: String = "Continue to section A"
-      val cyBpOneText: String = "Welsh continue to section A"
-
       val enBpTwoText: String = "Continue to section B"
-      val cyBpTwoText: String = "Welsh continue to section B"
-
       val bpLeadingText: Text = Text(enLeading1) + Text(Link(linkUrl, linkEnglishText)) + Text(enLeadingTextPartTwo)
-
       val bpListItems: Seq[Text] = Seq(Text(enBpOneText), Text(enBpTwoText))
-
       val bpList: BulletPointList = BulletPointList(bpLeadingText, bpListItems)
 
       "Render bullet point list with embedded link in English" in new Test {
 
         val markUp: Html = bullet_point_list(bpList)
-
         val document: Document = Jsoup.parse(markUp.toString())
-
         // Test leading text
         val paragraph: Element = getSingleElementByTag(document, "p")
 
@@ -136,7 +104,6 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         val textNodes = paragraph.textNodes().asScala
 
         textNodes.length shouldBe 2
-
         textNodes(0).text().trim shouldBe enLeading1
         textNodes(1).text().trim shouldBe enLeadingTextPartTwo
 
@@ -150,7 +117,6 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         checkClassesForElement(ul, List("govuk-list", "govuk-list--bullet"))
 
         val expectedListItems = List(enBpOneText, enBpTwoText)
-
         val actualListItems = getMultipleElementsByTag(document, "li", 2).asScala.toList
 
         assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
@@ -160,39 +126,21 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
     "Render a bullet point list with links embedded in the list items" must {
 
       val enLeadingText: String = "Leading text for list"
-      val cyLeadingText: String = "Welsh leading text for list"
-
       val enBpOneText: String = "Bullet point one text"
-      val cyBpOneText: String = "Welsh bullet point one text"
-
       val bpOneLinkUrl: String = "http://bpOneUrl"
-
       val enBpOneLinkText: String = "Bullet point one link text"
-      val cyBpOneLinkText: String = "Welsh bullet point one link text"
-
       val enBpTwoText: String = "Bullet point two text"
-      val cyBpTwoText: String = "Welsh bullet point two text"
-
       val bpTwoLinkUrl: String = "http://bpTwoUrl"
-
       val enBpTwoLinkText: String = "Bullet point two link text"
-      val cyBpTwoLinkText: String = "Welsh bullet point two link text"
-
       val bpLeadingText: Text = Text(enLeadingText)
-
-      val bpListItems: Seq[Text] = Seq(
-        Text(enBpOneText) + Text(Link(bpOneLinkUrl, enBpOneLinkText)),
-        Text(enBpTwoText) + Text(Link(bpTwoLinkUrl, enBpTwoLinkText, true))
-      )
-
+      val bpListItems: Seq[Text] = Seq(Text(enBpOneText) + Text(Link(bpOneLinkUrl, enBpOneLinkText)),
+                                       Text(enBpTwoText) + Text(Link(bpTwoLinkUrl, enBpTwoLinkText, true)))
       val bpList: BulletPointList = BulletPointList(bpLeadingText, bpListItems)
 
       "Render the bullet point list with embedded links in English" in new Test {
 
         val markUp: Html = bullet_point_list(bpList)
-
         val document: Document = Jsoup.parse(markUp.toString())
-
         // Test leading paragraph
         val paragraph: Element = getSingleElementByTag(document, "p")
 
@@ -201,40 +149,32 @@ class BulletPointListSpec extends ViewSpec with GuiceOneAppPerSuite {
         val textNode = paragraph.textNodes().asScala
 
         textNode.length shouldBe 1
-
         textNode(0).text().trim shouldBe enLeadingText
 
         // Test list items
         val listItems: Elements = getMultipleElementsByTag(document, "li", 2)
-
         val firstListItem: Element = listItems.first()
-
         // First list item
         val firstListItemsTextNodes = firstListItem.textNodes().asScala
 
         firstListItemsTextNodes.length shouldBe 2
-
         firstListItemsTextNodes(0).text().trim shouldBe enBpOneText
 
         val firstListItemLinks: Elements = firstListItem.getElementsByTag("a")
 
         firstListItemLinks.size() shouldBe 1
-
         checkHyperLink(firstListItemLinks.first, bpOneLinkUrl, enBpOneLinkText, false)
 
         // Second link item
         val secondListItem = listItems.last
-
         val secondListItemTextNodes = secondListItem.textNodes().asScala
 
         secondListItemTextNodes.length shouldBe 2
-
         secondListItemTextNodes(0).text().trim shouldBe enBpTwoText
 
         val secondListItemLinks: Elements = secondListItem.getElementsByTag("a")
 
         secondListItemLinks.size() shouldBe 1
-
         checkHyperLink(secondListItemLinks.first, bpTwoLinkUrl, enBpTwoLinkText, true)
       }
     }

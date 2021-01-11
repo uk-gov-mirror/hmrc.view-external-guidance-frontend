@@ -80,13 +80,6 @@ object TextBuilder {
     (txts.head.trim, hint)
   }
 
-  // private def singlePhraseWithOptionalHint(txt: Phrase)(implicit lang: Lang): (Phrase, Option[Text]) = {
-  //   val (txt, hint) = singleStringWithOptionalHint(txt.value(lang))
-  //   val (en, enHint) = singleStringWithOptionalHint(txt.langs(0))
-  //   val (cy, cyHint) = singleStringWithOptionalHint(txt.langs(1))
-  //   (Phrase(en, cy), hint.map(Text(_)))
-  // }
-
   // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
   // The string before the first hint will be converted to a Text object
   // and returned along with optional hint
