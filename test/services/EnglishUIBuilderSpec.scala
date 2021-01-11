@@ -23,9 +23,9 @@ import models.ui
 import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, Words}
 import play.api.i18n.Lang
 
-class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
+class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguage {
 
-  trait QuestionTest extends EnglishLanguage {
+  trait QuestionTest {
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -110,7 +110,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
     }
   }
 
-  trait Test extends ProcessJson with EnglishLanguage {
+  trait Test extends ProcessJson {
     case class UnsupportedVisualStanza(override val next: Seq[String], stack: Boolean) extends VisualStanza with Populated
     val lang0 = Vector("Some Text", "Welsh, Some Text")
     val lang1 = Vector("Some Text1", "Welsh, Some Text1")
@@ -118,60 +118,35 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
     val lang3 = Vector("Some Text3", "Welsh, Some Text3")
     val lang4 = Vector("Some Text4", "Welsh, Some Text4")
     val lang5 = Vector("Some Text5", "Welsh, Some Text5")
-
     val ltxt1 = Text(Words("This is a ", true))
     val ltxt2 = Text(" followed by ")
     val ltxt3 = Text(" and nothing")
-    val link1TxtEn = "A link"
-    val link1TxtCy = "Welsh, A link"
-    val link2TxtEn = "Another Link"
-    val link2TxtCy = "Welsh, Another Link"
-    val link2StartEn = "Back to beginning"
-    val link2StartCy = "Back to beginning"
-    val link1Txt2En = "A link at start of phrase"
-    val link1Txt2Cy = "Welsh, A link at start of phrase"
-    val link2Txt2En = "Another Link at end of phrase"
-    val link2Txt2Cy = "Welsh, Another Link at end of phrase"
-
-    val pageLink1TextEn = "A page link"
-    val pageLink1TextCy = "Welsh, A page link"
-    val pageLink2TextEn = "Another page link"
-    val pageLink2TextCy = "Welsh, Another page link"
+    val link1Txt = "A link"
+    val link2Txt = "Another Link"
+    val link2Start = "Back to beginning"
+    val link1Txt2 = "A link at start of phrase"
+    val link2Txt2 = "Another Link at end of phrase"
+    val pageLink1Text = "A page link"
+    val pageLink2Text = "Another page link"
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
     val ans1 = Vector("Yes", "Welsh, Yes")
     val ans2 = Vector("No", "Welsh, Yes")
     val ans3 = Vector("Not sure", "Welsh, Yes")
-
     val ans1WithHint = Vector("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
     val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
     val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
-
     val hint1 = Text("You agree with the assertion")
     val hint2 = Text("You DONT agree with the assertion")
     val hint3 = Text("You dont know")
-
-    val link1En = Link("https://www.bbc.co.uk", link1TxtEn)
-    val link2En = Link("https://www.gov.uk", link2TxtEn)
-    val link2_1En = Link("https://www.bbc.co.uk", link1Txt2En)
-    val link2_2En = Link("https://www.gov.uk", link2Txt2En)
-    val link3En = Link("dummy-path/blah", lang4(0))
-    val link4En = Link("https://www.bbc.co.uk", lang4(0))
-
-    val pageLink1En = Link("dummy-path/next", pageLink1TextEn)
-    val pageLink2En = Link("dummy-path", pageLink2TextEn)
-
-    val startLinkEn = Link("/blah", link2StartEn)
-    val startLinkCy = Link("/blah", link2StartCy)
-
-    val link1Cy = Link("https://www.bbc.co.uk", link1TxtCy)
-    val link2Cy = Link("https://www.gov.uk", link2TxtCy)
-    val link2_1Cy = Link("https://www.bbc.co.uk", link1Txt2Cy)
-    val link2_2Cy = Link("https://www.gov.uk", link2Txt2Cy)
-    val link3Cy = Link("dummy-path/blah", lang4(1))
-    val link4Cy = Link("https://www.bbc.co.uk", lang4(1))
-
-    val pageLink1Cy = Link("dummy-path/next", pageLink1TextCy)
-    val pageLink2Cy = Link("dummy-path", pageLink2TextCy)
+    val link1 = Link("https://www.bbc.co.uk", link1Txt)
+    val link2 = Link("https://www.gov.uk", link2Txt)
+    val link2_1 = Link("https://www.bbc.co.uk", link1Txt2)
+    val link2_2 = Link("https://www.gov.uk", link2Txt2)
+    val link3 = Link("dummy-path/blah", lang4(0))
+    val link4 = Link("https://www.bbc.co.uk", lang4(0))
+    val pageLink1 = Link("dummy-path/next", pageLink1Text)
+    val pageLink2 = Link("dummy-path", pageLink2Text)
+    val startLink = Link("/blah", link2Start)
 
     implicit val urlMap: Map[String, String] =
       Map(
@@ -274,18 +249,18 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
     val pageWithH4 = Page(Process.StartStanzaId, "/test-page", stanzas, Seq.empty)
 
     val textItems = ltxt1 +
-      Text(link1En) +
+      Text(link1) +
       ltxt2 +
-      Text(link2En) +
+      Text(link2) +
       ltxt3
-    val textItems2 = Text(link2_1En) + ltxt2 + Text(link2_2En)
+    val textItems2 = Text(link2_1) + ltxt2 + Text(link2_2)
 
     val pageLinkTextItems = ltxt1 +
-      Text(pageLink1En) +
+      Text(pageLink1) +
       ltxt2 +
-      Text(pageLink2En) +
+      Text(pageLink2) +
       ltxt3
-    val allLinksTextItems = Text(link2_1En) + ltxt2 + Text(pageLink1En) + Text(startLinkEn)
+    val allLinksTextItems = Text(link2_1) + ltxt2 + Text(pageLink1) + Text(startLink)
 
     val pageWithEmbeddLinks: Page = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedLinks, Seq.empty)
 
@@ -648,12 +623,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson {
 
     "convert page including a PageLink instruction stanza" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3En), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link3), false)
     }
 
     "convert page including a Link instruction stanza" in new Test {
       val uiPage = uiBuilder.buildPage(hyperLinkPage.url, hyperLinkPage.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4En), false)
+      uiPage.components(five) shouldBe models.ui.Paragraph(Text(link4), false)
     }
 
     "convert a question page into a Seq of a single Question UI object" in new Test {

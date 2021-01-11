@@ -23,16 +23,16 @@ import models.ui.{Currency, CurrencyPoundsOnly, DateStandard, LabelRef, Link, Te
 class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
 
   trait Test extends ProcessJson {
-    val lEnWords1 = Words("This is a ", true)
-    val lEnWords2 = Words(" followed by ")
-    val lEnWords3 = Words(" and nothing")
+    val words1 = Words("This is a ", true)
+    val words2 = Words(" followed by ")
+    val words3 = Words(" and nothing")
     val link1EnWords = "A link"
     val link1CyWords = "Welsh, A link"
     val link2EnWords = "Another Link"
     val link2CyWords = "Welsh, Another Link"
 
-    val linkEn1 = Link("https://www.bbc.co.uk", link1EnWords, false)
-    val linkEn2 = Link("https://www.gov.uk", link2EnWords, false)
+    val link1 = Link("https://www.bbc.co.uk", link1EnWords, false)
+    val link2 = Link("https://www.gov.uk", link2EnWords, false)
     val urlMap1: Map[String, String] = Map("start" -> "dummy-path/start", "3" -> "dummy-path", "5" -> "dummy-path/blah", "34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(
@@ -92,11 +92,11 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
 
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
       val txt = TextBuilder.fromPhrase(txtWithLinks)
-      txt.items(0) shouldBe lEnWords1
+      txt.items(0) shouldBe words1
       txt.items(1).toWords shouldBe Link("https://www.bbc.co.uk", link1EnWords).toWords
-      txt.items(2) shouldBe lEnWords2
+      txt.items(2) shouldBe words2
       txt.items(3).toWords shouldBe Link("https://www.gov.uk", link2EnWords).toWords
-      txt.items(4) shouldBe lEnWords3
+      txt.items(4) shouldBe words3
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
