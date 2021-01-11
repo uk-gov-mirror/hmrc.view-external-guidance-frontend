@@ -21,6 +21,11 @@ import play.api.libs.json.{Reads, Writes, __}
 import models.ocelot.stanzas._
 
 case class Process(meta: Meta, flow: Map[String, Stanza], phrases: Vector[Phrase], links: Vector[Link]) {
+  lazy val passPhrase: Option[String] =
+    flow.values
+      .collect{case vs: ValueStanza => vs.values}.flatten
+      .collect{case Value(_, Process.PassPhraseLabelName, phrase) => phrase}
+      .headOption
 
   lazy val phraseOption: Int => Option[Phrase] = phrases.lift
   lazy val linkOption: Int => Option[Link] = links.lift
@@ -32,6 +37,7 @@ case class Process(meta: Meta, flow: Map[String, Stanza], phrases: Vector[Phrase
 
 object Process {
   val StartStanzaId = "start"
+  val PassPhraseLabelName = "_GuidancePassPhrase"
 
   implicit val reads: Reads[Process] = (
     (__ \ "meta").read[Meta] and

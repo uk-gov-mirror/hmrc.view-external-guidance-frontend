@@ -48,19 +48,19 @@ class GuidanceService @Inject() (
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
-        urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
-          logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
+      case Right(ctx) if ctx.process.meta.processCode == processCode =>
+        ctx.urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
+          logger.error(s"Unable to find url $url within cached process ${ctx.process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
         }{ pageId =>
-          pageBuilder.buildPage(pageId, process).fold(
+          pageBuilder.buildPage(pageId, ctx.process).fold(
             err => {
-              logger.error(s"PageBuilder error $err on process ${process.meta.id} with sessionId $sessionId")
+              logger.error(s"PageBuilder error $err on process ${ctx.process.meta.id} with sessionId $sessionId")
               Left(InvalidProcessError)
             },
             page => {
-              val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
-              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
+              val stanzaIdToUrlMap = ctx.urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(ctx.labels))
 
               Right(
                 PageEvaluationContext(
@@ -69,19 +69,19 @@ class GuidanceService @Inject() (
                   dataInput,
                   sessionId,
                   stanzaIdToUrlMap,
-                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
-                  process.title,
-                  process.meta.id,
+                  ctx.process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                  ctx.process.title,
+                  ctx.process.meta.id,
                   processCode,
                   labels,
-                  backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
-                  answers.get(url)
+                  ctx.backLink.map(bl => s"${appConfig.baseUrl}/$bl"),
+                  ctx.answers.get(url)
                 )
               )
             }
           )
         }
-      case Right(ProcessContext(_,_,_,_,_)) =>
+      case Right(_) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
