@@ -16,14 +16,25 @@
 
 package models.ocelot
 
-import models.ocelot.stanzas.Stanza
-import play.api.i18n.{MessagesApi, Lang}
+// import models.ocelot.stanzas.Stanza
+// import play.api.i18n.{MessagesApi, Lang}
+import models.ocelot.stanzas.{Choice, EqualsTest, TextInput, PageStanza}
 
 object PassPhrasePage {
-  def stanzas(initialPhraseId: Int): Seq[Stanza] = Nil
-  val phrases: Seq[Phrase] = Nil
-  def add(process: Process): Process = {
-
-  }
+  val PageId = "passpage"
+  val InputId = "passinput"
+  val ChoiceId = "passchoice"
+  val keyedStanzas = Seq(
+    KeyedStanza(PageId, PageStanza("/guard", Seq(InputId), false)),
+    KeyedStanza(InputId, TextInput(Seq(ChoiceId),
+                                   Phrase("Enter passphrase", "Welsh, Enter passphrase"),
+                                   None,
+                                   "_GuidancePassPhraseResponse",
+                                   None,
+                                   false)),
+    KeyedStanza(ChoiceId, Choice(Seq(Process.StartStanzaId, PageId),
+                                 Seq(EqualsTest("[label:_GuidancePassPhrase]","[label:_GuidancePassPhraseResponse]"))))
+  )
+  val page = Page("passpage", "/guard", keyedStanzas, Seq(Process.StartStanzaId))
 }
 
