@@ -56,7 +56,9 @@ case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
                           urlToPageId: Map[String, String],
-                          backLink: Option[String])
+                          backLink: Option[String]) {
+  lazy val secure: Boolean = process.passPhrase.fold(true)(_ => labels.get(Process.PassPhraseLabelName).fold(true)(_.english.isEmpty))
+}
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
@@ -106,6 +108,16 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
+  def get(key:String): Future[RequestOutcome[ProcessContext]] =
+    find("_id" -> key).map {
+      case Nil =>  Left(NotFoundError)
+      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
+    }.recover {
+      case lastError =>
+      logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
+      Left(DatabaseError)
+    }
+
   def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(Json.obj("_id" -> key),
       Json.obj(
@@ -140,6 +152,51 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
+  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj(
+        "$set" -> Json.obj(
+          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+                toFieldPair(s"answers.$url", answer)) ++ labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+        )
+      )
+    ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to saveUserAnswerAndLabels using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update question answers and labels within session repo with _id=$key, url: $url, answer: $answer")
+          Left(DatabaseError)
+      }
+
+  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
+      findAndUpdate(
+        Json.obj("_id" -> key),
+        Json.obj("$set" -> Json.obj(labels.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
+      ).map { result =>
+        result
+          .result[DefaultSessionRepository.SessionProcess]
+          .fold {
+            logger.warn(
+              s"Attempt to saveLabels using _id=$key returned no result, lastError ${result.lastError}"
+            )
+            Left(NotFoundError): RequestOutcome[Unit]
+          }(_ => Right({}))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
+          Left(DatabaseError)
+      }
+
   private def backlinkAndHistory(pageUrl: String,
                                  previousPageByLink: Boolean,
                                  priorHistory: List[String]): (Option[String], Option[List[String]]) =
@@ -169,61 +226,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
     (name -> Json.toJsFieldJsValueWrapper(value))
-
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
-    findAndUpdate(
-      Json.obj("_id" -> key),
-      Json.obj(
-        "$set" -> Json.obj(
-          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-                toFieldPair(s"answers.$url", answer)) ++ labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
-        )
-      )
-    ).map { result =>
-        result
-          .result[DefaultSessionRepository.SessionProcess]
-          .fold {
-            logger.warn(
-              s"Attempt to saveUserAnswerAndLabels using _id=$key returned no result, lastError ${result.lastError}, url: $url, answer: $answer"
-            )
-            Left(NotFoundError): RequestOutcome[Unit]
-          }(_ => Right({}))
-      }
-      .recover {
-        case lastError =>
-          logger.error(s"Error $lastError while trying to update question answers and labels within session repo with _id=$key, url: $url, answer: $answer")
-          Left(DatabaseError)
-      }
-
-  def get(key:String): Future[RequestOutcome[ProcessContext]] =
-    find("_id" -> key).map {
-      case Nil =>  Left(NotFoundError)
-      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
-    }.recover {
-      case lastError =>
-      logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
-      Left(DatabaseError)
-    }
-
-  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
-      findAndUpdate(
-        Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj(labels.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
-      ).map { result =>
-        result
-          .result[DefaultSessionRepository.SessionProcess]
-          .fold {
-            logger.warn(
-              s"Attempt to saveLabels using _id=$key returned no result, lastError ${result.lastError}"
-            )
-            Left(NotFoundError): RequestOutcome[Unit]
-          }(_ => Right({}))
-      }
-      .recover {
-        case lastError =>
-          logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
-          Left(DatabaseError)
-      }
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(

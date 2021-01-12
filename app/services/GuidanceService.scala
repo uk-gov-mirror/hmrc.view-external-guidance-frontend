@@ -24,7 +24,7 @@ import play.api.Logger
 import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.i18n.Lang
+import play.api.i18n.{MessagesApi, Lang}
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
@@ -36,14 +36,23 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
+    messagesApi: MessagesApi,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
-    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
+  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean)
+                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] = {
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink).map{
+      case Left(err) =>
+        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
+        Left(err)
+      case Right(ctx) if ctx.secure => Right(ctx)
+      case Right(ctx) => Right(ctx)
+     }
+  }
 
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
@@ -84,9 +93,7 @@ class GuidanceService @Inject() (
       case Right(_) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
-      case Left(err) =>
-        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
-        Left(err)
+      case Left(err) => Left(err)
     }
 
   def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError)(implicit lang: Lang): PageContext = {
