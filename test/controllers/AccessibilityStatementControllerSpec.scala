@@ -122,7 +122,7 @@ class AccessibilityStatementControllerSpec extends WordSpec with Matchers with V
       status(result) shouldBe Status.OK
       val doc = asDocument(contentAsString(result))
       doc.getElementsByTag("a").asScala.toList.find(elementAttrs(_)("class") == "govuk-header__link govuk-header__link--service-name")
-          .fold(fail("Missing header link"))(a => a.text shouldBe process.title.langs(0))
+          .fold(fail("Missing header link"))(a => a.text shouldBe process.title.english)
 
     }
 

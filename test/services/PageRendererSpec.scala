@@ -191,9 +191,9 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
 
-      testRender(page, "0", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(0).langs(0)), Some(answers(0).langs(1))))))
-      testRender(page, "1", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(1).langs(0)), Some(answers(1).langs(1))))))
-      testRender(page, "2", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(2).langs(0)), Some(answers(2).langs(1))))))
+      testRender(page, "0", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(0).english), Some(answers(0).welsh)))))
+      testRender(page, "1", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(1).english), Some(answers(1).welsh)))))
+      testRender(page, "2", LabelCache(Map(), Map("X" -> Label("X",Some("9")), "TaxRefund" -> Label("TaxRefund",Some(answers(2).english), Some(answers(2).welsh)))))
 
     }
 
@@ -237,8 +237,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
       next shouldBe Some("25")
 
       newLabels.updatedLabels.get(questionLabel).isEmpty shouldBe false
-      newLabels.displayValue(questionLabel)(Lang("en")) shouldBe Some(answers(0).langs(0))
-      newLabels.displayValue(questionLabel)(Lang("cy")) shouldBe Some(answers(0).langs(1))
+      newLabels.displayValue(questionLabel)(Lang("en")) shouldBe Some(answers(0).english)
+      newLabels.displayValue(questionLabel)(Lang("cy")) shouldBe Some(answers(0).welsh)
     }
 
     "Evaluate the stanzas after user input stanza when question answer is end" in new Test {

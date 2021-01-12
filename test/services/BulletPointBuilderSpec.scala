@@ -281,9 +281,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "Types of fruit you can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Types of fruit you can buy:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix Types of fruit you can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Types of fruit you can buy:"
     }
 
     "Identify leading text in sentences starting with bold text" in {
@@ -293,9 +293,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[bold:Types of automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Types of automobile] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [bold:Types of automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of automobile] you can buy"
     }
 
     "Identify leading text in complex sentences" in {
@@ -307,10 +307,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
     }
 
@@ -323,9 +323,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "Things you might like [bold:TO DO]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Things you might like [bold:TO DO]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix Things you might like [bold:TO DO]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Things you might like [bold:TO DO]"
     }
 
     "Identify leading text in sentences where the leading text contains bold text items embedded in normal text" in {
@@ -335,9 +335,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "Things [bold:to do] on sunny [bold:days] in the"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Things [bold:to do] on sunny [bold:days] in the"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix Things [bold:to do] on sunny [bold:days] in the"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Things [bold:to do] on sunny [bold:days] in the"
     }
 
     "Identify leading text in sentences where the leading text contains normal text embedded in bold text" in {
@@ -347,9 +347,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [bold:How long] must we [bold:continue to] be [bold:stuck in]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:How long] must we [bold:continue to] be [bold:stuck in]"
     }
 
     "Identify leading text in simple sentences with multiple spaces between some words" in {
@@ -359,9 +359,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "Types of  fruit you  can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Types of  fruit you  can buy:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix Types of  fruit you  can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Types of  fruit you  can buy:"
     }
 
     "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
@@ -371,9 +371,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[bold:Types of  automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Types of  automobile] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [bold:Types of  automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of  automobile] you can buy"
     }
 
     "Identify leading text in sentences starting with link text" in {
@@ -383,9 +383,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[link:Types of automobile:http://mydomain/cars] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[link:Types of automobile:http://mydomain/cars] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [link:Types of automobile:http://mydomain/cars] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of automobile:http://mydomain/cars] you can buy"
     }
 
     "Identify leading text is sentences where the leading text ends with link text" in {
@@ -397,10 +397,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
     }
 
@@ -411,10 +411,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
     }
 
@@ -427,10 +427,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix [link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
     }
 
@@ -441,9 +441,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[link:Types of  automobile:5] you  can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[link:Types of  automobile:5] you  can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [link:Types of  automobile:5] you  can buy"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of  automobile:5] you  can buy"
     }
 
     "Identify leading text in sentences starting with leading text with both links and bold text" in {
@@ -453,10 +453,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
     }
 
@@ -467,9 +467,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "[bold:Today is the first day in ]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Today is the first day in ]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix [bold:Today is the first day in ]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Today is the first day in ]"
     }
 
     "Identify leading text in sentences where leading text and trailing text are both in links" in {
@@ -479,10 +479,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "[link:Today is the first day in :https://mydomain/calendar/today]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix [link:Today is the first day in :https://mydomain/calendar/today]"
     }
 
@@ -493,9 +493,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "You can buy the [bold:following]:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy the [bold:following]:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix You can buy the [bold:following]:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy the [bold:following]:"
     }
 
     "Identify leading text where text includes a bold section followed immediately by a non-white space character and then further texts" in {
@@ -505,9 +505,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "You can [bold:buy], things such as, various"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can [bold:buy], things such as, various"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix You can [bold:buy], things such as, various"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can [bold:buy], things such as, various"
     }
 
     "Identify leading text where text includes both bold and link placeholders immediately followed by non-whitespace characters" in {
@@ -517,10 +517,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your"
     }
 
@@ -531,9 +531,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "You can buy[bold:-categories]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy[bold:-categories]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix You can buy[bold:-categories]"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories]"
     }
 
     "Identify leading text where text includes a placeholder immediately following none-whitespace text followed by further matching text" in {
@@ -543,9 +543,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe "You can buy[bold:-categories] fruit and veg:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy[bold:-categories] fruit and veg:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe s"$welshPrefix You can buy[bold:-categories] fruit and veg:"
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories] fruit and veg:"
     }
 
     "Identify leading text where text includes both bold and link placeholders with leading text" in {
@@ -555,10 +555,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] :"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] :"
     }
 
@@ -569,10 +569,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as"
     }
 
@@ -583,10 +583,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 0) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
         "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]:"
     }
 
@@ -597,7 +597,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
       val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, 1) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as,"
     }
 
