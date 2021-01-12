@@ -20,6 +20,7 @@ import config.AppConfig
 import controllers.routes
 import javax.inject.Inject
 import play.api.i18n.Messages
+import play.api.mvc.Request
 import uk.gov.hmrc.govukfrontend.views.viewmodels.footer.FooterItem
 
 class FooterLinks @Inject() (implicit appConfig: AppConfig) {
@@ -44,12 +45,12 @@ class FooterLinks @Inject() (implicit appConfig: AppConfig) {
     Some(appConfig.govukHelp)
   )
 
-  def accecssibilityLink()(implicit messages: Messages): FooterItem = FooterItem(
+  def accecssibilityLink()(implicit messages: Messages, request:Request[_]): FooterItem = FooterItem(
     Some(messages("footer.links.accessibility.text")),
-    Some(routes.AccessibilityStatementController.getPage(None).url)
+    Some(appConfig.accessibilityStatement)
   )
 
-  def items(implicit messages: Messages): Seq[FooterItem] = Seq(
+  def items(implicit messages: Messages, request:Request[_]): Seq[FooterItem] = Seq(
     cookieLink,
     accecssibilityLink,
     privacyLink,

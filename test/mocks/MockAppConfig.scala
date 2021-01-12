@@ -36,6 +36,7 @@ object MockAppConfig extends AppConfig {
   override val privacy: String = "someUrl"
   override val termsConditions: String = "someUrl"
   override val govukHelp: String = "someUrl"
+  override val accessibilityStatement: String = "someUrl"
   override val signOutUrl: String = "/guidance/sessionTimeout"
   override val defaultSignOutUrl: String = "https://www.gov.uk"
   override val timeoutInSeconds: Int = 1200
