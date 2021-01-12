@@ -159,7 +159,7 @@ class GuidanceService @Inject() (
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
       case Right(process) =>
-        pageBuilder.pages(process).fold(
+        pageBuilder.pages(process, process.startPageId).fold(
         err => {
           logger.warn(s"Failed to parse process with error $err")
           Future.successful(Left(InvalidProcessError))
