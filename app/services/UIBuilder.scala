@@ -140,20 +140,14 @@ class UIBuilder {
     def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
                               (implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
       remainder.map { instruction =>
-        val bulletPointEnglish: String = instruction.text
-          .langs(0)
-          .substring(leadingEn.length, instruction.text.langs(0).length)
-          .trim
-        val bulletPointWelsh: String = instruction.text
-          .langs(1)
-          .substring(leadingCy.length, instruction.text.langs(1).length)
-          .trim
+        val bulletPointEnglish: String = instruction.text.english.substring(leadingEn.length, instruction.text.english.length).trim
+        val bulletPointWelsh: String = instruction.text.welsh.substring(leadingCy.length, instruction.text.welsh.length).trim
 
         TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
       }
 
-    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 0)
-    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, 1)
+    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, _.english)
+    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, _.welsh)
     // Process bullet points
     val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, insGroup.group)
 
