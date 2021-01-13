@@ -85,16 +85,16 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
     "redirect to accessibility page if referer is bogus" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, "https://www.bbc.co.uk")))
-      redirectLocation(result) shouldBe Some("/guidance/accessibility")
+      redirectLocation(result) shouldBe Some("/accessibility-statement/interactive-guidance")
 
     }
 
     "redirect to accessibility page if referrer only service host or admin host" in {
       val result = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, appConfig.host)))
-      redirectLocation(result) shouldBe Some("/guidance/accessibility")
+      redirectLocation(result) shouldBe Some("/accessibility-statement/interactive-guidance")
 
       val adminResult = controller.switchToLanguage("cy")(fakeRequest.withHeaders((HeaderNames.REFERER, appConfig.adminHost)))
-      redirectLocation(adminResult) shouldBe Some("/guidance/accessibility")
+      redirectLocation(adminResult) shouldBe Some("/accessibility-statement/interactive-guidance")
 
     }
 

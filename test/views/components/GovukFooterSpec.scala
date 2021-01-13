@@ -40,8 +40,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val footerLinks = app.injector.instanceOf[FooterLinks]
     val footer = app.injector.instanceOf[views.html.components.govukFooter]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
-    val fakeRequest = FakeRequest("GET", "/")
-
+   implicit val fakeRequest = FakeRequest("GET", "/")
   }
 
   trait WelshTest extends Test {
