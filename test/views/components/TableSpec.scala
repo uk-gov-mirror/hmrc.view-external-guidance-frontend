@@ -52,7 +52,9 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
                                               Seq(Text("Caption"), Text("Caption")),
                                               Seq.fill(3)(Seq(Text("HELLO"), Text(LabelRef("Blah", Currency)))))
     val expectedTableWithCaption = expectedTable.copy(caption = Text("Caption"))
-
+    val expectedTableWithTxtCells = Table(Text("HELLO"),
+                                          Seq(Text("Caption"), Text("Caption")),
+                                          Seq(Seq(Text("HELLO"), Text(LabelRef("Blah", Txt)))))
   }
 
   "English Tables" must {
@@ -91,6 +93,26 @@ class TableSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
               c.hasClass("govuk-table__cell--numeric") shouldBe true
 
             case (c, tc) =>
+              c.hasClass("govuk-table__cell--numeric") shouldBe false
+          }
+      }
+    }
+
+    "Encode table with txt cells without using govuk numeric class" in new Test {
+      val html: Html = components.table(expectedTableWithTxtCells)
+      val table: Element = getSingleElementByTag(html, "Table")
+      table.hasClass("govuk-table") shouldBe true
+      val body = table.getElementsByTag("tbody").first
+      val rows = body.getElementsByTag("tr").asScala.toList
+
+      rows.size shouldBe expectedTableWithTxtCells.rows.size
+
+      (rows zip expectedTableWithTxtCells.rows).foreach{
+        case (rowElem, tableRow) =>
+          val cells = rowElem.children.asScala.toList
+          (cells zip tableRow).foreach{
+            case (c, td) if td.isNumericLabelRef => fail()
+            case (c, _) =>
               c.hasClass("govuk-table__cell--numeric") shouldBe false
           }
       }

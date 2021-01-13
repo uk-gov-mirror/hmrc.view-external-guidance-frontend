@@ -37,7 +37,7 @@ case class Words(s: String, bold: Boolean = false) extends TextItem {
 case class LabelRef(name: String, outputFormat: OutputFormat = Txt, bold: Boolean = false) extends TextItem {
   def isEmpty: Boolean = false
   def toWords: Seq[String] = name.split(" +").toSeq
-  override def toString: String = s"[label:${name}:$outputFormat]"
+  override def toString: String = s"[label:$name:$outputFormat]"
 }
 
 case class Link(dest: String, text: String, window: Boolean = false, asButton: Boolean = false, hint:Option[String] = None) extends TextItem {
@@ -63,8 +63,7 @@ case class Text(items: Seq[TextItem]) {
     case _ => false
   })
   lazy val isNumericLabelRef: Boolean = items.length == 1 && (items.head match {
-    case l: LabelRef if l.outputFormat == Currency => true
-    case l: LabelRef if l.outputFormat == CurrencyPoundsOnly => true
+    case l: LabelRef => l.outputFormat.isNumeric
     case _ => false
   })
 }

@@ -26,7 +26,8 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
 import models.ocelot.{Label, LabelCache, Labels}
-import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3, LabelRef, Link, Paragraph, Text, TextItem, Txt, Words}
+import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3}
+import models.ui.{LabelRef, Link, Number, Paragraph, Text, TextItem, Txt, Words}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 import play.api.mvc.AnyContentAsEmpty
@@ -68,12 +69,16 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("Date-Label", DateStandard, bold = true)))
     val textWithStandardDateLabelRefEmpty: Text =
       Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("No-Label", DateStandard, bold = true)))
+    val textWithNumberLabelRef: Text =
+      Text(Seq(Words("A large number stored without decimal places and rendered as entered, "), LabelRef("BigNumber", Number)))
     val invalidDateLabel: Text =
       Text(Seq(Words("A date label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", DateStandard)))
     val invalidCurrencyLabel: Text =
       Text(Seq(Words("A currency label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Currency)))
     val invalidPoundsOnlyLabel: Text =
       Text(Seq(Words("A pounds only label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", CurrencyPoundsOnly)))
+    val invalidNumberLabel: Text =
+      Text(Seq(Words("A number label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Number)))
     val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page: FormPage = models.ui.FormPage("/url", currencyInput)
     implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
@@ -152,6 +157,18 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc: Document = asDocument(paragraph(Paragraph(normalText)))
       val strong: Elements = doc.getElementsByTag("strong")
       strong.size shouldBe 0
+    }
+
+    "generate English html containing label references with standard Number output formatting" in new Test {
+      val doc: Document = asDocument(paragraph(Paragraph(textWithNumberLabelRef))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      p.text shouldBe "A large number stored without decimal places and rendered as entered, 12345678"
+    }
+
+    "generate English html containing label references with Number output formatting with invalid data" in new Test {
+      val doc: Document = asDocument(paragraph(Paragraph(invalidNumberLabel))(messages, ctx))
+      val p: Element = doc.getElementsByTag("p").first
+      p.text shouldBe "A number label with an unexpected text format must display the plain text: text string"
     }
 
     "generate English html containing an H1" in new Test {

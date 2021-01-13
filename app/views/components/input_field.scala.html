@@ -14,11 +14,12 @@
  * limitations under the License.
  *@
 
-@import models.ui.{TextInput, CurrencyInput, CurrencyPoundsOnlyInput}
+@import models.ui.{TextInput, CurrencyInput, CurrencyPoundsOnlyInput, NumberInput}
 @(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
 <div class="govuk-form-group">
 @{input match {
+    case _: NumberInput => components.input_number_field(input, name, form)
     case _: TextInput => components.input_text_field(input, name, form)
     case _: CurrencyInput | _: CurrencyPoundsOnlyInput => components.input_currency_field(input, name, form)
   }
