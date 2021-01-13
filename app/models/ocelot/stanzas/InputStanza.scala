@@ -80,13 +80,13 @@ case class NumberInput(
 }
 
 case class TextInput(
-                      override val next: Seq[String],
-                      name: Phrase,
-                      help: Option[Phrase],
-                      label: String,
-                      placeholder: Option[Phrase],
-                      stack: Boolean
-                    ) extends Input {
+  override val next: Seq[String],
+  name: Phrase,
+  help: Option[Phrase],
+  label: String,
+  placeholder: Option[Phrase],
+  stack: Boolean
+) extends Input {
   def validInput(value: String): Option[String] = asTextString(value)
 }
 

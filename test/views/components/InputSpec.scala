@@ -397,7 +397,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val doc = asDocument(components.input(input, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
       private val heading = doc.getElementsByTag("h1")
       heading.size shouldBe 1
-      heading.first.text() shouldBe i1(0)
+      heading.first.text() shouldBe i1
     }
 
     "render contained paragraphs" in new NumberTest {
@@ -429,7 +429,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).value(messages.lang).head.toString
+      firstHint.text() shouldBe i1Hint
     }
 
     "Input with no body should have a label wrapper class on H1" in new NumberTest {
@@ -449,7 +449,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         val attrs = elementAttrs(span)
         attrs("id") shouldBe "input-hint"
         attrs("class").contains("govuk-hint") shouldBe true
-        span.text shouldBe i1Hint(0)
+        span.text shouldBe i1Hint
       }
     }
 

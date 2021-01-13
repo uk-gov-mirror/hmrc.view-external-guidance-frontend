@@ -528,24 +528,24 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
   "services" must {
     "determine unique set of case sensitive labels from a collection of pages" in new IhtTest {
       val labels = Seq(Label("Properties",None),
-                       Label("Money",None),
-                       Label("Household",None),
-                       Label("Motor Vehicles",None),
-                       Label("Private pension",None),
-                       Label("Trust",None),
-                       Label("Foreign assets",None),
-                       Label("Other assets",None),
-                       Label("Mortgage_debt",None),
-                       Label("funeral_expenses",None),
-                       Label("other_debts",None),
-                       Label("left to spouse",None),
-                       Label("registered charity",None),
-                       Label("nil rate band",None),
-                       Label("more than 100k",None, None),
-                       Label("Value of Assets",None),
-                       Label("Value of Debts",None),
-                       Label("Additional Info",None),
-                       Label("IHT result",None))
+        Label("Money",None),
+        Label("Household",None),
+        Label("Motor Vehicles",None),
+        Label("Private pension",None),
+        Label("Trust",None),
+        Label("Foreign assets",None),
+        Label("Other assets",None),
+        Label("Mortgage_debt",None),
+        Label("funeral_expenses",None),
+        Label("other_debts",None),
+        Label("left to spouse",None),
+        Label("registered charity",None),
+        Label("nil rate band",None),
+        Label("more than 100k",None, None),
+        Label("Value of Assets",None),
+        Label("Value of Debts",None),
+        Label("Additional Info",None),
+        Label("IHT result",None))
 
       pageBuilder.pagesWithValidation(ihtProcess, "start") match {
         case Right(pages) => services.uniqueLabels(pages) shouldBe labels
@@ -554,24 +554,24 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
     }
 
     "determine unique set of label references from a collection of pages" in new IhtTest {
-     val labelsReferenced = Seq("Properties",
-                                  "Money",
-                                  "Value of Assets",
-                                  "Household",
-                                  "Motor Vehicles",
-                                  "Private pension",
-                                  "Trust",
-                                  "Foreign assets",
-                                  "Other assets",
-                                  "Mortgage_debt",
-                                  "funeral_expenses",
-                                  "Value of Debts",
-                                  "other_debts",
-                                  "left to spouse",
-                                  "registered charity",
-                                  "Additional Info",
-                                  "nil rate band",
-                                  "IHT result")
+      val labelsReferenced = Seq("Properties",
+        "Money",
+        "Value of Assets",
+        "Household",
+        "Motor Vehicles",
+        "Private pension",
+        "Trust",
+        "Foreign assets",
+        "Other assets",
+        "Mortgage_debt",
+        "funeral_expenses",
+        "Value of Debts",
+        "other_debts",
+        "left to spouse",
+        "registered charity",
+        "Additional Info",
+        "nil rate band",
+        "IHT result")
 
       pageBuilder.pagesWithValidation(ihtProcess, "start") match {
         case Right(pages) => services.uniqueLabelRefs(pages) shouldBe labelsReferenced
@@ -880,7 +880,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         flow,
         Vector[Phrase](
           Phrase(Vector("Single cell row stanza", "Welsh, Single cell row stanza")),
-            cellDataContent
+          cellDataContent
         ),
         Vector[Link]()
       )
