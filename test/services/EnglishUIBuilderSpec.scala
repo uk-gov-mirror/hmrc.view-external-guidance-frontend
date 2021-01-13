@@ -21,7 +21,6 @@ import models.ocelot._
 import models.ocelot.stanzas._
 import models.ui
 import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, Words}
-import play.api.i18n.Lang
 
 class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguage {
 
@@ -309,7 +308,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
                                                                Text("World"),
                                                                Text.link("dummy-path","Change", false, false, Some("HELLO"))))
     val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
-    val headingPhrase = Phrase("Heading", "Heading")
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
   }
 
   trait TableTest extends Test {
@@ -317,12 +316,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val simpleRowGroup = RowGroup(rows)
     val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
-    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), true) +:
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:Welsh, HELLO]")), Phrase(Vector("[bold:World]", "[bold:Welsh, World]"))), Seq(), true) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val tableHeading = rowsWithHeading(0).cells.map(TextBuilder.fromPhrase(_))
     val tableRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
-    val headingPhrase = Phrase("Heading", "Heading")
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
     val headingText = Text(headingPhrase.value(lang))
 
     val emptyRows = Seq.fill(3)(Row(Seq.empty, Seq.empty, true))
@@ -332,7 +331,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   }
 
   trait NumberListTest extends Test {
-    val headingPhrase = Phrase(Vector("Heading", "Heading"))
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
     val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
     val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
     val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
@@ -472,8 +471,9 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 tableRowGroup))
       p.components match {
-        case Seq(Table(Text(headingPhrase), tableHeading, _)) => succeed
-        case x => fail(s"Found $x")
+        case Seq(Table(Text(h), th, _)) if h.headOption == Some(Words(headingPhrase.value(lang))) => succeed
+        case x =>
+          fail(s"Found $x")
       }
     }
 
@@ -481,7 +481,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 tableRowGroup))
       p.components match {
-        case Seq(Table(headingText, _, rows)) => succeed
+        case Seq(Table(Text(h), _, rows)) if h.headOption == Some(Words(headingPhrase.value(lang))) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -664,29 +664,22 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Process page with a simple instruction group" in new Test {
-
       val phrase1: Phrase = Phrase(Vector("My favourite sweets are wine gums", "Fy hoff losin yw deintgig gwin"))
       val phrase2: Phrase = Phrase(Vector("My favourite sweets are humbugs", "Fy hoff losin yw humbugs"))
-
       val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, true)
       val instruction2: Instruction = Instruction(phrase2, Seq("end"), None, false)
-
       val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
-
       val bulletPointListStanzas = Seq(
         KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
         KeyedStanza("1", instructionGroup)
       )
-
       val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
-
       val uiPage = uiBuilder.buildPage(bulletPointListPage.url, bulletPointListPage.stanzas.collect{case s: VisualStanza => s})
 
       uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
       val leadingTextItems: Text = Text(Words("My favourite sweets are"))
-
       val bulletPointOne: Text = Text("wine gums")
       val bulletPointTwo: Text = Text("humbugs")
 
@@ -945,7 +938,6 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   }
 
   trait InputTest {
-    implicit val lang: Lang = Lang("en")
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -1064,7 +1056,6 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   }
 
   trait ConfirmationPanelTest {
-    implicit val lang: Lang = Lang("en")
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/page-1",
@@ -1284,7 +1275,6 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
   "UIBuilder Date Input processing" must {
     trait DateInputTest {
-      implicit val lang: Lang = Lang("en")
       implicit val urlMap: Map[String, String] =
         Map(
           Process.StartStanzaId -> "/blah",

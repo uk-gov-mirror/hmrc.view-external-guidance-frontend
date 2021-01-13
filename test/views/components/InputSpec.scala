@@ -117,7 +117,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).items.head.toString
+      firstHint.text() shouldBe i1Hint
     }
 
     "Input with no body should have a label wrapper class on H1" in new Test {
@@ -216,7 +216,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val firstHint = hints.head
       private val hint1Attrs = elementAttrs(firstHint)
       hint1Attrs("class") shouldBe "govuk-hint"
-      firstHint.text() shouldBe Text(i1Hint).items.head.toString
+      firstHint.text() shouldBe i1Hint
     }
 
     "Input with no body should have a label wrapper class on H1" in new Test {

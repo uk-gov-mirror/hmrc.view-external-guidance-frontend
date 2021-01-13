@@ -46,18 +46,14 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
 
-    val englishTitle: String = "Title"
-    val welshTitle: String = "Welsh, Title"
+    val titleStr: String = "Title"
 
-    val englishBodyText1: String = "First line in body"
-    val welshBodyText1: String = "Welsh, First line in body"
+    val bodyStr1: String = "First line in body"
+    val bodyStr2: String = "Second line in body"
 
-    val englishBodyText2: String = "Second line in body"
-    val welshBodyText2: String = "Welsh, Second line in body"
-
-    val title: Text = Text(englishTitle)
-    val bodyText1: Text =  Text(englishBodyText1)
-    val bodyText2: Text = Text(englishBodyText2)
+    val title: Text = Text(titleStr)
+    val bodyText1: Text =  Text(bodyStr1)
+    val bodyText2: Text = Text(bodyStr2)
   }
 
   "Confirmation panel" must {
@@ -80,7 +76,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
     }
@@ -103,7 +99,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
 
@@ -112,7 +108,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       bodyDivs.size shouldBe 2 // List includes panel division
 
-      bodyDivs.last.text() shouldBe englishBodyText1
+      bodyDivs.last.text() shouldBe bodyStr1
 
       elementAttrs(bodyDivs.last)("class").contains("govuk-panel__body")
 
@@ -139,7 +135,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
 
@@ -153,7 +149,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
       // Test contents of nodes
       val firstChildNodeAttributes: Attributes = bodyDivs.last.childNode(0).attributes()
 
-      firstChildNodeAttributes.get("#text").trim shouldBe englishBodyText1
+      firstChildNodeAttributes.get("#text").trim shouldBe bodyStr1
 
       val secondChildNode: Node = bodyDivs.last.childNode( 1)
 
@@ -161,7 +157,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       val thirdChildNodeAttributes: Attributes = bodyDivs.last.childNode(2).attributes()
 
-      thirdChildNodeAttributes.get("#text").trim shouldBe englishBodyText2
+      thirdChildNodeAttributes.get("#text").trim shouldBe bodyStr2
 
       // Check number of line breaks
       val breaks: Elements = bodyDivs.last.getElementsByTag("br")

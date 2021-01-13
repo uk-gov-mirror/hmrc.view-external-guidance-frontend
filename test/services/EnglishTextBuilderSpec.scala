@@ -55,38 +55,38 @@ class EnglishTextBuilderSpec extends BaseSpec {
   "TextBuilder placeholder parsing" must {
 
     "Convert label reference with default output format placeholders within phrase to LabelRef TextItems" in new Test {
-      val p = Phrase("""Sentence with a [label:BLAH] label reference""", """Sentence with a [label:BLAH] label reference""")
+      val p = Phrase("""Sentence with a [label:BLAH] label reference""", """Welsh, Sentence with a [label:BLAH] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Txt), Words(" label reference"))
     }
 
     "Convert label reference with currency output format placeholders within phrase to LabelRef TextItems" in new Test {
-      val p = Phrase("""Sentence with a [label:BLAH:currency] label reference""", """Sentence with a [label:BLAH:currency] label reference""")
+      val p = Phrase("""Sentence with a [label:BLAH:currency] label reference""", """Welsh, Sentence with a [label:BLAH:currency] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
     }
 
     "Convert label reference with date output format placeholders within phrase to LabelRef TextItems" in new Test {
-      val p = Phrase("""Sentence with a [label:BLAH:date] label reference""", """Sentence with a [label:BLAH:date] label reference""")
+      val p = Phrase("""Sentence with a [label:BLAH:date] label reference""", """Welsh, Sentence with a [label:BLAH:date] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", DateStandard), Words(" label reference"))
 
     }
 
     "Convert a label placeholder within a bold placeholder to a bold label ref" in new Test {
-      val p = Phrase("""Sentence with a [bold:[label:BLAH]] label reference""", """Sentence with a [bold:[label:BLAH]]] label reference""")
+      val p = Phrase("""Sentence with a [bold:[label:BLAH]] label reference""", """Welsh, Sentence with a [bold:[label:BLAH]]] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", Txt, true), Words(" label reference"))
     }
 
     "Convert a label placeholderwith currency output format within a bold placeholder to a bold label ref" in new Test {
-      val p = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Sentence with a [bold:[label:BLAH]:currencyPoundsOnly]] label reference""")
+      val p = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Welsh, Sentence with a [bold:[label:BLAH]:currencyPoundsOnly]] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", CurrencyPoundsOnly, true), Words(" label reference"))
     }
 
     "Convert button link placeholders within phrase to Link as button TextItems" in new Test {
-      val p = Phrase("""Sentence with a [button:BLAH:3] label reference""", """Sentence with a [button:BLAH:3] label reference""")
+      val p = Phrase("""Sentence with a [button:BLAH:3] label reference""", """Welsh, Sentence with a [button:BLAH:3] label reference""")
       TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
     }
 
     "Convert button link in tab placeholders within phrase to Link as button TextItems" in new Test {
-      val p = Phrase("""Sentence with a [button-tab:BLAH:3] label reference""", """Sentence with a [button-tab:BLAH:3] label reference""")
+      val p = Phrase("""Sentence with a [button-tab:BLAH:3] label reference""", """Welsh, Sentence with a [button-tab:BLAH:3] label reference""")
       TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
     }
 
@@ -119,7 +119,7 @@ class EnglishTextBuilderSpec extends BaseSpec {
 
     "Convert all link placeholders into appropriate Link objects" in new Test {
       val linkPhrase = Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5] [link:Blah Blah:start]",
-                              "Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5] [link:Blah Blah:start]")
+                              "Welsh, Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5] [link:Blah Blah:start]")
       val txt = TextBuilder.fromPhrase(linkPhrase)(urlMap1, lang)
 
       txt.items.length shouldBe 6

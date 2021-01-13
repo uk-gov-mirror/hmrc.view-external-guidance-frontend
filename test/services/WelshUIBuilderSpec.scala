@@ -98,7 +98,6 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
         case _ => fail("Page should be a Question page")
       }
-
     }
 
     "Include a question hint appended to the question text" in new QuestionTest {
@@ -108,7 +107,6 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         case _ => fail("Should return FormPage")
       }
     }
-
   }
 
   trait Test extends ProcessJson {
@@ -119,16 +117,16 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val lang3 = Vector("Some Text3", "Welsh, Some Text3")
     val lang4 = Vector("Some Text4", "Welsh, Some Text4")
     val lang5 = Vector("Some Text5", "Welsh, Some Text5")
-    val ltxt1 = Text(Words("This is a ", true))
-    val ltxt2 = Text(" followed by ")
-    val ltxt3 = Text(" and nothing")
-    val link1Txt = "A link"
-    val link2Txt = "Another Link"
-    val link2Start = "Back to beginning"
-    val link1Txt2 = "A link at start of phrase"
-    val link2Txt2 = "Another Link at end of phrase"
-    val pageLink1Text = "A page link"
-    val pageLink2Text = "Another page link"
+    val ltxt1 = Text(Words("Welsh, This is a ", true))
+    val ltxt2 = Text(" Welsh, followed by ")
+    val ltxt3 = Text(" Welsh, and nothing")
+    val link1Txt = "Welsh, A link"
+    val link2Txt = "Welsh, Another Link"
+    val link2Start = "Welsh, Back to beginning"
+    val link1Txt2 = "Welsh, A link at start of phrase"
+    val link2Txt2 = "Welsh, Another Link at end of phrase"
+    val pageLink1Text = "Welsh, A page link"
+    val pageLink2Text = "Welsh, Another page link"
     val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
     val ans1 = Vector("Yes", "Welsh, Yes")
     val ans2 = Vector("No", "Welsh, Yes")
@@ -136,15 +134,15 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val ans1WithHint = Vector("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
     val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
     val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
-    val hint1 = Text("You agree with the assertion")
-    val hint2 = Text("You DONT agree with the assertion")
-    val hint3 = Text("You dont know")
+    val hint1 = Text("Welsh, You agree with the assertion")
+    val hint2 = Text("Welsh, You DONT agree with the assertion")
+    val hint3 = Text("Welsh, You dont know")
     val link1 = Link("https://www.bbc.co.uk", link1Txt)
     val link2 = Link("https://www.gov.uk", link2Txt)
     val link2_1 = Link("https://www.bbc.co.uk", link1Txt2)
     val link2_2 = Link("https://www.gov.uk", link2Txt2)
-    val link3 = Link("dummy-path/blah", lang4(0))
-    val link4 = Link("https://www.bbc.co.uk", lang4(0))
+    val link3 = Link("dummy-path/blah", lang4(1))
+    val link4 = Link("https://www.bbc.co.uk", lang4(1))
     val pageLink1 = Link("dummy-path/next", pageLink1Text)
     val pageLink2 = Link("dummy-path", pageLink2Text)
     val startLink = Link("/blah", link2Start)
@@ -184,7 +182,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val txtWithAllLinks = Phrase(
       Vector(
         "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34][link:Back to beginning:start]",
-        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34][link:Back to beginning:start]"
+        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34][link:Welsh, Back to beginning:start]"
       )
     )
 
@@ -310,7 +308,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
                                                                Text("World"),
                                                                Text.link("dummy-path","Change", false, false, Some("HELLO"))))
     val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
-    val headingPhrase = Phrase("Heading", "Heading")
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
   }
 
   trait TableTest extends Test {
@@ -318,12 +316,12 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val simpleRowGroup = RowGroup(rows)
     val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
-    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:HELLO]")), Phrase(Vector("[bold:World]", "[bold:World]"))), Seq(), true) +:
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:Welsh, HELLO]")), Phrase(Vector("[bold:World]", "[bold:Welsh, World]"))), Seq(), true) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val tableHeading = rowsWithHeading(0).cells.map(TextBuilder.fromPhrase(_))
     val tableRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
-    val headingPhrase = Phrase("Heading", "Heading")
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
     val headingText = Text(headingPhrase.value(lang))
 
     val emptyRows = Seq.fill(3)(Row(Seq.empty, Seq.empty, true))
@@ -333,7 +331,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   }
 
   trait NumberListTest extends Test {
-    val headingPhrase = Phrase(Vector("Heading", "Heading"))
+    val headingPhrase = Phrase("Heading", "Welsh, Heading")
     val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
     val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
     val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
@@ -473,8 +471,9 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 tableRowGroup))
       p.components match {
-        case Seq(Table(Text(headingPhrase), tableHeading, _)) => succeed
-        case x => fail(s"Found $x")
+        case Seq(Table(Text(h), th, _)) if h.headOption == Some(Words(headingPhrase.value(lang))) => succeed
+        case x =>
+          fail(s"Found $x")
       }
     }
 
@@ -482,7 +481,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val p = uiBuilder.buildPage("/start", Seq(SubSectionCallout(headingPhrase, Seq.empty, false),
                                                 tableRowGroup))
       p.components match {
-        case Seq(Table(headingText, _, rows)) => succeed
+        case Seq(Table(Text(h), _, rows)) if h.headOption == Some(Words(headingPhrase.value(lang))) => succeed
         case x => fail(s"Found $x")
       }
     }
@@ -641,9 +640,9 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         case q: models.ui.Question =>
           q.answers.length shouldBe 3
           q.body.length shouldBe 2
-          q.answers.head shouldBe models.ui.Answer(Text(ans1(0)), None)
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2(0)), None)
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3(0)), None)
+          q.answers.head shouldBe models.ui.Answer(Text(ans1(1)), None)
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2(1)), None)
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3(1)), None)
         case _ => fail("Found non question UIComponent")
       }
     }
@@ -657,9 +656,9 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         case q: models.ui.Question =>
           q.answers.length shouldBe 3
           q.body.length shouldBe 2
-          q.answers.head shouldBe models.ui.Answer(Text(ans1(0)), Some(hint1))
-          q.answers(1) shouldBe models.ui.Answer(Text(ans2(0)), Some(hint2))
-          q.answers(2) shouldBe models.ui.Answer(Text(ans3(0)), Some(hint3))
+          q.answers.head shouldBe models.ui.Answer(Text(ans1(1)), Some(hint1))
+          q.answers(1) shouldBe models.ui.Answer(Text(ans2(1)), Some(hint2))
+          q.answers(2) shouldBe models.ui.Answer(Text(ans3(1)), Some(hint3))
         case _ => fail("Found non question UIComponent")
       }
     }
@@ -680,8 +679,8 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text(Words("My favourite sweets are"))
-      val bulletPointOne: Text = Text("wine gums")
+      val leadingTextItems: Text = Text("Fy hoff losin yw")
+      val bulletPointOne: Text = Text("deintgig gwin")
       val bulletPointTwo: Text = Text("humbugs")
 
       uiPage.components.head match {
@@ -729,10 +728,10 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       uiPage.components.length shouldBe 1
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text("In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are:")
+      val leadingTextItems: Text = Text("Mewn rhai amgylchiadau, nid oes rhaid i chi ddweud wrth Gyllid a Thollau EM am incwm ychwanegol rydych wedi'i wneud. Ymhob blwyddyn dreth gallwch ennill hyd at £ 11,000, yn ddi-dreth, os ydych chi:")
 
-      val bulletPointOne: Text = Text("selling goods or services (trading)")
-      val bulletPointTwo: Text = Text("renting land or property")
+      val bulletPointOne: Text = Text("gwerthu nwyddau neu wasanaethau (masnachu)")
+      val bulletPointTwo: Text = Text("rhentu tir neu eiddo")
 
       uiPage.components.head match {
         case b: BulletPointList =>
@@ -786,11 +785,11 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       complexUiPage.components.size shouldBe 6
 
       // Check contents of bullet point list
-      val leadingTextItems: Text = Text("Today we have special")
+      val leadingTextItems: Text = Text("Heddiw mae gennym")
 
-      val bulletPointOne: Text = Text("parsnips for sale")
-      val bulletPointTwo: Text = Text("purple carrots for sale")
-      val bulletPointThree: Text = Text("brussels sprouts for sale")
+      val bulletPointOne: Text = Text("bananas arbennig ar werth")
+      val bulletPointTwo: Text = Text("foron porffor arbennig ar werth")
+      val bulletPointThree: Text = Text("ysgewyll cregyn gleision arbennig ar werth")
 
       complexUiPage.components(four) match {
         case b: BulletPointList =>
@@ -805,7 +804,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         case _ => fail("Did not find bullet point list")
       }
 
-      val finalParagraph: Paragraph = Paragraph(Text("Thank you"))
+      val finalParagraph: Paragraph = Paragraph(Text("Diolch"))
 
       complexUiPage.components(five) match {
         case p: Paragraph =>
@@ -850,14 +849,14 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
       uiPage.components.length shouldBe 1
 
-      val leadingTextItems: Text = Text("You must have")
+      val leadingTextItems: Text = Text("Rhaid")
 
-      val bulletPointOne: Text = Text("a tea bag")
-      val bulletPointTwo: Text = Text("a cup")
-      val bulletPointThree: Text = Text("a teaspoon")
-      val bulletPointFour: Text = Text("water")
-      val bulletPointFive: Text = Text("an electric kettle")
-      val bulletPointSix: Text = Text("an electricity supply")
+      val bulletPointOne: Text = Text("i chi gael bag te")
+      val bulletPointTwo: Text = Text("i chi gael cwpan")
+      val bulletPointThree: Text = Text("i chi gael llwy de")
+      val bulletPointFour: Text = Text("i chi gael dŵr")
+      val bulletPointFive: Text = Text("bod gennych chi degell trydan")
+      val bulletPointSix: Text = Text("bod gennych gyflenwad trydan")
 
       uiPage.components.head match {
 
@@ -882,7 +881,8 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val ocelotPage = extraIncomeStanzaPages.head
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
       val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap, lang)
-      val leadingTextItems: Text = Text("You've received income that you have not yet paid tax on from:")
+
+      val leadingTextItems: Text = Text("Welsh: You've received income that you have not yet paid tax on from:")
       val bulletPointOne: Text = Text("a business you own or control (such as a partnership or limited company)")
       val bulletPointTwo: Text = Text("a business a relative owns or controls")
       val bulletPointThree: Text = Text("your employer (for example for freelance services outside your normal contract hours)")
@@ -938,7 +938,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
   }
 
-  trait InputTest extends WelshLanguage {
+  trait InputTest {
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -1006,7 +1006,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include a page hint appended to the input text" in new InputTest {
       uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
+        case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }
@@ -1049,14 +1049,14 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include a page hint appended to the input text" in new InputTest {
       uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
+        case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }
     }
   }
 
-  trait ConfirmationPanelTest extends WelshLanguage {
+  trait ConfirmationPanelTest {
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/page-1",
@@ -1275,7 +1275,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   }
 
   "UIBuilder Date Input processing" must {
-    trait DateInputTest extends WelshLanguage {
+    trait DateInputTest {
       implicit val urlMap: Map[String, String] =
         Map(
           Process.StartStanzaId -> "/blah",
@@ -1333,7 +1333,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include a page hint appended to the input text" in new DateInputTest {
       uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
-        case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
+        case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
       }

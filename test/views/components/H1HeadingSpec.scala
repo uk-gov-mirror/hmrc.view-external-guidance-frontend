@@ -42,10 +42,9 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
-    val h1English: String = "Level 1 heading text"
-    val h1Welsh: String = "Welsh Level 1 heading text"
+    val h1Str: String = "Level 1 heading text"
 
-    val h1: H1 = H1(Text(h1English))
+    val h1: H1 = H1(Text(h1Str))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
@@ -79,7 +78,7 @@ class H1HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
       val markUp: Html = h1_heading(h1)(messages, ctx)
       val h1Element: Element = getSingleElementByTag(markUp, "h1")
 
-      h1Element.text() shouldBe h1English
+      h1Element.text() shouldBe h1Str
     }
   }
 

@@ -75,23 +75,5 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       copyright.text.contains(messages("footer.license.copyright")) shouldBe true
     }
-
-    "contain correct Welsh footer licence texts" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
-      val footerElement: Element = doc.getElementsByTag("footer").first
-      val licence: Element = footerElement.getElementsByClass("govuk-footer__licence-description").first
-
-      licence.text.contains(messages("footer.license.text1")) shouldBe true
-      licence.text.contains(messages("footer.license.text2")) shouldBe true
-      licence.text.contains(messages("footer.license.text3")) shouldBe true
-    }
-
-    "contain correct WELSH copyright text" in new Test {
-      val doc: Document = asDocument(footer(Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
-      val footerElement: Element = doc.getElementsByTag("footer").first
-      val copyright: Element = footerElement.getElementsByClass("govuk-footer__copyright-logo").first
-
-      copyright.text.contains(messages("footer.license.copyright")) shouldBe true
-    }
   }
 }
