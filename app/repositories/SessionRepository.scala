@@ -199,6 +199,19 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
+  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
+    collection
+      .update(false)
+      .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
+      .map(_ => Right(()))
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
+          Left(DatabaseError)
+      }
+  }
+
   private def backlinkAndHistory(pageUrl: String,
                                  previousPageByLink: Boolean,
                                  priorHistory: List[String]): (Option[String], Option[List[String]]) =
@@ -212,19 +225,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       // FORWARD: Back link x, pageHistory intact
       case x :: xs => (Some(x), None)
     }
-
-  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
-    collection
-      .update(false)
-      .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
-      .map(_ => Right(()))
-      .recover {
-        case lastError =>
-          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
-          Left(DatabaseError)
-      }
-  }
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
     (name -> Json.toJsFieldJsValueWrapper(value))

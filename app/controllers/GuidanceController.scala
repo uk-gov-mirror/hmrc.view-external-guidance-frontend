@@ -70,6 +70,8 @@ class GuidanceController @Inject() (
                 Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
         }
+      case Left(AuthenticationError) =>
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
@@ -122,6 +124,8 @@ class GuidanceController @Inject() (
               Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
           }
+      case Left(AuthenticationError) =>
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))

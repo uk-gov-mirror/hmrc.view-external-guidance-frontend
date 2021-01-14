@@ -44,7 +44,7 @@ class AccessibilityStatementController @Inject() (
   def getPage(p: Option[String]): Action[AnyContent] = Action.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     val path = controllers.routes.AccessibilityStatementController.getPage(None).url.drop(appConfig.baseUrl.length + 1)
-    withExistingSession[ProcessContext](service.getProcessContext(_, path, p.isDefined)).map {
+    withExistingSession[ProcessContext](service.getProcessContext(_, "", path, p.isDefined)).map {
       case Right(processContext) =>
         val processCode = processContext.process.meta.processCode
         Ok(view(processContext.process.title.value(messages.lang),

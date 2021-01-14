@@ -21,7 +21,7 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
-import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
+import models.errors.{BadRequestError, InternalServerError, InvalidProcessError, AuthenticationError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.i18n.Lang
@@ -42,18 +42,23 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
-    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
+  def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean)
+                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] =
+    sessionRepository.get(sessionId, s"${processCode}$url", previousPageByLink).map{ ctx =>
+      ctx match {
+        case Right(ctx) if !ctx.secure && url.drop(1) != models.ocelot.Process.SecuredProcessStartUrl => Left(AuthenticationError)
+        case result => result
+      }
+    }
 
-  def getPageEvaluationContext(processCode: String, requestedUrl: String, previousPageByLink: Boolean, sessionId: String)
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$requestedUrl", previousPageByLink).map {
+    getProcessContext(sessionId, processCode, url, previousPageByLink).map {
       case Right(ctx) if ctx.process.meta.processCode == processCode =>
-        ctx.urlToPageId.get(requestedUrl).fold[RequestOutcome[PageEvaluationContext]]{
-          logger.error(s"Unable to find url $requestedUrl within cached process ${ctx.process.meta.id} using sessionId $sessionId")
+        ctx.urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
+          logger.error(s"Unable to find url $url within cached process ${ctx.process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
-        }{ pageIdElect =>
-          val (pageId, url) = if (ctx.secure) (pageIdElect, requestedUrl) else (Process.PassPhrasePageId, Process.SecuredProcessStartUrl)
+        }{ pageId =>
           pageBuilder.buildPage(pageId, ctx.process).fold(
             err => {
               logger.error(s"PageBuilder error $err on process ${ctx.process.meta.id} with sessionId $sessionId")
