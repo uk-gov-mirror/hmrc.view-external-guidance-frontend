@@ -19,24 +19,17 @@ package models.ui
 import base.{BaseSpec, TestConstants}
 
 class UIComponentsSpec extends BaseSpec with TestConstants {
-  val h1English: String = "Heading level 1 text"
-  val h1Welsh: String = "Welsh heading level 1 text"
-  val h2English: String = "Heading level 2 text"
-  val h2Welsh: String = "Welsh heading level 2 text"
-  val h3English: String = "Heading level 3 text"
-  val h3Welsh: String = "Welsh heading level 3 text"
-  val h4English: String = "Heading level 4 text"
-  val h4Welsh: String = "Welsh heading level 4 text"
-  val h1 = H1(Text(h1English))
-  val h2 = H2(Text(h2English))
-  val h3 = H3(Text(h3English))
-  val h4 = H4(Text(h4English))
+  val h1Str: String = "Heading level 1 text"
+  val h2Str: String = "Heading level 2 text"
+  val h3Str: String = "Heading level 3 text"
+  val h4Str: String = "Heading level 4 text"
+  val h1 = H1(Text(h1Str))
+  val h2 = H2(Text(h2Str))
+  val h3 = H3(Text(h3Str))
+  val h4 = H4(Text(h4Str))
   val engLeadingText: String = "Leading text"
-  val welLeadingText: String = "Welsh leading text"
   val engBulletPointOneText = "Bullet point 1"
-  val welBulletPointOneText = "Welsh bullet point 1"
   val engBulletPointTwoText = "Bullet point 2"
-  val welBulletPointTwoText = "Welsh bullet point 2"
 
   "UIComponents" must {
 
@@ -53,19 +46,19 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
     }
 
     "Support text in HTML h1 elements" in {
-      h1.text.items shouldBe Seq(Words(h1English))
+      h1.text.items shouldBe Seq(Words(h1Str))
     }
 
     "Support text in HTML h2 elements" in {
-      h2.text.items shouldBe Seq(Words(h2English))
+      h2.text.items shouldBe Seq(Words(h2Str))
     }
 
     "Support text in HTML h3 elements" in {
-      h3.text.items shouldBe Seq(Words(h3English))
+      h3.text.items shouldBe Seq(Words(h3Str))
     }
 
     "Support text in HTML h4 elements" in {
-      h4.text.items shouldBe Seq(Words(h4English))
+      h4.text.items shouldBe Seq(Words(h4Str))
     }
 
     "Support the identification of heading components in a list of UIComponents" in {
@@ -120,18 +113,18 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
     "support bullet point lists containing both text and embedded links" in {
 
       // Create bullet point list with both text and embedded links
-      val leadingTxt1En: Words = Words("Leading text 1")
-      val leadingLinkEn: Link = Link("http://textUrl", "Leading text link", false)
-      val leadingTxt2En: Words = Words("Leading text 2")
-      val bp1TxtEn: Words = Words("Bullet point 1 text")
-      val bp1LinkEn: Link = Link("http://bulletPointOneUrl", "Bullet point 1 link", false)
-      val bp2TxtEn: Words = Words("Bullet point 2 text")
-      val bp2LinkEn: Link = Link("http://bulletPointTwoUrl", "Bullet point 2 link", true)
+      val leadingTxt1: Words = Words("Leading text 1")
+      val leadingLink: Link = Link("http://textUrl", "Leading text link", false)
+      val leadingTxt2: Words = Words("Leading text 2")
+      val bp1Txt: Words = Words("Bullet point 1 text")
+      val bp1Link: Link = Link("http://bulletPointOneUrl", "Bullet point 1 link", false)
+      val bp2Txt: Words = Words("Bullet point 2 text")
+      val bp2Link: Link = Link("http://bulletPointTwoUrl", "Bullet point 2 link", true)
       val bpListLeadingText: Text =
-        Text(Seq(leadingTxt1En, leadingLinkEn, leadingTxt2En))
+        Text(Seq(leadingTxt1, leadingLink, leadingTxt2))
       val bulletPointListItems: Seq[Text] = Seq(
-        Text(Seq(bp1TxtEn, bp1LinkEn)),
-        Text(Seq(bp2TxtEn, bp2LinkEn))
+        Text(Seq(bp1Txt, bp1Link)),
+        Text(Seq(bp2Txt, bp2Link))
       )
 
       val bulletPointList: BulletPointList = BulletPointList(bpListLeadingText, bulletPointListItems)
@@ -150,31 +143,28 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
 
     "use Link components with an implementation of the toString method for use in debugging" in {
 
-      val englishLinkText = "English link text"
+      val englishLinkText = "Str link text"
       val destination = "http://my.com/page"
-      val linkEn: Link = Link(destination, englishLinkText, false)
+      val link: Link = Link(destination, englishLinkText, false)
 
-      linkEn.toString shouldBe s"[link:$englishLinkText:$destination:false:None]"
+      link.toString shouldBe s"[link:$englishLinkText:$destination:false:None]"
     }
 
     "use Button Link components with an implementation of the toString method for use in debugging" in {
 
-      val englishLinkText = "English link text"
+      val englishLinkText = "Str link text"
       val destination = "http://my.com/page"
-      val linkEn: Link = Link(destination, englishLinkText, false, true)
+      val link: Link = Link(destination, englishLinkText, false, true)
 
-      linkEn.toString shouldBe s"[button:$englishLinkText:$destination:false:None]"
+      link.toString shouldBe s"[button:$englishLinkText:$destination:false:None]"
     }
 
     "build into a page of text and link paragraph" in {
 
-      val langs1 = Vector("Hello my name is ....", "Welsh, Hello my name is ....")
-      val langs2 = Vector(" and today is Wednesday", "Welsh,  and today is Wednesday")
-      val langs3 = Vector("Unsure?", "Welsh, Unsure?")
-      val txt1En = Words(langs1(0))
-      val txt2En = Words(langs2(0))
-      val link1En = Link("/secondpage", langs3(0))
-      val paraWithLink = Paragraph(Text(Seq(txt1En, link1En, txt2En)))
+      val txt1 = Words("Hello my name is ....")
+      val txt2 = Words(" and today is Wednesday")
+      val link1 = Link("/secondpage", "Unsure?")
+      val paraWithLink = Paragraph(Text(Seq(txt1, link1, txt2)))
       val components = Seq(paraWithLink)
       val page = Page("/firstpage", components)
 
@@ -252,8 +242,8 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
       val h2Page: H2 = H2(Text("Subtitle"))
       // Define second paragraph with embedded hyperlink
       val secondParagraphLeadingText: Text = Text("Opening section of second paragraph")
-      val secondEnLink: Link = Link("http://secondParagraphUrl", "Second paragraph link text", false)
-      val link = Text(secondEnLink)
+      val secondLink: Link = Link("http://secondParagraphUrl", "Second paragraph link text", false)
+      val link = Text(secondLink)
       val secondParagraphClosingText: Text = Text("Closing section of second paragraph")
       val secondParagraph: Paragraph = Paragraph(secondParagraphLeadingText + link + secondParagraphClosingText)
       // Define text of some note
@@ -263,10 +253,10 @@ class UIComponentsSpec extends BaseSpec with TestConstants {
       val bulletPointOne: Text = Text("Bullet point 1")
       val bulletPointTwo: Text = Text("Bullet point 2")
       val bulletPointThree: Text = Text("Bullet point 3")
-      val bp3LinkEn: Link = Link("http://thirdBulletPointUrl", "Third bullet point link", false)
+      val bp3Link: Link = Link("http://thirdBulletPointUrl", "Third bullet point link", false)
       val bulletPointList: BulletPointList = BulletPointList(
         text,
-        Seq(bulletPointOne, bulletPointTwo, bulletPointThree + Text(bp3LinkEn))
+        Seq(bulletPointOne, bulletPointTwo, bulletPointThree + Text(bp3Link))
       )
 
       val components: Seq[UIComponent] = Seq(h1Page, openingParagraph, h2Page, secondParagraph, h3Page, bulletPointList)

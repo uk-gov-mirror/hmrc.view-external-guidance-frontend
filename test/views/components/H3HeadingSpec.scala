@@ -39,9 +39,8 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-    val h3English: String = "Level 3 heading text"
-    val h3Welsh: String = "Welsh Level 3 heading text"
-    val h3: H3 = H3(Text(h3English))
+    val h3Str: String = "Level 3 heading text"
+    val h3: H3 = H3(Text(h3Str))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
@@ -70,13 +69,13 @@ class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
       h3Element.hasClass("govuk-heading-s") shouldBe true
     }
 
-    "display text in English" in new Test {
+    "display text" in new Test {
 
       val markUp: Html = h3_heading(h3)(messages, ctx)
 
       val h3Element: Element = getSingleElementByTag(markUp, "h3")
 
-      h3Element.text() shouldBe h3English
+      h3Element.text() shouldBe h3Str
     }
   }
 }

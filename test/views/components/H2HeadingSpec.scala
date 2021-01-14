@@ -35,8 +35,8 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-    val h2English: String = "Level 2 heading text"
-    val h2: H2 = H2(Text(h2English))
+    val h2Str: String = "Level 2 heading text"
+    val h2: H2 = H2(Text(h2Str))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
@@ -60,11 +60,11 @@ class H2HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {
       h2Element.hasClass("govuk-heading-m") shouldBe true
     }
 
-    "display text in English" in new Test {
+    "display text" in new Test {
       val markUp: Html = h2_heading(h2)(messages, ctx)
       val h2Element: Element = getSingleElementByTag(markUp, "h2")
 
-      h2Element.text() shouldBe h2English
+      h2Element.text() shouldBe h2Str
     }
   }
 }

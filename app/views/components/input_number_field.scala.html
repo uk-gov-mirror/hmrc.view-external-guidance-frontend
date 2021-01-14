@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,31 +12,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package pages
+@(input: models.ui.Input, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
-import play.api.http.Status
-import play.api.libs.ws.{WSRequest, WSResponse}
-import stubs.AuditStub
-import support.IntegrationSpec
-
-class AccessibilityStatementControllerISpec extends IntegrationSpec {
-
-  "calling the accessibility route" should {
-
-    "return an OK response" in {
-
-      AuditStub.audit()
-
-      val request: WSRequest = buildRequest("/guidance/accessibility")
-
-      val response: WSResponse = await(request.get())
-
-      response.status shouldBe Status.OK
-
-    }
-
-  }
-
+<input class="govuk-input govuk-input--width-10@optionalErrorClass(input)"
+       id="@name-0"
+       name="@name"
+       type="text"
+       value="@form(name).value"
+       spellcheck="false"
+       autocomplete="off"
+       pattern="[0-9]*"
+       inputmode="numeric"
+       @optionalAria("input", input.hint,input.errorMsgs)/>
+@{
+    //$COVERAGE-OFF$
 }
