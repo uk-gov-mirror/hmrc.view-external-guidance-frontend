@@ -47,73 +47,44 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
     val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
-
-    val boldText: Text = Text(Words("Hello", bold = true), Words("Welsh Hello", bold = true))
-    val normalText: Text = Text(Words("Hello"), Words("Welsh Hello"))
-
-    val textWithLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label")),
-                                      Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label")))
-    val textWithBoldLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah", Txt, bold = true), Words(" , price "), LabelRef("A-Label")),
-                                          Seq(Words("Welsh A label must have "),LabelRef("Blah", Txt, bold = true), Words(" , price "),LabelRef("A-Label")))
-    val textWithNonExistentLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", Currency)),
-                                                 Seq(Words("Welsh The price is "),LabelRef("BLAHBLAH", Currency)))
-    val textWithNonExistentCurrencyPoundsOnlyLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", CurrencyPoundsOnly)),
-                                                                   Seq(Words("Welsh The price is "),LabelRef("BLAHBLAH", CurrencyPoundsOnly)))
-    val textWithCurrencyLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)),
-                                              Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", Currency)))
-    val textWithCurrencyPOLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)),
-                                                Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly)))
+    val boldText: Text = Text(Words("Hello", bold = true))
+    val normalText: Text = Text(Words("Hello"))
+    val textWithLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label")))
+    val textWithBoldLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah", Txt, bold = true), Words(" , price "), LabelRef("A-Label")))
+    val textWithNonExistentLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", Currency)))
+    val textWithNonExistentCurrencyPoundsOnlyLabelRef: Text = Text(Seq(Words("The price is "),LabelRef("BLAHBLAH", CurrencyPoundsOnly)))
+    val textWithCurrencyLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", Currency)))
+    val textWithCurrencyPOLabelRef: Text = Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly)))
     val textWithBoldCurrencyPOLabelRef: Text =
-      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly, bold = true)),
-           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(" , price "),LabelRef("A-Label", CurrencyPoundsOnly, bold = true)))
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(" , price "), LabelRef("A-Label", CurrencyPoundsOnly, bold = true)))
     val textWithInvalidCurrencyLabelRef: Text =
-      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", Currency)),
-           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", Currency)))
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", Currency)))
     val textWithInvalidCurrencyPoundsOnlyLabelRef: Text =
-      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", CurrencyPoundsOnly)),
-           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", CurrencyPoundsOnly)))
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", price "), LabelRef("Text-Label", CurrencyPoundsOnly)))
     val textLargeValueNoDpsCurrencyLabelRef: Text =
-      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumber", Currency)),
-           Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumber", Currency)))
+      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumber", Currency)))
     val textLargeValueDpsCurrencyPOLabelRef: Text =
-      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumberDps", CurrencyPoundsOnly)),
-           Seq(Words("Welsh A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
+      Text(Seq(Words("A large number stored without decimal places, but rendered with .00, "), LabelRef("BigNumberDps", CurrencyPoundsOnly)))
     val textWithStandardDateLabelRef: Text =
-      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("Date-Label", DateStandard, bold = true)),
-           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", date "),LabelRef("Date-Label", DateStandard, bold = true)))
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("Date-Label", DateStandard, bold = true)))
     val textWithStandardDateLabelRefEmpty: Text =
-      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("No-Label", DateStandard, bold = true)),
-           Seq(Words("Welsh A label must have "),LabelRef("Blah"), Words(", date "),LabelRef("No-Label", DateStandard, bold = true)))
+      Text(Seq(Words("A label must have "),LabelRef("Blah"), Words(", date "), LabelRef("No-Label", DateStandard, bold = true)))
     val textWithNumberLabelRef: Text =
-      Text(Seq(Words("A large number stored without decimal places and rendered as entered, "), LabelRef("BigNumber", Number)),
-        Seq(Words("Welsh A large number stored without decimal places and rendered as entered, "), LabelRef("BigNumber", Number)))
-
+      Text(Seq(Words("A large number stored without decimal places and rendered as entered, "), LabelRef("BigNumber", Number)))
     val invalidDateLabel: Text =
-      Text(Seq(Words("A date label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", DateStandard)),
-        Seq(Words("Welsh A date label with an unexpected text format must display the plain text: "),LabelRef("Text-Label", DateStandard)))
+      Text(Seq(Words("A date label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", DateStandard)))
     val invalidCurrencyLabel: Text =
-      Text(Seq(Words("A currency label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Currency)),
-        Seq(Words("Welsh A currency label with an unexpected text format must display the plain text: "),LabelRef("Text-Label", Currency)))
+      Text(Seq(Words("A currency label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Currency)))
     val invalidPoundsOnlyLabel: Text =
-      Text(Seq(Words("A pounds only label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", CurrencyPoundsOnly)),
-        Seq(Words("Welsh A pounds only label with an unexpected text format must display the plain text: "),LabelRef("Text-Label", CurrencyPoundsOnly)))
+      Text(Seq(Words("A pounds only label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", CurrencyPoundsOnly)))
     val invalidNumberLabel: Text =
-      Text(Seq(Words("A number label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Number)),
-        Seq(Words("Welsh A number label with an unexpected text format must display the plain text: "),LabelRef("Text-Label", Number)))
-
-
+      Text(Seq(Words("A number label with an unexpected text format must display the plain text: "), LabelRef("Text-Label", Number)))
     val currencyInput: CurrencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page: FormPage = models.ui.FormPage("/url", currencyInput)
     implicit val ctx: PageContext = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-
-  }
-
-  trait WelshTest extends Test {
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
   }
 
   "render_text component" should {
-
     "generate English html containing label references with default output formatting" in new Test {
       val doc: Document = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
       val p: Element = doc.getElementsByTag("p").first
@@ -224,110 +195,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       strong.size shouldBe 1
     }
 
-    "generate Welsh html containing label references with default output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value , price 33.9"
-    }
-
-    "generate Welsh html containing bold label references with default output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      val boldElement: Element = p.getElementsByTag("strong").first
-      boldElement.text shouldBe "a value"
-    }
-
-    "generate Welsh html containing bold label references with CurrencyPoundsOnly output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithBoldCurrencyPOLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      val boldElement: Element = p.getElementsByTag("strong").first
-      boldElement.text shouldBe "£33"
-    }
-
-    "generate Welsh html containing label reference to Label which does not exist" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh The price is"
-    }
-
-    "generate Welsh html containing label reference to CurrencyPoundsOnly Label which does not exist" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithNonExistentCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh The price is"
-    }
-
-    "generate Welsh html containing label references with Currency output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value , price £33.90"
-    }
-
-    "generate Welsh html containing label references with CurrencyPoundsOnly output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithCurrencyPOLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value , price £33"
-    }
-
-    "generate Welsh html containing label references with Currency output formatting with invalid data" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value, price text string"
-    }
-
-    "generate Welsh html containing label references with CurrencyPoundsOnly output formatting with invalid data" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithInvalidCurrencyPoundsOnlyLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value, price text string"
-    }
-
-    "generate Welsh html containing label references with Currency output formatting with large values and no decimal places" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueNoDpsCurrencyLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678.00"
-    }
-
-    "generate Welsh html containing label references with CurrencyPoundsOnly output formatting with large values and decimal places" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textLargeValueDpsCurrencyPOLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A large number stored without decimal places, but rendered with .00, £12,345,678"
-    }
-
-    "generate Welsh html containing normal text" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(normalText)))
-      val strong: Elements = doc.getElementsByTag("strong")
-      strong.size shouldBe 0
-    }
-
-    "generate Welsh html containing an H1" in new WelshTest {
-      val doc: Document = asDocument(h1_heading(H1(normalText)))
-      val h1: Elements = doc.getElementsByTag("h1")
-      h1.size shouldBe 1
-    }
-
-    "generate Welsh html containing an H2" in new WelshTest {
-      val doc: Document = asDocument(h2_heading(H2(normalText)))
-      val h2: Elements = doc.getElementsByTag("h2")
-      h2.size shouldBe 1
-    }
-
-    "generate Welsh html containing an H3" in new WelshTest {
-      val doc: Document = asDocument(h3_heading(H3(normalText)))
-      val h3: Elements = doc.getElementsByTag("h3")
-      h3.size shouldBe 1
-    }
-
-    "generate Welsh html containing a normal text paragraph" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(boldText)))
-      val strong: Elements = doc.getElementsByTag("strong")
-      strong.size shouldBe 1
-    }
-
     "test links with text to ensure correct spacing" in new Test {
       val link1: Link = Link("this/is/a/link", "Link Text")
       val words1: Words = Words("this is the first section ")
       val words2: Words = Words(", second section should follow link text.")
       val phrases1: Seq[TextItem] = Seq(words1, link1, words2)
-      val text: Text = Text(phrases1, phrases1)
+      val text: Text = Text(phrases1)
       val doc: Document = asDocument(paragraph(Paragraph(text)))
       val pTag: Elements = doc.getElementsByTag("p")
 
@@ -339,31 +212,15 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, date 29 February 2020"
     }
-    "generate Welsh html containing label reference with Standard Date output formatting" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRef))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value, date 29 February 2020"
-    }
     "generate English html containing label reference with Standard Date with blank value" in new Test {
       val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
       val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A label must have a value, date"
-    }
-    "generate Welsh html containing label reference with Standard Date with blank value" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(textWithStandardDateLabelRefEmpty))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A label must have a value, date"
     }
     "generate English html containing label reference with Standard Date output formatting with invalid date" in new Test {
       val doc: Document = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
       val p: Element = doc.getElementsByTag("p").first
       p.text shouldBe "A date label with an unexpected text format must display the plain text: text string"
     }
-    "generate Welsh html containing label reference with Standard Date output formatting with invalid date" in new WelshTest {
-      val doc: Document = asDocument(paragraph(Paragraph(invalidDateLabel))(messages, ctx))
-      val p: Element = doc.getElementsByTag("p").first
-      p.text shouldBe "Welsh A date label with an unexpected text format must display the plain text: text string"
-    }
-
   }
 }

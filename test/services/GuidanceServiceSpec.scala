@@ -29,11 +29,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import models.errors.BadRequestError
 import models.PageContext
+import play.api.i18n.Lang
 
 class GuidanceServiceSpec extends BaseSpec {
 
   private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with MockPageRenderer with MockUIBuilder with ProcessJson {
-
+    implicit val lang: Lang = Lang("en")
     implicit val headerCarrier: HeaderCarrier = HeaderCarrier()
     implicit val stanzaIdToUrl: Map[String, String] = Map[String, String]()
 

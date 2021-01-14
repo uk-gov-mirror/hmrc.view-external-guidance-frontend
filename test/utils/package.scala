@@ -24,5 +24,5 @@ package object utils {
       phrases = process.phrases :+ Phrase(process.meta.title, s"Welsh, ${process.meta.title}")
     )
 
-  def rewriteWithWelsh(p: Process): Process = p.copy(phrases = p.phrases.map(p => Phrase(Vector(p.langs(0), s"Welsh, ${p.langs(0)}"))))
+  def rewriteWithWelsh(p: Process): Process = p.copy(phrases = p.phrases.map(p => Phrase(Vector(p.english, s"Welsh, ${p.english}"))))
 }

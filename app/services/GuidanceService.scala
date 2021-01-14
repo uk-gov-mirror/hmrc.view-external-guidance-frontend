@@ -24,7 +24,7 @@ import play.api.Logger
 import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
-
+import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
@@ -45,9 +45,8 @@ class GuidanceService @Inject() (
   def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)(
-      implicit context: ExecutionContext
-  ): Future[RequestOutcome[PageEvaluationContext]] =
+  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
+                              (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
       case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
@@ -90,17 +89,17 @@ class GuidanceService @Inject() (
         Left(err)
     }
 
-  def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError): PageContext = {
+  def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError)(implicit lang: Lang): PageContext = {
     val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(pec.stanzaIdToUrlMap)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(pec.stanzaIdToUrlMap, lang)
     PageContext(pec.copy(dataInput = dataInput), uiPage, labels)
   }
 
   def getPageContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
-                    (implicit context: ExecutionContext): Future[RequestOutcome[PageContext]] =
+                    (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
       case Right(ctx) =>
-        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(ctx.stanzaIdToUrlMap)))
+        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(ctx.stanzaIdToUrlMap, lang)))
       case Left(err) => Left(err)
     }
 

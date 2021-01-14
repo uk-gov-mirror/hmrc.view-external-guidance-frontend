@@ -46,29 +46,19 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
 
-    val englishTitle: String = "Title"
-    val welshTitle: String = "Welsh, Title"
+    val titleStr: String = "Title"
 
-    val englishBodyText1: String = "First line in body"
-    val welshBodyText1: String = "Welsh, First line in body"
+    val bodyStr1: String = "First line in body"
+    val bodyStr2: String = "Second line in body"
 
-    val englishBodyText2: String = "Second line in body"
-    val welshBodyText2: String = "Welsh, Second line in body"
-
-    val title: Text = Text(englishTitle, welshTitle)
-    val bodyText1: Text =  Text(englishBodyText1, welshBodyText1)
-    val bodyText2: Text = Text(englishBodyText2, welshBodyText2)
-  }
-
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
+    val title: Text = Text(titleStr)
+    val bodyText1: Text =  Text(bodyStr1)
+    val bodyText2: Text = Text(bodyStr2)
   }
 
   "Confirmation panel" must {
 
-    "render a confirmation panel with a single text component in english" in new Test {
+    "render a confirmation panel with a single text component" in new Test {
 
       val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title)
 
@@ -86,35 +76,12 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
     }
 
-    "render a confirmation panel with a single text component in welsh" in new WelshTest {
-
-      val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title)
-
-      val doc: Document = asDocument(confirmation_panel(confirmationPanel))
-
-      // Check for confirmation panel
-      val panelDivs: Elements = doc.getElementsByClass("govuk-panel")
-
-      panelDivs.size shouldBe 1
-
-      elementAttrs(panelDivs.first)("class").contains("govuk-panel--confirmation") shouldBe true
-
-      // Test heading
-      val headings: Elements = panelDivs.first.getElementsByTag("h1")
-
-      headings.size shouldBe 1
-
-      headings.first.text() shouldBe welshTitle
-
-      elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
-    }
-
-    "render a confirmation panel with a header and single body text component in english" in new Test {
+    "render a confirmation panel with a header and single body text component" in new Test {
 
       val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title, Seq(bodyText1))
 
@@ -132,7 +99,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
 
@@ -141,7 +108,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       bodyDivs.size shouldBe 2 // List includes panel division
 
-      bodyDivs.last.text() shouldBe englishBodyText1
+      bodyDivs.last.text() shouldBe bodyStr1
 
       elementAttrs(bodyDivs.last)("class").contains("govuk-panel__body")
 
@@ -150,43 +117,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
       breaks.size shouldBe 0
     }
 
-    "render a confirmation panel with a header and single body text component in welsh" in new WelshTest {
-
-      val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title, Seq(bodyText1))
-
-      val doc: Document = asDocument(confirmation_panel(confirmationPanel))
-
-      // Check for confirmation panel
-      val panelDivs: Elements = doc.getElementsByClass("govuk-panel")
-
-      panelDivs.size shouldBe 1
-
-      elementAttrs(panelDivs.first)("class").contains("govuk-panel--confirmation") shouldBe true
-
-      // Test heading
-      val headings: Elements = panelDivs.first.getElementsByTag("h1")
-
-      headings.size shouldBe 1
-
-      headings.first.text() shouldBe welshTitle
-
-      elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
-
-      // Test body
-      val bodyDivs: Elements = panelDivs.first.getElementsByTag("div")
-
-      bodyDivs.size shouldBe 2 // List includes panel division
-
-      bodyDivs.last.text() shouldBe welshBodyText1
-
-      elementAttrs(bodyDivs.last)("class").contains("govuk-panel__body")
-
-      val breaks: Elements = bodyDivs.last.getElementsByTag("br")
-
-      breaks.size shouldBe 0
-    }
-
-    "render a confirmation panel with multiple body test components in english" in new Test {
+    "render a confirmation panel with multiple body test components" in new Test {
 
       val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title, Seq(bodyText1, bodyText2))
 
@@ -204,7 +135,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       headings.size shouldBe 1
 
-      headings.first.text() shouldBe englishTitle
+      headings.first.text() shouldBe titleStr
 
       elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
 
@@ -218,7 +149,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
       // Test contents of nodes
       val firstChildNodeAttributes: Attributes = bodyDivs.last.childNode(0).attributes()
 
-      firstChildNodeAttributes.get("#text").trim shouldBe englishBodyText1
+      firstChildNodeAttributes.get("#text").trim shouldBe bodyStr1
 
       val secondChildNode: Node = bodyDivs.last.childNode( 1)
 
@@ -226,7 +157,7 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
 
       val thirdChildNodeAttributes: Attributes = bodyDivs.last.childNode(2).attributes()
 
-      thirdChildNodeAttributes.get("#text").trim shouldBe englishBodyText2
+      thirdChildNodeAttributes.get("#text").trim shouldBe bodyStr2
 
       // Check number of line breaks
       val breaks: Elements = bodyDivs.last.getElementsByTag("br")
@@ -234,53 +165,5 @@ class ConfirmationPanelSpec extends BaseSpec with ViewFns with GuiceOneAppPerSui
       breaks.size() shouldBe 1
     }
 
-    "render a confirmation panel with multiple body test components in welsh" in new WelshTest {
-
-      val confirmationPanel: ConfirmationPanel = ConfirmationPanel(title, Seq(bodyText1, bodyText2))
-
-      val doc: Document = asDocument(confirmation_panel(confirmationPanel))
-
-      // Check for confirmation panel
-      val panelDivs: Elements = doc.getElementsByClass("govuk-panel")
-
-      panelDivs.size shouldBe 1
-
-      elementAttrs(panelDivs.first)("class").contains("govuk-panel--confirmation") shouldBe true
-
-      // Test heading
-      val headings: Elements = panelDivs.first.getElementsByTag("h1")
-
-      headings.size shouldBe 1
-
-      headings.first.text() shouldBe welshTitle
-
-      elementAttrs(headings.first)("class").contains("govuk-panel__title") shouldBe true
-
-      // Test body
-      val bodyDivs: Elements = panelDivs.first.getElementsByTag("div")
-
-      bodyDivs.size shouldBe 2 // List includes panel division
-
-      bodyDivs.last.childNodeSize() shouldBe 3
-
-      // Test contents of nodes
-      val firstChildNodeAttributes: Attributes = bodyDivs.last.childNode(0).attributes()
-
-      firstChildNodeAttributes.get("#text").trim shouldBe welshBodyText1
-
-      val secondChildNode: Node = bodyDivs.last.childNode( 1)
-
-      secondChildNode.outerHtml() shouldBe "<br>"
-
-      val thirdChildNodeAttributes: Attributes = bodyDivs.last.childNode(2).attributes()
-
-      thirdChildNodeAttributes.get("#text").trim shouldBe welshBodyText2
-
-      // Check number of line breaks
-      val breaks: Elements = bodyDivs.last.getElementsByTag("br")
-
-      breaks.size() shouldBe 1
-    }
   }
-
 }

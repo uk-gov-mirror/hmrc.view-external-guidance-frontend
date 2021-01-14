@@ -43,7 +43,7 @@ class H1HeadingWithFieldsetSpec extends ViewSpec with GuiceOneAppPerSuite {
     val h1English: String = "Level 1 heading text"
     val h1Welsh: String = "Welsh Level 1 heading text"
 
-    val h1: H1 = H1(Text(h1English, h1Welsh))
+    val h1: H1 = H1(Text(h1English))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
@@ -52,16 +52,8 @@ class H1HeadingWithFieldsetSpec extends ViewSpec with GuiceOneAppPerSuite {
     val ctxReduced = models.PageContext(summaryPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
   }
 
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
-  }
-
   "Creating a level 1 heading with some content" must {
-
     "Define the correct GDS standard class" in new Test {
-
       val markUp: Html = h1_heading_with_fieldset(h1)(messages, ctx)
 
       val h1Element: Element = getSingleElementByTag(markUp, "h1")
@@ -72,9 +64,7 @@ class H1HeadingWithFieldsetSpec extends ViewSpec with GuiceOneAppPerSuite {
     }
 
     "Define the correct GDS reduced class" in new Test {
-
       val markUp: Html = h1_heading_with_fieldset(h1)(messages, ctxReduced)
-
       val h1Element: Element = getSingleElementByTag(markUp, "h1")
       h1Element.hasClass("govuk-fieldset__heading") shouldBe true
 
@@ -83,21 +73,10 @@ class H1HeadingWithFieldsetSpec extends ViewSpec with GuiceOneAppPerSuite {
     }
 
     "display text in English" in new Test {
-
       val markUp: Html = h1_heading_with_fieldset(h1)(messages, ctx)
-
       val legendElement: Element = getSingleElementByTag(markUp, "legend")
+
       legendElement.text() shouldBe h1English
     }
-
-    "display text in Welsh when requested" in new WelshTest {
-
-      val markUp: Html = h1_heading_with_fieldset(h1)(messages, ctx)
-
-      val legendElement: Element = getSingleElementByTag(markUp, "legend")
-      legendElement.text() shouldBe h1Welsh
-    }
-
   }
-
 }

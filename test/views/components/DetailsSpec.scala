@@ -32,37 +32,19 @@ import views.html.components.details
 class DetailsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   private trait Test {
-
     private def injector: Injector = app.injector
-
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-
     val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/confirmation")
-
     val page: StandardPage = StandardPage("/confirmation", Nil)
-
     implicit val labels: Labels = LabelCache()
     implicit val ctx: PageContext = PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
-
-    val englishTitle: String = "Title"
-    val welshTitle: String = "Welsh, Title"
-
-    val englishBodyText1: String = "First line in body"
-    val welshBodyText1: String = "Welsh, First line in body"
-
-    val englishBodyText2: String = "Second line in body"
-    val welshBodyText2: String = "Welsh, Second line in body"
-
-    val title: Text = Text(englishTitle, welshTitle)
-    val bodyText1: Text =  Text(englishBodyText1, welshBodyText1)
-    val bodyText2: Text = Text(englishBodyText2, welshBodyText2)
-  }
-
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
+    val titleStr: String = "Title"
+    val bodyText1Str: String = "First line in body"
+    val bodyText2Str: String = "Second line in body"
+    val title: Text = Text(titleStr)
+    val bodyText1: Text =  Text(bodyText1Str)
+    val bodyText2: Text = Text(bodyText2Str)
   }
 
   "Details" must {
@@ -82,39 +64,12 @@ class DetailsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       // Test heading
       val heading: Element = getSingleElementByTag(summarySection,"span")
-      heading.text() shouldBe englishTitle
+      heading.text() shouldBe title.asString
       checkClassForElement(heading, "govuk-details__summary-text")
 
       // Test body
       val bodyDiv: Element = getSingleElementByTag(detailsSection,"div")
-      bodyDiv.text() shouldBe englishBodyText1
-      checkClassForElement(bodyDiv, "govuk-details__text")
-
-      val breaks: Elements = bodyDiv.getElementsByTag("br")
-      breaks.size shouldBe 0
-    }
-
-    "render a details section with a header and single body text component in welsh" in new WelshTest {
-
-      val detailsComponent: Details = Details(title, Seq(bodyText1))
-      val doc: Document = asDocument(details(detailsComponent))
-
-      // Check for details section
-      val detailsSection: Element = getSingleElementByTag(doc, "details")
-      checkClassForElement(detailsSection, "govuk-details")
-
-      // Check for summary section
-      val summarySection: Element = getSingleElementByTag(doc,"summary")
-      checkClassForElement(summarySection, "govuk-details__summary")
-
-      // Test heading
-      val heading: Element = getSingleElementByTag(summarySection,"span")
-      heading.text() shouldBe welshTitle
-      checkClassForElement(heading, "govuk-details__summary-text")
-
-      // Test body
-      val bodyDiv: Element = getSingleElementByTag(detailsSection,"div")
-      bodyDiv.text() shouldBe welshBodyText1
+      bodyDiv.text() shouldBe bodyText1.asString
       checkClassForElement(bodyDiv, "govuk-details__text")
 
       val breaks: Elements = bodyDiv.getElementsByTag("br")
@@ -135,7 +90,7 @@ class DetailsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       // Test heading
       val heading: Element = getSingleElementByTag(summarySection,"span")
-      heading.text() shouldBe englishTitle
+      heading.text() shouldBe title.asString
       checkClassForElement(heading, "govuk-details__summary-text")
 
       // Test body
@@ -145,60 +100,18 @@ class DetailsSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
       // Test contents of nodes
       val firstChildNodeAttributes: Attributes = bodyDiv.childNode(0).attributes()
-      firstChildNodeAttributes.get("#text").trim shouldBe englishBodyText1
+      firstChildNodeAttributes.get("#text").trim shouldBe bodyText1.asString
 
       val secondChildNode: Node = bodyDiv.childNode( 1)
       secondChildNode.outerHtml() shouldBe "<br>"
 
       val thirdChildNodeAttributes: Attributes = bodyDiv.childNode(2).attributes()
-      thirdChildNodeAttributes.get("#text").trim shouldBe englishBodyText2
+      thirdChildNodeAttributes.get("#text").trim shouldBe bodyText2.asString
 
       // Check number of line breaks
       val breaks: Elements = bodyDiv.getElementsByTag("br")
 
       breaks.size() shouldBe 1
     }
-
-    "render a details section with a header and multiple body text components in welsh" in new WelshTest {
-
-      val detailsComponent: Details = Details(title, Seq(bodyText1, bodyText2))
-      val doc: Document = asDocument(details(detailsComponent))
-
-      // Check for details section
-      val detailsSection: Element = getSingleElementByTag(doc,"details")
-      checkClassForElement(detailsSection, "govuk-details")
-
-      // Check for summary section
-      val summarySection: Element = getSingleElementByTag(doc,"summary")
-      checkClassForElement(summarySection, "govuk-details__summary")
-
-      // Test heading
-      val heading: Element = getSingleElementByTag(summarySection, "span")
-      heading.text() shouldBe welshTitle
-      checkClassForElement(heading, "govuk-details__summary-text")
-
-      // Test body
-      val bodyDiv: Element = getSingleElementByTag(detailsSection, "div")
-      checkClassForElement(bodyDiv, "govuk-details__text")
-
-      bodyDiv.childNodeSize() shouldBe 3
-
-      // Test contents of nodes
-      val firstChildNodeAttributes: Attributes = bodyDiv.childNode(0).attributes()
-      firstChildNodeAttributes.get("#text").trim shouldBe welshBodyText1
-
-      val secondChildNode: Node = bodyDiv.childNode( 1)
-      secondChildNode.outerHtml() shouldBe "<br>"
-
-      val thirdChildNodeAttributes: Attributes = bodyDiv.childNode(2).attributes()
-      thirdChildNodeAttributes.get("#text").trim shouldBe welshBodyText2
-
-      // Check number of line breaks
-      val breaks: Elements = bodyDiv.getElementsByTag("br")
-
-      breaks.size() shouldBe 1
-    }
-
   }
-
 }

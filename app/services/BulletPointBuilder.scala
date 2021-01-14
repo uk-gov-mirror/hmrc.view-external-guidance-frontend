@@ -16,6 +16,7 @@
 
 package services
 
+import models.ocelot.Phrase
 import models.ocelot.stanzas.{VisualStanza, Instruction, InstructionGroup}
 import scala.util.matching.Regex
 import Regex._
@@ -54,11 +55,11 @@ object BulletPointBuilder {
         }
     }
 
-  def determineMatchedLeadingText(instructionGroup: InstructionGroup, langIndex: Int): String = {
+  def determineMatchedLeadingText(instructionGroup: InstructionGroup, phraseText: Phrase => String): String = {
 
-    val noOfMatchedWords = noOfMatchedLeadingWordsForInstructionGroup(instructionGroup, langIndex)
+    val noOfMatchedWords = noOfMatchedLeadingWordsForInstructionGroup(instructionGroup, phraseText)
 
-    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(instructionGroup.group.head.text.langs(langIndex))
+    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(phraseText(instructionGroup.group.head.text))
 
     val (wordsProcessed, outputTexts, outputMatches) = locateTextsAndMatchesContainingLeadingText(
       noOfMatchedWords,
@@ -74,14 +75,14 @@ object BulletPointBuilder {
     constructLeadingText(noOfMatchedWords, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
   }
 
-  private def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, langIndex: Int): Int = {
+  private def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, phraseText: Phrase => String): Int = {
 
     val firstInstruction = instructionGroup.group.head
 
     val remainingInstructions = instructionGroup.group.drop(1)
 
     val matchedWordsSeq = remainingInstructions.map { i =>
-      matchInstructionText(firstInstruction.text.langs(langIndex), i.text.langs(langIndex))._3
+      matchInstructionText(phraseText(firstInstruction.text), phraseText(i.text))._3
     }
 
     matchedWordsSeq.map(_.size).min
@@ -304,7 +305,7 @@ object BulletPointBuilder {
 
   def matchInstructions(i1: Instruction, i2: Instruction): Boolean = {
     // Apply matching logic to English text as this is how Ocelot works currently
-    val (i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText(i1.text.langs(0), i2.text.langs(0))
+    val (i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText(i1.text.english, i2.text.english)
 
     // Matching instructions must have matching leading text followed dissimilar trailing text
     matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)

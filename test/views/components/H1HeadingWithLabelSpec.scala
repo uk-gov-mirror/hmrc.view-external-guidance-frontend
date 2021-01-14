@@ -37,22 +37,15 @@ class H1HeadingWithLabelSpec extends ViewSpec with GuiceOneAppPerSuite {
     val fakeRequest = FakeRequest("GET", "/")
     implicit def messages: Messages = messagesApi.preferred(fakeRequest)
 
-    val h1English: String = "Level 1 heading text"
-    val h1Welsh: String = "Welsh Level 1 heading text"
+    val h1Str: String = "Level 1 heading text"
 
-    val h1: H1 = H1(Text(h1English, h1Welsh))
+    val h1: H1 = H1(Text(h1Str))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val summaryList = CyaSummaryList(Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     val summaryPage = models.ui.StandardPage("/url", Seq(summaryList))
     val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
     val ctxReduced = models.PageContext(summaryPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-  }
-
-  private trait WelshTest extends Test {
-
-    implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
-
   }
 
   "Creating a level 1 heading with some content" must {
@@ -84,17 +77,7 @@ class H1HeadingWithLabelSpec extends ViewSpec with GuiceOneAppPerSuite {
       val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctx)
 
       val labelElement: Element = getSingleElementByTag(markUp, "label")
-      labelElement.text() shouldBe h1English
+      labelElement.text() shouldBe h1Str
     }
-
-    "display text in Welsh when requested" in new WelshTest {
-
-      val markUp: Html = h1_heading_with_label(h1, "field")(messages, ctx)
-
-      val labelElement: Element = getSingleElementByTag(markUp, "label")
-      labelElement.text() shouldBe h1Welsh
-    }
-
   }
-
 }

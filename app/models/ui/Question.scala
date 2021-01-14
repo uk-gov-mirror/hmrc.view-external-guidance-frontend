@@ -26,5 +26,5 @@ case class Question(
   errorMsgs: Seq[ErrorMsg] = Nil) extends FormComponent {
   val horizontal: Boolean = answers.length == 2 &&
                             answers.forall(ans => ans.hint.isEmpty &&
-                                                  ans.text.english.map(_.toWords.length).sum == 1)
+                                                  ans.text.items.map(_.toWords.length).sum == 1)
 }

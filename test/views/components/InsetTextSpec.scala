@@ -26,7 +26,6 @@ import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import views.html.components.inset_text
-
 import scala.collection.JavaConverters._
 
 class InsetTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
@@ -42,12 +41,10 @@ class InsetTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-    val insetText: InsetText = InsetText(Seq(Text("Line1", "Welsh, Line1"), Text("Line2", "Welsh, Line2")))
+    val insetText: InsetText = InsetText(Seq(Text("Line1"), Text("Line2")))
   }
 
-  private trait WelshTest extends Test {implicit override def messages: Messages = messagesApi.preferred(Seq(Lang("cy")))}
-
-  "English Inset Text" must {
+  "Inset Text" must {
 
     "be rendered as an <div> with govuk classes and <p> elements" in new Test {
       val html: Html = inset_text(insetText)
@@ -61,20 +58,4 @@ class InsetTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       lis(1).text shouldBe "Line2"
     }
   }
-
-  "Welsh Inset Text" must {
-
-    "be rendered as an <div> with govuk classes and <p> elements" in new WelshTest {
-      val html: Html = inset_text(insetText)
-      val div: Element = getSingleElementByTag(html, "div")
-
-      div.hasClass("govuk-inset-text") shouldBe true
-
-      val lis = div.getElementsByTag("p").asScala.toList
-      lis.length shouldBe 2
-      lis(0).text shouldBe "Welsh, Line1"
-      lis(1).text shouldBe "Welsh, Line2"
-    }
-  }
-
 }

@@ -37,11 +37,10 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
-    val headStrings = Vector("HEADING", "Welsh, HEADING")
-    val errorStrings = Vector("Please select", "Welsh, Please")
+    val errorString = "Please select"
     val fakeRequest = FakeRequest("GET", "/")
-    val heading = Text(headStrings)
-    val errorMsgs = Seq(RequiredErrorMsg(Text(errorStrings)))
+    val heading = Text("HEADING")
+    val errorMsgs = Seq(RequiredErrorMsg(Text(errorString)))
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.FormPage("/url", currencyInput)
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode")
@@ -58,7 +57,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val lists = doc.getElementsByTag("ul").asScala.toList
       val listItems = lists(0).getElementsByTag("li").asScala.toList
 
-      listItems(0).text() shouldBe errorStrings(0)
+      listItems(0).text() shouldBe errorString
     }
 
   }
@@ -69,7 +68,7 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
       val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "required-error")
 
-      span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorStrings(0)
+      span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorString
     }
 
     "render hidden text with error message" in new Test {
