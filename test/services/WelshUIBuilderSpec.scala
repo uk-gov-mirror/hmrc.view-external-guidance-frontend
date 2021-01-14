@@ -962,12 +962,103 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
     val inputCurrencyPoundsOnly = models.ocelot.stanzas.CurrencyPoundsOnlyInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputPounds", None, stack = false)
     val pagePoundsOnly = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputCurrencyPoundsOnly), Seq.empty)
+    val inputText = models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputText", None, stack = false)
+    val pageText = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputText), Seq.empty)
+    val inputNumber = models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputNumber", None, stack = false)
+    val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
 
     val four: Int = 4
   }
 
+  "UIBuilder TextInput Input processing" must {
+
+    "Ignore Error Callouts when there are no errors" in new InputTest {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case _: FormPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include Error messages when there are errors" in new InputTest {
+
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Maintain order of components within an Input" in new InputTest {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}) match {
+        case i: FormPage =>
+          i.formComponent.body(0) match {
+            case _: H3 => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+          i.formComponent.body(1) match {
+            case _: Paragraph => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include a page hint appended to the input text" in new InputTest {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
+        case _: FormPage => fail("No hint found within Input")
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+  }
+
+  "UIBuilder NumberInput Input processing" must {
+
+    "Ignore Error Callouts when there are no errors" in new InputTest {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
+        case _: FormPage => fail("No error messages should be included on page")
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include Error messages when there are errors" in new InputTest {
+
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case _: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Maintain order of components within an Input" in new InputTest {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}) match {
+        case i: FormPage =>
+          i.formComponent.body(0) match {
+            case _: H3 => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+          i.formComponent.body(1) match {
+            case _: Paragraph => succeed
+            case _ => fail("Ordering of input body components not maintained")
+          }
+
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include a page hint appended to the input text" in new InputTest {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s})(urlMap, lang) match {
+        case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
+        case _: FormPage => fail("No hint found within Input")
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+  }
 
   "UIBuilder Currency Input processing" must {
 

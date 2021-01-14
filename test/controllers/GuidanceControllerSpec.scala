@@ -885,6 +885,52 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
   }
 
+  "Accessing a page from a passphrase process" should {
+
+    trait Test extends MockSessionRepository with MockGuidanceConnector with TestData {
+      lazy val fakeRequest = FakeRequest(GET, path).withSession(SessionKeys.sessionId -> processId).withCSRFToken
+
+      val guidanceService = new GuidanceService(
+        MockAppConfig,
+        mockGuidanceConnector,
+        mockSessionRepository,
+        new PageBuilder(),
+        new PageRenderer,
+        new UIBuilder())
+
+      lazy val target =
+        new GuidanceController(
+          MockAppConfig,
+          fakeSessionIdAction,
+          errorHandler,
+          view,
+          formView,
+          guidanceService,
+          stubMessagesControllerComponents()
+        )
+    }
+
+    "Return SEE_OTHER from a getPage() as a result of an Authentication error when non authenticated" in new Test {
+      MockSessionRepository
+        .get(processId, s"${processId}$path", false)
+        .returns(Future.successful(Left(AuthenticationError)))
+
+      lazy val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "Return SEE_OTHER from a submit()) as a result of an Authentication error when non authenticated" in new Test {
+      MockSessionRepository
+        .get(processId, s"${processId}$path", false)
+        .returns(Future.successful(Left(AuthenticationError)))
+
+      lazy val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+      status(result) shouldBe Status.SEE_OTHER
+    }
+  }
+
   "Calling a valid URL path for a page in a process" should {
 
     trait Test extends MockGuidanceService with TestData {
@@ -1088,7 +1134,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     }
 
   }
-
 
   "Date Input processing" should {
     trait DateInputTest extends MockGuidanceService with TestData {
