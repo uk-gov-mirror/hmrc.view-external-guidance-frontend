@@ -79,7 +79,7 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val privacy: String = config.get[String]("urls.footer.privacy")
   lazy val termsConditions: String = config.get[String]("urls.footer.termsConditions")
   lazy val govukHelp: String = config.get[String]("urls.footer.govukHelp")
-  lazy val accessibilityStatement: String = config.get[String]("urls.footer.accessibilityStatement")_
+  lazy val accessibilityStatement: String = config.get[String]("urls.footer.accessibilityStatement")
   lazy val signOutUrl: String = config.get[String]("session-timeout.signOutUrl")
   lazy val defaultSignOutUrl: String = config.get[String]("session-timeout.defaultSignOutUrl")
   lazy val timeoutInSeconds: Int = config.get[Int]("session-timeout.seconds")

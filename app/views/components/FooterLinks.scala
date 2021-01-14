@@ -17,7 +17,6 @@
 package views.components
 
 import config.AppConfig
-import controllers.routes
 import javax.inject.Inject
 import play.api.i18n.Messages
 import play.api.mvc.Request
