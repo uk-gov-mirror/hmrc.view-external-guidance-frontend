@@ -75,8 +75,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       copyright.text.contains(messages("footer.license.copyright")) shouldBe true
     }
 
-
-    "contain correct Welsh footer link texts" in new WelshTest {
+     "contain correct Welsh footer link texts" in new WelshTest {
 
       val doc: Document = asDocument(footer(uk.gov.hmrc.govukfrontend.views.html.components.Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
