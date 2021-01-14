@@ -16,12 +16,13 @@
 
 package models.ui
 
-import models.ocelot.{asCurrency, asDate}
-import java.util.Locale.UK
 import java.math.RoundingMode
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
+import java.util.Locale.UK
+
+import models.ocelot.{asCurrency, asDate}
 
 trait Name {
   val name: String
@@ -29,10 +30,12 @@ trait Name {
 
 sealed trait OutputFormat {
   def asString(value: Option[String]): String = value.getOrElse("")
+  def isNumeric: Boolean = false
 }
 
 case object Currency extends OutputFormat with Name {
   val name: String = "currency"
+  override def isNumeric: Boolean = true
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
       asCurrency(value) match {
@@ -44,6 +47,7 @@ case object Currency extends OutputFormat with Name {
 
 case object CurrencyPoundsOnly extends OutputFormat with Name {
   val name: String = "currencyPoundsOnly"
+  override def isNumeric: Boolean = true
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
       // Extract as simple number, then format as pounds only
@@ -75,6 +79,11 @@ case object DateStandard extends OutputFormat with Name {
     )
 }
 
+case object Number extends OutputFormat with Name {
+  val name: String = "number"
+  override def isNumeric: Boolean = true
+}
+
 object OutputFormat {
   def apply(name: Option[String]): OutputFormat =
     name match {
@@ -82,6 +91,7 @@ object OutputFormat {
       case Some(CurrencyPoundsOnly.name) => CurrencyPoundsOnly
       case Some(Txt.name) => Txt
       case Some(DateStandard.name) => DateStandard
+      case Some(Number.name) => Number
       case _ => Txt
     }
 
