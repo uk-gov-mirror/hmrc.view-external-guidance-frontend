@@ -16,20 +16,14 @@
 
 package views.components
 
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.Injector
 import play.api.i18n.{Messages, MessagesApi, Lang}
 import play.api.test.FakeRequest
-import play.twirl.api.Html
-import org.jsoup.Jsoup
-import views.html.components.govukFooter
-import models.ui.{Paragraph, Text, Words}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 import base.{ViewSpec, ViewFns}
 import uk.gov.hmrc.govukfrontend.views.html.components._
-import views.components.FooterLinks
 
 class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
@@ -40,8 +34,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val footerLinks = app.injector.instanceOf[FooterLinks]
     val footer = app.injector.instanceOf[views.html.components.govukFooter]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
-    val fakeRequest = FakeRequest("GET", "/")
-
+    implicit val fakeRequest = FakeRequest("GET", "/")
   }
 
   trait WelshTest extends Test {
@@ -82,8 +75,7 @@ class GovukFooterSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
       copyright.text.contains(messages("footer.license.copyright")) shouldBe true
     }
 
-
-    "contain correct Welsh footer link texts" in new WelshTest {
+     "contain correct Welsh footer link texts" in new WelshTest {
 
       val doc: Document = asDocument(footer(uk.gov.hmrc.govukfrontend.views.html.components.Footer(meta = Some(Meta(items = Some(footerLinks.items))))))
       val footerElement: Element = doc.getElementsByTag("footer").first
