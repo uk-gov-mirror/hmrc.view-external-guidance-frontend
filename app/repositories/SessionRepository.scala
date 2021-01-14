@@ -57,7 +57,9 @@ case class ProcessContext(process: Process,
                           labels: Map[String, Label],
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
-  lazy val secure: Boolean = process.passPhrase.fold(true)(_ => labels.get(Process.PassPhraseLabelName).fold(true)(_.english.isEmpty))
+  val secure: Boolean = process.passPhrase.fold(true){ passPhrase =>
+    labels.get(Process.PassPhraseResponseLabelName).fold(false)(answer => answer.english == Some(passPhrase))
+  }
 }
 
 trait SessionRepository {

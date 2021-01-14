@@ -24,7 +24,7 @@ import play.api.Logger
 import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.i18n.{MessagesApi, Lang}
+import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import models.ocelot.{LabelCache, Labels, Process}
@@ -36,32 +36,24 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
-    messagesApi: MessagesApi,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean)
-                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] = {
-    sessionRepository.get(sessionId, pageUrl, previousPageByLink).map{
-      case Left(err) =>
-        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
-        Left(err)
-      case Right(ctx) if ctx.secure => Right(ctx)
-      case Right(ctx) => Right(ctx)
-     }
-  }
+  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
 
-  def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
+  def getPageEvaluationContext(processCode: String, requestedUrl: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
+    getProcessContext(sessionId, s"${processCode}$requestedUrl", previousPageByLink).map {
       case Right(ctx) if ctx.process.meta.processCode == processCode =>
-        ctx.urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
-          logger.error(s"Unable to find url $url within cached process ${ctx.process.meta.id} using sessionId $sessionId")
+        ctx.urlToPageId.get(requestedUrl).fold[RequestOutcome[PageEvaluationContext]]{
+          logger.error(s"Unable to find url $requestedUrl within cached process ${ctx.process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
-        }{ pageId =>
+        }{ pageIdElect =>
+          val (pageId, url) = if (ctx.secure) (pageIdElect, requestedUrl) else (Process.PassPhrasePageId, Process.SecuredProcessStartUrl)
           pageBuilder.buildPage(pageId, ctx.process).fold(
             err => {
               logger.error(s"PageBuilder error $err on process ${ctx.process.meta.id} with sessionId $sessionId")
@@ -93,7 +85,9 @@ class GuidanceService @Inject() (
       case Right(_) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
-      case Left(err) => Left(err)
+      case Left(err) =>
+        logger.error(s"Repository returned $err, when attempting retrieve process using id (sessionId) $sessionId")
+        Left(err)
     }
 
   def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError)(implicit lang: Lang): PageContext = {

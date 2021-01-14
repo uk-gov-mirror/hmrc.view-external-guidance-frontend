@@ -203,9 +203,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
   trait QuestionSubmissionTest extends MockSessionRepository with MockGuidanceConnector with TestData  with ProcessJson {
     val fakeRequest = FakeRequest("GET", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
-
     val formError = new FormError(relativePath, List("error.required"))
-
     val guidanceService = new GuidanceService(
       MockAppConfig,
       mockGuidanceConnector,
@@ -227,7 +225,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
   }
 
   "Submitting a blank Question page form" should {
-
 
     "return a BadRequest response" in new QuestionSubmissionTest {
       MockSessionRepository

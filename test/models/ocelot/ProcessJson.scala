@@ -194,9 +194,18 @@ trait ProcessJson {
       |    "start": {
       |      "type": "PageStanza",
       |      "url": "/feeling-bad",
-      |      "next": ["3"],
+      |      "next": ["128"],
       |      "stack": true
       |    },
+      |   "128": {
+      |     "next": [
+      |       "3"
+      |     ],
+      |     "noteType": "Title",
+      |     "stack": false,
+      |     "text": 1,
+      |     "type": "CalloutStanza"
+      |   },
       |    "3": {
       |      "type": "InstructionStanza",
       |      "text": 1,
