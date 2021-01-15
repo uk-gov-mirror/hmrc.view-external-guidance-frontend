@@ -51,6 +51,7 @@ trait AppConfig {
   val baseUrl: String
   val hostBaseUrl: String
   val adminHostBaseUrl: String
+  val passPhrasePagePrompt: String
 }
 
 @Singleton
@@ -74,7 +75,6 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
     s"$contactBaseUrl$betaFeedback?service=$serviceIdentifier&backUrl=${SafeRedirectUrl(host + request.uri).encodedUrl}"
 
   lazy val externalGuidanceBaseUrl: String = servicesConfig.baseUrl("external-guidance")
-
   lazy val cookies: String = config.get[String]("urls.footer.cookies")
   lazy val privacy: String = config.get[String]("urls.footer.privacy")
   lazy val termsConditions: String = config.get[String]("urls.footer.termsConditions")
@@ -89,4 +89,5 @@ class AppConfigImpl @Inject() (val config: Configuration, servicesConfig: Servic
   lazy val baseUrl: String = config.get[String]("urls.baseUrl")
   lazy val hostBaseUrl: String = s"$host$baseUrl"
   lazy val adminHostBaseUrl: String = s"$adminHost$baseUrl"
+  lazy val passPhrasePagePrompt = servicesConfig.getString("pass-phrase-page-prompt")
 }

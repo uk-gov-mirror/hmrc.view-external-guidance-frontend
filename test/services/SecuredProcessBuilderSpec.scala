@@ -20,6 +20,7 @@ import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas.Stanza
 import play.api.libs.json._
+import mocks.MockAppConfig
 
 class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson {
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
@@ -29,7 +30,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson {
 
   val process: Process = prototypeJson.as[Process]
   val passphraseProcess = validOnePageProcessWithPassPhrase.as[Process]
-  val securedProcessBuilder = new SecuredProcessBuilder()
+  val securedProcessBuilder = new SecuredProcessBuilder(MockAppConfig)
   val pageBuilder = new PageBuilder()
 
   "SecuredProcessBuilder" should {
