@@ -64,7 +64,7 @@ case class ProcessContext(process: Process,
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
-  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
+  def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
@@ -78,7 +78,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     domainFormat = DefaultSessionRepository.SessionProcess.format
   )
   with SessionRepository {
-
+  private type FieldAttr = (String, Json.JsValueWrapper)
   val lastAccessedIndexName = "lastAccessedIndex"
   val expiryAfterOptionName = "expireAfterSeconds"
   val ttlExpiryFieldName = "lastAccessed"
@@ -120,12 +120,10 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+  def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] = {
     findAndUpdate(Json.obj("_id" -> key),
-      Json.obj(
-        "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
-        "$push" -> Json.obj("pageHistory" -> pageUrl)
-      ),
+                  Json.obj((List(toFieldPair("$set", Json.obj(toFieldPair(ttlExpiryFieldName, Json.obj("$date" -> Instant.now().toEpochMilli))))) ++
+                           pageHistoryUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj("pageHistory" -> url)))).toArray: _*),
       fetchNewObject = false
     ).flatMap { r =>
         r.result[DefaultSessionRepository.SessionProcess]
@@ -136,16 +134,18 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           //
           // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
           //
-          val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
-          val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
-          historyUpdate.fold(Future.successful(Right(processContext)))(history =>
-            savePageHistory(key, history).map {
-              case Left(err) =>
-                logger.error(s"Unable to save backlink history, error = $err")
-                Right(processContext)
-              case _ => Right(processContext)
-            }
-          )
+          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, None)))){pageUrl =>
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
+            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
+            historyUpdate.fold(Future.successful(Right(processContext)))(history =>
+              savePageHistory(key, history).map {
+                case Left(err) =>
+                  logger.error(s"Unable to save backlink history, error = $err")
+                  Right(processContext)
+                case _ => Right(processContext)
+              }
+            )
+          }
         }
       }
       .recover {
@@ -153,6 +153,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
+  }
 
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
@@ -226,7 +227,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs => (Some(x), None)
     }
 
-  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr =
     (name -> Json.toJsFieldJsValueWrapper(value))
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =

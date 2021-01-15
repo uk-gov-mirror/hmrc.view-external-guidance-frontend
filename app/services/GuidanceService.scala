@@ -43,13 +43,15 @@ class GuidanceService @Inject() (
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
   def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean)
-                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] =
-    sessionRepository.get(sessionId, s"${processCode}$url", previousPageByLink).map{ ctx =>
-      ctx match {
-        case Right(ctx) if !ctx.secure && url.drop(1) != models.ocelot.Process.SecuredProcessStartUrl => Left(AuthenticationError)
-        case result => result
+                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] = {
+    val optionalPageHistoryUrl: Option[String] = if (isAuthenticationUrl(url)) None else Some(s"$processCode$url")
+    sessionRepository.get(sessionId, optionalPageHistoryUrl, previousPageByLink).map{ ctx =>
+      (ctx, optionalPageHistoryUrl) match {
+        case (Right(ctx), Some(_)) if !ctx.secure => Left(AuthenticationError)
+        case (result, _) => result
       }
     }
+  }
 
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
@@ -172,4 +174,5 @@ class GuidanceService @Inject() (
         )
     }
 
+  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(models.ocelot.Process.SecuredProcessStartUrl)
 }

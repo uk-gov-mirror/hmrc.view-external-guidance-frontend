@@ -228,7 +228,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     "return a BadRequest response" in new QuestionSubmissionTest {
       MockSessionRepository
-        .get(processId, s"tell-hmrc$path", previousPageByLink = false)
+        .get(processId, Some(s"tell-hmrc$path"), previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
@@ -882,7 +882,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         mockGuidanceService,
         stubMessagesControllerComponents()
       )
-
   }
 
   "Accessing a page from a passphrase process" should {
@@ -912,7 +911,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     "Return SEE_OTHER from a getPage() as a result of an Authentication error when non authenticated" in new Test {
       MockSessionRepository
-        .get(processId, s"${processId}$path", false)
+        .get(processId, Some(s"${processId}$path"), false)
         .returns(Future.successful(Left(AuthenticationError)))
 
       lazy val result = target.getPage(processId, relativePath, None)(fakeRequest)
@@ -922,7 +921,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     "Return SEE_OTHER from a submit()) as a result of an Authentication error when non authenticated" in new Test {
       MockSessionRepository
-        .get(processId, s"${processId}$path", false)
+        .get(processId, Some(s"${processId}$path"), false)
         .returns(Future.successful(Left(AuthenticationError)))
 
       lazy val result = target.submitPage(processId, relativePath)(fakeRequest)

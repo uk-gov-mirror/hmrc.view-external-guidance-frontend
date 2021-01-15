@@ -165,7 +165,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$${page.url}", previousPageByLink = false)
+        .get(sessionRepoId, Some(s"$processCode$${page.url}"), previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(page.url -> "2"), None))))
 
       MockPageBuilder
@@ -198,7 +198,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
+        .get(sessionRepoId, Some(s"$processCode$lastPageUrl"), previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
@@ -234,7 +234,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "tell-hmrc"
 
       MockSessionRepository
-        .get(sessionRepoId, s"$processCode$lastPageUrl", previousPageByLink = false)
+        .get(sessionRepoId, Some(s"$processCode$lastPageUrl"), previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(fullProcess, Map(lastPageUrl -> "answer"), Map(), Map(lastPageUrl -> "2"), None))))
 
       MockPageBuilder
@@ -273,7 +273,7 @@ class GuidanceServiceSpec extends BaseSpec {
       override val processCode = "cup-of-tea"
 
       MockSessionRepository
-        .get(processId, s"$processCode$url", previousPageByLink = false)
+        .get(processId, Some(s"$processCode$url"), previousPageByLink = false)
         .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
 
       MockPageBuilder
