@@ -18,7 +18,7 @@ package models.ocelot
 
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.{Json, JsObject}
-import services.PageBuilder
+import services.shared.PageBuilder
 
 class PrototypeJsonSpec extends WordSpec with Matchers {
 

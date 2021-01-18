@@ -16,6 +16,7 @@
 
 package services
 
+import services.shared._
 import base.BaseSpec
 import models.ocelot._
 import models.ocelot.stanzas._
@@ -28,12 +29,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
   // Define instance of class used in testing
   val pageBuilder: PageBuilder = new PageBuilder()
 
-  //val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
-
   case object DummyStanza extends Stanza {
     override val next: Seq[String] = Seq("1")
   }
-
 
   def createInstructionGroup(text1: String, text2: String): InstructionGroup = {
 
@@ -1345,7 +1343,5 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       }
 
     }
-
-
 
 }

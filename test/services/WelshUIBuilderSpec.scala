@@ -16,6 +16,7 @@
 
 package services
 
+import services.shared._
 import base.{WelshLanguage, BaseSpec}
 import models.ocelot._
 import models.ocelot.stanzas._
