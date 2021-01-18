@@ -71,6 +71,7 @@ class GuidanceController @Inject() (
             }
         }
       case Left(AuthenticationError) =>
+        logger.warn(s"Request for PageContext at /$path returned AuthenticationError, redirecting to process passphrase page")
         Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
