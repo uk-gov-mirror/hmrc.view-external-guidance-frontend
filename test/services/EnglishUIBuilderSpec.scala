@@ -963,7 +963,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val pagePoundsOnly = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputCurrencyPoundsOnly), Seq.empty)
     val inputText = models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputText", None, stack = false)
     val pageText = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputText), Seq.empty)
-    val inputNumber = models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputNumber", None, stack = false)
+    val inputNumber = models.ocelot.stanzas.NumberInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputNumber", None, stack = false)
     val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
