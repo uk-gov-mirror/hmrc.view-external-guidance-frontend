@@ -60,16 +60,19 @@ class GuidanceController @Inject() (
               case Right(_) => Ok(standardView(page, pageCtx))
               case Left(_) => InternalServerError(errorHandler.internalServerErrorTemplate)
             }
-          case page: FormPage =>
-            pageCtx.dataInput match {
+          case page: FormPage => pageCtx.dataInput match {
               case Some(input) =>
                 val inputName: String = formInputName(path)
                 Future.successful(Ok(formView(page, pageCtx, inputName, populatedForm(input, inputName, pageCtx.answer))))
 
-              case _ => logger.error(s"Unable to locate input stanza for process ${pageCtx.processCode} on page load")
+              case _ =>
+                logger.error(s"Unable to locate input stanza for process ${pageCtx.processCode} on page load")
                 Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
         }
+      case Left(AuthenticationError) =>
+        logger.warn(s"Request for PageContext at /$path returned AuthenticationError, redirecting to process passphrase page")
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
@@ -122,6 +125,8 @@ class GuidanceController @Inject() (
               Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
             }
           }
+      case Left(AuthenticationError) =>
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))

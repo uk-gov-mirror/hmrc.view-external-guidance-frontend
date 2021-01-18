@@ -56,11 +56,15 @@ case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
                           urlToPageId: Map[String, String],
-                          backLink: Option[String])
+                          backLink: Option[String]) {
+  val secure: Boolean = process.passPhrase.fold(true){ passPhrase =>
+    labels.get(Process.PassPhraseResponseLabelName).fold(false)(answer => answer.english == Some(passPhrase))
+  }
+}
 
 trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
-  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
+  def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
@@ -74,7 +78,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     domainFormat = DefaultSessionRepository.SessionProcess.format
   )
   with SessionRepository {
-
+  private type FieldAttr = (String, Json.JsValueWrapper)
   val lastAccessedIndexName = "lastAccessedIndex"
   val expiryAfterOptionName = "expireAfterSeconds"
   val ttlExpiryFieldName = "lastAccessed"
@@ -106,12 +110,20 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     )
   }
 
-  def get(key: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+  def get(key:String): Future[RequestOutcome[ProcessContext]] =
+    find("_id" -> key).map {
+      case Nil =>  Left(NotFoundError)
+      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
+    }.recover {
+      case lastError =>
+      logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
+      Left(DatabaseError)
+    }
+
+  def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] = {
     findAndUpdate(Json.obj("_id" -> key),
-      Json.obj(
-        "$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli)),
-        "$push" -> Json.obj("pageHistory" -> pageUrl)
-      ),
+                  Json.obj((List(toFieldPair("$set", Json.obj(toFieldPair(ttlExpiryFieldName, Json.obj("$date" -> Instant.now().toEpochMilli))))) ++
+                           pageHistoryUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj("pageHistory" -> url)))).toArray: _*),
       fetchNewObject = false
     ).flatMap { r =>
         r.result[DefaultSessionRepository.SessionProcess]
@@ -122,16 +134,18 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           //
           // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
           //
-          val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
-          val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
-          historyUpdate.fold(Future.successful(Right(processContext)))(history =>
-            savePageHistory(key, history).map {
-              case Left(err) =>
-                logger.error(s"Unable to save backlink history, error = $err")
-                Right(processContext)
-              case _ => Right(processContext)
-            }
-          )
+          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, None)))){pageUrl =>
+            val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
+            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
+            historyUpdate.fold(Future.successful(Right(processContext)))(history =>
+              savePageHistory(key, history).map {
+                case Left(err) =>
+                  logger.error(s"Unable to save backlink history, error = $err")
+                  Right(processContext)
+                case _ => Right(processContext)
+              }
+            )
+          }
         }
       }
       .recover {
@@ -139,36 +153,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
-
-  private def backlinkAndHistory(pageUrl: String,
-                                 previousPageByLink: Boolean,
-                                 priorHistory: List[String]): (Option[String], Option[List[String]]) =
-    priorHistory.reverse match {
-      // Initial page
-      case Nil => (None, None)
-      // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
-      case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
-      // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
-      // FORWARD: Back link x, pageHistory intact
-      case x :: xs => (Some(x), None)
-    }
-
-  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
-    collection
-      .update(false)
-      .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
-      .map(_ => Right(()))
-      .recover {
-        case lastError =>
-          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
-          Left(DatabaseError)
-      }
   }
-
-  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]):(String, Json.JsValueWrapper) =
-    (name -> Json.toJsFieldJsValueWrapper(value))
 
   def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
@@ -195,16 +180,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  def get(key:String): Future[RequestOutcome[ProcessContext]] =
-    find("_id" -> key).map {
-      case Nil =>  Left(NotFoundError)
-      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
-    }.recover {
-      case lastError =>
-      logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
-      Left(DatabaseError)
-    }
-
   def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
@@ -224,6 +199,36 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to update labels within session repo with _id=$key")
           Left(DatabaseError)
       }
+
+  def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
+    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
+    collection
+      .update(false)
+      .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
+      .map(_ => Right(()))
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
+          Left(DatabaseError)
+      }
+  }
+
+  private def backlinkAndHistory(pageUrl: String,
+                                 previousPageByLink: Boolean,
+                                 priorHistory: List[String]): (Option[String], Option[List[String]]) =
+    priorHistory.reverse match {
+      // Initial page
+      case Nil => (None, None)
+      // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
+      case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
+      // BACK: pageHistory becomes y :: xs and backlink is head of xs
+      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
+      // FORWARD: Back link x, pageHistory intact
+      case x :: xs => (Some(x), None)
+    }
+
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr =
+    (name -> Json.toJsFieldJsValueWrapper(value))
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(

@@ -21,7 +21,7 @@ import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
-import models.errors.{BadRequestError, InternalServerError, InvalidProcessError}
+import models.errors.{BadRequestError, InternalServerError, InvalidProcessError, AuthenticationError}
 import models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.i18n.Lang
@@ -42,12 +42,20 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
-  def getProcessContext(sessionId: String, pageUrl: String, previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
-    sessionRepository.get(sessionId, pageUrl, previousPageByLink)
+  def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean)
+                       (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] = {
+    val optionalPageHistoryUrl: Option[String] = if (isAuthenticationUrl(url)) None else Some(s"$processCode$url")
+    sessionRepository.get(sessionId, optionalPageHistoryUrl, previousPageByLink).map{ ctx =>
+      (ctx, optionalPageHistoryUrl) match {
+        case (Right(ctx), Some(_)) if !ctx.secure => Left(AuthenticationError)
+        case (result, _) => result
+      }
+    }
+  }
 
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
-    getProcessContext(sessionId, s"${processCode}$url", previousPageByLink).map {
+    getProcessContext(sessionId, processCode, url, previousPageByLink).map {
       case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
           logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
@@ -81,7 +89,7 @@ class GuidanceService @Inject() (
             }
           )
         }
-      case Right(ProcessContext(_,_,_,_,_)) =>
+      case Right(_) =>
         logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode")
         Left(InternalServerError)
       case Left(err) =>
@@ -152,7 +160,7 @@ class GuidanceService @Inject() (
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
       case Right(process) =>
-        pageBuilder.pages(process).fold(
+        pageBuilder.pages(process, process.startPageId).fold(
         err => {
           logger.warn(s"Failed to parse process with error $err")
           Future.successful(Left(InvalidProcessError))
@@ -166,4 +174,5 @@ class GuidanceService @Inject() (
         )
     }
 
+  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(models.ocelot.Process.SecuredProcessStartUrl)
 }
