@@ -18,9 +18,13 @@
 @import views.html.components.render_text
 
 @(lst: WarningComponent)(implicit request: Request[_], messages: Messages, ctx: PageContext)
-<strong class="govuk-warning-text__text">
+<div class="govuk-warning-text">
+ <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+ <strong class="govuk-warning-text__text">
+  <span class="govuk-warning-text__assistive">Warning</span>
  @for(item <- lst.items){<p>@render_text(item)</p>}
-</strong>
+ </strong>
+</div>
 @{
      //$COVERAGE-OFF$
 }
