@@ -25,8 +25,8 @@ import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import config.ErrorHandler
-import models.errors._
-import models.ocelot.{Process, ProcessJson}
+import core.models.errors._
+import core.models.ocelot.{Process, ProcessJson}
 import repositories.ProcessContext
 import views.html.{delete_your_answers, session_timeout}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents

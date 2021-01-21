@@ -16,6 +16,8 @@
 
 package models.ocelot.stanzas
 
+import core.models.ocelot.stanzas.{VisualStanza, Populated}
+
 case class StackedGroup (override val next: Seq[String], group: Seq[VisualStanza], stack: Boolean) extends VisualStanza with Populated
 
 object StackedGroup {

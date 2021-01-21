@@ -17,7 +17,7 @@
 package services
 
 import base.{WelshLanguage, BaseSpec}
-import models.ocelot._
+import core.models.ocelot._
 import models.ui.{Currency, CurrencyPoundsOnly, DateStandard, LabelRef, Link, Text, Txt, Words}
 
 class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {

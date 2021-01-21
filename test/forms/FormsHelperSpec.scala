@@ -18,8 +18,8 @@ package forms
 
 import play.api.mvc._
 import play.api.data.Form
-import models.ocelot.Phrase
-import models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question}
+import core.models.ocelot.Phrase
+import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question}
 import models.ui.SubmittedAnswer
 
 import play.api.test.FakeRequest

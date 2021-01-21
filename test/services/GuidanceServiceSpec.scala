@@ -18,16 +18,16 @@ package services
 
 import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockPageRenderer, MockSessionRepository, MockUIBuilder}
-import models.errors.{DatabaseError, NotFoundError}
-import models.ocelot.stanzas._
-import models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Labels, Phrase}
+import core.models.errors.{DatabaseError, NotFoundError}
+import core.models.ocelot.stanzas._
+import core.models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Labels, Phrase}
 import models.ui
 import models.PageEvaluationContext
 import uk.gov.hmrc.http.HeaderCarrier
 import repositories.ProcessContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import models.errors.BadRequestError
+import core.models.errors.BadRequestError
 import models.PageContext
 import play.api.i18n.Lang
 

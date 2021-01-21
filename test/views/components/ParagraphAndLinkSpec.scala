@@ -26,7 +26,7 @@ import models.ui.{Link, Paragraph, PreviousPageLinkQuery, Text}
 import org.jsoup.nodes.{Attributes, Document, Element}
 
 import scala.collection.JavaConverters._
-import models.ocelot.{LabelCache, Labels}
+import core.models.ocelot.{LabelCache, Labels}
 
 class ParagraphAndLinkSpec extends WordSpec with Matchers with base.ViewFns with GuiceOneAppPerSuite {
 

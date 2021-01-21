@@ -17,7 +17,7 @@
 package services
 
 import models._
-import models.ocelot.{Link, Phrase, Process}
+import core.models.ocelot.{Link, Phrase, Process}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._

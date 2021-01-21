@@ -16,6 +16,7 @@
 
 package models.ocelot.stanzas
 
+import core.models.ocelot.stanzas.{NumberedListItemCallout, NumberedCircleListItemCallout, VisualStanza, Populated}
 
 case class NumberedList(override val next: Seq[String], group: Seq[NumberedListItemCallout], stack: Boolean) extends VisualStanza with Populated
 

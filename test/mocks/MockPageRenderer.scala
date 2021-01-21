@@ -16,8 +16,8 @@
 
 package mocks
 
-import models.ocelot.stanzas.{DataInput, VisualStanza}
-import models.ocelot.{Page, Labels}
+import core.models.ocelot.stanzas.{DataInput, VisualStanza}
+import core.models.ocelot.{Page, Labels}
 import services.PageRenderer
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory

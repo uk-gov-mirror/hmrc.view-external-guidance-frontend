@@ -27,7 +27,7 @@ import org.jsoup._
 import views.html._
 import forms.SubmittedTextAnswerFormProvider
 import models.ui.{Paragraph, Text, Question, Answer, BulletPointList, RequiredErrorMsg}
-import models.ocelot.{Labels, LabelCache}
+import core.models.ocelot.{Labels, LabelCache}
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 import base.ViewFns

@@ -16,9 +16,9 @@
 
 package mocks
 
-import models.ocelot.{Page, Process}
-import services.shared.PageBuilder
-import models.ocelot.errors.GuidanceError
+import core.models.ocelot.{Page, Process}
+import core.services.PageBuilder
+import core.models.ocelot.errors.GuidanceError
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 
