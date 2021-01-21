@@ -16,6 +16,7 @@
 
 package services
 
+import services.shared._
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}

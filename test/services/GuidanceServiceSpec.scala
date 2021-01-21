@@ -405,6 +405,21 @@ class GuidanceServiceSpec extends BaseSpec {
       }
 
     }
+
+    "with a url to the passphrase page should send no pageHistory url to the repository" in new Test {
+      val expectedProcessContext: ProcessContext = ProcessContext(process, Map(), Map(), Map(), None)
+
+      MockSessionRepository
+        .get(sessionRepoId, None, false)
+        .returns(Future.successful(Right(expectedProcessContext)))
+
+      private val result = target.getProcessContext(sessionRepoId, process.meta.processCode, s"/${Process.SecuredProcessStartUrl}", false)
+
+      whenReady(result) { err =>
+        err shouldBe Right(expectedProcessContext)
+      }
+
+    }
   }
 
   "Calling submitPage" should {

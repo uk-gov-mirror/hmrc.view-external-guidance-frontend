@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
+package services
+
 import models.ocelot._
 import models.errors.{Error, ProcessError, ValidationError}
 import models.ocelot.errors._
 import java.util.UUID
-import models.RequestOutcome
-import models.ocelot.{Label, Page, Process}
-import play.api.libs.json._
 
-package object services {
-  val processIdformat = "^[a-z]{3}[0-9]{5}$"
-  val uuidFormat = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-
+package object shared {
+  val processIdformat: String = "^[a-z]{3}[0-9]{5}$"
+  val uuidFormat: String = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
   def validateUUID(id: String): Option[UUID] = if (id.matches(uuidFormat)) Some(UUID.fromString(id)) else None
   def validateProcessId(id: String): Either[Error, String] = if (id.matches(processIdformat)) Right(id) else Left(ValidationError)
   def uniqueLabels(pages: Seq[Page]):Seq[Label] = pages.flatMap(p => p.labels).distinct
@@ -58,16 +56,4 @@ package object services {
 
   implicit def processErrs(errs: List[GuidanceError]): List[ProcessError] = errs.map(toProcessErr)
 
-  def guidancePages(pageBuilder: PageBuilder, securedProcessBuilder: SecuredProcessBuilder, jsObject: JsObject): RequestOutcome[(Process, Seq[Page], JsObject)] =
-    jsObject.validate[Process].fold(
-      errs => Left(Error(GuidanceError.fromJsonValidationErrors(errs))),
-      processElect => {
-        val (process, json) = processElect.passPhrase.fold((processElect, jsObject)){ _ =>
-          val securedProcess: Process = securedProcessBuilder.secure(processElect)
-          (securedProcess, Json.toJsObject(securedProcess))
-        }
-        pageBuilder.pagesWithValidation(process, process.startPageId).fold(errs => Left(Error(errs)),
-          pages => Right((process, pages, json))
-      )}
-    )
 }

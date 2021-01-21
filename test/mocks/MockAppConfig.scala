@@ -49,5 +49,4 @@ object MockAppConfig extends AppConfig {
   val adminHost: String = "http://adminhost"
   val hostBaseUrl: String = s"${host}${baseUrl}"
   val adminHostBaseUrl: String = s"${adminHost}${baseUrl}"
-  val passPhrasePagePrompt: String = "Enter passphrase"
 }

@@ -16,6 +16,7 @@
 
 package services
 
+import services.shared._
 import base.BaseSpec
 import models.ocelot.stanzas._
 import models.ocelot._
