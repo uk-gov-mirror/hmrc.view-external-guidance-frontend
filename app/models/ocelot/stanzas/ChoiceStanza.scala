@@ -16,7 +16,9 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{asCurrency, Labels}
+import java.time.LocalDate
+
+import models.ocelot.{asCurrency, asDate, Labels}
 import models.ocelot.{labelReference, labelReferences}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
@@ -67,33 +69,39 @@ sealed trait ChoiceTest {
   val right: String
   def eval(labels: Labels): Boolean
   def value(arg: String, labels: Labels): String = labelReference(arg).fold(arg)(ref => labels.value(ref).getOrElse(""))
-  def op(f: (BigDecimal, BigDecimal) => Boolean, g: (String, String) => Boolean, labels: Labels): Boolean = {
+  def moreThanOrEquals(date: LocalDate, other: LocalDate) : Boolean = date.compareTo(other) >= 0
+  def lessThanOrEquals(date: LocalDate, other: LocalDate) : Boolean = date.compareTo(other) <= 0
+  def op(f: (BigDecimal, BigDecimal) => Boolean, g: (String, String) => Boolean, h: (LocalDate, LocalDate) => Boolean,  labels: Labels): Boolean = {
     val x = value(left, labels)
     val y = value(right, labels)
-    (asCurrency(x), asCurrency(y)) match {
-      case (Some(bd1), Some(bd2)) => f(bd1, bd2)
-      case _ => g(x, y)
+    (asDate(x), asDate(y)) match {
+      case (Some(ld1), Some(ld2)) => h(ld1, ld2)
+      case _ =>
+        (asCurrency(x), asCurrency(y)) match {
+          case (Some(bd1), Some(bd2)) => f(bd1, bd2)
+          case _ => g(x, y)
+        }
     }
   }
 }
 
 case class EqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ == _, _ == _, labels)
+  def eval(labels: Labels): Boolean = op(_ == _, _ == _, _.isEqual(_), labels)
 }
 case class NotEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ != _, _ != _, labels)
+  def eval(labels: Labels): Boolean = op(_ != _, _ != _, !_.isEqual(_), labels)
 }
 case class MoreThanTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ > _, _ > _, labels)
+  def eval(labels: Labels): Boolean = op(_ > _, _ > _, _.isAfter(_), labels)
 }
 case class MoreThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ >= _, _ >= _, labels)
+  def eval(labels: Labels): Boolean = op(_ >= _, _ >= _, moreThanOrEquals, labels)
 }
 case class LessThanTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ < _, _ < _, labels)
+  def eval(labels: Labels): Boolean = op(_ < _, _ < _, _.isBefore(_), labels)
 }
 case class LessThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ <= _, _ <= _, labels)
+  def eval(labels: Labels): Boolean = op(_ <= _, _ <= _, lessThanOrEquals, labels)
 }
 
 case class Choice(override val next: Seq[String], tests: Seq[ChoiceTest]) extends Stanza with Evaluate {
