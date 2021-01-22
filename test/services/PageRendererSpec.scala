@@ -21,10 +21,9 @@ import base.BaseSpec
 import core.models.ocelot.stanzas._
 import core.models.ocelot._
 import play.api.libs.json._
-import utils.StanzaHelper
 import play.api.i18n.Lang
 
-class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
+class PageRendererSpec extends BaseSpec with ProcessJson  {
 
   // Define instance of class used in testing
   val pageBuilder = new PageBuilder()
