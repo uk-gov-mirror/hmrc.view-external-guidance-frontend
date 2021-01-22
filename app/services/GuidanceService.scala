@@ -28,7 +28,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
+import core.models.ocelot.stanzas.{ValueStanza, Value, Scalar}
 import core.models.ocelot.{LabelCache, Labels, Process}
+import core.models.ocelot.SecuredProcess
 
 @Singleton
 class GuidanceService @Inject() (
@@ -150,8 +152,28 @@ class GuidanceService @Inject() (
     retrieveAndCache(processCode, docId, connector.publishedProcess)
 
   def retrieveAndCacheApproval(processId: String, docId: String)
-                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(processId, docId, connector.approvalProcess)
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] = {
+    def retrieveProcessWithAddedPassPhraseResponse(processId: String): Future[RequestOutcome[Process]] =
+      connector.approvalProcess(processId).map{
+        case Right(process) if process.passPhrase.isDefined =>
+          logger.info(s"Attempting to add passphrase response")
+          process
+            .flow
+            .collect{case (k, v: ValueStanza) if v.values.exists(_.label.equals(SecuredProcess.PassPhraseLabelName)) => (k, v)}.headOption
+            .fold[RequestOutcome[Process]](Right(process)){kv =>
+              val (k, vs) = kv
+              val v = Value(Scalar, SecuredProcess.PassPhraseResponseLabelName, process.passPhrase.get)
+              val newVs = vs.copy(values = vs.values :+ v)
+              println(newVs)
+              Right(process.copy(flow = process.flow ++ Seq((k, newVs))))
+          }
+        case res @ Right(_) => res
+        case err @ Left(_) => err
+      }
+
+    retrieveAndCache(processId, docId, retrieveProcessWithAddedPassPhraseResponse)
+  }
+
 
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
       implicit context: ExecutionContext
@@ -175,5 +197,5 @@ class GuidanceService @Inject() (
         )
     }
 
-  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(core.models.ocelot.Process.SecuredProcessStartUrl)
+  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(SecuredProcess.SecuredProcessStartUrl)
 }
