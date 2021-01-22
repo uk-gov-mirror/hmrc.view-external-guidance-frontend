@@ -38,7 +38,7 @@ import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
 import models.errors._
 import models.ocelot.LabelCache
-
+import services.shared._
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import play.api.inject.Injector
