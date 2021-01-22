@@ -171,8 +171,6 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       divWarning.size shouldBe 1
 
       val warningInfo = divWarning.first().getElementsByClass("govuk-warning-text__text")
-      println(Console.BLUE + warningInfo)
-
       warningInfo.size shouldBe 1
 
       val numberedListItem = doc.getElementsByClass("govuk-list--number")
