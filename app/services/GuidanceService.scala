@@ -28,7 +28,6 @@ import uk.gov.hmrc.http.HeaderCarrier
 import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
-import core.models.ocelot.stanzas.{Value, ValueStanza}
 import core.models.ocelot.{LabelCache, Labels, Process}
 import core.models.ocelot.SecuredProcess
 
@@ -152,27 +151,8 @@ class GuidanceService @Inject() (
     retrieveAndCache(processCode, docId, connector.publishedProcess)
 
   def retrieveAndCacheApproval(processId: String, docId: String)
-                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] = {
-
-    def removedPassphraseProtection(process: Process): Process =
-      // Renames passphrase label and removes the passphrase entry page
-      process.flow.collectFirst{case (k, v: ValueStanza) if v.values.exists(_.label.equals(SecuredProcess.PassPhraseLabelName)) => (k, v)}
-        .fold(process){kv =>
-          val (k, vs) = kv
-          val newVs = vs.copy(values = vs.values.map{
-            case Value(t, SecuredProcess.PassPhraseLabelName, v) => Value(t, s"_${SecuredProcess.PassPhraseLabelName}", v)
-            case v => v
-          })
-          process.copy(flow = process.flow ++ Seq((k, newVs)) -- Seq(SecuredProcess.PassPhrasePageId))
-        }
-
-    // Remove any passphrase protection when viewing or previewing approval processes
-    retrieveAndCache(processId, docId, connector.approvalProcess(_).map{
-      case Right(process) if process.passPhrase.isDefined => Right(removedPassphraseProtection(process))
-      case res @ Right(_) => res
-      case err @ Left(_) => err
-    })
-  }
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
+    retrieveAndCache(processId, docId, connector.approvalProcess)
 
   private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
     implicit context: ExecutionContext
