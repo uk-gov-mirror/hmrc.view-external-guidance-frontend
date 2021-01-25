@@ -17,8 +17,8 @@
 package mocks
 
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.{Label, Process}
-import models.RequestOutcome
+import core.models.ocelot.{Label, Process}
+import core.models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import scala.concurrent.Future

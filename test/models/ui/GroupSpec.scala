@@ -17,7 +17,7 @@
 package models.ui
 
 import base.BaseSpec
-import models.ocelot.stanzas._
+import models.ocelot.stanzas.YourCallGroup
 
 class GroupSpec extends BaseSpec {
 

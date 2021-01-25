@@ -16,8 +16,9 @@
 
 package services
 
-import models.ocelot.Phrase
-import models.ocelot.stanzas.{VisualStanza, Instruction, InstructionGroup}
+import core.models.ocelot.Phrase
+import core.models.ocelot.stanzas.{VisualStanza, Instruction}
+import models.ocelot.stanzas.InstructionGroup
 import scala.util.matching.Regex
 import Regex._
 import scala.annotation.tailrec

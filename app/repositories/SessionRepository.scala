@@ -21,10 +21,10 @@ package repositories
 import config.AppConfig
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, Json, Writes}
-import models.ocelot._
-import models.errors._
-import models.MongoDateTimeFormats
-import models.RequestOutcome
+import core.models.ocelot._
+import core.models.errors._
+import core.models.MongoDateTimeFormats
+import core.models.RequestOutcome
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter

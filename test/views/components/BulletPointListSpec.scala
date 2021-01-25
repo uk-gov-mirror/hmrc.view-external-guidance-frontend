@@ -25,7 +25,7 @@ import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import models.ui._
-import models.ocelot.{Labels, LabelCache}
+import core.models.ocelot.{Labels, LabelCache}
 import views.html.components.bullet_point_list
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import base.ViewSpec

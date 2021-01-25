@@ -17,11 +17,11 @@
 package mocks
 
 import connectors.GuidanceConnector
-import models.ocelot.Process
+import core.models.ocelot.Process
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
-import models.RequestOutcome
+import core.models.RequestOutcome
 
 import scala.concurrent.{ExecutionContext, Future}
 

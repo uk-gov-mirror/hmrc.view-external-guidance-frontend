@@ -16,15 +16,14 @@
 
 package services
 
-import services.shared._
+import core.services._
 import base.BaseSpec
-import models.ocelot.stanzas._
-import models.ocelot._
+import core.models.ocelot.stanzas._
+import core.models.ocelot._
 import play.api.libs.json._
-import utils.StanzaHelper
 import play.api.i18n.Lang
 
-class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
+class PageRendererSpec extends BaseSpec with ProcessJson  {
 
   // Define instance of class used in testing
   val pageBuilder = new PageBuilder()
@@ -88,7 +87,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson with StanzaHelper {
     val questionHintString = "A hint!!"
     val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
 
-    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+    val question: core.models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
 
     def testRender(pge: Page, id: String, lbls: Labels): Unit = {
       val (nxt, newLabels) = renderer.renderPagePostSubmit(pge, LabelCache(), id)

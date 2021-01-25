@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
 import java.util.Locale.UK
 
-import models.ocelot.{asCurrency, asDate}
+import core.models.ocelot.{asCurrency, asDate}
 
 trait Name {
   val name: String

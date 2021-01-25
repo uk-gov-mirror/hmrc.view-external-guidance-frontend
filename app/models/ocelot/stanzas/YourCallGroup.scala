@@ -16,6 +16,8 @@
 
 package models.ocelot.stanzas
 
+import core.models.ocelot.stanzas.{YourCallCallout, VisualStanza, Populated}
+
 case class YourCallGroup(override val next: Seq[String], group: Seq[YourCallCallout], stack: Boolean) extends VisualStanza with Populated
 
 object YourCallGroup {

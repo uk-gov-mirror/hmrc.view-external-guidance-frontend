@@ -16,19 +16,19 @@
 
 package services
 
-import services.shared._
+import core.services._
 import config.AppConfig
 import connectors.GuidanceConnector
 import javax.inject.{Inject, Singleton}
 import models.{PageContext, PageEvaluationContext}
 import play.api.Logger
-import models.errors.{BadRequestError, InternalServerError, InvalidProcessError, AuthenticationError}
-import models.RequestOutcome
+import core.models.errors.{BadRequestError, InternalServerError, InvalidProcessError, AuthenticationError}
+import core.models.RequestOutcome
 import uk.gov.hmrc.http.HeaderCarrier
 import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
-import models.ocelot.{LabelCache, Labels, Process}
+import core.models.ocelot.{LabelCache, Labels, Process}
 
 @Singleton
 class GuidanceService @Inject() (
@@ -175,5 +175,5 @@ class GuidanceService @Inject() (
         )
     }
 
-  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(models.ocelot.Process.SecuredProcessStartUrl)
+  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(core.models.ocelot.Process.SecuredProcessStartUrl)
 }

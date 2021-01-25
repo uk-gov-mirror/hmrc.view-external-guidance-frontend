@@ -16,8 +16,9 @@
 
 package models
 
-import models.ocelot.Phrase
-import models.ocelot.stanzas.{VisualStanza, StackedGroup}
+import core.models.ocelot.Phrase
+import core.models.ocelot.stanzas.VisualStanza
+import models.ocelot.stanzas.StackedGroup
 import play.api.i18n.Lang
 import scala.annotation.tailrec
 

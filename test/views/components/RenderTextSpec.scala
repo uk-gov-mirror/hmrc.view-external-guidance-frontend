@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import models.ocelot.{Label, LabelCache, Labels}
+import core.models.ocelot.{Label, LabelCache, Labels}
 import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3}
 import models.ui.{LabelRef, Link, Number, Paragraph, Text, TextItem, Txt, Words}
 import org.jsoup.nodes.{Document, Element}

@@ -17,13 +17,13 @@
 package mocks
 
 import models.{PageEvaluationContext, PageContext}
-import models.RequestOutcome
+import core.models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import services.{ErrorStrategy, GuidanceService}
 import repositories.ProcessContext
 import uk.gov.hmrc.http.HeaderCarrier
-import models.ocelot.Labels
+import core.models.ocelot.Labels
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.i18n.Lang
 

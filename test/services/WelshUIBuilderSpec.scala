@@ -16,9 +16,10 @@
 
 package services
 
-import services.shared._
+import core.services._
 import base.{WelshLanguage, BaseSpec}
-import models.ocelot._
+import core.models.ocelot._
+import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 import models.ui
 import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, Words}
@@ -42,7 +43,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     val answers =
       Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
-    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+    val question: core.models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
@@ -187,8 +188,8 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       )
     )
 
-    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7, "5", "", false)), false)
-    val hyperLinkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(models.ocelot.Link(7, "https://www.bbc.co.uk", "", false)), false)
+    val linkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(core.models.ocelot.Link(7, "5", "", false)), false)
+    val hyperLinkInstructionStanza = Instruction(Phrase(lang4), Seq("end"), Some(core.models.ocelot.Link(7, "https://www.bbc.co.uk", "", false)), false)
     val embeddedLinkInstructionStanza = Instruction(txtWithLinks, Seq("end"), None, false)
     val embeddedLinkInstructionStanza2 = Instruction(txtWithLinks2, Seq("end"), None, false)
     val embeddedPageLinkInstructionStanza = Instruction(txtWithPageLinks, Seq("end"), None, false)
@@ -200,8 +201,8 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val questionPhrase: Phrase = Phrase(q1)
     val answers = Seq(Phrase(ans1), Phrase(ans2), Phrase(ans3))
     val answersWithHints = Seq(Phrase(ans1WithHint), Phrase(ans2WithHint), Phrase(ans3WithHint))
-    val question: models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
-    val questionWithAnswerHints: models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, None, false)
+    val question: core.models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
+    val questionWithAnswerHints: core.models.ocelot.stanzas.Question = Question(questionPhrase, answersWithHints, answerDestinations, None, false)
 
     val initialStanza = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
@@ -959,13 +960,13 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
       KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
     )
-    val input1 = models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
+    val input1 = core.models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
-    val inputCurrencyPoundsOnly = models.ocelot.stanzas.CurrencyPoundsOnlyInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputPounds", None, stack = false)
+    val inputCurrencyPoundsOnly = core.models.ocelot.stanzas.CurrencyPoundsOnlyInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputPounds", None, stack = false)
     val pagePoundsOnly = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputCurrencyPoundsOnly), Seq.empty)
-    val inputText = models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputText", None, stack = false)
+    val inputText = core.models.ocelot.stanzas.TextInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputText", None, stack = false)
     val pageText = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputText), Seq.empty)
-    val inputNumber = models.ocelot.stanzas.NumberInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputNumber", None, stack = false)
+    val inputNumber = core.models.ocelot.stanzas.NumberInput(inputNext, inputPhrase, Some(helpPhrase), label ="inputNumber", None, stack = false)
     val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()

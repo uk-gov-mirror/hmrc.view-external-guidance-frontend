@@ -29,16 +29,16 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import models.{PageContext, PageEvaluationContext}
-import models.ocelot.{KeyedStanza, Labels, Page, Phrase, Process, ProcessJson}
-import models.ocelot.stanzas.{CurrencyInput, DateInput, Question, _}
+import core.models.ocelot.{KeyedStanza, Labels, Page, Phrase, Process, ProcessJson}
+import core.models.ocelot.stanzas.{CurrencyInput, DateInput, Question, _}
 import models.ui
 import models.ui._
 import repositories.ProcessContext
 import play.api.test.CSRFTokenHelper._
 import play.api.data.FormError
-import models.errors._
-import models.ocelot.LabelCache
-import services.shared._
+import core.models.errors._
+import core.models.ocelot.LabelCache
+import core.services._
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import play.api.inject.Injector

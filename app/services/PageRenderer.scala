@@ -18,8 +18,8 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-import models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
-import models.ocelot.{Page, Labels}
+import core.models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
+import core.models.ocelot.{Page, Labels}
 
 @Singleton
 class PageRenderer @Inject() () {

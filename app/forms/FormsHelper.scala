@@ -19,7 +19,7 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
-import models.ocelot.stanzas.{Input, DateInput, DataInput, Question}
+import core.models.ocelot.stanzas.{Input, DateInput, DataInput, Question}
 import models.ui.DateInput.partitionSubmittedDateAnswer
 import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 

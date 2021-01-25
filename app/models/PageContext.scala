@@ -16,8 +16,8 @@
 
 package models
 
-import models.ocelot.{Page, LabelCache, Labels}
-import models.ocelot.stanzas.{VisualStanza,DataInput}
+import core.models.ocelot.{Page, LabelCache, Labels}
+import core.models.ocelot.stanzas.{VisualStanza,DataInput}
 
 case class PageEvaluationContext(page: Page,
                                  visualStanzas: Seq[VisualStanza],

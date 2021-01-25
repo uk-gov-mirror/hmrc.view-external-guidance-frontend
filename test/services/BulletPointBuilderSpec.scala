@@ -16,11 +16,12 @@
 
 package services
 
-import services.shared._
+import core.services._
 import base.BaseSpec
-import models.ocelot._
+import core.models.ocelot._
+import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
-import utils.StanzaHelper
+import core.models.StanzaHelper
 
 class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
 

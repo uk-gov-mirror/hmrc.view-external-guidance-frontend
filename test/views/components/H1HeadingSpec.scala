@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 
 import models.ui._
-import models.ocelot.{Labels, LabelCache}
+import core.models.ocelot.{Labels, LabelCache}
 import views.html.components.h1_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

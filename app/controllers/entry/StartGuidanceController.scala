@@ -22,8 +22,8 @@ import play.api.i18n.I18nSupport
 import play.api.mvc._
 import services.GuidanceService
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.errors._
-import models.RequestOutcome
+import core.models.errors._
+import core.models.RequestOutcome
 import play.api.Logger
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
