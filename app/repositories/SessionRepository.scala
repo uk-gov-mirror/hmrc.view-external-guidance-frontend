@@ -222,13 +222,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
       case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
       // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
+      case _ :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
       // FORWARD: Back link x, pageHistory intact
-      case x :: xs => (Some(x), None)
+      case x :: _ => (Some(x), None)
     }
 
-  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr =
-    (name -> Json.toJsFieldJsValueWrapper(value))
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
