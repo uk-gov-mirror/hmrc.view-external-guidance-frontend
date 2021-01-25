@@ -28,7 +28,7 @@ import models.ui.{H3, Text, CyaSummaryList}
 import views.html.components.h3_heading
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import models.ocelot.{Labels, LabelCache}
+import core.models.ocelot.{Labels, LabelCache}
 import base.ViewSpec
 
 class H3HeadingSpec extends ViewSpec with GuiceOneAppPerSuite {

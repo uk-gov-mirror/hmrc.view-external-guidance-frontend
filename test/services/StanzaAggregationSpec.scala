@@ -16,7 +16,8 @@
 
 package services
 
-import models.ocelot.Phrase
+import core.models.ocelot.Phrase
+import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 
 import base.BaseSpec

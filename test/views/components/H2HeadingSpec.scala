@@ -21,7 +21,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import models.ocelot.{Labels, LabelCache}
+import core.models.ocelot.{Labels, LabelCache}
 import models.ui._
 import views.html.components.h2_heading
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

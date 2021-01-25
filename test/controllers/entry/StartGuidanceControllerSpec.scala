@@ -26,7 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import models.ui._
-import models.errors._
+import core.models.errors._
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import uk.gov.hmrc.http.SessionKeys

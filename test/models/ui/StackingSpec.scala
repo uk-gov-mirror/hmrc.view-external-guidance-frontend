@@ -17,7 +17,8 @@
 package models.ui
 
 import base.BaseSpec
-import models.ocelot._
+import core.models.ocelot._
+import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 
 class StackingSpec extends BaseSpec {

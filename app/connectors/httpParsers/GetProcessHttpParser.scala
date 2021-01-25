@@ -16,9 +16,9 @@
 
 package connectors.httpParsers
 
-import models.errors.{InternalServerError, InvalidProcessError, NotFoundError}
-import models.ocelot._
-import models.RequestOutcome
+import core.models.errors.{InternalServerError, InvalidProcessError, NotFoundError}
+import core.models.ocelot._
+import core.models.RequestOutcome
 import play.api.Logger
 import play.api.http.Status._
 import uk.gov.hmrc.http.HttpReads

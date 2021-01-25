@@ -18,7 +18,7 @@ package views.components
 
 import base.{ViewFns, ViewSpec}
 import models.PageContext
-import models.ocelot.{LabelCache, Labels}
+import core.models.ocelot.{LabelCache, Labels}
 import models.ui._
 import org.jsoup.nodes.{Attributes, Document, Element, Node}
 import org.jsoup.select.Elements

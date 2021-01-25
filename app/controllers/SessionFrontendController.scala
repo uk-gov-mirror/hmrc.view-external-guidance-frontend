@@ -18,8 +18,8 @@ package controllers
 
 import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.errors._
-import models.RequestOutcome
+import core.models.errors._
+import core.models.RequestOutcome
 import play.api.Logger
 import scala.concurrent.Future
 

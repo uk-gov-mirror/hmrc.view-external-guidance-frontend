@@ -23,7 +23,7 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
 import models.ui._
-import models.ocelot.{LabelCache, Labels}
+import core.models.ocelot.{LabelCache, Labels}
 import views.html.components.confirmation_panel
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import base.{BaseSpec, ViewFns}
