@@ -20,7 +20,7 @@ import base.BaseSpec
 import mocks.{MockAppConfig, MockGuidanceConnector, MockPageBuilder, MockPageRenderer, MockSessionRepository, MockUIBuilder}
 import core.models.errors.{DatabaseError, NotFoundError}
 import core.models.ocelot.stanzas._
-import core.models.ocelot.{Page, KeyedStanza, Process, ProcessJson, LabelCache, Labels, Phrase}
+import core.models.ocelot.{Page, KeyedStanza, Process, SecuredProcess, ProcessJson, LabelCache, Labels, Phrase}
 import models.ui
 import models.PageEvaluationContext
 import uk.gov.hmrc.http.HeaderCarrier
@@ -413,7 +413,7 @@ class GuidanceServiceSpec extends BaseSpec {
         .get(sessionRepoId, None, false)
         .returns(Future.successful(Right(expectedProcessContext)))
 
-      private val result = target.getProcessContext(sessionRepoId, process.meta.processCode, s"/${Process.SecuredProcessStartUrl}", false)
+      private val result = target.getProcessContext(sessionRepoId, process.meta.processCode, s"/${SecuredProcess.SecuredProcessStartUrl}", false)
 
       whenReady(result) { err =>
         err shouldBe Right(expectedProcessContext)
