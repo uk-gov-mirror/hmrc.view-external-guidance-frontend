@@ -22,14 +22,14 @@ import mocks.{MockAppConfig, MockHttpClient}
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.libs.json.Json
-import models.ocelot.Process
+import core.models.ocelot.Process
 import scala.concurrent.Future
-import models.RequestOutcome
+import core.models.RequestOutcome
 
 class GuidanceConnectorSpec extends BaseSpec with MockHttpClient {
 
   private trait Test extends MockHttpClient with FutureAwaits with DefaultAwaitTimeout {
-    val process: Process = Json.parse(models.ocelot.PrototypeJson.json).as[Process]
+    val process: Process = Json.parse(core.models.ocelot.PrototypeJson.json).as[Process]
     implicit val hc: HeaderCarrier = HeaderCarrier()
     val gc: GuidanceConnector = new GuidanceConnector(mockHttpClient, MockAppConfig)
     val scratchEndPoint: String = MockAppConfig.externalGuidanceBaseUrl + "/external-guidance/scratch/"

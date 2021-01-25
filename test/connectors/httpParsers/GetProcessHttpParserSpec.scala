@@ -20,9 +20,9 @@ import connectors.httpParsers.GetProcessHttpParser.getProcessHttpReads
 import play.api.http.{HttpVerbs, Status}
 import play.api.libs.json.{Json, JsValue, JsObject, JsNull}
 import uk.gov.hmrc.http.HttpResponse
-import models.RequestOutcome
-import models.errors._
-import models.ocelot.Process
+import core.models.RequestOutcome
+import core.models.errors._
+import core.models.ocelot.Process
 import base.BaseSpec
 
 class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
@@ -30,7 +30,7 @@ class GetProcessHttpParserSpec extends BaseSpec with HttpVerbs with Status {
   private trait Test {
 
     val url: String = "/test"
-    val validResponse: JsObject = Json.parse(models.ocelot.PrototypeJson.json).as[JsObject]
+    val validResponse: JsObject = Json.parse(core.models.ocelot.PrototypeJson.json).as[JsObject]
     val process: Process = validResponse.as[Process]
 
     val invalidResponse: JsValue = Json.obj()

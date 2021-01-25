@@ -16,8 +16,9 @@
 
 package models.ocelot.stanzas
 
-import models.ocelot.{isLinkOnlyPhrase, isBoldOnlyPhrase}
-import models.ocelot.Phrase
+import core.models.ocelot.{isLinkOnlyPhrase, isBoldOnlyPhrase}
+import core.models.ocelot.stanzas.{Row, VisualStanza, Populated}
+import core.models.ocelot.Phrase
 
 case class RowGroup (override val next: Seq[String], group: Seq[Row], stack: Boolean) extends VisualStanza with Populated {
   lazy val columnCount:Int = group.headOption.fold(0)(_ => group.map(_.cells.length).max)

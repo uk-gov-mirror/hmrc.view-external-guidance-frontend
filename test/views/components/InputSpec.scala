@@ -17,7 +17,7 @@
 package views.components
 
 import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
-import models.ocelot.{Label, LabelCache, Labels, Phrase}
+import core.models.ocelot.{Label, LabelCache, Labels, Phrase}
 import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H4, Input, NumberInput, Paragraph, RequiredErrorMsg, Text, TextInput}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}

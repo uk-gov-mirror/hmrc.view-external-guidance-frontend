@@ -16,8 +16,8 @@
 
 package services
 
+import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
-
 import scala.annotation.tailrec
 
 object Aggregator {

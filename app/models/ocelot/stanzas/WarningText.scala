@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.ocelot.stanzas
+package core.models.ocelot.stanzas
 
 case class WarningText (override val next: Seq[String], group: Seq[WarningCallout], stack: Boolean) extends VisualStanza with Populated
 

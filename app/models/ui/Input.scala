@@ -16,7 +16,7 @@
 
 package models.ui
 
-import models.ocelot.dateFormatter
+import core.models.ocelot.dateFormatter
 import java.time.LocalDate
 
 sealed trait Input extends FormComponent

@@ -17,7 +17,7 @@
 package services
 
 import base.{EnglishLanguage, BaseSpec}
-import models.ocelot._
+import core.models.ocelot._
 import models.ui.{Currency, CurrencyPoundsOnly, DateStandard, LabelRef, Link, Text, Txt, Words}
 
 class EnglishTextBuilderSpec extends BaseSpec {

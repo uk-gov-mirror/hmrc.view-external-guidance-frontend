@@ -23,7 +23,7 @@ import play.api.mvc._
 import play.api.data.Form
 import services.{ValueTypeError, ValueMissingError, GuidanceService}
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import models.errors._
+import core.models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{FormPage, StandardPage, SubmittedAnswer}
 import views.html.{form_page, standard_page}
@@ -72,7 +72,7 @@ class GuidanceController @Inject() (
         }
       case Left(AuthenticationError) =>
         logger.warn(s"Request for PageContext at /$path returned AuthenticationError, redirecting to process passphrase page")
-        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, core.models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))
@@ -126,7 +126,7 @@ class GuidanceController @Inject() (
             }
           }
       case Left(AuthenticationError) =>
-        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, models.ocelot.Process.SecuredProcessStartUrl, None)))
+        Future.successful(Redirect(routes.GuidanceController.getPage(processCode, core.models.ocelot.Process.SecuredProcessStartUrl, None)))
       case Left(NotFoundError) =>
         logger.warn(s"Request for PageContext at /$path returned NotFound during form submission, returning NotFound")
         Future.successful(NotFound(errorHandler.notFoundTemplateWithProcessCode(Some(processCode))))

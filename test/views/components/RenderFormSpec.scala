@@ -19,7 +19,7 @@ package views.components
 import base.{ViewFns, ViewSpec}
 import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.PageContext
-import models.ocelot.{LabelCache, Labels}
+import core.models.ocelot.{LabelCache, Labels}
 import models.ui.{Answer, CurrencyInput, CurrencyPoundsOnlyInput, DateInput, TextInput, FormPage, Question, Text}
 import org.jsoup.nodes.Element
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

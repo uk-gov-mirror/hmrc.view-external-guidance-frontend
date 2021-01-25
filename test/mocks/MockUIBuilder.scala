@@ -19,7 +19,7 @@ package mocks
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import play.api.i18n.Lang
-import models.ocelot.stanzas.VisualStanza
+import core.models.ocelot.stanzas.VisualStanza
 import services.{ErrorStrategy, UIBuilder}
 
 trait MockUIBuilder extends MockFactory {

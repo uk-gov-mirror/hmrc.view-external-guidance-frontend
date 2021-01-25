@@ -25,7 +25,7 @@ import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html._
 import models.ui.{Paragraph, Text, Question, Answer, RequiredErrorMsg}
-import models.ocelot.LabelCache
+import core.models.ocelot.LabelCache
 import org.jsoup.nodes.{Document, Element}
 import scala.collection.JavaConverters._
 

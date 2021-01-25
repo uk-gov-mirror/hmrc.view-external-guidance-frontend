@@ -16,6 +16,7 @@
 
 package models.ocelot.stanzas
 
+import core.models.ocelot.stanzas.{Instruction, VisualStanza, Populated}
 /**
   * Case class InstructionGroup is a container class for groups of Instructions
   * with similar leading text that comprise bullet point lists

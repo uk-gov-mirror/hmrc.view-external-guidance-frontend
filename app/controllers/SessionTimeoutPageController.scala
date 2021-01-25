@@ -21,7 +21,7 @@ import java.time.Instant
 import play.twirl.api.Html
 import config.{AppConfig, ErrorHandler}
 import javax.inject.{Inject, Singleton}
-import models.errors.NotFoundError
+import core.models.errors.NotFoundError
 import play.api.Logger
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc._
