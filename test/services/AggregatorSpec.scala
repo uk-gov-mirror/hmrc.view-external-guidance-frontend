@@ -725,4 +725,134 @@ class AggregatorSpec extends BaseSpec {
 
   }
 
+  "Warning aggregation" must {
+
+    trait WarningTest extends Test {
+      val warningPhrase1 = Phrase(Vector("Warning 1", "Welsh Warning 1"))
+      val warningPhrase2 = Phrase(Vector("Warning 2", "Welsh Warning 2"))
+      val warningPhrase3 = Phrase(Vector("Warning 3", "Welsh Warning 3"))
+      val warningPhrase4 = Phrase(Vector("Warning 4", "Welsh Warning 4"))
+
+      val callout1 = WarningCallout(warningPhrase1, Seq(""), false)
+      val callout2 = WarningCallout(warningPhrase2, Seq(""), true)
+      val callout3 = WarningCallout(warningPhrase3, Seq(""), true)
+      val callout4 = WarningCallout(warningPhrase4, Seq(""), true)
+    }
+
+    "not create WarningTextGroup  of length 1 when encountering isolated Warning co" in new WarningTest {
+      val stanzas: Seq[VisualStanza] =
+        Seq(
+          callout,
+          callout1,
+          instruction)
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(0) shouldBe callout
+      aggregatedStanzas(1) shouldBe callout1
+    }
+
+    "leave two Warning callouts with stack set to false" in new WarningTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout1,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe callout1
+      aggregatedStanzas(2) shouldBe callout1
+    }
+
+    "create a warning text group with two entries for two contiguous warnings cos with stack set to true" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout2,
+        callout3,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout2, callout3))
+    }
+
+    "create a warning text group with two warnings co with stack set to false and true respectively" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction,
+        callout1,
+        callout2,
+        instruction,
+        callout
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout2))
+    }
+
+    "create a warning text group with multiple warning cos" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout2,
+        callout3,
+        callout4,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout2, callout3, callout4))
+    }
+
+    "create two warning text group of size two from four contiguous elems where stack is false for the third elem" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout2,
+        callout3,
+        callout1,
+        callout4
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(0) shouldBe WarningTextGroup(Seq(callout2, callout3))
+      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout4))
+    }
+
+    "leave two warning callouts in sequence of stanzas" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        callout1,
+        instruction1,
+        callout1,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(2) shouldBe callout1
+      aggregatedStanzas(four) shouldBe callout1
+    }
+
+    "create two warning text group with multiple elems from a complex sequence of stanzas" in new WarningTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        instruction1,
+        callout1,
+        callout2,
+        callout3,
+        instructionGroup,
+        callout1,
+        callout2,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(3) shouldBe WarningTextGroup(Seq(callout1, callout2, callout3))
+      aggregatedStanzas(five) shouldBe WarningTextGroup(Seq(callout1, callout2))
+    }
+
+  }
+
 }

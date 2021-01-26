@@ -21,7 +21,7 @@ import models._
 import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, _}
 import core.models.ocelot.{Link, Phrase}
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
 import play.api.i18n.Lang
@@ -65,6 +65,7 @@ class UIBuilder {
       case (in: Input) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
       case (q: Question) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), errStrategy)
+      case (wt: WarningTextGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromWarningText(wt)), errStrategy)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), errStrategy)
       case x :: xs =>
         logger.error(s"Encountered and ignored VisualStanza invalid due to accessibility rules, $x")
@@ -128,6 +129,7 @@ class UIBuilder {
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
+      case c: WarningCallout => Seq(WarningText(Seq(TextBuilder.fromPhrase(c.text))))
       case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg(TextBuilder.fromPhrase(c.text)))
       case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg(TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ValueErrorMsg(TextBuilder.fromPhrase(c.text)))
@@ -181,6 +183,9 @@ class UIBuilder {
 
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
+
+  private def fromWarningText(wt: WarningTextGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+    WarningText(wt.group.map(wc => TextBuilder.fromPhrase(wc.text)))
 
   private def fromYourCallGroup(ycg: YourCallGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
