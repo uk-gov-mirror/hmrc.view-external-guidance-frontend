@@ -27,7 +27,7 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.form_page
 import models.PageContext
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
 import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text}
 import org.jsoup.nodes.{Document, Element}
 
@@ -74,8 +74,11 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val insetOne = Text("Inset 1")
     val insetTwo = Text("Inset 2")
     val insetText = InsetText(Seq(insetOne, insetTwo))
+    val warningOne = Text("Warning 1")
+    val warningTwo = Text("Warning 2")
+    val warningText = WarningText(Seq(warningOne, warningTwo))
     val summaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
-    val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList))
+    val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList, warningText))
 
     val a1 = Answer(Text("Yes"), None)
     val a2 = Answer(Text("No"), None)
@@ -141,7 +144,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       assert(actualListItems.map(_.text) == expectedListItems, "\nActual bullet point list items do not match those expected")
     }
 
-    "generate English html containing a confirmation panel, an inset text and a numbered list" in new Test {
+    "generate English html containing a confirmation panel, an inset text, a warning text and a numbered list" in new Test {
       val doc = asDocument(standardPageView(outcomePage, pageCtx)(fakeRequest, messages))
 
       val h1s = doc.getElementsByTag("h1")
@@ -163,6 +166,12 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
 
       val secondPara = insetInfo.eq(1)
       secondPara.first.text shouldBe insetTwo.asString
+
+      val divWarning = doc.getElementsByClass("govuk-warning-text")
+      divWarning.size shouldBe 1
+
+      val warningInfo = divWarning.first().getElementsByClass("govuk-warning-text__text")
+      warningInfo.size shouldBe 1
 
       val numberedListItem = doc.getElementsByClass("govuk-list--number")
       numberedListItem.size shouldBe 2
