@@ -22,8 +22,14 @@ import core.models.ocelot._
 import core.models.ocelot.stanzas.Stanza
 import play.api.libs.json._
 import mocks.MockAppConfig
+import play.api.i18n.MessagesApi
+import play.api.inject.Injector
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson {
+class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneAppPerSuite {
+  def injector: Injector = app.injector
+  val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+
   val meta: Meta = Json.parse(prototypeMetaSection).as[Meta]
   val flow: Map[String, Stanza] = Json.parse(prototypeFlowSection).as[Map[String, Stanza]]
   val phrases: Vector[Phrase] = Json.parse(prototypePhrasesSection).as[Vector[Phrase]]
@@ -32,7 +38,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson {
   val process: Process = prototypeJson.as[Process]
   val passphraseProcess = validOnePageProcessWithPassPhrase.as[Process]
   val protectedProcess = validOnePageProcessWithPassPhrase.as[Process]
-  val securedProcessBuilder = new SecuredProcessBuilder(MockAppConfig)
+  val securedProcessBuilder = new SecuredProcessBuilder(MockAppConfig, messagesApi)
   val pageBuilder = new PageBuilder()
 
   "SecuredProcessBuilder" should {
