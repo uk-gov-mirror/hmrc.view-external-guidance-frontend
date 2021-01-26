@@ -38,6 +38,7 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
+    spb: SecuredProcessBuilder,
     uiBuilder: UIBuilder
 ) {
   val logger = Logger(getClass)
@@ -141,14 +142,19 @@ class GuidanceService @Inject() (
       uuid,
       docId,
       { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
-        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
+        case Right(process: Process) => Right(spb.secureIfRequired(process.copy(meta = process.meta.copy(id = uuidAsProcessId))))
         case err @ Left(_) => err
       }}
     )
 
   def retrieveAndCachePublished(processCode: String, docId: String)
                                (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(processCode, docId, connector.publishedProcess)
+    retrieveAndCache(processCode,
+                     docId,
+                     {processId => connector.publishedProcess(processId).map{
+                      case Right(process) => Right(spb.secureIfRequired(process))
+                      case err @ Left(_) => err
+                     }})
 
   def retrieveAndCacheApproval(processId: String, docId: String)
                               (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
