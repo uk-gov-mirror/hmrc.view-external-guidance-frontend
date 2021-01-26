@@ -792,7 +792,7 @@ class AggregatorSpec extends BaseSpec {
       aggregatedStanzas(1) shouldBe WarningText(Seq(callout1, callout2))
     }
 
-    "create a warning text with multiple note cos" in new WarningTest {
+    "create a warning text with multiple warning cos" in new WarningTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         callout1,
