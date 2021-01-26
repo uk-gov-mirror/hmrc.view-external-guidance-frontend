@@ -30,8 +30,14 @@ import scala.concurrent.Future
 import core.models.errors.BadRequestError
 import models.PageContext
 import play.api.i18n.Lang
+import play.api.i18n.MessagesApi
+import play.api.inject.Injector
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class GuidanceServiceSpec extends BaseSpec {
+class GuidanceServiceSpec extends BaseSpec  with GuiceOneAppPerSuite {
+
+  def injector: Injector = app.injector
+  val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
 
   private trait Test extends MockGuidanceConnector with MockSessionRepository with MockPageBuilder with MockPageRenderer with MockUIBuilder with ProcessJson {
     implicit val lang: Lang = Lang("en")
@@ -97,6 +103,7 @@ class GuidanceServiceSpec extends BaseSpec {
       mockSessionRepository,
       mockPageBuilder,
       mockPageRenderer,
+      new SecuredProcessBuilder(MockAppConfig, messagesApi),
       mockUIBuilder)
   }
 

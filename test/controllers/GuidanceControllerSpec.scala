@@ -19,6 +19,7 @@ package controllers
 import akka.stream.Materializer
 import base.{BaseSpec, ViewFns}
 import config.ErrorHandler
+import play.api.i18n.MessagesApi
 import mocks.{MockAppConfig, MockGuidanceConnector, MockGuidanceService, MockSessionRepository}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
@@ -51,7 +52,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
   trait TestData {
 
     def injector: Injector = app.injector
-
+    val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
     implicit val mat: Materializer = injector.instanceOf[Materializer]
 
     val ansIndexZero = "0"
@@ -210,6 +211,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       mockSessionRepository,
       new PageBuilder(),
       new PageRenderer,
+      new SecuredProcessBuilder(MockAppConfig, messagesApi),
       new UIBuilder())
 
     val target = new GuidanceController(
@@ -895,6 +897,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         mockSessionRepository,
         new PageBuilder(),
         new PageRenderer,
+        new SecuredProcessBuilder(MockAppConfig, messagesApi),
         new UIBuilder())
 
       lazy val target =

@@ -7,6 +7,8 @@ feedback.linkLabel = feedback
 feedback.after = will help us to improve it.
 backlink.label = Back
 
+passphrase.prompt = Enter passphrase
+
 getpagehelp.linkText = Get help with this page (opens in new tab)
 
 site.continue = Continue
