@@ -18,6 +18,6 @@
 
 package models.ui
 
-case class WarningComponent(items: Seq[Text]) extends UIComponent {
+case class WarningText(items: Seq[Text]) extends UIComponent {
   val text: Text = Text()
 }

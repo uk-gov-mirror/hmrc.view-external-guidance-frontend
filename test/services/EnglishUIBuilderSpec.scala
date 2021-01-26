@@ -22,7 +22,7 @@ import core.models.ocelot._
 import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 import models.ui
-import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text,WarningComponent, Words}
+import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, WarningText, Words}
 
 class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguage {
 
@@ -370,22 +370,6 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val noteGroup = NoteGroup(Seq(note1Co,note2Co,note3Co,note4Co))
 
     val emptyNoteGroup = NoteGroup(Seq.empty)
-  }
-
-  trait WarningTest extends Test {
-    val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
-    val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
-    val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
-    val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
-
-    val warning1Co = WarningCallout(num1Phrase, Seq(""), false)
-    val warning2Co = WarningCallout(num2Phrase, Seq(""), true)
-    val warning3Co = WarningCallout(num3Phrase, Seq(""), true)
-    val warning4Co = WarningCallout(num4Phrase, Seq(""), true)
-
-    val warningText = WarningText(Seq(warning1Co,warning2Co,warning3Co,warning4Co))
-
-    val emptyWarningText = WarningText(Seq.empty)
   }
 
   "UIBuilder" must {
@@ -953,38 +937,6 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       }
     }
 
-    "Convert a empty warning list into a WarningText" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(emptyWarningText))
-      p.components match {
-        case Seq(_: WarningComponent) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
-    "Convert sequence of warning callouts into a single warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning2Co, warning3Co, warning4Co))
-      p.components match {
-        case Seq(_: WarningComponent) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
-    "Convert single unstacked warning callout into separate warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co))
-      p.components match {
-        case Seq(_: WarningComponent) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
-    "Convert sequence of unstacked warning callouts into separate warning texts" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning1Co, warning1Co))
-      p.components match {
-        case Seq(_: WarningComponent, _: WarningComponent, _: WarningComponent) => succeed
-        case x => fail(s"Found $x")
-      }
-    }
-
   }
 
   trait InputTest {
@@ -1525,4 +1477,49 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
   }
 
+
+
+  "UIBuilder Warning Text processing" must {
+
+    trait WarningTest extends Test {
+      val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
+      val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
+      val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
+      val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
+
+      val warning1Co = WarningCallout(num1Phrase, Seq(""), false)
+      val warning2Co = WarningCallout(num2Phrase, Seq(""), true)
+      val warning3Co = WarningCallout(num3Phrase, Seq(""), true)
+      val warning4Co = WarningCallout(num4Phrase, Seq(""), true)
+
+      val warningText = WarningTextGroup(Seq(warning1Co,warning2Co,warning3Co,warning4Co))
+
+      val emptyWarningText = WarningTextGroup(Seq.empty)
+    }
+
+    "Convert a empty warning list into a WarningText" in new WarningTest {
+      val p = uiBuilder.buildPage("/start", Seq(emptyWarningText))
+      p.components match {
+      case Seq(_: WarningText) => succeed
+      case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert sequence of warning callouts into a single warning text" in new WarningTest {
+      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning2Co, warning3Co, warning4Co))
+      p.components match {
+      case Seq(_: WarningText) => succeed
+      case x => fail(s"Found $x")
+      }
+    }
+
+    "Convert single unstacked warning callout into separate warning text" in new WarningTest {
+      val p = uiBuilder.buildPage("/start", Seq(warning1Co))
+      p.components match {
+      case Seq(_: WarningText) => succeed
+      case x => fail(s"Found $x")
+      }
+    }
+  }
 }
+

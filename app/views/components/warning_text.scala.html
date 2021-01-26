@@ -14,10 +14,10 @@
  * limitations under the License.
  *@
 
-@import models.ui.WarningComponent
+@import models.ui.WarningText
 @import views.html.components.render_text
 
-@(lst: WarningComponent)(implicit request: Request[_], messages: Messages, ctx: PageContext)
+@(lst: WarningText)(implicit request: Request[_], messages: Messages, ctx: PageContext)
 <div class="govuk-warning-text">
  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
  <strong class="govuk-warning-text__text">

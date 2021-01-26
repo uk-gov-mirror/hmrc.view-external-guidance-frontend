@@ -88,7 +88,7 @@ object Aggregator {
     inputSeq match {
       case (x: WarningCallout) :: xs if x.stack => aggregateWarning(xs, acc :+ x)
       case xs if acc.length == 1 => (acc.head, xs)
-      case xs => (WarningText(acc), xs)
+      case xs => (WarningTextGroup(acc), xs)
     }
   @tailrec
   private def aggregateYourCall(inputSeq: Seq[VisualStanza], acc: Seq[YourCallCallout]): (VisualStanza, Seq[VisualStanza]) =

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package core.models.ocelot.stanzas
+package models.ocelot.stanzas
 
-case class WarningText (override val next: Seq[String], group: Seq[WarningCallout], stack: Boolean) extends VisualStanza with Populated
+import core.models.ocelot.stanzas.{Populated, VisualStanza, WarningCallout}
 
-object WarningText {
-  def apply(group: Seq[WarningCallout]): WarningText =
+case class WarningTextGroup (override val next: Seq[String], group: Seq[WarningCallout], stack: Boolean) extends VisualStanza with Populated
+
+object WarningTextGroup {
+  def apply(group: Seq[WarningCallout]): WarningTextGroup =
     group match {
-      case Nil => WarningText(Seq.empty, Seq.empty, false)
-      case _ => WarningText(group.last.next, group, group.head.stack)
+      case Nil => WarningTextGroup(Seq.empty, Seq.empty, false)
+      case _ => WarningTextGroup(group.last.next, group, group.head.stack)
     }
 }

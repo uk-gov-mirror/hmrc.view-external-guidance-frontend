@@ -20,16 +20,17 @@ import base.{ViewFns, ViewSpec}
 import core.models.ocelot.{LabelCache, Labels}
 import models.ui._
 import org.jsoup.nodes.Element
+import org.scalatest.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.Injector
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import views.html.components. warning_text
+import views.html.components.warning_text
 
 import scala.collection.JavaConverters._
 
-class WarningTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
+class WarningTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite with Matchers {
 
   private trait Test {
     implicit val labels: Labels = LabelCache()
@@ -42,24 +43,22 @@ class WarningTextSpec extends ViewSpec with ViewFns with GuiceOneAppPerSuite {
     val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
     val page = models.ui.StandardPage("/url", Seq(currencyInput))
     implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
-    val warningComponent: WarningComponent = WarningComponent(Seq(Text("Line1"), Text("")))
+    val warningText: WarningText = WarningText(Seq(Text("Line1"), Text("")))
   }
 
   "Warning Text" must {
 
     "be rendered as an <div> with govuk classes" in new Test {
-      val html: Html = warning_text(warningComponent)
+      val html: Html = warning_text(warningText)
       val div: Element = getSingleElementByTag(html, "div")
-
       div.hasClass("govuk-warning-text") shouldBe true
+      val doc = asDocument(html)
 
-      val lis = div.getElementsByClass("govuk-warning-text__assistive").asScala
-      lis.length shouldBe 1
-      lis.head.text shouldBe "Warning"
+      val lis = getSingleElementByClass(doc,"govuk-warning-text__assistive").toString
+      lis shouldBe "<span class=\"govuk-warning-text__assistive\">Warning</span>"
 
-      val warntxt = div.getElementsByClass("govuk-warning-text__text").asScala
-      warntxt.length shouldBe 1
-      warntxt.head.text shouldBe "Warning Line1"
+      val warntxt = getSingleElementByClass(doc,"govuk-warning-text__text").toString
+      warntxt shouldBe "<strong class=\"govuk-warning-text__text\"> <span class=\"govuk-warning-text__assistive\">Warning</span> Line1 </strong>"
     }
   }
 }

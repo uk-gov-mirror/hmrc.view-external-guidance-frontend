@@ -97,7 +97,6 @@ class CalloutStanzaSpec extends BaseSpec {
   val expectedNoteCalloutStanza: CalloutStanza = buildCalloutStanza(Note)
   val expectedWarningCalloutStanza: CalloutStanza = buildCalloutStanza(Warning)
 
-
   val jsonToStanzaMappings: Map[JsValue, CalloutStanza] = Map(
     titleCalloutStanzaInputJson -> expectedTitleCalloutStanza,
     subTitleCalloutStanzaInputJson -> expectedSubTitleCalloutStanza,

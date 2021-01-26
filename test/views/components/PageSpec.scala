@@ -27,7 +27,7 @@ import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.form_page
 import models.PageContext
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningComponent}
+import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
 import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text}
 import org.jsoup.nodes.{Document, Element}
 
@@ -76,7 +76,7 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val insetText = InsetText(Seq(insetOne, insetTwo))
     val warningOne = Text("Warning 1")
     val warningTwo = Text("Warning 2")
-    val warningText = WarningComponent(Seq(warningOne, warningTwo))
+    val warningText = WarningText(Seq(warningOne, warningTwo))
     val summaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
     val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList, warningText))
 
