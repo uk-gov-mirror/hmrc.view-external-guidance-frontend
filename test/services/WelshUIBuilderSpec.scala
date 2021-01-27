@@ -581,12 +581,12 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s })
-      uiPage.components(6) shouldBe models.ui.ValueErrorMsg(Text(Phrase(lang0).value(lang)))
+      uiPage.components(7) shouldBe models.ui.ValueErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, ValueTypeError)
-      uiPage.components(7) shouldBe models.ui.TypeErrorMsg(Text(Phrase(lang0).value(lang)))
+      uiPage.components(8) shouldBe models.ui.TypeErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
