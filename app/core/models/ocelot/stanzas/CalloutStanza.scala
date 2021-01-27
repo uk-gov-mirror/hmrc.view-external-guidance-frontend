@@ -82,4 +82,3 @@ case class NumberedCircleListItemCallout(text: Phrase, override val next: Seq[St
 case class NoteCallout(text: Phrase, override val next: Seq[String], stack: Boolean) extends Callout
 case class WarningCallout(text: Phrase, override val next: Seq[String], stack: Boolean) extends Callout
 
-

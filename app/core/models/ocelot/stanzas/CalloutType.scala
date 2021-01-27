@@ -37,7 +37,8 @@ case object YourCall extends CalloutType  // "Your Decision" stanza in Ocelot ed
 case object NumListItem extends CalloutType
 case object NumCircListItem extends CalloutType
 case object Note extends CalloutType // Used to display Inset Text
-case object Warning extends CalloutType
+case object Warning extends CalloutType // Used to display Warning Text
+
 
 
 object CalloutType {
