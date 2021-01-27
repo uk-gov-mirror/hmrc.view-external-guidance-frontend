@@ -232,8 +232,8 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "redirect the caller to another page" in new ProcessTest {
       MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right((expectedUrl, processId))))
+        .retrieveAndCacheApprovalByPageUrl(s"/$url")(processId, processId)
+        .returns(Future.successful(Right((s"/$url", processId))))
 
       val result = target.approvalPage(processId, url)(fakeRequest)
       status(result) shouldBe Status.SEE_OTHER
@@ -241,8 +241,8 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     "redirect the caller to the start page of the process" in new ProcessTest {
       MockGuidanceService
-        .retrieveAndCacheApproval(processId, processId)
-        .returns(Future.successful(Right((expectedUrl, processId))))
+        .retrieveAndCacheApprovalByPageUrl(s"/$url")(processId, processId)
+        .returns(Future.successful(Right((s"/$url", processId))))
       val result = target.approvalPage(processId, url)(fakeRequest)
       redirectLocation(result) shouldBe Some(s"$pageViewBaseUrl/$processId/$url")
     }
@@ -251,12 +251,14 @@ class StartGuidanceControllerSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   "Calling approvalPage endpoint with a invalid process ID" should {
 
+    val url = "blah"
+
     "return a NOT_FOUND error" in new ProcessTest {
       val unknownProcessId = "ext90077"
       MockGuidanceService
-        .retrieveAndCacheApproval(unknownProcessId, unknownProcessId)
+        .retrieveAndCacheApprovalByPageUrl(s"/$url")(unknownProcessId, unknownProcessId)
         .returns(Future.successful(Left(NotFoundError)))
-      val result = target.approvalPage(unknownProcessId, "/")(fakeRequest)
+      val result = target.approvalPage(unknownProcessId, url)(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 

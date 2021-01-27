@@ -51,6 +51,12 @@ trait MockGuidanceService extends MockFactory {
         .expects(processId, *, *, *)
     }
 
+    def retrieveAndCacheApprovalByPageUrl(url: String)(processId: String, sessionRepoId: String): CallHandler[Future[RequestOutcome[(String, String)]]] = {
+      (mockGuidanceService
+        .retrieveAndCacheApprovalByPageUrl(_: String)(_: String, _: String)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(url, processId, *, *, *)
+    }
+
     def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean): CallHandler[Future[RequestOutcome[ProcessContext]]] = {
       (mockGuidanceService
         .getProcessContext(_: String, _: String, _: String, _: Boolean)(_: ExecutionContext))
