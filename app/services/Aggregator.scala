@@ -42,8 +42,8 @@ object Aggregator {
         val (vs: VisualStanza , remainder) = aggregateNotes(xs, Seq (x))
         aggregateStanzas(acc :+ vs)(remainder)
 
-      case (x: WarningCallout) :: xs =>
-        val (vs: VisualStanza , remainder) = aggregateWarning(xs, Seq (x))
+      case (x: ImportantCallout) :: xs =>
+        val (vs: VisualStanza , remainder) = aggregateImportant(xs, Seq (x))
         aggregateStanzas(acc :+ vs)(remainder)
 
       case (x: YourCallCallout) :: xs =>
@@ -84,11 +84,11 @@ object Aggregator {
     }
 
   @tailrec
-  private def aggregateWarning(inputSeq: Seq[VisualStanza], acc: Seq[WarningCallout]): (VisualStanza, Seq[VisualStanza]) =
+  private def aggregateImportant(inputSeq: Seq[VisualStanza], acc: Seq[ImportantCallout]): (VisualStanza, Seq[VisualStanza]) =
     inputSeq match {
-      case (x: WarningCallout) :: xs if x.stack => aggregateWarning(xs, acc :+ x)
+      case (x: ImportantCallout) :: xs if x.stack => aggregateImportant(xs, acc :+ x)
       case xs if acc.length == 1 => (acc.head, xs)
-      case xs => (WarningTextGroup(acc), xs)
+      case xs => (ImportantGroup(acc), xs)
     }
   @tailrec
   private def aggregateYourCall(inputSeq: Seq[VisualStanza], acc: Seq[YourCallCallout]): (VisualStanza, Seq[VisualStanza]) =

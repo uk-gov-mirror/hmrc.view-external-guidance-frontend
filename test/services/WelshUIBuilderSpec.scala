@@ -1480,49 +1480,49 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
   }
 
-  "UIBuilder Warning Text processing" must {
-    trait WarningTest extends Test {
+  "UIBuilder Important Group processing" must {
+    trait ImportantTest extends Test {
      val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
      val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
      val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
      val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
 
-     val warning1Co = WarningCallout(num1Phrase, Seq(""), false)
-     val warning2Co = WarningCallout(num2Phrase, Seq(""), true)
-     val warning3Co = WarningCallout(num3Phrase, Seq(""), true)
-     val warning4Co = WarningCallout(num4Phrase, Seq(""), true)
+     val important1Co = ImportantCallout(num1Phrase, Seq(""), false)
+     val important2Co = ImportantCallout(num2Phrase, Seq(""), true)
+     val important3Co = ImportantCallout(num3Phrase, Seq(""), true)
+     val important4Co = ImportantCallout(num4Phrase, Seq(""), true)
 
-     val warningText = WarningTextGroup(Seq(warning1Co, warning2Co, warning3Co, warning4Co))
+     val importantGroup = ImportantGroup(Seq(important1Co, important2Co, important3Co, important4Co))
 
-     val emptyWarningText = WarningTextGroup(Seq.empty)
+     val emptyImportantText = ImportantGroup(Seq.empty)
     }
 
-    "Convert a empty warning list into a WarningText" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(emptyWarningText))
+    "Convert a empty Important list into an importantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(emptyImportantText))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")
     }
   }
 
-    "Convert sequence of warning callouts into a single warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning2Co, warning3Co, warning4Co))
+    "Convert sequence of Important callouts into a single importantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(important1Co, important2Co, important3Co, important4Co))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")
     }
   }
 
-    "Convert single unstacked warning callout into separate warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co))
+    "Convert single unstacked Important callout into separate importantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(important1Co))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")
     }
   }
 
-    "Convert sequence of unstacked warning callouts into separate warning texts" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning1Co, warning1Co))
+    "Convert sequence of unstacked Important callouts into separate importantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(important1Co, important1Co, important1Co))
       p.components match {
       case Seq(_: WarningText, _: WarningText, _: WarningText) => succeed
       case x => fail(s"Found $x")
