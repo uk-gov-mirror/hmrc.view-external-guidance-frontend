@@ -578,12 +578,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     "convert Callout type ValueError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})
-      uiPage.components(6) shouldBe models.ui.ValueErrorMsg(Text(Phrase(lang0).value(lang)))
+      uiPage.components(7) shouldBe models.ui.ValueErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Callout type TypeError to an ErrorMsg" in new Test {
       val uiPage = uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueTypeError)
-      uiPage.components(7) shouldBe models.ui.TypeErrorMsg(Text(Phrase(lang0).value(lang)))
+      uiPage.components(8) shouldBe models.ui.TypeErrorMsg(Text(Phrase(lang0).value(lang)))
     }
 
     "convert Simple instruction to Paragraph" in new Test {
@@ -1479,42 +1479,42 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
 
 
-  "UIBuilder Warning Text processing" must {
+  "UIBuilder Important processing" must {
 
-    trait WarningTest extends Test {
+    trait ImportantTest extends Test {
       val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
       val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
       val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
       val num4Phrase = Phrase(Vector("Line4", "Welsh Line4"))
 
-      val warning1Co = WarningCallout(num1Phrase, Seq(""), false)
-      val warning2Co = WarningCallout(num2Phrase, Seq(""), true)
-      val warning3Co = WarningCallout(num3Phrase, Seq(""), true)
-      val warning4Co = WarningCallout(num4Phrase, Seq(""), true)
+      val important1Co = ImportantCallout(num1Phrase, Seq(""), false)
+      val important2Co = ImportantCallout(num2Phrase, Seq(""), true)
+      val important3Co = ImportantCallout(num3Phrase, Seq(""), true)
+      val important4Co = ImportantCallout(num4Phrase, Seq(""), true)
 
-      val warningText = WarningTextGroup(Seq(warning1Co,warning2Co,warning3Co,warning4Co))
+      val importantGroup = ImportantGroup(Seq(important1Co,important2Co,important3Co,important4Co))
 
-      val emptyWarningText = WarningTextGroup(Seq.empty)
+      val emptyImportantGroup = ImportantGroup(Seq.empty)
     }
 
-    "Convert a empty warning list into a WarningText" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(emptyWarningText))
+    "Convert a empty important list into a ImportantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(emptyImportantGroup))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")
       }
     }
 
-    "Convert sequence of warning callouts into a single warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co, warning2Co, warning3Co, warning4Co))
+    "Convert sequence of important callouts into a single ImportantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(important1Co, important2Co, important3Co, important4Co))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")
       }
     }
 
-    "Convert single unstacked warning callout into separate warning text" in new WarningTest {
-      val p = uiBuilder.buildPage("/start", Seq(warning1Co))
+    "Convert single unstacked important callout into separate ImportantGroup" in new ImportantTest {
+      val p = uiBuilder.buildPage("/start", Seq(important1Co))
       p.components match {
       case Seq(_: WarningText) => succeed
       case x => fail(s"Found $x")

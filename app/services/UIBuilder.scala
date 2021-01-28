@@ -65,7 +65,7 @@ class UIBuilder {
       case (in: Input) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
       case (q: Question) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), errStrategy)
-      case (wt: WarningTextGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromWarningText(wt)), errStrategy)
+      case (wt: ImportantGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromImportantGroup(wt)), errStrategy)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), errStrategy)
       case x :: xs =>
         logger.error(s"Encountered and ignored VisualStanza invalid due to accessibility rules, $x")
@@ -129,12 +129,11 @@ class UIBuilder {
       case c: LedeCallout => Seq(Paragraph(TextBuilder.fromPhrase(c.text), lede = true))
       case c: YourCallCallout => Seq(ConfirmationPanel(TextBuilder.fromPhrase(c.text)))
       case c: NoteCallout => Seq(InsetText(Seq(TextBuilder.fromPhrase(c.text))))
-      case c: WarningCallout => Seq(WarningText(Seq(TextBuilder.fromPhrase(c.text))))
       case c: TypeErrorCallout if errStrategy == ValueTypeError => Seq(TypeErrorMsg(TextBuilder.fromPhrase(c.text)))
       case c: ErrorCallout if errStrategy == ValueMissingError => Seq(RequiredErrorMsg(TextBuilder.fromPhrase(c.text)))
       case c: ValueErrorCallout => Seq(ValueErrorMsg(TextBuilder.fromPhrase(c.text)))
       case _: TypeErrorCallout | _: ErrorCallout => Seq.empty   // Consume unmatched Error callouts
-      case _: ImportantCallout => Seq.empty                     // Reserved for future use
+      case c: ImportantCallout =>  Seq(WarningText(Seq(TextBuilder.fromPhrase(c.text))))
       case _: NumberedListItemCallout => Seq.empty              // Unused
       case _: NumberedCircleListItemCallout => Seq.empty        // Unused
     }
@@ -184,7 +183,7 @@ class UIBuilder {
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
-  private def fromWarningText(wt: WarningTextGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromImportantGroup(wt: ImportantGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     WarningText(wt.group.map(wc => TextBuilder.fromPhrase(wc.text)))
 
   private def fromYourCallGroup(ycg: YourCallGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {

@@ -725,21 +725,21 @@ class AggregatorSpec extends BaseSpec {
 
   }
 
-  "Warning aggregation" must {
+  "Important aggregation" must {
 
-    trait WarningTest extends Test {
-      val warningPhrase1 = Phrase(Vector("Warning 1", "Welsh Warning 1"))
-      val warningPhrase2 = Phrase(Vector("Warning 2", "Welsh Warning 2"))
-      val warningPhrase3 = Phrase(Vector("Warning 3", "Welsh Warning 3"))
-      val warningPhrase4 = Phrase(Vector("Warning 4", "Welsh Warning 4"))
+    trait ImportantTest extends Test {
+      val importantPhrase1 = Phrase(Vector("Important 1", "Welsh Important 1"))
+      val importantPhrase2 = Phrase(Vector("Important 2", "Welsh Important 2"))
+      val importantPhrase3 = Phrase(Vector("Important 3", "Welsh Important 3"))
+      val importantPhrase4 = Phrase(Vector("Important 4", "Welsh Important 4"))
 
-      val callout1 = WarningCallout(warningPhrase1, Seq(""), false)
-      val callout2 = WarningCallout(warningPhrase2, Seq(""), true)
-      val callout3 = WarningCallout(warningPhrase3, Seq(""), true)
-      val callout4 = WarningCallout(warningPhrase4, Seq(""), true)
+      val callout1 = ImportantCallout(importantPhrase1, Seq(""), false)
+      val callout2 = ImportantCallout(importantPhrase2, Seq(""), true)
+      val callout3 = ImportantCallout(importantPhrase3, Seq(""), true)
+      val callout4 = ImportantCallout(importantPhrase4, Seq(""), true)
     }
 
-    "not create WarningTextGroup  of length 1 when encountering isolated Warning co" in new WarningTest {
+    "not create ImportantGroup  of length 1 when encountering isolated Important co" in new ImportantTest {
       val stanzas: Seq[VisualStanza] =
         Seq(
           callout,
@@ -751,7 +751,7 @@ class AggregatorSpec extends BaseSpec {
       aggregatedStanzas(1) shouldBe callout1
     }
 
-    "leave two Warning callouts with stack set to false" in new WarningTest {
+    "leave two Important callouts with stack set to false" in new ImportantTest {
 
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
@@ -766,7 +766,7 @@ class AggregatorSpec extends BaseSpec {
       aggregatedStanzas(2) shouldBe callout1
     }
 
-    "create a warning text group with two entries for two contiguous warnings cos with stack set to true" in new WarningTest {
+    "create a Important group with two entries for two contiguous Important cos with stack set to true" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         callout2,
@@ -775,10 +775,10 @@ class AggregatorSpec extends BaseSpec {
       )
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout2, callout3))
+      aggregatedStanzas(1) shouldBe ImportantGroup(Seq(callout2, callout3))
     }
 
-    "create a warning text group with two warnings co with stack set to false and true respectively" in new WarningTest {
+    "create a Important group with two Important co with stack set to false and true respectively" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         instruction,
         callout1,
@@ -789,10 +789,10 @@ class AggregatorSpec extends BaseSpec {
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
 
-      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout2))
+      aggregatedStanzas(1) shouldBe ImportantGroup(Seq(callout1, callout2))
     }
 
-    "create a warning text group with multiple warning cos" in new WarningTest {
+    "create a Important group with multiple Important cos" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         callout1,
@@ -803,10 +803,10 @@ class AggregatorSpec extends BaseSpec {
       )
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout2, callout3, callout4))
+      aggregatedStanzas(1) shouldBe ImportantGroup(Seq(callout1, callout2, callout3, callout4))
     }
 
-    "create two warning text group of size two from four contiguous elems where stack is false for the third elem" in new WarningTest {
+    "create two Important group of size two from four contiguous elems where stack is false for the third elem" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout2,
         callout3,
@@ -815,11 +815,11 @@ class AggregatorSpec extends BaseSpec {
       )
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(0) shouldBe WarningTextGroup(Seq(callout2, callout3))
-      aggregatedStanzas(1) shouldBe WarningTextGroup(Seq(callout1, callout4))
+      aggregatedStanzas(0) shouldBe ImportantGroup(Seq(callout2, callout3))
+      aggregatedStanzas(1) shouldBe ImportantGroup(Seq(callout1, callout4))
     }
 
-    "leave two warning callouts in sequence of stanzas" in new WarningTest {
+    "leave two Important callouts in sequence of stanzas" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         instruction,
@@ -834,7 +834,7 @@ class AggregatorSpec extends BaseSpec {
       aggregatedStanzas(four) shouldBe callout1
     }
 
-    "create two warning text group with multiple elems from a complex sequence of stanzas" in new WarningTest {
+    "create two Important group with multiple elems from a complex sequence of stanzas" in new ImportantTest {
       val stanzas: Seq[VisualStanza] = Seq(
         callout,
         instruction,
@@ -849,8 +849,8 @@ class AggregatorSpec extends BaseSpec {
       )
 
       val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
-      aggregatedStanzas(3) shouldBe WarningTextGroup(Seq(callout1, callout2, callout3))
-      aggregatedStanzas(five) shouldBe WarningTextGroup(Seq(callout1, callout2))
+      aggregatedStanzas(3) shouldBe ImportantGroup(Seq(callout1, callout2, callout3))
+      aggregatedStanzas(five) shouldBe ImportantGroup(Seq(callout1, callout2))
     }
 
   }

@@ -16,14 +16,14 @@
 
 package models.ocelot.stanzas
 
-import core.models.ocelot.stanzas.{Populated, VisualStanza, WarningCallout}
+import core.models.ocelot.stanzas.{Populated, VisualStanza, ImportantCallout}
 
-case class WarningTextGroup (override val next: Seq[String], group: Seq[WarningCallout], stack: Boolean) extends VisualStanza with Populated
+case class ImportantGroup (override val next: Seq[String], group: Seq[ImportantCallout], stack: Boolean) extends VisualStanza with Populated
 
-object WarningTextGroup {
-  def apply(group: Seq[WarningCallout]): WarningTextGroup =
+object ImportantGroup {
+  def apply(group: Seq[ImportantCallout]): ImportantGroup =
     group match {
-      case Nil => WarningTextGroup(Seq.empty, Seq.empty, false)
-      case _ => WarningTextGroup(group.last.next, group, group.head.stack)
+      case Nil => ImportantGroup(Seq.empty, Seq.empty, false)
+      case _ => ImportantGroup(group.last.next, group, group.head.stack)
     }
 }
