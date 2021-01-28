@@ -14,13 +14,13 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components._
-@import uk.gov.hmrc.govukfrontend.views.viewmodels.header.Header
-@import uk.gov.hmrc.hmrcfrontend.views.html.components._
-@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
-@import views.components.FooterLinks
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTrackingConsentSnippet
 @import config.AppConfig
+@import views.components.FooterLinks
+@import uk.gov.hmrc.govukfrontend.views.html.components.{Meta => HmrcMeta}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.language.{En, Cy}
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.header.Header
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTrackingConsentSnippet
+
 
 @this(layout: GovukLayout,
         phaseBanner : GovukPhaseBanner,
@@ -117,7 +117,7 @@ content = HtmlContent(s"""${messages("feedback.before")} <a class='govuk-link' h
 }
 
 @footerBlock = {
-    @footer(uk.gov.hmrc.govukfrontend.views.html.components.Footer(meta = Some(Meta(items = Some(footerLinks.items)))))
+    @footer(uk.gov.hmrc.govukfrontend.views.html.components.Footer(meta = Some(HmrcMeta(items = Some(footerLinks.items)))))
 }
 
 @layout(

@@ -22,7 +22,7 @@ import play.api.i18n.{Lang, Messages}
 import play.api.mvc._
 import play.api.data.Form
 import services.{ValueTypeError, ValueMissingError, GuidanceService}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import core.models.errors._
 import models.{PageContext, PageEvaluationContext}
 import models.ui.{FormPage, StandardPage, SubmittedAnswer}

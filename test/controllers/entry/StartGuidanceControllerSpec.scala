@@ -24,7 +24,7 @@ import play.api.mvc._
 import play.api.mvc.{BodyParsers,AnyContentAsEmpty}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
+import play.api.test.Helpers.stubMessagesControllerComponents
 import models.ui._
 import core.models.errors._
 import scala.concurrent.{ExecutionContext, Future}

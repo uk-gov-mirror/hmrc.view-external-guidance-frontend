@@ -16,7 +16,6 @@
 
 package controllers
 
-import play.api.Play
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
@@ -25,7 +24,7 @@ import play.api.test.Helpers._
 import play.api._
 import play.api.mvc.Cookies
 import play.api.i18n.{MessagesApi, DefaultLangsProvider}
-import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
+import play.api.test.Helpers.stubMessagesControllerComponents
 import uk.gov.hmrc.play.language.LanguageUtils
 import play.api.http.HeaderNames
 import mocks.MockAppConfig
@@ -41,7 +40,7 @@ class SwitchLanguageControllerSpec extends WordSpec with Matchers with GuiceOneA
 
   private val controller = new SwitchLanguageController(appConfig, langUtils, stubMessagesControllerComponents())
 
-  val playCookieName = Play.langCookieName(messagesApi)
+  val playCookieName = messagesApi.langCookieName
 
   def confirmLangCookie(cookies: Cookies, lang: String): Unit =
     cookies.get(playCookieName) match {
