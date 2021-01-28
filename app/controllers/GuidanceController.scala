@@ -90,7 +90,7 @@ class GuidanceController @Inject() (
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(ctx) =>
         ctx.dataInput match {
-          case Some(input) => {
+          case Some(input) =>
             val inputName: String = formInputName(path)
             bindFormData(input, inputName) match {
               case Left(formWithErrors: Form[_]) =>
@@ -117,7 +117,6 @@ class GuidanceController @Inject() (
                   }
                 }
             }
-          }
           case None =>
             logger.error( s"Unable to locate input stanza for process ${ctx.processCode} on submission")
             Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))

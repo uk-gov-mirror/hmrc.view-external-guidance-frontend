@@ -211,7 +211,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       mockSessionRepository,
       new PageBuilder(),
       new PageRenderer,
-      new SecuredProcessBuilder(MockAppConfig, messagesApi),
+      new SecuredProcessBuilder(messagesApi),
       new UIBuilder())
 
     val target = new GuidanceController(
@@ -897,7 +897,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         mockSessionRepository,
         new PageBuilder(),
         new PageRenderer,
-        new SecuredProcessBuilder(MockAppConfig, messagesApi),
+        new SecuredProcessBuilder(messagesApi),
         new UIBuilder())
 
       lazy val target =

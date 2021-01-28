@@ -17,13 +17,12 @@
 package services
 
 import javax.inject.{Inject, Singleton}
-import config.AppConfig
 import play.api.i18n.{Lang, MessagesApi}
 import core.models.ocelot.{Process, SecuredProcess, Phrase}
 import core.models.ocelot.stanzas.{Txt, Equals, Stanza, PageStanza, InputStanza, ChoiceStanza, ChoiceStanzaTest}
 
 @Singleton
-class SecuredProcessBuilder @Inject()(appConfig: AppConfig, messagesApi: MessagesApi) {
+class SecuredProcessBuilder @Inject()(messagesApi: MessagesApi) {
   lazy val enPassPhrasePrompt: String = messagesApi("passphrase.prompt")(Lang("en"))
   lazy val cyPassPhrasePrompt: String = messagesApi("passphrase.prompt")(Lang("cy"))
 

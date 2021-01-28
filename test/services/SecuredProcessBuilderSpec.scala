@@ -21,7 +21,6 @@ import base.BaseSpec
 import core.models.ocelot._
 import core.models.ocelot.stanzas.Stanza
 import play.api.libs.json._
-import mocks.MockAppConfig
 import play.api.i18n.MessagesApi
 import play.api.inject.Injector
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -36,9 +35,9 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
   val links: Vector[Link] = Json.parse(prototypeLinksSection).as[Vector[Link]]
 
   val process: Process = prototypeJson.as[Process]
-  val passphraseProcess = validOnePageProcessWithPassPhrase.as[Process]
-  val protectedProcess = validOnePageProcessWithPassPhrase.as[Process]
-  val securedProcessBuilder = new SecuredProcessBuilder(MockAppConfig, messagesApi)
+  val passphraseProcess: Process = validOnePageProcessWithPassPhrase.as[Process]
+  val protectedProcess: Process = validOnePageProcessWithPassPhrase.as[Process]
+  val securedProcessBuilder = new SecuredProcessBuilder(messagesApi)
   val pageBuilder = new PageBuilder()
 
   "SecuredProcessBuilder" should {
@@ -49,7 +48,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
       val securedProcess = securedProcessBuilder.secureIfRequired(passphraseProcess)
       pageBuilder.pages(securedProcess, securedProcess.startPageId).fold(_ => fail, pages => {
         pages.length shouldBe 2
-        pages.filter(_.id == SecuredProcess.PassPhrasePageId).headOption.fold(fail){ page =>
+        pages.find(_.id == SecuredProcess.PassPhrasePageId).fold(fail){ page =>
           page.url.drop(1) shouldBe SecuredProcess.SecuredProcessStartUrl
           page.next.contains(Process.StartStanzaId) shouldBe true
         }

@@ -103,7 +103,7 @@ class GuidanceServiceSpec extends BaseSpec  with GuiceOneAppPerSuite {
       mockSessionRepository,
       mockPageBuilder,
       mockPageRenderer,
-      new SecuredProcessBuilder(MockAppConfig, messagesApi),
+      new SecuredProcessBuilder(messagesApi),
       mockUIBuilder)
   }
 
