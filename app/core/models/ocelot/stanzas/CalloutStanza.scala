@@ -62,7 +62,6 @@ object Callout {
       case NumListItem => NumberedListItemCallout(text, stanza.next, stanza.stack)
       case NumCircListItem => NumberedCircleListItemCallout(text, stanza.next, stanza.stack)
       case Note => NoteCallout(text, stanza.next, stanza.stack)
-
     }
 }
 
