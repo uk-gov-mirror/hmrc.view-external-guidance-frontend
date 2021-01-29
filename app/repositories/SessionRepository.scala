@@ -57,8 +57,8 @@ case class ProcessContext(process: Process,
                           labels: Map[String, Label],
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
-  val secure: Boolean = process.passPhrase.fold(true){ passPhrase =>
-    labels.get(Process.PassPhraseResponseLabelName).fold(false)(answer => answer.english == Some(passPhrase))
+  val secure: Boolean = process.flow.get(SecuredProcess.PassPhrasePageId).fold(true){_ =>
+    labels.get(SecuredProcess.PassPhraseResponseLabelName).fold(false)(_.english == process.passPhrase)
   }
 }
 
@@ -88,8 +88,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     collection.indexesManager.list().flatMap { indexes =>
       indexes
         .filter(idx =>
-          idx.name == Some(lastAccessedIndexName) &&
-            idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
+          idx.name.contains(lastAccessedIndexName) &&
+          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
         )
         .map { _ =>
           logger.warn(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
@@ -222,13 +222,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
       case x :: xs if x == pageUrl => (xs.headOption, Some(priorHistory))
       // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case x :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
+      case _ :: y :: xs if y == pageUrl && !previousPageByLink => (xs.headOption, Some((y :: xs).reverse))
       // FORWARD: Back link x, pageHistory intact
-      case x :: xs => (Some(x), None)
+      case x :: _ => (Some(x), None)
     }
 
-  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr =
-    (name -> Json.toJsFieldJsValueWrapper(value))
+  private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 
   private def savePageHistory(key: String, pageHistory: List[String]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
