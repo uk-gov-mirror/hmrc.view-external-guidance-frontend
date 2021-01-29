@@ -181,10 +181,9 @@ class GuidanceService @Inject() (
 
   private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(SecuredProcess.SecuredProcessStartUrl)
 
-  private def map[A](f: Retrieve[A])(g: A => A)(implicit ec: ExecutionContext): Retrieve[A] = {
+  private def map[A, B](f: Retrieve[A])(g: A => B)(implicit ec: ExecutionContext): Retrieve[B] =
     id => f(id).map{
       case Right(result) => Right(g(result))
-      case err @ Left(_) => err
+      case Left(err) => Left(err)
     }
-  }
 }
