@@ -36,7 +36,6 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
 
   val process: Process = prototypeJson.as[Process]
   val passphraseProcess: Process = validOnePageProcessWithPassPhrase.as[Process]
-  val protectedProcess: Process = validOnePageProcessWithPassPhrase.as[Process]
   val securedProcessBuilder = new SecuredProcessBuilder(messagesApi)
   val pageBuilder = new PageBuilder()
 
@@ -65,7 +64,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
 
   "Process passphrase" must {
     "detect passphrase when present" in {
-      protectedProcess.passPhrase shouldBe Some("A not so memorable phrase")
+      passphraseProcess.passPhrase shouldBe Some("A not so memorable phrase")
     }
 
     "Not detect passphrase when not present" in {
@@ -77,7 +76,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
     }
 
     "return the process start url with a secured process from startUrl" in {
-      securedProcessBuilder.secureIfRequired(protectedProcess).startUrl shouldBe Some("/feeling-bad")
+      securedProcessBuilder.secureIfRequired(passphraseProcess).startUrl shouldBe Some("/feeling-bad")
     }
 
     "return StartStanzaId with an unsecured process from startPageId" in {
@@ -85,7 +84,7 @@ class SecuredProcessBuilderSpec extends BaseSpec with ProcessJson with GuiceOneA
     }
 
     "return PassPhrasePageId with a secured process from startPageId" in {
-      securedProcessBuilder.secureIfRequired(protectedProcess).startPageId shouldBe SecuredProcess.PassPhrasePageId
+      securedProcessBuilder.secureIfRequired(passphraseProcess).startPageId shouldBe SecuredProcess.PassPhrasePageId
     }
 
   }
