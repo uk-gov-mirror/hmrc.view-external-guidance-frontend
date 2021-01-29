@@ -29,6 +29,7 @@ import play.api.i18n.Lang
 import scala.concurrent.{ExecutionContext, Future}
 import repositories.{ProcessContext, SessionRepository}
 import core.models.ocelot.{LabelCache, Labels, Process}
+import core.models.ocelot.SecuredProcess
 
 @Singleton
 class GuidanceService @Inject() (
@@ -37,8 +38,11 @@ class GuidanceService @Inject() (
     sessionRepository: SessionRepository,
     pageBuilder: PageBuilder,
     pageRenderer: PageRenderer,
+    spb: SecuredProcessBuilder,
     uiBuilder: UIBuilder
 ) {
+  type Retrieve[A] = String => Future[RequestOutcome[A]]
+
   val logger = Logger(getClass)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
@@ -136,25 +140,25 @@ class GuidanceService @Inject() (
 
   def retrieveAndCacheScratch(uuid: String, docId: String)
                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(
-      uuid,
-      docId,
-      { uuidAsProcessId => connector.scratchProcess(uuidAsProcessId).map{
-        case Right(process: Process) => Right(process.copy(meta = process.meta.copy(id = uuidAsProcessId)))
-        case err @ Left(_) => err
-      }}
-    )
+    retrieveAndCache(uuid, docId, map(connector.scratchProcess)(p => spb.secureIfRequired(p.copy(meta = p.meta.copy(id = uuid)))))
 
   def retrieveAndCachePublished(processCode: String, docId: String)
                                (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(processCode, docId, connector.publishedProcess)
+    retrieveAndCache(processCode, docId, map(connector.publishedProcess)(spb.secureIfRequired))
 
   def retrieveAndCacheApproval(processId: String, docId: String)
                               (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
-    retrieveAndCache(processId, docId, connector.approvalProcess)
+    retrieveAndCache(processId, docId, map(connector.approvalProcess)(spb.secureIfRequired))
 
-  private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: String => Future[RequestOutcome[Process]])(
-      implicit context: ExecutionContext
+  def retrieveAndCacheApprovalByPageUrl(url: String)(processId: String, docId: String)
+                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =
+    retrieveAndCache(processId, docId, connector.approvalProcess).map{
+      case Right((_, processCode)) => Right((url, processCode))
+      case err @ Left(_) => err
+    }
+
+  private def retrieveAndCache(processIdentifier: String, docId: String, retrieveProcessById: Retrieve[Process])(
+    implicit context: ExecutionContext
   ): Future[RequestOutcome[(String,String)]] =
     retrieveProcessById(processIdentifier).flatMap {
       case Left(err) =>
@@ -175,5 +179,12 @@ class GuidanceService @Inject() (
         )
     }
 
-  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(core.models.ocelot.Process.SecuredProcessStartUrl)
+  private def isAuthenticationUrl(url: String): Boolean = url.drop(1).equals(SecuredProcess.SecuredProcessStartUrl)
+
+  private def map[A](f: Retrieve[A])(g: A => A)(implicit ec: ExecutionContext): Retrieve[A] = {
+    id => f(id).map{
+      case Right(result) => Right(g(result))
+      case err @ Left(_) => err
+    }
+  }
 }

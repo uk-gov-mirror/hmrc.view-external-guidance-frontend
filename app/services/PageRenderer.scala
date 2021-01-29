@@ -25,15 +25,13 @@ import core.models.ocelot.{Page, Labels}
 class PageRenderer @Inject() () {
 
   def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels, Option[DataInput]) = {
-    implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-
+    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
-
     (visualStanzas, newLabels, optionalInput)
   }
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
-    implicit val stanzaMap = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) =
@@ -49,7 +47,7 @@ class PageRenderer @Inject() () {
         }
       }
 
-    val (visual, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
+    val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       val (next, postInputLabels) = dataInputStanza.eval(answer, newLabels)
       next.fold[(Option[String], Labels)]((None, postInputLabels))(evaluatePostInputStanzas(_, postInputLabels, seen))
