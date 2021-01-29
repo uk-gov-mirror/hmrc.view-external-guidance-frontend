@@ -51,7 +51,6 @@ class CalloutStanzaSpec extends BaseSpec {
   val oldNumberedList: String = "NumberedList"
   val oldNumberedCircleList: String = "NumberedCircleList"
   val noteType: String = "Note"  // note is defined in parent class
-  val warningType: String = "Warning"
   val end: String = "end"
 
   val stackFalse: Boolean = false
@@ -225,7 +224,6 @@ class CalloutStanzaSpec extends BaseSpec {
         case _ => fail
       }
     }
-
   }
 
   "serialise to json with noteType Title" in {
@@ -322,7 +320,6 @@ class CalloutStanzaSpec extends BaseSpec {
     val stanza: Stanza = expectedNoteCalloutStanza
     Json.toJson(stanza).toString shouldBe """{"next":["1"],"noteType":"Note","stack":false,"text":0,"type":"CalloutStanza"}"""
   }
-
 
   /** Test for missing properties in Json object representing instruction stanzas */
   missingJsObjectAttrTests[CalloutStanza](validCalloutStanzaAsJsObject, List("type"))

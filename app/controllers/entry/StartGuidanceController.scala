@@ -56,14 +56,8 @@ class StartGuidanceController @Inject() (
   }
 
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
-    def retrieveCacheAndRedirect(startUrl: String)(processId: String, repositoryId: String): Future[RequestOutcome[(String,String)]] =
-      service.retrieveAndCacheApproval(processId, repositoryId).map {
-        case Right((_,processCode)) => Right((startUrl,processCode))
-        case err @ Left(_) => err
-      }
-
     logger.info(s"Starting approval direct page view journey")
-    retrieveCacheAndRedirectToView(processId, retrieveCacheAndRedirect(s"/$url"))
+    retrieveCacheAndRedirectToView(processId, service.retrieveAndCacheApprovalByPageUrl(s"/$url"))
   }
 
   private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[(String,String)]])(
