@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.language.{LanguageController, LanguageUtils}
 
 @Singleton
 class SwitchLanguageController @Inject() (appConfig: AppConfig, languageUtils: LanguageUtils, cc: MessagesControllerComponents)
-    extends LanguageController(appConfig.config, languageUtils, cc) {
+    extends LanguageController(languageUtils, cc) {
 
   val logger = Logger(getClass)
 

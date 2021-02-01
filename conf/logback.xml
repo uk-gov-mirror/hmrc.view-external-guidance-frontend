@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>logs/view-external-guidance-frontend.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -34,7 +36,6 @@
         </encoder>
     </appender>
 
-
     <logger name="accesslog" level="INFO" additivity="false">
         <appender-ref ref="ACCESS_LOG_FILE" />
     </logger>
@@ -42,6 +43,8 @@
     <logger name="com.ning.http.client.providers.netty" additivity="false">
         <appender-ref ref="STDOUT_IGNORE_NETTY" />
     </logger>
+
+    <logger name="ch.qos" level="WARN"/>
 
     <logger name="com.google.inject" level="INFO"/>
 

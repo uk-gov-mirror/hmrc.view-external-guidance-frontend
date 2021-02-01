@@ -27,7 +27,7 @@ import play.api.mvc._
 import play.api.mvc.{AnyContentAsEmpty, BodyParsers}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
+import play.api.test.Helpers.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import models.{PageContext, PageEvaluationContext}
 import core.models.ocelot.{KeyedStanza, Labels, Page, Phrase, Process, ProcessJson}

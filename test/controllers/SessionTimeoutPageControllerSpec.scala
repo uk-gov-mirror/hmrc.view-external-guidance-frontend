@@ -29,7 +29,7 @@ import core.models.errors._
 import core.models.ocelot.{Process, ProcessJson}
 import repositories.ProcessContext
 import views.html.{delete_your_answers, session_timeout}
-import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
+import play.api.test.Helpers.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import play.api.mvc.{AnyContentAsEmpty, Result}
 

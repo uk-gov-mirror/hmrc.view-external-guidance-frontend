@@ -94,6 +94,7 @@ class CalloutStanzaSpec extends BaseSpec {
   val expectedValueErrorCalloutStatus: CalloutStanza = CalloutStanza(ValueError, ten, Seq(end), stackFalse)
   val expectedNoteCalloutStanza: CalloutStanza = buildCalloutStanza(Note)
 
+
   val jsonToStanzaMappings: Map[JsValue, CalloutStanza] = Map(
     titleCalloutStanzaInputJson -> expectedTitleCalloutStanza,
     subTitleCalloutStanzaInputJson -> expectedSubTitleCalloutStanza,
