@@ -14,28 +14,27 @@
  * limitations under the License.
  *@
 
-@import models.ui._
 @import views.html.components.ariaDescribedBy
+@import models.ui.{H1, DateInput}
 
-@(input: models.ui.DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+@(input: DateInput, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
 <div class="govuk-form-group @if(input.errorMsgs.nonEmpty) {govuk-form-group--error}">
 
-  @if(input.body.isEmpty) {
-    <fieldset class="govuk-fieldset" role="group" @optionalAria("input", input.hint,input.errorMsgs)>
-      @components.h1_heading_with_fieldset(H1(input.text))
-
-  } else {
+  @if(input.body.nonEmpty) {
     @components.h1_heading(H1(input.text))
     @components.render_components(input.body)
-
     <fieldset class="govuk-fieldset" role="group" @optionalAria("input", input.hint,input.errorMsgs)>
       <legend class="govuk-fieldset__legend govuk-visually-hidden">@components.render_text(input.text)</legend>
+  } else {
+    <fieldset class="govuk-fieldset" role="group" @optionalAria("input", input.hint,input.errorMsgs)>
+      @components.h1_within_legend_with_fieldset(H1(input.text))
   }
-    @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-    @components.error_message(input.errorMsgs)
-    @components.input_date_field(input, name, form)
-  </fieldset>
+
+      @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
+      @components.error_message(input.errorMsgs)
+      @components.input_date_field(input, name, form)
+    </fieldset>
 
 </div>
 
