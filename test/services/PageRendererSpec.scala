@@ -147,7 +147,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "4")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "4")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza)
@@ -166,7 +166,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, answerDestinations, None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza)
@@ -184,7 +184,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, answerDestinations, Some("TaxRefund"), false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza)
@@ -202,11 +202,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "4")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "4")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("25","5"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false)))
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
@@ -223,11 +223,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), Some(questionLabel), false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "4")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "4")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("25","5"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false)))
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
@@ -246,11 +246,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "4")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "4")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("end","5"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
@@ -267,11 +267,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "467")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("end","1"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
@@ -289,11 +289,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "467")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("end","start"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
@@ -311,11 +311,11 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","3"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "467")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "467")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("end","1"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
@@ -333,10 +333,10 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       val instructionStanza = InstructionStanza(3, Seq("23"), None, false)
 
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
-                        KeyedStanza("1", ValueStanza(List(Value(Scalar, "X", "9")), Seq("22"), true)),
+                        KeyedStanza("1", ValueStanza(List(Value(ScalarType, "X", "9")), Seq("22"), true)),
                         KeyedStanza("22", Choice(ChoiceStanza(Seq("2","23"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("2", instructionStanza),
-                        KeyedStanza("23", ValueStanza(List(Value(Scalar, "X", "56")), Seq("24"), true)),
+                        KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "56")), Seq("24"), true)),
                         KeyedStanza("24", Choice(ChoiceStanza(Seq("25","34"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false)))
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)
@@ -409,7 +409,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
     "execute calculation stanza when submitting page" in new Test {
 
-      val valueStanza: ValueStanza = ValueStanza(List(Value(Scalar, "input1", "10")), Seq("2"), true)
+      val valueStanza: ValueStanza = ValueStanza(List(Value(ScalarType, "input1", "10")), Seq("2"), true)
       val callout: Callout = TitleCallout(Phrase(Vector("Title", "Welsh - Title")), Seq("3"), false)
 
       val instruction1: Instruction = Instruction(

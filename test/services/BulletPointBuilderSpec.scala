@@ -1308,7 +1308,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
         "4" -> instructionStanza3,
         "5" -> calloutStanza2,
         "6" -> instructionStanza4,
-        "7" -> ValueStanza(List(Value(Scalar, "Region", "West Midlands")), Seq("8"), false),
+        "7" -> ValueStanza(List(Value(ScalarType, "Region", "West Midlands")), Seq("8"), false),
         "8" -> instructionStanza5,
         "9" -> instructionStanza6,
         "10" -> instructionStanza7,
