@@ -59,6 +59,7 @@ object Stanza {
         case "CalculationStanza" => js.validate[CalculationStanza]
         case "SequenceStanza" => js.validate[SequenceStanza]
         case "ChoiceStanza" => js.validate[ChoiceStanza]
+        case "ChooserStanza" => js.validate[ChooserStanza]
         case "InputStanza" => js.validate[InputStanza]
         case "RowStanza" => js.validate[RowStanza]
         case "EndStanza" => JsSuccess(EndStanza)
@@ -76,6 +77,7 @@ object Stanza {
     case c: CalculationStanza => Json.obj( "type" -> "CalculationStanza") ++ Json.toJsObject[CalculationStanza](c)
     case s: SequenceStanza => Json.obj( "type" -> "SequenceStanza") ++ Json.toJsObject[SequenceStanza](s)
     case c: ChoiceStanza => Json.obj("type" -> "ChoiceStanza") ++ Json.toJsObject[ChoiceStanza](c)
+    case c: ChooserStanza => Json.obj("type" -> "ChooserStanza") ++ Json.toJsObject[ChooserStanza](c)
     case i: InputStanza => Json.obj("type" -> "InputStanza") ++ Json.toJsObject[InputStanza](i)
     case r: RowStanza => Json.obj( "type" -> "RowStanza") ++ Json.toJsObject[RowStanza](r)
     case EndStanza => Json.obj("type" -> "EndStanza")
