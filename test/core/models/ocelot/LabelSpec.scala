@@ -27,6 +27,10 @@ class LabelSpec extends BaseSpec with ProcessJson {
   val label = """{"name":"BLAH"}"""
   val labelWithSingleValue = """{"name":"BLAH","english":"39.99"}"""
   val labelWithValues = """{"name":"BLAH","english":"Hello","welsh":"Welsh, Hello"}"""
+  val labelWithBlankLists = """{"name":"BLAH","english":"","welsh":""}"""
+  val labelWithSingleEntryLists = """{"name":"BLAH","english":"March","welsh":"Mawrth"}"""
+  val labelWithMultipleEntryLists = """{"name":"BLAH","english":"March,April,May","welsh":"Mawrth,Ebrill,Mai"}"""
+  val labelWithSingleList = """{"name":"BLAH","english":"March,April,May,June"}"""
 
   "Label" must {
     "deserialise " in {
@@ -48,6 +52,78 @@ class LabelSpec extends BaseSpec with ProcessJson {
     "serialise from Label with both english and welsh values to json" in {
       val dLabelWithValues: Label = Label("BLAH", Some("Hello"), Some("Welsh, Hello"))
       Json.toJson(dLabelWithValues).toString shouldBe labelWithValues
+    }
+
+    "deserialize from list label with blank lists" in {
+      Json.parse(labelWithBlankLists).as[ListLabel] shouldBe ListLabel("BLAH", Some(Nil), Some(Nil) )
+    }
+
+    "deserialize from list label with single entry lists" in {
+      val expectedLabel: ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March")),
+        Some(List("Mawrth"))
+      )
+
+      Json.parse(labelWithSingleEntryLists).as[ListLabel] shouldBe expectedLabel
+    }
+
+    "deserialize from list label with multiple entry lists" in {
+      val expectedLabel: ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March", "April", "May")),
+        Some(List("Mawrth", "Ebrill", "Mai"))
+      )
+
+      Json.parse(labelWithMultipleEntryLists).as[ListLabel] shouldBe expectedLabel
+    }
+
+    "deserialize from list label with english list only" in {
+      val expectedLabel: ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March", "April", "May", "June"))
+      )
+
+      Json.parse(labelWithSingleList).as[ListLabel] shouldBe expectedLabel
+    }
+
+    "serialize list label with empty entry lists" in {
+
+      val listLabel: ListLabel = ListLabel("BLAH", Some(Nil), Some(Nil) )
+
+      Json.toJson(listLabel).toString shouldBe labelWithBlankLists
+    }
+
+    "serialize list label with single entry lists" in {
+
+      val listLabel: ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March")),
+        Some(List("Mawrth"))
+      )
+
+      Json.toJson(listLabel).toString shouldBe labelWithSingleEntryLists
+    }
+
+    "serialize list label with multiple entry lists" in {
+
+      val listLabel:ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March","April","May")),
+        Some(List("Mawrth","Ebrill","Mai"))
+      )
+
+      Json.toJson(listLabel).toString() shouldBe labelWithMultipleEntryLists
+    }
+
+    "serialize list label with single list" in {
+
+      val listLabel:ListLabel = ListLabel(
+        "BLAH",
+        Some(List("March","April","May","June"))
+      )
+
+      Json.toJson(listLabel).toString shouldBe labelWithSingleList
     }
 
   }
