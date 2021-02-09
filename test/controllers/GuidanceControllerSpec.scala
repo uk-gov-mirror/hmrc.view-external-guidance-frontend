@@ -209,7 +209,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       MockAppConfig,
       mockGuidanceConnector,
       mockSessionRepository,
-      new PageBuilder(),
+      new PageBuilder(new Timescales),
       new PageRenderer,
       new SecuredProcessBuilder(messagesApi),
       new UIBuilder())
@@ -895,7 +895,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         MockAppConfig,
         mockGuidanceConnector,
         mockSessionRepository,
-        new PageBuilder(),
+        new PageBuilder(new Timescales),
         new PageRenderer,
         new SecuredProcessBuilder(messagesApi),
         new UIBuilder())
