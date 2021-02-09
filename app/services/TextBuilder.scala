@@ -17,7 +17,7 @@
 package services
 
 import models._
-import core.models.ocelot.{Link, Phrase, hintRegex}
+import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, boldPattern, linkPattern}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -25,7 +25,20 @@ import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 object TextBuilder {
-  import core.models.ocelot.Placeholders._
+  object Placeholders {
+    val plregex: Regex = s"$labelPattern|$boldPattern|$linkPattern".r
+    def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
+    def labelFormatOpt(m: Match): Option[String] = Option(m.group(3))
+    def boldTextOpt(m: Match): Option[String] = Option(m.group(4))
+    def boldLabelNameOpt(m: Match): Option[String] = Option(m.group(5))
+    def boldLabelFormatOpt(m: Match): Option[String] = Option(m.group(7))
+    def buttonOrLink(m: Match): Option[String] = Option(m.group(8))
+    def linkTypeOpt(m: Match): Option[String] = Option(m.group(9))
+    def linkText(m: Match): String = m.group(10)
+    def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
+    def linkDest(m: Match): String = m.group(11)
+  }
+  import Placeholders._
 
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
     (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
