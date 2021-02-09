@@ -19,6 +19,8 @@ package core.models.ocelot.stanzas
 import base.BaseSpec
 import play.api.libs.json._
 
+import core.models.ocelot.{ListLabel, ScalarLabel}
+
 class ValueStanzaSpec extends BaseSpec {
 
   val stanzaType = "ValueStanza"
@@ -107,6 +109,29 @@ class ValueStanzaSpec extends BaseSpec {
       s"""{
          |  "type": "${stanzaType}",
          |  "values": [
+         |    {
+         |      "type": "${listType}",
+         |      "label": "${listLabel}",
+         |      "value": "${listValue}"
+         |    }
+         |  ],
+         |  "next": ["${next}"],
+         |  "stack": ${stack}
+         |}
+    """.stripMargin
+    )
+    .as[JsObject]
+
+  val validValueStanzaWithMixedValueTypesJson: JsObject = Json
+    .parse(
+      s"""{
+         |  "type": "${stanzaType}",
+         |  "values": [
+         |  {
+         |      "type": "${scalarType}",
+         |      "label": "${pageNameLabel}",
+         |      "value": "${pageName}"
+         |    },
          |    {
          |      "type": "${listType}",
          |      "label": "${listLabel}",
@@ -209,6 +234,13 @@ class ValueStanzaSpec extends BaseSpec {
     }
 
     missingJsObjectAttrTests[ValueStanza](validValueStanzaJson, List("type"))
+
+    "define a list of the labels in a deserialized value stanza" in {
+
+      val stanza: ValueStanza = validValueStanzaWithMixedValueTypesJson.as[ValueStanza]
+
+      stanza.labels shouldBe List(ScalarLabel(pageNameLabel, None), ListLabel(listLabel, None))
+    }
   }
 
 }
