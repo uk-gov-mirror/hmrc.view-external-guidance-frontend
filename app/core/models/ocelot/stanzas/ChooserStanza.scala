@@ -16,7 +16,7 @@
 
 package core.models.ocelot.stanzas
 
-import core.models.ocelot.{Labels, Label, Phrase}
+import core.models.ocelot._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsPath, OWrites, Reads}
@@ -26,7 +26,7 @@ case class ChooserStanza(text: Int,
                          source: String,
                          min: Int,
                          max: Int,
-                         label: String,
+                         label: Option[String],
                          stack: Boolean) extends VisualStanza
 
 object ChooserStanza {
@@ -36,7 +36,7 @@ object ChooserStanza {
       (JsPath \ "source").read[String] and
       (JsPath \ "min").read[Int] and
       (JsPath \ "max").read[Int] and
-      (JsPath \ "label").read[String] and
+      (JsPath \ "label").readNullable[String] and
       (JsPath \ "stack").read[Boolean])(ChooserStanza.apply _)
 
   implicit val writes: OWrites[ChooserStanza] =
@@ -46,7 +46,7 @@ object ChooserStanza {
         (JsPath \ "source").write[String] and
         (JsPath \ "min").write[Int] and
         (JsPath \ "max").write[Int] and
-        (JsPath \ "label").write[String] and
+        (JsPath \ "label").writeNullable[String] and
         (JsPath \ "stack").write[Boolean]
     )(unlift(ChooserStanza.unapply))
 }
@@ -56,11 +56,35 @@ case class Chooser(text: Phrase,
                    source: String,
                    min: Int,
                    max: Int,
-                   label: String,
+                   label: Option[String],
                    stack: Boolean) extends VisualStanza with Populated with DataInput {
-  override val labelRefs: List[String] = ???
-  override val labels: List[Label] = ???
+  override val labelRefs: List[String] = source :: labelReferences(text.english)
+  override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
-  def eval(value: String, labels: Labels): (Option[String], Labels) = ???
-  def validInput(value: String): Option[String] = ???
+  private lazy val sourceAsSetOfInt: Set[Int] = source.split(',').map(_.toInt).toSet
+
+  def eval(value: String, labels: Labels): (Option[String], Labels) = {
+    validInput(value).fold[(Option[String], Labels)]((None, labels)){ _ =>
+      val answers = value.split(',').toList
+      val english = answers.map { a => hintRegex.split(a).head.trim }
+      val welsh = english
+
+      (next.headOption, label.fold(labels)(labels.updateList(_,  english, welsh)))
+    }
+  }
+
+  def validInput(value: String): Option[String] = {
+    asListOfInt(value).fold[Option[String]](None)(inputs =>
+      if(inputs.size >= min  && inputs.size <= max && inputs.forall(sourceAsSetOfInt)) {
+        Some(value)
+      } else {
+        None
+      }
+    )
+  }
+}
+
+object Chooser {
+  def apply(s: ChooserStanza, text: Phrase): Chooser =
+    Chooser(text, s.next, s.source, s.min, s.max, s.label, s.stack)
 }

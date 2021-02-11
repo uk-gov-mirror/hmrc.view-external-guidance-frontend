@@ -63,6 +63,12 @@ trait ProcessPopulation {
         case Left(err) => Left(err)
       }
 
+    def populateChooser(c: ChooserStanza): Either[GuidanceError, Chooser] =
+      phrase(c.text, id, process) match {
+        case Right(text) => Right(Chooser(c, text))
+        case Left(err) => Left(err)
+      }
+
     def link(linkIndex: Int): Either[LinkNotFound, Link] =
       process.linkOption(linkIndex).map(Right(_)).getOrElse(Left(LinkNotFound(id, linkIndex)))
 
@@ -80,6 +86,7 @@ trait ProcessPopulation {
           phrase(s.text, id, process).fold(Left(_), text => Right(Sequence(s, text, options)))
         )
       case vs: ValueStanza => Right(vs.copy(values = vs.values.map(v => v.copy(value = placeholders.translate(v.value)))))
+      case c: ChooserStanza => populateChooser(c)
       case s: Stanza => Right(s)
     }
   }
