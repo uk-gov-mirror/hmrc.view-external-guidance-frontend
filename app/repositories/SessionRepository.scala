@@ -58,7 +58,7 @@ case class ProcessContext(process: Process,
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
   val secure: Boolean = process.flow.get(SecuredProcess.PassPhrasePageId).fold(true){_ =>
-    labels.get(SecuredProcess.PassPhraseResponseLabelName).fold(false)(lbl => lbl.english.fold(false)(c => c.headOption == process.passPhrase))
+    labels.get(SecuredProcess.PassPhraseResponseLabelName).fold(false)(lbl => lbl.english.headOption == process.passPhrase)
   }
 }
 

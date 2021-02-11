@@ -37,12 +37,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Labels = LabelCache(Map("Blah" -> ScalarLabel("Blah", Some(List("a value"))),
-                                                 "A-Label" -> ScalarLabel("A-Label", Some(List("33.9"))),
-                                                 "Text-Label" -> ScalarLabel("Text-Label", Some(List("text string"))),
-                                                 "Date-Label" -> ScalarLabel("Date-Label", Some(List("29/2/2020"))),
-                                                 "BigNumber" -> ScalarLabel("BigNumber", Some(List("12345678"))),
-                                                 "BigNumberDps" -> ScalarLabel("BigNumber", Some(List("12345678.45")))))
+    implicit val labels: Labels = LabelCache(Map("Blah" -> ScalarLabel("Blah", List("a value")),
+                                                 "A-Label" -> ScalarLabel("A-Label", List("33.9")),
+                                                 "Text-Label" -> ScalarLabel("Text-Label", List("text string")),
+                                                 "Date-Label" -> ScalarLabel("Date-Label", List("29/2/2020")),
+                                                 "BigNumber" -> ScalarLabel("BigNumber", List("12345678")),
+                                                 "BigNumberDps" -> ScalarLabel("BigNumber", List("12345678.45"))))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))

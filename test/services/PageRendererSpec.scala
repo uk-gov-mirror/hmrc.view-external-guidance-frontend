@@ -196,7 +196,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
         "0",
         LabelCache(
         Map(),
-        Map("X" -> ScalarLabel("X",Some(List("9"))), "TaxRefund" -> ScalarLabel("TaxRefund",Some(List(answers.head.english)), Some(List(answers.head.welsh))))
+        Map("X" -> ScalarLabel("X",List("9")), "TaxRefund" -> ScalarLabel("TaxRefund",List(answers.head.english), List(answers.head.welsh)))
         )
       )
       testRender(
@@ -204,7 +204,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
         "1",
         LabelCache(
           Map(),
-          Map("X" -> ScalarLabel("X",Some(List("9"))), "TaxRefund" -> ScalarLabel("TaxRefund",Some(List(answers(1).english)), Some(List(answers(1).welsh))))
+          Map("X" -> ScalarLabel("X",List("9")), "TaxRefund" -> ScalarLabel("TaxRefund",List(answers(1).english), List(answers(1).welsh)))
         )
       )
       testRender(
@@ -212,7 +212,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
         "2",
         LabelCache(
           Map(),
-          Map("X" -> ScalarLabel("X",Some(List("9"))), "TaxRefund" -> ScalarLabel("TaxRefund",Some(List(answers(2).english)), Some(List(answers(2).welsh))))
+          Map("X" -> ScalarLabel("X",List("9")), "TaxRefund" -> ScalarLabel("TaxRefund",List(answers(2).english), List(answers(2).welsh)))
         )
       )
     }
@@ -234,7 +234,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("25")
-      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",Some(List("4"))))
+      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",List("4")))
     }
 
     "Evaluate the stanzas after Question stanza and confirm setting of associated label" in new Test {
@@ -279,7 +279,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("end")
-      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",Some(List("4"))))
+      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",List("4")))
     }
 
     "Evaluate the stanzas after user input stanza when question which indicate a return to the same page (guidance deteceted error)" in new Test {
@@ -364,7 +364,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       val (next, newLabels) = renderer.renderPagePostSubmit(page, labels, "0")
       next shouldBe Some("34")
-      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",Some(List("56"))))
+      newLabels.updatedLabels shouldBe Map("X" -> ScalarLabel("X",List("56")))
 
     }
 
@@ -408,7 +408,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       val page: Page = Page(Process.StartStanzaId, "/render", stanzas, Seq("end"))
 
-      val input1: Label = ScalarLabel( "input1", Some(List("60")))
+      val input1: Label = ScalarLabel( "input1", List("60"))
 
       val labelMap: Map[String, Label] = Map(input1.name -> input1)
 
@@ -420,7 +420,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       labels.labelMap shouldBe labelMap
 
-      val expectedUpdatedLabels: Map[String, Label] = Map("output1" -> ScalarLabel("output1", Some(List("70"))))
+      val expectedUpdatedLabels: Map[String, Label] = Map("output1" -> ScalarLabel("output1", List("70")))
 
       labels.updatedLabels shouldBe expectedUpdatedLabels
 
@@ -482,8 +482,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       next shouldBe Some("7")
 
       val expectedUpdatedLabels: Map[String, Label] = Map(
-        "input1" -> ScalarLabel("input1", Some(List("10"))),
-        "output1" -> ScalarLabel("output1", Some(List("25")))
+        "input1" -> ScalarLabel("input1", List("10")),
+        "output1" -> ScalarLabel("output1", List("25"))
       )
 
       newLabels.updatedLabels shouldBe expectedUpdatedLabels
