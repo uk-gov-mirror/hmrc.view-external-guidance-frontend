@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import play.twirl.api.Html
 import org.jsoup.Jsoup
 import views.html.components.{h1_heading, h2_heading, h3_heading, paragraph}
-import core.models.ocelot.{Label, LabelCache, Labels}
+import core.models.ocelot.{Label, ScalarLabel, LabelCache, Labels}
 import models.ui.{Currency, CurrencyInput, CurrencyPoundsOnly, DateStandard, FormPage, H1, H2, H3}
 import models.ui.{LabelRef, Link, Number, Paragraph, Text, TextItem, Txt, Words}
 import org.jsoup.nodes.{Document, Element}
@@ -37,12 +37,12 @@ class RenderTextSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   def asDocument(html: Html): Document = Jsoup.parse(html.toString)
 
   trait Test {
-    implicit val labels: Labels = LabelCache(Map("Blah" -> Label("Blah", Some("a value")),
-                                                 "A-Label" -> Label("A-Label", Some("33.9")),
-                                                 "Text-Label" -> Label("Text-Label", Some("text string")),
-                                                 "Date-Label" -> Label("Date-Label", Some("29/2/2020")),
-                                                 "BigNumber" -> Label("BigNumber", Some("12345678")),
-                                                 "BigNumberDps" -> Label("BigNumber", Some("12345678.45"))))
+    implicit val labels: Labels = LabelCache(Map("Blah" -> ScalarLabel("Blah", List("a value")),
+                                                 "A-Label" -> ScalarLabel("A-Label", List("33.9")),
+                                                 "Text-Label" -> ScalarLabel("Text-Label", List("text string")),
+                                                 "Date-Label" -> ScalarLabel("Date-Label", List("29/2/2020")),
+                                                 "BigNumber" -> ScalarLabel("BigNumber", List("12345678")),
+                                                 "BigNumberDps" -> ScalarLabel("BigNumber", List("12345678.45"))))
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
