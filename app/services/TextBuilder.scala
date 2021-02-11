@@ -17,7 +17,7 @@
 package services
 
 import models._
-import core.models.ocelot.{Link, Phrase, Process}
+import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, boldPattern, linkPattern}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -25,14 +25,7 @@ import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 object TextBuilder {
-  // Ocelot data entry validation regex for use by input stanzas
-  // private val dateRegex = "\\d{2}/\\d{2}/\\d{4}"      // From Ocelot
-  private val answerHintPattern: Regex = """\[hint:([^\]]+)\]""".r
-
-  private object Placeholders { // All the placeholder matching in one place
-    val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly|date|number))?\\]"
-    val boldPattern = s"\\[bold:($labelPattern|[^\\]]+)\\]"
-    val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&]+)\\]"
+  object Placeholders {
     val plregex: Regex = s"$labelPattern|$boldPattern|$linkPattern".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
     def labelFormatOpt(m: Match): Option[String] = Option(m.group(3))
@@ -45,7 +38,6 @@ object TextBuilder {
     def linkTextOpt(m: Match): Option[String] = Option(linkText(m))
     def linkDest(m: Match): String = m.group(11)
   }
-
   import Placeholders._
 
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
@@ -75,7 +67,7 @@ object TextBuilder {
   }
 
   private def singleStringWithOptionalHint(str: String): (String, Option[String]) = {
-    val (txts, matches) = fromPattern(answerHintPattern, str)
+    val (txts, matches) = fromPattern(hintRegex, str)
     val hint = matches.headOption.map(m => m.group(1))
     (txts.head.trim, hint)
   }

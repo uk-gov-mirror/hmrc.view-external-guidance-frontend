@@ -162,7 +162,6 @@ class UIBuilder {
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val name = TextBuilder.fromPhrase(input.name)
     val hint = input.help.map(phrase => TextBuilder.fromPhrase(phrase))
-    // Placeholder not used
     input match {
       case _: TextInput => ui.TextInput(name, hint, uiElements, errorMsgs)
       case _: NumberInput => ui.NumberInput(name, hint, uiElements, errorMsgs)

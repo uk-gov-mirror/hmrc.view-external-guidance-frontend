@@ -19,6 +19,7 @@ package config
 import com.google.inject.AbstractModule
 import controllers.actions.{SessionIdAction, SessionIdActionImpl}
 import repositories.{DefaultSessionRepository, SessionRepository}
+import core.services.{DefaultTodayProvider, TodayProvider}
 
 class Module extends AbstractModule {
 
@@ -27,5 +28,6 @@ class Module extends AbstractModule {
     bind(classOf[AppConfig]).to(classOf[AppConfigImpl])
     bind(classOf[SessionRepository]).to(classOf[DefaultSessionRepository]).asEagerSingleton()
     bind(classOf[SessionIdAction]).to(classOf[SessionIdActionImpl])
+    bind(classOf[TodayProvider]).to(classOf[DefaultTodayProvider])
   }
 }

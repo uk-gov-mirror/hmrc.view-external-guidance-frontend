@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
 import java.util.Locale.UK
 
-import core.models.ocelot.{asCurrency, asDate}
+import core.models.ocelot.{asCurrency, asDate, DateOutputFormat}
 
 trait Name {
   val name: String
@@ -68,7 +68,7 @@ case object Txt extends OutputFormat with Name {
 
 case object DateStandard extends OutputFormat with Name {
   val name: String = "date"
-  val formatter: DateTimeFormatter = ofPattern("d MMMM uuuu")
+  val formatter: DateTimeFormatter = ofPattern(DateOutputFormat)
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
       // Extract as a date, then format
