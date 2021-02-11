@@ -52,9 +52,8 @@ case class Link(dest: String, text: String, window: Boolean = false, asButton: B
 }
 
 case class Text(items: Seq[TextItem]) {
-  def value: Seq[TextItem] = items
   def isEmpty: Boolean = items.isEmpty
-  def toWords: Seq[String] = value.flatMap(_.toWords)
+  def toWords: Seq[String] = items.flatMap(_.toWords)
   def asString: String = toWords.mkString(" ")
   override def toString: String = s"[${items.map(t => t.toString).mkString("")}]"
   def +(other: Text): Text = Text(items ++ other.items)

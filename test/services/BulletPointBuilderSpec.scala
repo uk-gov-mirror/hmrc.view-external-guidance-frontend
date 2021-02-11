@@ -28,7 +28,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
   def asString(elements: Seq[String]): String = elements.mkString
 
   // Define instance of class used in testing
-  val pageBuilder: PageBuilder = new PageBuilder()
+  val pageBuilder: PageBuilder = new PageBuilder(new Placeholders(new DefaultTodayProvider))
 
   case object DummyStanza extends Stanza {
     override val next: Seq[String] = Seq("1")
@@ -925,7 +925,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
     val phrase2: Phrase = Phrase(Vector("My favourite sweets are porkie percys", "Welsh - My favourite sweets are porkie percys"))
     val phrase3: Phrase = Phrase(Vector("My favourite sweets are lemon bon bons", "Welsh - My favourite sweets are lemon bon bons"))
 
-    val pageBuilder: PageBuilder = new PageBuilder()
+    val pageBuilder: PageBuilder = new PageBuilder(new Placeholders(new DefaultTodayProvider))
 
     "Create two separate instructions for two instruction stanzas where both stanzas disable stacking" in {
 
