@@ -51,11 +51,17 @@ case class ValueStanza(values: List[Value], override val next: Seq[String], stac
   override val labelRefs: List[String] = values.flatMap(v => labelReferences(v.value))
 
   def eval(originalLabels: Labels): (String, Labels) = {
+
+    def assignValue(v: Value, labels: Labels): Labels = v.valueType match {
+        case ScalarType => labels.update(v.label, v.value)
+        case ListType => labels.updateList(v.label, if(v.value.isEmpty) Nil else v.value.split(",").toList)
+      }
+
     @tailrec
     def assignValtoLabels(vs: List[Value], labels: Labels): Labels =
       vs match {
         case Nil => labels
-        case x :: xs => assignValtoLabels(xs, labels.update(x.label, x.value))
+        case x :: xs => assignValtoLabels(xs, assignValue(x, labels))
       }
     (next.head, assignValtoLabels(values, originalLabels))
   }
