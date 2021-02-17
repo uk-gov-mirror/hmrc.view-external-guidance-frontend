@@ -65,14 +65,27 @@ sealed trait Operation {
     labels.value(ref).getOrElse("")
   }
 
+  def valueAsOption(arg: String, labels: Labels): Option[String] = labelReference(arg).fold[Option[String]](Some(arg)){ref =>
+    labels.value(ref)
+  }
+
+  def valueAsListOption(arg: String, labels: Labels): Option[List[String]] = {
+    labelReference(arg).fold[Option[List[String]]](None){ref => labels.valueAsList(ref)}
+  }
+
   def operands(labels: Labels): (Option[String], Option[List[String]], Option[String], Option[List[String]]) = {
 
-    val xScalar: Option[String] = labelReference(left).fold[Option[String]](Some(left)){ref => labels.value(ref)}
-    val xList: Option[List[String]] = labelReference(left).fold[Option[List[String]]](None){ref => labels.valueAsList(ref)}
-    val yScalar: Option[String] = labelReference(right).fold[Option[String]](Some(right)){ref => labels.value(ref)}
-    val yList: Option[List[String]] = labelReference(right).fold[Option[List[String]]](None){ref => labels.valueAsList(ref)}
+    val xScalar: Option[String] = valueAsOption(left, labels)
+    val yScalar: Option[String] = valueAsOption(right, labels)
 
-    (xScalar, xList, yScalar, yList)
+    (xScalar, yScalar) match {
+      case (Some(_), Some(_)) => (xScalar, None, yScalar, None) // Optimize for scalar on scalar as these are the most common operations
+      case _ =>
+        val xList: Option[List[String]] = valueAsListOption(left, labels)
+        val yList: Option[List[String]] = valueAsListOption(right, labels)
+
+        (xScalar, xList, yScalar, yList)
+    }
   }
 
   def unsupportedOperation(operationName: String)(arg1: Any, arg2: Any ): Option[String] = {
