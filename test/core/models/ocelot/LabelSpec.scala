@@ -324,7 +324,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
       updatedLabels1.displayValue("Door")(welshLang) shouldBe Some("Drws")
     }
 
-    "Construct a LabelCache from a label map and a cache of updated labels" in {
+    "Construct a LabelCache from a label map a cache of updated labels and a FlowExecution stack" in {
       val labelsMap = Map(
         "X"->ScalarLabel("X", List("33.5")),
         "Y"->ScalarLabel("Y"),
@@ -336,9 +336,20 @@ class LabelSpec extends BaseSpec with ProcessJson {
         "Colours"->ListLabel("Colours", List("Yellow", "Violet"))
       )
 
-      val labels = LabelCache(labelsMap, cacheMap)
+      val stack = List(
+        FlowExecution("1", Some(LabelValue("loop", Some("One")))),
+        FlowExecution("2", Some(LabelValue("loop", Some("One")))),
+        FlowExecution("3", None)
+      )
+
+      val labels = LabelCache(labelsMap, cacheMap, stack)
       labels.value("X") shouldBe Some("46.5")
       labels.valueAsList("Colours") shouldBe Some(List("Yellow", "Violet"))
+
+      labels.popFlow.fold(fail("Stack should not be empty")){t =>
+        val (flowExecution, _) = t
+        flowExecution shouldBe FlowExecution("1", Some(LabelValue("loop", Some("One"))))
+      }
     }
 
     "Return an empty string if label has no assigned value" in {
@@ -454,5 +465,45 @@ class LabelSpec extends BaseSpec with ProcessJson {
       labels3.value("X") shouldBe Some("49.5")
       labels3.value("Location") shouldBe Some("Here")
     }
+  }
+
+  "Labels FlowExecution stack" must {
+    "Allow adding a FlowExecution to top of stack" in {
+      val l0 = LabelCache()
+      val l1 = l0.pushFlow(FlowExecution("1", Some(LabelValue("loop", Some("One")))))
+      val l2 = l1.pushFlow(FlowExecution("2", Some(LabelValue("loop", Some("Two")))))
+      val l3 = l2.pushFlow(FlowExecution("3", Some(LabelValue("loop", Some("Three")))))
+
+      l3.stackList.length shouldBe 3
+      l3.stackList.head shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
+    }
+
+    "Allow removal of FlowExecution from top of stack" in {
+      val l0 = LabelCache()
+      val l1 = l0.pushFlow(FlowExecution("1", Some(LabelValue("loop", Some("One")))))
+      val l2 = l1.pushFlow(FlowExecution("2", Some(LabelValue("loop", Some("Two")))))
+      val l3 = l2.pushFlow(FlowExecution("3", Some(LabelValue("loop", Some("Three")))))
+
+      l3.popFlow.map{t =>
+        val(fe, l2) = t
+        fe shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
+        l2.stackList.length shouldBe 2
+        l2.popFlow.map{t =>
+          val(fe, l1) = t
+          fe shouldBe FlowExecution("2", Some(LabelValue("loop", Some("Two"))))
+          l1.stackList.length shouldBe 1
+          l1.popFlow.map{t =>
+            val(fe, l0) = t
+            fe shouldBe FlowExecution("1", Some(LabelValue("loop", Some("One"))))
+            l0.stackList.length shouldBe 0
+
+            l0.popFlow shouldBe None
+          }
+        }
+      }
+      l3.stackList.length shouldBe 3
+      l3.stackList.head shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
+    }
+
   }
 }
