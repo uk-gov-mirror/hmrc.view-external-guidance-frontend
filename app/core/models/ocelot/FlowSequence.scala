@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-package models.ocelot
-
-import core.models.ocelot.Labels
+package core.models.ocelot
 
 case class LabelSequence(name: String, values: List[String])
 case class LabelValue(name: String, value: Option[String])
 
-case class FlowSet(next: Seq[String], labelSet: Option[LabelSequence]) {
-  def nextFlow(labels: Labels): (Option[(String, Option[LabelValue])], Labels) = ???
-}
+case class FlowSequence(next: Seq[String], labelSequence: Option[LabelSequence])
