@@ -262,11 +262,25 @@ trait SequenceJson {
             10
           ],
           "next": [
-            "end",
-            "end"
+            "100",
+            "100"
           ],
           "stack": false,
           "label": "YesNo"
+        },
+        "100": {
+          "type": "ChoiceStanza",
+          "tests": [
+            {
+              "left": "2",
+              "test": "equals",
+              "right": "3"
+            }],
+          "next": [
+            "end",
+            "end"
+          ],
+          "stack": true
         },
         "start": {
           "type": "PageStanza",
