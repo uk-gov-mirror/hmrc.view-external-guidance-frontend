@@ -44,7 +44,7 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
       case flows => new LabelCacheImpl(labels, cache, flows.toList ++ stack)
     }
 
-  def takeFlow: Option[(String, Labels)] = // Remove head of stack and update flow label
+  def takeFlow: Option[(String, Labels)] = // Remove head of flow stack and update flow label if required
     stack.headOption.map{f =>
       (f.next,
        f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail)))

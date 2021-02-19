@@ -59,7 +59,15 @@ case class Sequence(text: Phrase,
   override val labelRefs: List[String] = labelReferences(text.english) ++ options.flatMap(a => labelReferences(a.english))
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
-  def eval(value: String, labels: Labels): (Option[String], Labels) = (None, labels) // TODO EG-1265
+  def eval(value: String, labels: Labels): (Option[String], Labels) =
+    // push the flows corresponding to the checked items, then take and redirect to the first flow
+    asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked =>
+      labels.pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))),
+                       label,
+                       checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english))))
+            .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._2))
+    }
+
   def validInput(value: String): Option[String] =
     asListOfInt(value).fold[Option[String]](None)(l => if (l.forall(options.indices.contains(_))) Some(value) else None)
 }

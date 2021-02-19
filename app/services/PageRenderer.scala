@@ -40,7 +40,11 @@ class PageRenderer @Inject() () {
         case None => (Some(next), labels)
         case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
-          case EndStanza => (Some(next), labels)
+          case EndStanza =>
+            labels.takeFlow match {
+              case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
+              case None => (Some(next), labels)
+            }
           case s: Stanza with Evaluate =>
             val (next, updatedLabels) = s.eval(labels)
             evaluatePostInputStanzas(next, updatedLabels, seen)
@@ -60,7 +64,11 @@ class PageRenderer @Inject() () {
     stanzaMap.get(stanzaId) match {
       case None => (visualStanzas, labels, seen, stanzaId, None)
       case Some(s) => s match {
-        case EndStanza => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
+        case EndStanza =>
+          labels.takeFlow match {
+            case Some((nxt, updatedLabels)) => evaluateStanzas(nxt, updatedLabels, visualStanzas, seen)
+            case None => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
+          }
         case s: VisualStanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
         case s: Stanza with Evaluate =>
           val (next, updatedLabels) = s.eval(labels)
