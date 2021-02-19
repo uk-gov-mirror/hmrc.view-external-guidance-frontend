@@ -19,7 +19,7 @@ package services
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
 import core.models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
-import core.models.ocelot.{Page, Labels}
+import core.models.ocelot.{Page, Labels, Process}
 
 @Singleton
 class PageRenderer @Inject() () {
@@ -53,8 +53,15 @@ class PageRenderer @Inject() () {
 
     val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
-      val (next, postInputLabels) = dataInputStanza.eval(answer, newLabels)
-      next.fold[(Option[String], Labels)]((None, postInputLabels))(evaluatePostInputStanzas(_, postInputLabels, seen))
+      dataInputStanza.eval(answer, newLabels) match {
+        case (Some(Process.EndStanzaId), postInputLabels) =>
+          postInputLabels.takeFlow match {
+            case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
+            case None => (Some(Process.EndStanzaId), postInputLabels)
+          }
+        case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen)
+        case (None, postInputLabels) => (None, postInputLabels)
+       }
     }
   }
 

@@ -491,4 +491,64 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
   }
 
+  trait FlowTest extends Test with SequenceJson {
+    val process = seqJson.as[Process]
+    val processWithInFlowInput = seqInputJson.as[Process]
+  }
+
+  "Sequence stanza process" must {
+    "build into pages which include all sub-flows" in new FlowTest {
+      pageBuilder.pages(process) match {
+        case Left(err) => fail(err.toString)
+        case Right(pages) =>
+          pages.length shouldBe 5
+      }
+    }
+
+    "Create a subflow for each selected flow from sequence" in new FlowTest {
+      pageBuilder.pages(process) match {
+        case Left(err) => fail(err.toString)
+        case Right(pages) =>
+          val labels = LabelCache()
+          val (next, newLabels) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 2,3")
+
+          next shouldBe Some("4")
+          newLabels.value("Choice") shouldBe Some("First")
+          newLabels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
+
+          newLabels.stackList.length shouldBe 3
+
+      }
+    }
+
+    "Follow each chosen subflow and then return to main flow next" in new FlowTest {
+      pageBuilder.pages(processWithInFlowInput) match {
+        case Left(err) => fail(err.toString)
+        case Right(pages) =>
+          val labels = LabelCache()
+          val (next, l0) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 3")
+          next shouldBe Some("4")
+
+          next.fold(fail("Missing next stanzaId")){nxt =>
+            pageBuilder.buildPage(nxt, processWithInFlowInput) match {
+              case Left(err) => fail(err.toString)
+              case Right(p) =>
+                val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
+                next shouldBe Some("8")
+
+                next.map{nxt =>
+                  pageBuilder.buildPage(nxt, processWithInFlowInput) match {
+                    case Left(err) => fail(err.toString)
+                    case Right(p) =>
+                      val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
+                      next shouldBe Some("2")
+                  }
+                }
+            }
+          }
+
+      }
+    }
+
+  }
 }

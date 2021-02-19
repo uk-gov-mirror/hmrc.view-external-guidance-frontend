@@ -60,12 +60,15 @@ case class Sequence(text: Phrase,
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
   def eval(value: String, labels: Labels): (Option[String], Labels) =
-    // push the flows corresponding to the checked items, then take and redirect to the first flow
-    asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked =>
-      labels.pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))),
-                       label,
-                       checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english))))
-            .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._2))
+    asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
+      // push the flows corresponding to the checked items, then take and
+      // redirect to the first flow (setting list and first flow label)
+      val continuationNext = next.last
+      val chosenOptions = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
+      label.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
+           .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))) :+ continuationNext, label, chosenOptions)
+           .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._2))
+      }
     }
 
   def validInput(value: String): Option[String] =
