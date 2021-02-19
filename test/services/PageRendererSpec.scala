@@ -521,34 +521,46 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       }
     }
 
-    "Follow each chosen subflow and then return to main flow next" in new FlowTest {
+    "Follow each chosen subflow and then return to main flow next till end" in new FlowTest {
       pageBuilder.pages(processWithInFlowInput) match {
         case Left(err) => fail(err.toString)
         case Right(pages) =>
           val labels = LabelCache()
           val (next, l0) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 3")
+
           next shouldBe Some("4")
+          l0.valueAsList("Choice_seq") shouldBe Some(List("First", "Fourth"))
+          l0.value("Choice") shouldBe Some("First")
+          l0.value("YesNo") shouldBe None
 
-          next.fold(fail("Missing next stanzaId")){nxt =>
-            pageBuilder.buildPage(nxt, processWithInFlowInput) match {
-              case Left(err) => fail(err.toString)
-              case Right(p) =>
-                val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
-                next shouldBe Some("8")
+          next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
+            case Left(err) => fail(err.toString)
+            case Right(p) =>
+              val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
 
-                next.map{nxt =>
-                  pageBuilder.buildPage(nxt, processWithInFlowInput) match {
+              next shouldBe Some("8")
+              l1.value("YesNo") shouldBe Some("Yes")
+              l1.value("Choice") shouldBe Some("Fourth")
+
+              next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
+                case Left(err) => fail(err.toString)
+                case Right(p) =>
+                  val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
+
+                  next shouldBe Some("2")
+                  l2.value("FlowInput") shouldBe Some("hello")
+
+                  next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
                     case Left(err) => fail(err.toString)
                     case Right(p) =>
-                      val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
-                      next shouldBe Some("2")
+                      p.next shouldBe Nil
                   }
                 }
+              }
             }
           }
-
+        }
       }
     }
-
   }
 }
