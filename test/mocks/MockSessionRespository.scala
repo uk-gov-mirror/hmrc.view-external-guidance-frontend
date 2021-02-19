@@ -22,6 +22,7 @@ import core.models.RequestOutcome
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import scala.concurrent.Future
+import core.models.ocelot.Flow
 
 trait MockSessionRepository extends MockFactory {
 
@@ -39,21 +40,20 @@ trait MockSessionRepository extends MockFactory {
         .set(_: String, _: Process, _: Map[String, String]))
         .expects(key, process, urltoPageId)
 
-    def saveUserAnswerAndLabels(docId: String, url: String, answer: String, labels: Seq[Label]): CallHandler[Future[RequestOutcome[Unit]]] = {
+    def saveFormPageState(docId: String, url: String, answer: String, labels: Seq[Label], stack: List[Flow]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
-        .saveUserAnswerAndLabels(_: String, _: String, _: String, _: Seq[Label]))
-        .expects(docId, url, answer, *)
-    }
+        .saveFormPageState(_: String, _: String, _: String, _: Seq[Label], _: List[Flow]))
+        .expects(docId, url, answer, *, *)
 
     def get(key: String): CallHandler[Future[RequestOutcome[ProcessContext]]] =
       (mockSessionRepository
         .get(_: String))
         .expects(key)
 
-    def saveLabels(key: String, labels: Seq[Label]): CallHandler[Future[RequestOutcome[Unit]]] =
+    def savePageState(key: String, labels: Seq[Label], stack: List[Flow]): CallHandler[Future[RequestOutcome[Unit]]] =
       (mockSessionRepository
-        .saveLabels(_: String, _: Seq[Label]))
-        .expects(key, *)
+        .savePageState(_: String, _: Seq[Label], _: List[Flow]))
+        .expects(key, *, *)
   }
 
 }

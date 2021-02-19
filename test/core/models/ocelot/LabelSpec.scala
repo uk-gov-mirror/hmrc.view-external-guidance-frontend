@@ -324,7 +324,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
       updatedLabels1.displayValue("Door")(welshLang) shouldBe Some("Drws")
     }
 
-    "Construct a LabelCache from a label map a cache of updated labels and a FlowExecution stack" in {
+    "Construct a LabelCache from a label map a cache of updated labels and a Flow stack" in {
       val labelsMap = Map(
         "X"->ScalarLabel("X", List("33.5")),
         "Y"->ScalarLabel("Y"),
@@ -337,18 +337,20 @@ class LabelSpec extends BaseSpec with ProcessJson {
       )
 
       val stack = List(
-        FlowExecution("1", Some(LabelValue("loop", Some("One")))),
-        FlowExecution("2", Some(LabelValue("loop", Some("One")))),
-        FlowExecution("3", None)
+        Flow("1", Some(LabelValue("loop", Some("One")))),
+        Flow("2", Some(LabelValue("loop", Some("One")))),
+        Flow("3", None)
       )
 
       val labels = LabelCache(labelsMap, cacheMap, stack)
       labels.value("X") shouldBe Some("46.5")
       labels.valueAsList("Colours") shouldBe Some(List("Yellow", "Violet"))
 
-      labels.popFlow.fold(fail("Stack should not be empty")){t =>
-        val (flowExecution, _) = t
-        flowExecution shouldBe FlowExecution("1", Some(LabelValue("loop", Some("One"))))
+      labels.takeFlow.fold(fail("Stack should not be empty")){t =>
+        val (nxt, updatedLabels) = t
+        nxt shouldBe "1"
+        updatedLabels.value("loop") shouldBe Some("One")
+
       }
     }
 
@@ -467,42 +469,36 @@ class LabelSpec extends BaseSpec with ProcessJson {
     }
   }
 
-  "Labels FlowExecution stack" must {
-    "Allow adding a FlowExecution to top of stack" in {
-      val l0 = LabelCache()
-      val l1 = l0.pushFlow(FlowExecution("1", Some(LabelValue("loop", Some("One")))))
-      val l2 = l1.pushFlow(FlowExecution("2", Some(LabelValue("loop", Some("Two")))))
-      val l3 = l2.pushFlow(FlowExecution("3", Some(LabelValue("loop", Some("Three")))))
+  "Labels Flow stack" must {
+    "Allow adding a Flow to top of stack" in {
+      val labels = LabelCache().pushFlows(Seq("1","2","3"), Some("loop"), Seq("One", "Two", "Three"))
 
-      l3.stackList.length shouldBe 3
-      l3.stackList.head shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
+      labels.stackList.length shouldBe 3
+      labels.stackList.head shouldBe Flow("1", Some(LabelValue("loop", Some("One"))))
+      labels.stackList(1) shouldBe Flow("2", Some(LabelValue("loop", Some("Two"))))
+      labels.stackList(2) shouldBe Flow("3", Some(LabelValue("loop", Some("Three"))))
     }
 
-    "Allow removal of FlowExecution from top of stack" in {
-      val l0 = LabelCache()
-      val l1 = l0.pushFlow(FlowExecution("1", Some(LabelValue("loop", Some("One")))))
-      val l2 = l1.pushFlow(FlowExecution("2", Some(LabelValue("loop", Some("Two")))))
-      val l3 = l2.pushFlow(FlowExecution("3", Some(LabelValue("loop", Some("Three")))))
+    "Allow removal of Flow from top of stack" in {
+      val labels = LabelCache().pushFlows(Seq("1","2","3"), Some("loop"), Seq("One", "Two", "Three"))
 
-      l3.popFlow.map{t =>
-        val(fe, l2) = t
-        fe shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
-        l2.stackList.length shouldBe 2
-        l2.popFlow.map{t =>
-          val(fe, l1) = t
-          fe shouldBe FlowExecution("2", Some(LabelValue("loop", Some("Two"))))
+      labels.takeFlow.map{t =>
+        val(n0, l0) = t
+        n0 shouldBe "1"
+        l0.stackList.length shouldBe 2
+        l0.takeFlow.map{t =>
+          val(n1, l1) = t
+          n1 shouldBe "2"
           l1.stackList.length shouldBe 1
-          l1.popFlow.map{t =>
-            val(fe, l0) = t
-            fe shouldBe FlowExecution("1", Some(LabelValue("loop", Some("One"))))
-            l0.stackList.length shouldBe 0
+          l1.takeFlow.map{t =>
+            val(n2, l2) = t
+            n2 shouldBe "3"
+            l2.stackList.length shouldBe 0
 
-            l0.popFlow shouldBe None
+            l2.takeFlow shouldBe None
           }
         }
       }
-      l3.stackList.length shouldBe 3
-      l3.stackList.head shouldBe FlowExecution("3", Some(LabelValue("loop", Some("Three"))))
     }
 
   }

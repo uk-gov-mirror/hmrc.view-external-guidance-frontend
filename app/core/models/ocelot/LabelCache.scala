@@ -19,8 +19,8 @@ package core.models.ocelot
 import play.api.i18n.Lang
 
 trait Labels {
-  def pushFlow(flowExecution: FlowExecution): Labels
-  def popFlow: Option[(FlowExecution, Labels)]
+  def pushFlows(next: Seq[String], labelName: Option[String], labelValues: Seq[String]): Labels
+  def takeFlow: Option[(String, Labels)]
   def value(name: String): Option[String]
   def valueAsList(name: String): Option[List[String]]
   def displayValue(name: String)(implicit lang: Lang): Option[String]
@@ -28,15 +28,30 @@ trait Labels {
   def update(name: String, english: String, welsh: String): Labels
   def updateList(name: String, english: List[String]): Labels
   def updateList(name: String, english: List[String], welsh: List[String]): Labels
+  // Persistence access
   def updatedLabels: Map[String, Label]
   def labelMap:Map[String, Label]
-  def stackList: List[FlowExecution]
+  def stackList: List[Flow]
   def flush(): Labels
 }
 
-private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowExecution]) extends Labels {
-  def pushFlow(flowExecution: FlowExecution): Labels = new LabelCacheImpl(labels, cache, flowExecution :: stack)
-  def popFlow: Option[(FlowExecution, Labels)] = stack.headOption.map((_, new LabelCacheImpl(labels, cache, stack.tail)))
+private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label], stack: List[Flow]) extends Labels {
+  def pushFlows(next: Seq[String], labelName: Option[String], labelValues: Seq[String]): Labels =
+    next.zipWithIndex.map{
+      case (nxt, idx) => Flow(nxt, labelName.map(LabelValue(_, labelValues.lift(idx).fold[Option[String]](None)(v => Some(v)))))
+    } match {
+      case Nil => this
+      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ stack)
+    }
+
+  def takeFlow: Option[(String, Labels)] = // Remove head of stack and update flow label
+    stack.headOption.map{f =>
+      (f.next,
+       f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail)))
+        .getOrElse(new LabelCacheImpl(labels, cache, stack.tail))
+      )
+    }
+
   def value(name: String): Option[String] = label(name).collect{case s: ScalarLabel => s.english.headOption.getOrElse("")}
   def valueAsList(name: String): Option[List[String]] = label(name).collect{case l: ListLabel => l.english}
   def displayValue(name: String)(implicit lang: Lang): Option[String] = label(name).map{lbl =>
@@ -51,7 +66,7 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
   def updateList(name: String, english: List[String], welsh: List[String]): Labels = new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack)
   def updatedLabels: Map[String, Label] = cache
   def labelMap:Map[String, Label] = labels
-  def stackList: List[FlowExecution] = stack
+  def stackList: List[Flow] = stack
   def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack)
 
   private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
@@ -70,5 +85,5 @@ object LabelCache {
   def apply(): Labels = new LabelCacheImpl(Map(), Map(), Nil)
   def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels, Map(), Nil)
   def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache, Nil)
-  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowExecution]): Labels = new LabelCacheImpl(labels, cache, stack)
+  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[Flow]): Labels = new LabelCacheImpl(labels, cache, stack)
 }

@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class LabelValue(name: String, value: Option[String])
-case class FlowExecution(next: String, labelValue: Option[LabelValue])
+case class Flow(next: String, labelValue: Option[LabelValue])
 
 object LabelValue {
   implicit val reads: Reads[LabelValue] = (
@@ -34,14 +34,14 @@ object LabelValue {
   )(unlift(LabelValue.unapply))
 }
 
-object FlowExecution {
-  implicit val reads: Reads[FlowExecution] = (
+object Flow {
+  implicit val reads: Reads[Flow] = (
     (__ \ "next").read[String] and
       (__ \ "labelValue").readNullable[LabelValue]
-  )(FlowExecution.apply _)
+  )(Flow.apply _)
 
-  implicit val writes: Writes[FlowExecution] = (
+  implicit val writes: Writes[Flow] = (
     (__ \ "next").write[String] and
       (__ \ "labelValue").writeNullable[LabelValue]
-  )(unlift(FlowExecution.unapply))
+  )(unlift(Flow.unapply))
 }

@@ -41,6 +41,7 @@ object DefaultSessionRepository {
                                   processId: String,
                                   process: Process,
                                   labels: Map[String, Label],
+                                  flowStack: List[Flow],
                                   urlToPageId: Map[String, String],
                                   answers: Map[String, String],
                                   pageHistory: List[String],
@@ -55,6 +56,7 @@ object DefaultSessionRepository {
 case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
+                          flowStack: List[Flow],
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
   val secure: Boolean = process.flow.get(SecuredProcess.PassPhrasePageId).fold(true){_ =>
@@ -66,8 +68,8 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
-  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]]
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]]
+  def savePageState(key: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -113,7 +115,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def get(key:String): Future[RequestOutcome[ProcessContext]] =
     find("_id" -> key).map {
       case Nil =>  Left(NotFoundError)
-      case list => Right(ProcessContext(list.head.process, list.head.answers, list.head.labels, list.head.urlToPageId, None))
+      case r :: _ => Right(ProcessContext(r.process, r.answers, r.labels, r.flowStack, r.urlToPageId, None))
     }.recover {
       case lastError =>
       logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
@@ -134,9 +136,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           //
           // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
           //
-          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, None)))){pageUrl =>
+          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.urlToPageId, None)))){pageUrl =>
             val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
-            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.urlToPageId, backLink)
+            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.urlToPageId, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
               savePageHistory(key, history).map {
                 case Left(err) =>
@@ -155,13 +157,16 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveUserAnswerAndLabels(key: String, url: String, answer: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(
-          (List(toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-                toFieldPair(s"answers.$url", answer)) ++ labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+          (List(
+            toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+            toFieldPair(s"answers.$url", answer)) ++
+            labels.map(l => toFieldPair(s"labels.${l.name}", l)) ++
+            stack.map(e => toFieldPair(s"flowStack", e))).toArray: _*
         )
       )
     ).map { result =>
@@ -180,10 +185,10 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  def saveLabels(key: String, labels: Seq[Label]): Future[RequestOutcome[Unit]] =
+  def savePageState(key: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj(labels.map(l => toFieldPair(s"labels.${l.name}", l)).toArray: _*))
+        Json.obj("$set" -> Json.obj((labels.map(l => toFieldPair(s"labels.${l.name}", l)) ++ stack.map(e => toFieldPair(s"flowStack", e))).toArray: _*))
       ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
@@ -201,7 +206,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
 
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
-    val sessionDocument = Json.toJson(DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), urlToPageId, Map(), Nil, Instant.now))
+    val sessionDocument = Json.toJson(
+      DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, urlToPageId, Map(), Nil, Instant.now)
+    )
     collection
       .update(false)
       .one(Json.obj("_id" -> key), Json.obj("$set" -> sessionDocument), upsert = true)
@@ -234,14 +241,14 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Json.obj("_id" -> key),
       Json.obj("$set" -> Json.obj(ttlExpiryFieldName -> Json.obj("$date" -> Instant.now().toEpochMilli), s"pageHistory" -> pageHistory))
     ).map { result =>
-        result
-          .result[DefaultSessionRepository.SessionProcess]
-          .fold {
-            logger.warn(
-              s"Attempt to savePageHistory using _id=$key returned no result, lastError ${result.lastError}"
-            )
-            Left(NotFoundError): RequestOutcome[Unit]
-          }(_ => Right({}))
+      result
+        .result[DefaultSessionRepository.SessionProcess]
+        .fold {
+          logger.warn(
+            s"Attempt to savePageHistory using _id=$key returned no result, lastError ${result.lastError}"
+          )
+          Left(NotFoundError): RequestOutcome[Unit]
+        }(_ => Right({}))
       }
       .recover {
         case lastError =>
