@@ -494,6 +494,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
   trait FlowTest extends Test with SequenceJson {
     val process = seqJson.as[Process]
     val processWithInFlowInput = seqInputJson.as[Process]
+    val labels = LabelCache()
   }
 
   "Sequence stanza process" must {
@@ -509,7 +510,6 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       pageBuilder.pages(process) match {
         case Left(err) => fail(err.toString)
         case Right(pages) =>
-          val labels = LabelCache()
           val (next, newLabels) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 2,3")
 
           next shouldBe Some("4")
@@ -521,11 +521,12 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       }
     }
 
-    "Follow each chosen subflow and then return to main flow next till end" in new FlowTest {
-      pageBuilder.pages(processWithInFlowInput) match {
-        case Left(err) => fail(err.toString)
-        case Right(pages) =>
-          val labels = LabelCache()
+    "Follow each chosen subflow and then return to main flow next, till end" in new FlowTest {
+      def followNext(next: Option[String], process: Process, f: Page => Unit): Unit =
+        next.map(nxt => pageBuilder.buildPage(nxt, process).fold(e => fail(e.toString),p => f(p)))
+
+      pageBuilder.pages(processWithInFlowInput).fold(e => fail(e.toString),
+        pages => {
           val (next, l0) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 3")
 
           next shouldBe Some("4")
@@ -533,34 +534,23 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
           l0.value("Choice") shouldBe Some("First")
           l0.value("YesNo") shouldBe None
 
-          next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
-            case Left(err) => fail(err.toString)
-            case Right(p) =>
-              val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
+          followNext(next, processWithInFlowInput, p => {
+            val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
 
-              next shouldBe Some("8")
-              l1.value("YesNo") shouldBe Some("Yes")
-              l1.value("Choice") shouldBe Some("Fourth")
+            next shouldBe Some("8")
+            l1.value("YesNo") shouldBe Some("Yes")
+            l1.value("Choice") shouldBe Some("Fourth")
 
-              next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
-                case Left(err) => fail(err.toString)
-                case Right(p) =>
-                  val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
+            followNext(next, processWithInFlowInput, p => {
+              val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
 
-                  next shouldBe Some("2")
-                  l2.value("FlowInput") shouldBe Some("hello")
+              next shouldBe Some("2")
+              l2.value("FlowInput") shouldBe Some("hello")
 
-                  next.map{nxt => pageBuilder.buildPage(nxt, processWithInFlowInput) match {
-                    case Left(err) => fail(err.toString)
-                    case Right(p) =>
-                      p.next shouldBe Nil
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+              followNext(next, processWithInFlowInput, p => {p.next shouldBe Nil})
+          })
+        })
+      })
     }
   }
 }
