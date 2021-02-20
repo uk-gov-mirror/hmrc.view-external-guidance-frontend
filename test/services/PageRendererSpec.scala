@@ -494,15 +494,17 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
   trait FlowTest extends Test with SequenceJson {
     val process = seqJson.as[Process]
     val processWithInFlowInput = seqInputJson.as[Process]
-    val labels = LabelCache()
+    val emptyLabels = LabelCache()
+
+    def followNext(next: Option[String], l: Labels, process: Process, f: (Page, Labels) => Unit): Unit =
+      next.map(nxt => pageBuilder.buildPage(nxt, process).fold(e => fail(e.toString), p => f(p,l)))
   }
 
   "Sequence stanza process" must {
     "build into pages which include all sub-flows" in new FlowTest {
       pageBuilder.pages(process) match {
         case Left(err) => fail(err.toString)
-        case Right(pages) =>
-          pages.length shouldBe 5
+        case Right(pages) => pages.length shouldBe 5
       }
     }
 
@@ -510,47 +512,44 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
       pageBuilder.pages(process) match {
         case Left(err) => fail(err.toString)
         case Right(pages) =>
-          val (next, newLabels) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 2,3")
+          val (next, labels) = renderer.renderPagePostSubmit(pages.head, emptyLabels, answer = "0, 2,3")
 
           next shouldBe Some("4")
-          newLabels.value("Choice") shouldBe Some("First")
-          newLabels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
-
-          newLabels.stackList.length shouldBe 3
-
+          labels.value("Choice") shouldBe Some("First")
+          labels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
+          labels.stackList.length shouldBe 3
       }
     }
 
     "Follow each chosen subflow and then return to main flow next, till end" in new FlowTest {
-      def followNext(next: Option[String], process: Process, f: Page => Unit): Unit =
-        next.map(nxt => pageBuilder.buildPage(nxt, process).fold(e => fail(e.toString),p => f(p)))
 
       pageBuilder.pages(processWithInFlowInput).fold(e => fail(e.toString),
         pages => {
-          val (next, l0) = renderer.renderPagePostSubmit(pages.head, labels, answer = "0, 3")
+          val (next, labels) = renderer.renderPagePostSubmit(pages.head, emptyLabels, answer = "0, 3")
 
           next shouldBe Some("4")
-          l0.valueAsList("Choice_seq") shouldBe Some(List("First", "Fourth"))
-          l0.value("Choice") shouldBe Some("First")
-          l0.value("YesNo") shouldBe None
+          labels.valueAsList("Choice_seq") shouldBe Some(List("First", "Fourth"))
+          labels.value("Choice") shouldBe Some("First")
+          labels.value("YesNo") shouldBe None
 
-          followNext(next, processWithInFlowInput, p => {
-            val (next, l1) = renderer.renderPagePostSubmit(p, l0, answer = "0")
+          followNext(next, labels, processWithInFlowInput, (p,l) => {
+            val (next, labels) = renderer.renderPagePostSubmit(p, l, answer = "0")
 
             next shouldBe Some("8")
-            l1.value("YesNo") shouldBe Some("Yes")
-            l1.value("Choice") shouldBe Some("Fourth")
+            labels.value("YesNo") shouldBe Some("Yes")
+            labels.value("Choice") shouldBe Some("Fourth")
 
-            followNext(next, processWithInFlowInput, p => {
-              val (next, l2) = renderer.renderPagePostSubmit(p, l1, answer = "hello")
+            followNext(next, labels, processWithInFlowInput, (p, l) => {
+              val (next, labels) = renderer.renderPagePostSubmit(p, l, answer = "hello")
 
               next shouldBe Some("2")
-              l2.value("FlowInput") shouldBe Some("hello")
+              labels.value("FlowInput") shouldBe Some("hello")
 
-              followNext(next, processWithInFlowInput, p => {p.next shouldBe Nil})
+              followNext(next, labels, processWithInFlowInput, (p, l) => {p.next shouldBe Nil})
+            })
           })
-        })
-      })
+        }
+      )
     }
   }
 }
