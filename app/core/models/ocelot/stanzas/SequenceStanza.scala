@@ -16,7 +16,7 @@
 
 package core.models.ocelot.stanzas
 
-import core.models.ocelot.{labelReferences, ScalarLabel, Labels, Label, Phrase, asListOfInt}
+import core.models.ocelot.{labelReferences, ScalarLabel, Page, Labels, Label, Phrase, asListOfInt}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsSuccess, JsError, JsValue, JsonValidationError, JsPath, OWrites, Reads}
@@ -59,11 +59,11 @@ case class Sequence(text: Phrase,
   override val labelRefs: List[String] = labelReferences(text.english) ++ options.flatMap(a => labelReferences(a.english))
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
-  def eval(value: String, labels: Labels): (Option[String], Labels) =
+  def eval(value: String, labels: Labels, page: Page): (Option[String], Labels) =
     asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
       // push the flows corresponding to the checked items, then take and
       // redirect to the first flow (setting list and first flow label)
-      val chosenOptions = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
+      val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
       label.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
            .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))) :+ next.last, label, chosenOptions)
            .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._2))

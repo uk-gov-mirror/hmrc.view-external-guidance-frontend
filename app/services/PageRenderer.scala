@@ -68,7 +68,7 @@ class PageRenderer @Inject() () {
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       println(s"Input found at $dataInputStanza")
-      dataInputStanza.eval(answer, newLabels) match {
+      dataInputStanza.eval(answer, newLabels, page) match {
         case (Some(Process.EndStanzaId), postInputLabels) =>
           println(s"Eval returned next of 'end'")
           postInputLabels.takeFlow match {

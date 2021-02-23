@@ -68,8 +68,8 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]]
-  def savePageState(key: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]]
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]]
+  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -157,7 +157,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]] =
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
@@ -185,7 +185,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  def savePageState(key: String, labels: Seq[Label], stack: List[Flow]): Future[RequestOutcome[Unit]] =
+  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
         Json.obj("$set" -> Json.obj((labels.map(l => toFieldPair(s"labels.${l.name}", l)) ++ stack.map(e => toFieldPair(s"flowStack", e))).toArray: _*))

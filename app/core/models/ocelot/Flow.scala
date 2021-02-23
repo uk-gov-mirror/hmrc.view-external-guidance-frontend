@@ -26,11 +26,11 @@ package core.models.ocelot
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+case class LabelValue(name: String, value: Option[String])
+
 sealed trait FlowStage {
   val next: String
 }
-
-case class LabelValue(name: String, value: Option[String])
 final case class Flow(next: String, labelValue: Option[LabelValue]) extends FlowStage
 final case class Continuation(next: String, stanzas: List[KeyedStanza]) extends FlowStage
 
@@ -53,7 +53,7 @@ object Flow {
       (__ \ "labelValue").readNullable[LabelValue]
   )(Flow.apply _)
 
-  implicit val writes: Writes[Flow] = (
+  implicit val writes: OWrites[Flow] = (
     (__ \ "next").write[String] and
       (__ \ "labelValue").writeNullable[LabelValue]
   )(unlift(Flow.unapply))
@@ -65,9 +65,26 @@ object Continuation {
       (__ \ "stanzas").read[List[KeyedStanza]]
   )(Continuation.apply _)
 
-  implicit val writes: Writes[Continuation] = (
+  implicit val writes: OWrites[Continuation] = (
     (__ \ "next").write[String] and
       (__ \ "stanzas").write[List[KeyedStanza]]
   )(unlift(Continuation.unapply))
 }
 
+object FlowStage {
+  implicit val reads: Reads[FlowStage] = (js: JsValue) => {
+    (js \ "type").validate[String] match {
+      case err @ JsError(_) => err
+      case JsSuccess(typ, _) => typ match {
+        case "flow" => js.validate[Flow]
+        case "cont" => js.validate[Continuation]
+        case typeName => JsError(JsonValidationError(Seq("FlowStage"), typeName))
+      }
+    }
+  }
+
+  implicit val writes: Writes[FlowStage] = {
+    case f: Flow => Json.obj("type" -> "flow") ++ Json.toJsObject[Flow](f)
+    case c: Continuation => Json.obj("type" -> "cont") ++ Json.toJsObject[Continuation](c)
+  }
+}
