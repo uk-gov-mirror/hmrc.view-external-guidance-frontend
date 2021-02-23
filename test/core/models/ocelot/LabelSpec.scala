@@ -347,7 +347,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
       labels.valueAsList("Colours") shouldBe Some(List("Yellow", "Violet"))
 
       labels.takeFlow.fold(fail("Stack should not be empty")){t =>
-        val (nxt, updatedLabels) = t
+        val (nxt, stanzas, updatedLabels) = t
         nxt shouldBe "1"
         updatedLabels.value("loop") shouldBe Some("One")
 
@@ -471,7 +471,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
   "Labels Flow stack" must {
     "Allow adding a Flow to top of stack" in {
-      val labels = LabelCache().pushFlows(Seq("1","2","3"), Some("loop"), Seq("One", "Two", "Three"))
+      val labels = LabelCache().pushFlows(Seq("1","2"), "3", Some("loop"), Seq("One", "Two", "Three"), Nil)
 
       labels.stackList.length shouldBe 3
       labels.stackList.head shouldBe Flow("1", Some(LabelValue("loop", Some("One"))))
@@ -480,18 +480,18 @@ class LabelSpec extends BaseSpec with ProcessJson {
     }
 
     "Allow removal of Flow from top of stack" in {
-      val labels = LabelCache().pushFlows(Seq("1","2","3"), Some("loop"), Seq("One", "Two", "Three"))
+      val labels = LabelCache().pushFlows(Seq("1","2"), "3", Some("loop"), Seq("One", "Two", "Three"), Nil)
 
       labels.takeFlow.map{t =>
-        val(n0, l0) = t
+        val(n0, stanzas, l0) = t
         n0 shouldBe "1"
         l0.stackList.length shouldBe 2
         l0.takeFlow.map{t =>
-          val(n1, l1) = t
+          val(n1, stanzas, l1) = t
           n1 shouldBe "2"
           l1.stackList.length shouldBe 1
           l1.takeFlow.map{t =>
-            val(n2, l2) = t
+            val(n2, stanzas, l2) = t
             n2 shouldBe "3"
             l2.stackList.length shouldBe 0
 

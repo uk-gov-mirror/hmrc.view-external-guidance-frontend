@@ -20,6 +20,7 @@ import core.models.ocelot.{labelReferences, ScalarLabel, Page, Labels, Label, Ph
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsSuccess, JsError, JsValue, JsonValidationError, JsPath, OWrites, Reads}
+import core.models.ocelot.KeyedStanza
 
 case class SequenceStanza(text: Int,
                           override val next: Seq[String],
@@ -63,10 +64,11 @@ case class Sequence(text: Phrase,
     asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
       // push the flows corresponding to the checked items, then take and
       // redirect to the first flow (setting list and first flow label)
+      val continuationStanzas: List[KeyedStanza] = page.keyedStanzas.collect(ks => ks.stanza match {case _: Stanza with Evaluate => ks}).toList
       val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
       label.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
-           .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))) :+ next.last, label, chosenOptions)
-           .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._2))
+           .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))), next.last, label, chosenOptions, continuationStanzas)
+           .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._3)) // Inital flow will never be a Continuation
       }
     }
 

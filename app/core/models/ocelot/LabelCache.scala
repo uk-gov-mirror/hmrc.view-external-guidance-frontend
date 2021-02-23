@@ -19,8 +19,8 @@ package core.models.ocelot
 import play.api.i18n.Lang
 
 trait Labels {
-  def pushFlows(next: Seq[String], labelName: Option[String], labelValues: Seq[String]): Labels
-  def takeFlow: Option[(String, Labels)]
+  def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: List[KeyedStanza]): Labels
+  def takeFlow: Option[(String, List[KeyedStanza], Labels)]
   def value(name: String): Option[String]
   def valueAsList(name: String): Option[List[String]]
   def displayValue(name: String)(implicit lang: Lang): Option[String]
@@ -35,21 +35,25 @@ trait Labels {
   def flush(): Labels
 }
 
-private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label], stack: List[Flow]) extends Labels {
-  def pushFlows(next: Seq[String], labelName: Option[String], labelValues: Seq[String]): Labels =
-    next.zipWithIndex.map{
+private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage]) extends Labels {
+
+  def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: List[KeyedStanza]): Labels =
+    flowNext.zipWithIndex.map{
       case (nxt, idx) => Flow(nxt, labelName.map(LabelValue(_, labelValues.lift(idx).fold[Option[String]](None)(v => Some(v)))))
     } match {
       case Nil => this
-      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ stack)
+      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ (Continuation(continue, stanzas) :: stack))
     }
 
-  def takeFlow: Option[(String, Labels)] = // Remove head of flow stack and update flow label if required
-    stack.headOption.map{f =>
+  def takeFlow: Option[(String, List[KeyedStanza], Labels)] = // Remove head of flow stack and update flow label if required
+    stack.headOption.map{
+      case f: Flow =>
       (f.next,
+       Nil,
        f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail)))
         .getOrElse(new LabelCacheImpl(labels, cache, stack.tail))
       )
+      case c: Continuation => (c.next, c.stanzas, new LabelCacheImpl(labels, cache, stack.tail))
     }
 
   def value(name: String): Option[String] = label(name).collect{case s: ScalarLabel => s.english.headOption.getOrElse("")}
@@ -85,5 +89,5 @@ object LabelCache {
   def apply(): Labels = new LabelCacheImpl(Map(), Map(), Nil)
   def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels, Map(), Nil)
   def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache, Nil)
-  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[Flow]): Labels = new LabelCacheImpl(labels, cache, stack)
+  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage]): Labels = new LabelCacheImpl(labels, cache, stack)
 }
