@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import models.ui.{Question, Input, DateInput, Sequence, FormComponent}
+package models.ui
 
-@(formElement: FormComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-  @{formElement match {
-      case q: Question => components.question(q, name, form)
-      case di: DateInput => components.input_date(di, name, form)
-      case i: Input => components.input(i, name, form)
-      case s: Sequence => components.sequence(s, name, form)
-    }
-  }
-
-@{
-     //$COVERAGE-OFF$
-}
+case class Sequence(text: Text, hint: Option[Text], options: Seq[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg]) extends SequenceFormComponent

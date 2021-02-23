@@ -14,17 +14,17 @@
  * limitations under the License.
  *@
 
-@import models.ui.{Question, Input, DateInput, Sequence, FormComponent}
+@import models.ui._
+@import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(formElement: FormComponent, name: String, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-  @{formElement match {
-      case q: Question => components.question(q, name, form)
-      case di: DateInput => components.input_date(di, name, form)
-      case i: Input => components.input(i, name, form)
-      case s: Sequence => components.sequence(s, name, form)
-    }
-  }
+@(name: String, option: models.ui.Text, idx: Int, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
 
+@checkboxIdentifier(name:String, idx: Int) = @{s"$name[$idx]"}
+
+<div class="govuk-checkboxes__item">
+ <input class="govuk-checkboxes__input" id="@checkboxIdentifier(name, idx)" name="@name" type="checkbox" value="@idx">
+ <label class="govuk-label govuk-checkboxes__label" for="@checkboxIdentifier(name, idx)">@components.render_text(option)</label>
+</div>
 @{
-     //$COVERAGE-OFF$
+//$COVERAGE-OFF$
 }

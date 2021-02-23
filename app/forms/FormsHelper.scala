@@ -19,7 +19,7 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
-import core.models.ocelot.stanzas.{Input, DateInput, DataInput, Question}
+import core.models.ocelot.stanzas.{Input, DateInput, DataInput, Question, Sequence}
 import models.ui.DateInput.partitionSubmittedDateAnswer
 import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
 
@@ -36,7 +36,7 @@ object FormsHelper {
   def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] =
     inputStanza match {
       case _: DateInput => populateSubmittedDateAnswerForm(answer)
-      case _: Input | _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: Input | _: Question | _: Sequence => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer) // TODO - Temporary solution whilst rendering sequence
     }
 
   private def bindSubmittedTextAnswer(bindData: (String, Mapping[String]))
