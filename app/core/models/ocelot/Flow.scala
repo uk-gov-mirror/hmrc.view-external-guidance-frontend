@@ -14,13 +14,26 @@
  * limitations under the License.
  */
 
+// FlowStack: Flow, Flow, Flow, Continuation, Flow, Flow, Flow, Continuation
+
+// Continuation: continuation next and post sequence, non-visual stanzas from page
+
+// The PageRenderer will add the current Continuation stanzas into this stanzaMap when Continuation followed
+
+
 package core.models.ocelot
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+sealed trait FlowStage {
+  val next: String
+}
+
 case class LabelValue(name: String, value: Option[String])
-case class Flow(next: String, labelValue: Option[LabelValue])
+final case class Flow(next: String, labelValue: Option[LabelValue]) extends FlowStage
+final case class Continuation(next: String, stanzas: List[KeyedStanza]) extends FlowStage
+
 
 object LabelValue {
   implicit val reads: Reads[LabelValue] = (
@@ -45,3 +58,16 @@ object Flow {
       (__ \ "labelValue").writeNullable[LabelValue]
   )(unlift(Flow.unapply))
 }
+
+object Continuation {
+  implicit val reads: Reads[Continuation] = (
+    (__ \ "next").read[String] and
+      (__ \ "stanzas").read[List[KeyedStanza]]
+  )(Continuation.apply _)
+
+  implicit val writes: Writes[Continuation] = (
+    (__ \ "next").write[String] and
+      (__ \ "stanzas").write[List[KeyedStanza]]
+  )(unlift(Continuation.unapply))
+}
+

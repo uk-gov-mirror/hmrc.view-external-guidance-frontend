@@ -32,35 +32,57 @@ class PageRenderer @Inject() () {
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
     implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    println("PAGE:")
+    page.keyedStanzas.foreach(println)
+    println("End-PAGE:\n")
 
     @tailrec
-    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) =
+    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) = {
+      println(s"evaluatePostInputStanzas $next")
       if (next == page.id) (None, labels)                     // next indicates current page
       else stanzaMap.get(next) match {
-        case None => (Some(next), labels)
+        case None =>
+          println(s"Not stanza")
+          (Some(next), labels)
         case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
           case EndStanza =>
+            println(s"Post , EndStanza")
             labels.takeFlow match {
-              case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
-              case None => (Some(next), labels)
+              case Some((nxt, updatedLabels)) =>
+                println(s"Post, takeFlow => $nxt")
+                evaluatePostInputStanzas(nxt, updatedLabels, seen)
+              case None =>
+                println(s"Post, takeFlow => None => $next")
+                (Some(next), labels)
             }
           case s: Stanza with Evaluate =>
             val (next, updatedLabels) = s.eval(labels)
+            println(s"Post eval => $next")
             evaluatePostInputStanzas(next, updatedLabels, seen)
         }
       }
+    }
 
     val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
+
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
+      println(s"Input found at $dataInputStanza")
       dataInputStanza.eval(answer, newLabels) match {
         case (Some(Process.EndStanzaId), postInputLabels) =>
+          println(s"Eval returned next of 'end'")
           postInputLabels.takeFlow match {
-            case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
+            case Some((next, updatedLabels)) =>
+              println(s"eval then TakeFlow => $next")
+              evaluatePostInputStanzas(next, updatedLabels, seen)
             case None => (Some(Process.EndStanzaId), postInputLabels)
           }
-        case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen)
-        case (None, postInputLabels) => (None, postInputLabels)
+        case (Some(next), postInputLabels) =>
+          println(s"Eval returned next of $next")
+          evaluatePostInputStanzas(next, postInputLabels, seen)
+        case (None, postInputLabels) =>
+          println(s"Eval returned next of None")
+          (None, postInputLabels)
        }
     }
   }
