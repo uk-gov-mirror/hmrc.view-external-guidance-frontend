@@ -476,7 +476,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
       labels.stackList.length shouldBe 3
       labels.stackList.head shouldBe Flow("1", Some(LabelValue("loop", Some("One"))))
       labels.stackList(1) shouldBe Flow("2", Some(LabelValue("loop", Some("Two"))))
-      labels.stackList(2) shouldBe Flow("3", Some(LabelValue("loop", Some("Three"))))
+      labels.stackList(2) shouldBe Continuation("3", Nil)
     }
 
     "Allow removal of Flow from top of stack" in {

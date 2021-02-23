@@ -139,23 +139,16 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
           labels.valueAsList("Choice_seq") shouldBe Some(List("Fourth"))
           labels.value("Choice") shouldBe Some("Fourth")
 
-          println(("1FlowStack => " :: labels.stackList.map(_.next)).mkString(","))
-
           followNext(next, labels, process, (p,l) => {
             val (next, labels) = renderer.renderPagePostSubmit(p, l, answer = "0")
-
-            println(("2FlowStack => " :: labels.stackList.map(_.next)).mkString(","))
 
             next shouldBe Some("12")
 
             followNext(next, labels, process, (p, l) => {
               val (next, labels) = renderer.renderPagePostSubmit(p, l, answer = "0")
 
-              println(("3FlowStack => " :: labels.stackList.map(_.next)).mkString(","))
-
               next shouldBe Some("2")
               labels.value("NestedSeqComplete") shouldBe Some("Yes")
-
             })
 
           })

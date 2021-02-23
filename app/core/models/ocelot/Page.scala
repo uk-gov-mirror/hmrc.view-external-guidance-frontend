@@ -29,7 +29,7 @@ object KeyedStanza {
   )(KeyedStanza.apply _)
 
   implicit val writes: Writes[KeyedStanza] = (
-    (__ \ "name").write[String] and
+    (__ \ "key").write[String] and
       (__ \ "stanza").write[Stanza]
   )(unlift(KeyedStanza.unapply))
 }

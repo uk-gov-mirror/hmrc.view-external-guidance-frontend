@@ -31,10 +31,10 @@ class PageRenderer @Inject() () {
   }
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
-    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    //implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
 
     @tailrec
-    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String]): (Option[String], Labels) = {
+    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String], stanzaMap: Map[String, Stanza]): (Option[String], Labels) = {
       if (next == page.id) (None, labels)                     // next indicates current page
       else stanzaMap.get(next) match {
         case None => (Some(next), labels)
@@ -42,26 +42,29 @@ class PageRenderer @Inject() () {
         case Some(s) => s match {
           case EndStanza =>
             labels.takeFlow match {
-              case Some((nxt, stanzas, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
+              case Some((nxt, stanzas, updatedLabels)) =>
+                evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap ++ stanzas.map(ks => (ks.key, ks.stanza)).toMap)
               case None => (Some(next), labels)
             }
           case s: Stanza with Evaluate =>
             val (next, updatedLabels) = s.eval(labels)
-            evaluatePostInputStanzas(next, updatedLabels, seen)
+            evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap)
         }
       }
     }
 
-    val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)
+    val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)(stanzaMap)
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       dataInputStanza.eval(answer, newLabels, page) match {
         case (Some(Process.EndStanzaId), postInputLabels) =>
           postInputLabels.takeFlow match {
-            case Some((next, stanzas, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
+            case Some((next, stanzas, updatedLabels)) =>
+              evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap ++ stanzas.map(ks => (ks.key, ks.stanza)).toMap)
             case None => (Some(Process.EndStanzaId), postInputLabels)
           }
-        case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen)
+        case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen, stanzaMap)
         case (None, postInputLabels) => (None, postInputLabels)
        }
     }
