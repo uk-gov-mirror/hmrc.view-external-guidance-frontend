@@ -124,6 +124,8 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
 
             next shouldBe Some("2")
             labels.value("NestedSeqComplete") shouldBe Some("Yes")
+
+            labels.stackList shouldBe Nil
           })
         }
       )
@@ -149,6 +151,8 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
 
               next shouldBe Some("2")
               labels.value("NestedSeqComplete") shouldBe Some("Yes")
+
+              labels.stackList shouldBe Nil
             })
 
           })
