@@ -31,7 +31,6 @@ class PageRenderer @Inject() () {
   }
 
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
-    //implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String], stanzaMap: Map[String, Stanza]): (Option[String], Labels) = {
@@ -57,7 +56,7 @@ class PageRenderer @Inject() () {
     val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels, Nil, Nil)(stanzaMap)
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
-      dataInputStanza.eval(answer, newLabels, page) match {
+      dataInputStanza.eval(answer, page, newLabels) match {
         case (Some(Process.EndStanzaId), postInputLabels) =>
           postInputLabels.takeFlow match {
             case Some((next, stanzas, updatedLabels)) =>

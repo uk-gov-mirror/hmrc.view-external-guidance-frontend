@@ -67,7 +67,8 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
   def update(name: String, english: String): Labels = new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, None), stack)
   def update(name: String, english: String, welsh: String): Labels = new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, Some(welsh)), stack)
   def updateList(name: String, english: List[String]): Labels = new LabelCacheImpl(labels, updateOrAddListLabel(name, english), stack)
-  def updateList(name: String, english: List[String], welsh: List[String]): Labels = new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack)
+  def updateList(name: String, english: List[String], welsh: List[String]): Labels =
+    new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack)
   def updatedLabels: Map[String, Label] = cache
   def labelMap:Map[String, Label] = labels
   def stackList: List[FlowStage] = stack

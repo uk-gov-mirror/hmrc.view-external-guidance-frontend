@@ -39,7 +39,7 @@ trait Evaluate {
 }
 
 trait DataInput {
-  def eval(value: String, labels: Labels, page: Page): (Option[String], Labels)
+  def eval(value: String, page: Page, labels: Labels): (Option[String], Labels)
   def validInput(value: String): Option[String]
 }
 

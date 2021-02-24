@@ -60,12 +60,13 @@ case class Sequence(text: Phrase,
   override val labelRefs: List[String] = labelReferences(text.english) ++ options.flatMap(a => labelReferences(a.english))
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
-  def eval(value: String, labels: Labels, page: Page): (Option[String], Labels) =
+  def eval(value: String, page: Page, labels: Labels): (Option[String], Labels) =
     asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
-      // push the flows corresponding to the checked items, then take and
-      // redirect to the first flow (setting list and first flow label)
-      val continuationStanzas: List[KeyedStanza] = page.keyedStanzas.collect(ks => ks.stanza match {case _: Stanza with Evaluate => ks}).toList
+      // Collect any Evaluate stanzas following this Sequence for use when the Continuation is followed
+      val continuationStanzas: List[KeyedStanza] = page.keyedStanzas.toList.collect{case ks @ KeyedStanza(_, s: Stanza with Evaluate) => ks}
       val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
+      // push the flows and Continuation corresponding to the checked items, then
+      // takeFlow and redirect to the first flow (setting list and first flow label)
       label.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
            .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))), next.last, label, chosenOptions, continuationStanzas)
            .takeFlow.fold[(Option[String], Labels)]((None, labels))(t => (Some(t._1), t._3)) // Inital flow will never be a Continuation

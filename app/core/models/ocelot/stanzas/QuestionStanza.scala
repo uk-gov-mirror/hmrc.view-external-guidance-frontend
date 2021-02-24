@@ -55,7 +55,7 @@ case class Question(text: Phrase,
   override val labelRefs: List[String] = labelReferences(text.english) ++ answers.flatMap(a => labelReferences(a.english))
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
-  def eval(value: String, labels: Labels, page: Page): (Option[String], Labels) =
+  def eval(value: String, page: Page, labels: Labels): (Option[String], Labels) =
     validInput(value).fold[(Option[String], Labels)]((None, labels)){idx => {
         val answer = answers(idx.toInt)
         val english = hintRegex.split(answer.english).head.trim

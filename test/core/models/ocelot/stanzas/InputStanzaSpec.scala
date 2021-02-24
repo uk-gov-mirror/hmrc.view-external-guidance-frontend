@@ -68,7 +68,7 @@ class InputStanzaSpec extends BaseSpec {
     "update the input label" in {
       val input = Input(expectedCurrencyStanza, Phrase("",""), None, None)
       val labels = LabelCache()
-      val (_, updatedLabels) = input.eval("33", labels, blankPage)
+      val (_, updatedLabels) = input.eval("33", blankPage, labels)
       updatedLabels.updatedLabels(expectedCurrencyStanza.label).english shouldBe List("33")
     }
 
@@ -110,7 +110,7 @@ class InputStanzaSpec extends BaseSpec {
     "update the input label" in {
       val input = Input(expectedCurrencyPoStanza, Phrase("",""), None, None)
       val labels = LabelCache()
-      val (_, updatedLabels) = input.eval("33", labels, blankPage)
+      val (_, updatedLabels) = input.eval("33", blankPage, labels)
       updatedLabels.updatedLabels(expectedCurrencyPoStanza.label).english shouldBe List("33")
     }
 
@@ -152,7 +152,7 @@ class InputStanzaSpec extends BaseSpec {
     "update the input label" in {
       val input = Input(expectedDateStanza, Phrase("",""), None, None)
       val labels = LabelCache()
-      val (_, updatedLabels) = input.eval("33", labels, blankPage)
+      val (_, updatedLabels) = input.eval("33", blankPage, labels)
       updatedLabels.updatedLabels(expectedDateStanza.label).english shouldBe List("33")
     }
 
@@ -179,7 +179,7 @@ class InputStanzaSpec extends BaseSpec {
     "update the input label" in {
       val input = Input(expectedTextStanza, Phrase("",""), None, None)
       val labels = LabelCache()
-      val (_, updatedLabels) = input.eval("hello", labels, blankPage)
+      val (_, updatedLabels) = input.eval("hello", blankPage, labels)
       updatedLabels.updatedLabels(expectedTextStanza.label).english shouldBe List("hello")
     }
 
@@ -199,7 +199,7 @@ class InputStanzaSpec extends BaseSpec {
     "update the input label" in {
       val input = Input(expectedNumberStanza, Phrase("",""), None, None)
       val labels = LabelCache()
-      val (_, newLabels) = input.eval("33", labels, blankPage)
+      val (_, newLabels) = input.eval("33", blankPage, labels)
       newLabels.updatedLabels(expectedNumberStanza.label).english shouldBe List("33")
     }
 

@@ -63,7 +63,7 @@ class QuestionStanzaSpec extends BaseSpec with TestConstants {
     "Evaluate valid input and return a next stanza and updated Labels" in {
       val labels = LabelCache()
       val stanza: Question = Question(Phrase("Question",""), Seq(Phrase("Yes",""), Phrase("No", "")), Seq("4", "5"), Some("Answer"), true)
-      val (nxt, updatedLabels) = stanza.eval("0", labels, blankPage)
+      val (nxt, updatedLabels) = stanza.eval("0", blankPage, labels)
 
       nxt shouldBe Some("4")
       updatedLabels.value("Answer") shouldBe Some("Yes")
@@ -72,7 +72,7 @@ class QuestionStanzaSpec extends BaseSpec with TestConstants {
     "Evaluate invalid input and return None and original Labels" in {
       val labels = LabelCache()
       val stanza: Question = Question(Phrase("Question",""), Seq(Phrase("Yes",""), Phrase("No", "")), Seq("4", "5"), Some("Answer"), true)
-      val (nxt, updatedLabels) = stanza.eval("7", labels, blankPage)
+      val (nxt, updatedLabels) = stanza.eval("7", blankPage, labels)
 
       nxt shouldBe None
       updatedLabels.value("Answer") shouldBe None
