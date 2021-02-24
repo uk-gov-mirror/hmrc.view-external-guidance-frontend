@@ -41,7 +41,7 @@ object DefaultSessionRepository {
                                   processId: String,
                                   process: Process,
                                   labels: Map[String, Label],
-                                  flowStack: List[Flow],
+                                  flowStack: List[FlowStage],
                                   urlToPageId: Map[String, String],
                                   answers: Map[String, String],
                                   pageHistory: List[String],
@@ -56,7 +56,7 @@ object DefaultSessionRepository {
 case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
-                          flowStack: List[Flow],
+                          flowStack: List[FlowStage],
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
   val secure: Boolean = process.flow.get(SecuredProcess.PassPhrasePageId).fold(true){_ =>
