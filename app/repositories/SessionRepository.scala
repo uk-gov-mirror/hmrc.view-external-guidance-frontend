@@ -164,9 +164,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
         "$set" -> Json.obj(
           (List(
             toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+            toFieldPair("flowStack", stack),
             toFieldPair(s"answers.$url", answer)) ++
-            labels.map(l => toFieldPair(s"labels.${l.name}", l)) ++
-            stack.map(e => toFieldPair(s"flowStack", e))).toArray: _*
+            labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
         )
       )
     ).map { result =>
@@ -188,7 +188,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj((labels.map(l => toFieldPair(s"labels.${l.name}", l)) ++ stack.map(e => toFieldPair(s"flowStack", e))).toArray: _*))
+        Json.obj("$set" -> Json.obj((labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", stack) : _*))
       ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
