@@ -117,19 +117,15 @@ class FlowSpec extends BaseSpec {
         |        ],
         |        "type": "ValueStanza"
         |      }
-        |   },
-        | "type": "cont"
+        |   }
         }""".stripMargin
   )
 
   val flowStageContinuationJson: JsValue = Json.parse(
     s"""{
-        |  "type": "cont",
         |  "next": "1",
-        |  "stanzas": [
-        |    {
-        |      "key": "1",
-        |      "stanza": {
+        |  "stanzas": {
+        |    "1": {
         |        "next": [
         |          "11"
         |        ],
@@ -143,8 +139,8 @@ class FlowSpec extends BaseSpec {
         |        ],
         |        "type": "ValueStanza"
         |      }
-        |    }
-        |  ]
+        |   },
+        | "type": "cont"
         }""".stripMargin
   )
 
@@ -173,46 +169,6 @@ class FlowSpec extends BaseSpec {
         }""".stripMargin
   )
 
-  val keyedStanzaJson: JsValue = Json.parse(
-    s"""|{
-        |  "key": "1",
-        |  "stanza": {
-        |    "next": [
-        |      "11"
-        |    ],
-        |    "stack": false,
-        |    "values": [
-        |      {
-        |        "type": "scalar",
-        |        "label": "labelName",
-        |        "value": "23"
-        |      }
-        |    ],
-        |    "type": "ValueStanza"
-        |  }
-        |}""".stripMargin
-  )
-
-  val invalidKeyedStanzaJson: JsValue = Json.parse(
-    s"""|{
-        |  "keyf": "1",
-        |  "stanza": {
-        |    "next": [
-        |      "11"
-        |    ],
-        |    "stack": false,
-        |    "values": [
-        |      {
-        |        "type": "scalar",
-        |        "label": "labelName",
-        |        "value": "23"
-        |      }
-        |    ],
-        |    "type": "ValueStanza"
-        |  }
-        |}""".stripMargin
-  )
-
   val expectedLabelValue: LabelValue = LabelValue("LabelName", Some("A value"))
   val expectedFlow: Flow = Flow("1", Some(expectedLabelValue))
   val expectedContinuation: Continuation = Continuation("1", Map("1" -> ValueStanza(List(Value(ScalarType, "labelName", "23")), Seq("11"), false)))
@@ -230,7 +186,11 @@ class FlowSpec extends BaseSpec {
   "Reading valid Flow JSON" should {
     "create a Flow" in {
       flowJson.as[Flow] shouldBe expectedFlow
+    }
+  }
 
+  "Reading valid Flow JSON using FlowStage ref" should {
+    "create a Flow" in {
       flowStageflowJson.as[FlowStage] shouldBe expectedFlow
     }
   }
@@ -244,19 +204,25 @@ class FlowSpec extends BaseSpec {
     }
   }
 
-  "serialise Flow to json" in {
-    Json.toJson(expectedFlow) shouldBe flowJson
-  }
+  "Writing Flow" should {
+    "serialise Flow to json" in {
+      Json.toJson(expectedFlow) shouldBe flowJson
+    }
 
-  "serialise FlowStage Flow to json" in {
-    val flowStage: FlowStage = expectedFlow
-    Json.toJson(flowStage) shouldBe flowStageflowJson
+    "serialise FlowStage Flow to json" in {
+      val flowStage: FlowStage = expectedFlow
+      Json.toJson(flowStage) shouldBe flowStageflowJson
+    }
   }
 
   "Reading valid Continuation JSON" should {
     "create a Flow" in {
       continuationJson.as[Continuation] shouldBe expectedContinuation
+    }
+  }
 
+  "Reading valid Continuation JSON using a FlowStage ref" should {
+    "create a Flow" in {
       flowStageContinuationJson.as[FlowStage] shouldBe expectedContinuation
     }
   }
@@ -270,13 +236,15 @@ class FlowSpec extends BaseSpec {
     }
   }
 
-  "serialise Continuation to json" in {
-    Json.toJson(expectedContinuation) shouldBe continuationJson
-  }
+  "Writing Continuation" should {
+    "serialise Continuation to json" in {
+      Json.toJson(expectedContinuation) shouldBe continuationJson
+    }
 
-  "serialise FlowStage Continuation to json" in {
-    val flowStage: FlowStage = expectedContinuation
-    Json.toJson(flowStage) shouldBe flowStageContinuationJson
+    "serialise FlowStage Continuation to json" in {
+      val flowStage: FlowStage = expectedContinuation
+      Json.toJson(flowStage) shouldBe flowStageContinuationJson
+    }
   }
 
   "Reading valid LabelValue JSON" should {
