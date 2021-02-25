@@ -42,7 +42,7 @@ class PageRenderer @Inject() () {
           case EndStanza =>
             labels.takeFlow match {
               case Some((nxt, stanzas, updatedLabels)) =>
-                evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap ++ stanzas.map(ks => (ks.key, ks.stanza)).toMap)
+                evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
               case None => (Some(next), labels)
             }
           case s: Stanza with Evaluate =>
@@ -60,7 +60,7 @@ class PageRenderer @Inject() () {
         case (Some(Process.EndStanzaId), postInputLabels) =>
           postInputLabels.takeFlow match {
             case Some((next, stanzas, updatedLabels)) =>
-              evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap ++ stanzas.map(ks => (ks.key, ks.stanza)).toMap)
+              evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
             case None => (Some(Process.EndStanzaId), postInputLabels)
           }
         case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen, stanzaMap)

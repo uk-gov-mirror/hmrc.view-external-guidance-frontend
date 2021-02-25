@@ -63,7 +63,7 @@ case class Sequence(text: Phrase,
   def eval(value: String, page: Page, labels: Labels): (Option[String], Labels) =
     asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
       // Collect any Evaluate stanzas following this Sequence for use when the Continuation is followed
-      val continuationStanzas: List[KeyedStanza] = page.keyedStanzas.toList.collect{case ks @ KeyedStanza(_, s: Stanza with Evaluate) => ks}
+      val continuationStanzas: Map[String, Stanza] = page.keyedStanzas.toList.collect{case ks @ KeyedStanza(_, s: Stanza with Evaluate) => (ks.key, ks.stanza)}.toMap
       val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
       // push the flows and Continuation corresponding to the checked items, then
       // takeFlow and redirect to the first flow (setting list and first flow label)

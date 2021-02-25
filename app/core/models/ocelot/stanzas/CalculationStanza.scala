@@ -120,10 +120,51 @@ sealed trait Operation {
         labels
 
     }
+  }
+}
 
+object Operation {
+  implicit val addreads: Reads[AddOperation] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String] and (JsPath \ "label").read[String])(AddOperation.apply _)
+  implicit val addwrites: OWrites[AddOperation] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String] and (JsPath \ "label").write[String])(unlift(AddOperation.unapply))
+
+  implicit val subreads: Reads[SubtractOperation] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String] and (JsPath \ "label").read[String])(SubtractOperation.apply _)
+  implicit val subwrites: OWrites[SubtractOperation] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String] and (JsPath \ "label").write[String])(unlift(SubtractOperation.unapply))
+
+  implicit val creads: Reads[CeilingOperation] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String] and (JsPath \ "label").read[String])(CeilingOperation.apply _)
+  implicit val cwrites: OWrites[CeilingOperation] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String] and (JsPath \ "label").write[String])(unlift(CeilingOperation.unapply))
+
+  implicit val freads: Reads[FloorOperation] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String] and (JsPath \ "label").read[String])(FloorOperation.apply _)
+  implicit val fwrites: OWrites[FloorOperation] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String] and (JsPath \ "label").write[String])(unlift(FloorOperation.unapply))
+
+  implicit val reads: Reads[Operation] = (js: JsValue) => {
+    (js \ "type").validate[String] match {
+      case err @ JsError(_) => err
+      case JsSuccess(typ, _) => typ match {
+        case "add" => js.validate[AddOperation]
+        case "sub" => js.validate[SubtractOperation]
+        case "ceil" => js.validate[CeilingOperation]
+        case "flr" => js.validate[FloorOperation]
+        case typeName => JsError(JsonValidationError(Seq("ChoiceTest"), typeName))
+      }
+    }
   }
 
+  implicit val writes: Writes[Operation] = {
+    case o: AddOperation => Json.obj("type" -> "add") ++ Json.toJsObject[AddOperation](o)
+    case o: SubtractOperation => Json.obj("type" -> "sub") ++ Json.toJsObject[SubtractOperation](o)
+    case o: CeilingOperation => Json.obj("type" -> "ceil") ++ Json.toJsObject[CeilingOperation](o)
+    case o: FloorOperation => Json.obj("type" -> "flr") ++ Json.toJsObject[FloorOperation](o)
+  }
 }
+
 
 case class AddOperation(left: String, right: String, label: String) extends Operation {
 
@@ -166,6 +207,13 @@ case class Calculation(override val next: Seq[String], calcs: Seq[Operation]) ex
 }
 
 object Calculation {
+  def buildCalculation(next: Seq[String], calcs: Seq[Operation]): Calculation = Calculation(next, calcs)
+  implicit val reads: Reads[Calculation] =
+    ((JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and (JsPath \ "calcs").read[Seq[Operation]])(buildCalculation _)
+
+  implicit val writes: OWrites[Calculation] =
+    ((JsPath \ "next").write[Seq[String]] and (JsPath \ "calcs").write[Seq[Operation]])(unlift(Calculation.unapply))
+
 
   def apply(stanza: CalculationStanza): Calculation =
     Calculation(

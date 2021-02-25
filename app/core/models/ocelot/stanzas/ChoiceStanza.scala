@@ -85,6 +85,62 @@ sealed trait ChoiceTest {
   }
 }
 
+object ChoiceTest {
+  implicit val eqreads: Reads[EqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(EqualsTest.apply _)
+  implicit val eqwrites: OWrites[EqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(EqualsTest.unapply))
+
+  implicit val neqreads: Reads[NotEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(NotEqualsTest.apply _)
+  implicit val neqwrites: OWrites[NotEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(NotEqualsTest.unapply))
+
+  implicit val mtreads: Reads[MoreThanTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanTest.apply _)
+  implicit val mtwrites: OWrites[MoreThanTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanTest.unapply))
+
+  implicit val mtereads: Reads[MoreThanOrEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanOrEqualsTest.apply _)
+  implicit val mtewrites: OWrites[MoreThanOrEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanOrEqualsTest.unapply))
+
+  implicit val ltreads: Reads[LessThanTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanTest.apply _)
+  implicit val ltwrites: OWrites[LessThanTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanTest.unapply))
+
+  implicit val ltereads: Reads[LessThanOrEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanOrEqualsTest.apply _)
+  implicit val ltewrites: OWrites[LessThanOrEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanOrEqualsTest.unapply))
+
+  implicit val reads: Reads[ChoiceTest] = (js: JsValue) => {
+    (js \ "type").validate[String] match {
+      case err @ JsError(_) => err
+      case JsSuccess(typ, _) => typ match {
+        case "eq" => js.validate[EqualsTest]
+        case "neq" => js.validate[NotEqualsTest]
+        case "mt" => js.validate[MoreThanTest]
+        case "mte" => js.validate[MoreThanOrEqualsTest]
+        case "lt" => js.validate[LessThanTest]
+        case "lte" => js.validate[LessThanOrEqualsTest]
+        case typeName => JsError(JsonValidationError(Seq("ChoiceTest"), typeName))
+      }
+    }
+  }
+
+  implicit val writes: Writes[ChoiceTest] = {
+    case t: EqualsTest => Json.obj("type" -> "eq") ++ Json.toJsObject[EqualsTest](t)
+    case t: NotEqualsTest => Json.obj("type" -> "neq") ++ Json.toJsObject[NotEqualsTest](t)
+    case t: MoreThanTest => Json.obj("type" -> "mt") ++ Json.toJsObject[MoreThanTest](t)
+    case t: MoreThanOrEqualsTest => Json.obj("type" -> "mte") ++ Json.toJsObject[MoreThanOrEqualsTest](t)
+    case t: LessThanTest => Json.obj("type" -> "lt") ++ Json.toJsObject[LessThanTest](t)
+    case t: LessThanOrEqualsTest => Json.obj( "type" -> "lte") ++ Json.toJsObject[LessThanOrEqualsTest](t)
+  }
+}
+
 case class EqualsTest(left: String, right: String) extends ChoiceTest {
   def eval(labels: Labels): Boolean = op(_ == _, _ == _, _.isEqual(_), labels)
 }
@@ -110,7 +166,6 @@ case class LessThanOrEqualsTest(left: String, right: String) extends ChoiceTest 
 }
 
 case class Choice(override val next: Seq[String], tests: Seq[ChoiceTest]) extends Stanza with Evaluate {
-
   def eval(labels: Labels): (String, Labels) =
     tests.zipWithIndex
       .find { case (x, _) => x.eval(labels) }
@@ -118,6 +173,13 @@ case class Choice(override val next: Seq[String], tests: Seq[ChoiceTest]) extend
 }
 
 object Choice {
+  def buildChoice(next: Seq[String], tests: Seq[ChoiceTest]): Choice = Choice(next, tests)
+
+  implicit val reads: Reads[Choice] =
+    ((JsPath \ "next").read[Seq[String]](minLength[Seq[String]](1)) and (JsPath \ "tests").read[Seq[ChoiceTest]])(buildChoice _)
+
+  implicit val writes: OWrites[Choice] =
+    ((JsPath \ "next").write[Seq[String]] and (JsPath \ "tests").write[Seq[ChoiceTest]])(unlift(Choice.unapply))
 
   def apply(stanza: ChoiceStanza): Choice =
     Choice(

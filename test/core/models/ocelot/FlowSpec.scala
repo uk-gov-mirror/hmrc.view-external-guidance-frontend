@@ -102,10 +102,8 @@ class FlowSpec extends BaseSpec {
   val continuationJson: JsValue = Json.parse(
     s"""{
         |  "next": "1",
-        |  "stanzas": [
-        |    {
-        |      "key": "1",
-        |      "stanza": {
+        |  "stanzas": {
+        |    "1": {
         |        "next": [
         |          "11"
         |        ],
@@ -119,8 +117,8 @@ class FlowSpec extends BaseSpec {
         |        ],
         |        "type": "ValueStanza"
         |      }
-        |    }
-        |  ]
+        |   },
+        | "type": "cont"
         }""".stripMargin
   )
 
@@ -217,8 +215,7 @@ class FlowSpec extends BaseSpec {
 
   val expectedLabelValue: LabelValue = LabelValue("LabelName", Some("A value"))
   val expectedFlow: Flow = Flow("1", Some(expectedLabelValue))
-  val expectedContinuation: Continuation = Continuation("1", List(KeyedStanza("1", ValueStanza(List(Value(ScalarType, "labelName", "23")), Seq("11"), false))))
-  val expectedKeyedStanza: KeyedStanza = KeyedStanza("1", ValueStanza(List(Value(ScalarType, "labelName", "23")), Seq("11"), false))
+  val expectedContinuation: Continuation = Continuation("1", Map("1" -> ValueStanza(List(Value(ScalarType, "labelName", "23")), Seq("11"), false)))
 
   "Reading an invalid FlowStage" should {
     "Generate a JsonValidationError" in {
@@ -280,25 +277,6 @@ class FlowSpec extends BaseSpec {
   "serialise FlowStage Continuation to json" in {
     val flowStage: FlowStage = expectedContinuation
     Json.toJson(flowStage) shouldBe flowStageContinuationJson
-  }
-
-  "Reading valid KeyedStanza JSON" should {
-    "create a KeyedStanza" in {
-      keyedStanzaJson.as[KeyedStanza] shouldBe expectedKeyedStanza
-    }
-  }
-
-  "Reading invalid KeyedStanza JSON" should {
-    "generate a JsError" in {
-      invalidKeyedStanzaJson.validate[KeyedStanza] match {
-        case JsError(_) => succeed
-        case _ => fail("An instance of KeyedStanza should not be created next is missing")
-      }
-    }
-  }
-
-  "serialise KeyedStanza to json" in {
-    Json.toJson(expectedKeyedStanza) shouldBe keyedStanzaJson
   }
 
   "Reading valid LabelValue JSON" should {
