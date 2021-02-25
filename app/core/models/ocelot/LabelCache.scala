@@ -28,15 +28,23 @@ trait Labels {
   def updateList(name: String, english: List[String]): Labels
   def updateList(name: String, english: List[String], welsh: List[String]): Labels
   def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels
-  def takeFlow: Option[(String, Map[String, Stanza], Labels)]
+  def takeFlow: Option[(String, Labels)]
+  def stanzaPool: Map[String, Stanza]
+
   // Persistence access
   def updatedLabels: Map[String, Label]
+  def updatedPool: Map[String, Stanza]
   def labelMap:Map[String, Label]
   def flowStack: List[FlowStage]
+  def continuationPool: Map[String, Stanza]
   def flush(): Labels
 }
 
-private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage]) extends Labels {
+private class LabelCacheImpl(labels: Map[String, Label] = Map(),
+                             cache: Map[String, Label] = Map(),
+                             stack: List[FlowStage] = Nil,
+                             pool: Map[String, Stanza] = Map(),
+                             poolCache: Map[String, Stanza] = Map()) extends Labels {
 
   def value(name: String): Option[String] = label(name).collect{case s: ScalarLabel => s.english.headOption.getOrElse("")}
   def valueAsList(name: String): Option[List[String]] = label(name).collect{case l: ListLabel => l.english}
@@ -46,52 +54,63 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
       case "cy" => lbl.welsh.mkString(",")
     }
   }
-  def update(name: String, english: String): Labels = new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, None), stack)
-  def update(name: String, english: String, welsh: String): Labels = new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, Some(welsh)), stack)
-  def updateList(name: String, english: List[String]): Labels = new LabelCacheImpl(labels, updateOrAddListLabel(name, english), stack)
+  def update(name: String, english: String): Labels =
+    new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, None), stack, pool, poolCache)
+  def update(name: String, english: String, welsh: String): Labels =
+    new LabelCacheImpl(labels, updateOrAddScalarLabel(name, english, Some(welsh)), stack, pool, poolCache)
+  def updateList(name: String, english: List[String]): Labels =
+    new LabelCacheImpl(labels, updateOrAddListLabel(name, english), stack, pool, poolCache)
   def updateList(name: String, english: List[String], welsh: List[String]): Labels =
-    new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack)
-  def updatedLabels: Map[String, Label] = cache
+    new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack, pool, poolCache)
 
   def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels =
     flowNext.zipWithIndex.map{
       case (nxt, idx) => Flow(nxt, labelName.map(LabelValue(_, labelValues.lift(idx).fold[Option[String]](None)(v => Some(v)))))
     } match {
       case Nil => this
-      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ (Continuation(continue, stanzas) :: stack))
+      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ (Continuation(continue) :: stack), pool, updatePool(stanzas))
     }
 
-  def takeFlow: Option[(String, Map[String, Stanza], Labels)] = // Remove head of flow stack and update flow label if required
+  def takeFlow: Option[(String, Labels)] = // Remove head of flow stack and update flow label if required
     stack.headOption.map{
       case f: Flow =>
       (f.next,
-       Map(),
-       f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail)))
-        .getOrElse(new LabelCacheImpl(labels, cache, stack.tail))
+       f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail, pool, poolCache)))
+        .getOrElse(new LabelCacheImpl(labels, cache, stack.tail, pool, poolCache))
       )
-      case c: Continuation => (c.next, c.stanzas, new LabelCacheImpl(labels, cache, stack.tail))
+      case c: Continuation => (c.next, new LabelCacheImpl(labels, cache, stack.tail, pool, poolCache))
     }
 
+  def stanzaPool: Map[String, Stanza] = pool ++ poolCache
+
   // Persistence access
+  def updatedLabels: Map[String, Label] = cache
   def labelMap:Map[String, Label] = labels
   def flowStack: List[FlowStage] = stack
-  def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack)
+  def updatedPool: Map[String, Stanza] = poolCache
+  def continuationPool: Map[String, Stanza] = pool
+  def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack, pool, poolCache)
 
+  // Label ops
   private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
 
-  private def updateOrAddScalarLabel(name: String, english: String, welsh: Option[String]): Map[String, Label] = {
+  private def updateOrAddScalarLabel(name: String, english: String, welsh: Option[String]): Map[String, Label] =
     cache + (name -> cache.get(name).fold[Label]
       (ScalarLabel(name, List(english), welsh.fold[List[String]](Nil)(w => List(w))))
       (l => ScalarLabel(l.name, List(english), welsh.fold[List[String]](Nil)(w => List(w)))))
-  }
 
   private def updateOrAddListLabel(name: String, english: List[String], welsh: List[String] = Nil): Map[String, Label] =
     cache + (name -> cache.get(name).fold[Label](ListLabel(name, english, welsh))(l => ListLabel(l.name, english, welsh)))
+
+  // Pool ops
+  //private def stanza(id: String): Option[Stanza] = poolCache.get(id).fold(pool.get(id))(Some(_))
+  private def updatePool(stanzas: Map[String, Stanza]): Map[String, Stanza] = poolCache ++ stanzas.filterNot(t => pool.contains(t._1))
 }
 
 object LabelCache {
-  def apply(): Labels = new LabelCacheImpl(Map(), Map(), Nil)
-  def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels, Map(), Nil)
-  def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache, Nil)
+  def apply(): Labels = new LabelCacheImpl()
+  def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels)
+  def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache)
   def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage]): Labels = new LabelCacheImpl(labels, cache, stack)
+  //def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage], pool: Map[String, Stanza]): Labels = new LabelCacheImpl(labels, cache, stack, pool)
 }

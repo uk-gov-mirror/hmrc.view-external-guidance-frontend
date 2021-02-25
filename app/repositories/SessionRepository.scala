@@ -22,6 +22,7 @@ import config.AppConfig
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, Json, Writes}
 import core.models.ocelot._
+import core.models.ocelot.stanzas.Stanza
 import core.models.errors._
 import core.models.MongoDateTimeFormats
 import core.models.RequestOutcome
@@ -42,6 +43,7 @@ object DefaultSessionRepository {
                                   process: Process,
                                   labels: Map[String, Label],
                                   flowStack: List[FlowStage],
+                                  stanzaPool: Map[String, Stanza],
                                   urlToPageId: Map[String, String],
                                   answers: Map[String, String],
                                   pageHistory: List[String],
@@ -57,6 +59,7 @@ case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
                           flowStack: List[FlowStage],
+                          stanzaPool: Map[String, Stanza],
                           urlToPageId: Map[String, String],
                           backLink: Option[String]) {
   val secure: Boolean = process.flow.get(SecuredProcess.PassPhrasePageId).fold(true){_ =>
@@ -68,8 +71,8 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]]
-  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]]
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]]
+  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -115,7 +118,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   def get(key:String): Future[RequestOutcome[ProcessContext]] =
     find("_id" -> key).map {
       case Nil =>  Left(NotFoundError)
-      case r :: _ => Right(ProcessContext(r.process, r.answers, r.labels, r.flowStack, r.urlToPageId, None))
+      case r :: _ => Right(ProcessContext(r.process, r.answers, r.labels, r.flowStack, r.stanzaPool, r.urlToPageId, None))
     }.recover {
       case lastError =>
       logger.error(s"Error $lastError occurred in method get(key: String) attempting to retrieve session $key")
@@ -136,9 +139,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           //
           // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
           //
-          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.urlToPageId, None)))){pageUrl =>
+          pageHistoryUrl.fold(Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.stanzaPool, sp.urlToPageId, None)))){pageUrl =>
             val (backLink, historyUpdate) = backlinkAndHistory(pageUrl, previousPageByLink, sp.pageHistory)
-            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.urlToPageId, backLink)
+            val processContext = ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.stanzaPool, sp.urlToPageId, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
               savePageHistory(key, history).map {
                 case Left(err) =>
@@ -157,7 +160,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]] =
+  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
@@ -166,6 +169,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
             toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
             toFieldPair("flowStack", stack),
             toFieldPair(s"answers.$url", answer)) ++
+            pool.toList.map(l => toFieldPair(s"labels.${l._1}", l._2)) ++
             labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
         )
       )
@@ -185,10 +189,13 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Left(DatabaseError)
       }
 
-  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage]): Future[RequestOutcome[Unit]] =
+  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
-        Json.obj("$set" -> Json.obj((labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", stack) : _*))
+        Json.obj("$set" -> Json.obj(
+          (pool.toList.map(l => toFieldPair(s"labels.${l._1}", l._2)) ++
+           labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", stack) : _*)
+        )
       ).map { result =>
         result
           .result[DefaultSessionRepository.SessionProcess]
@@ -207,7 +214,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
 
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]] = {
     val sessionDocument = Json.toJson(
-      DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, urlToPageId, Map(), Nil, Instant.now)
+      DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, Map(), urlToPageId, Map(), Nil, Instant.now)
     )
     collection
       .update(false)

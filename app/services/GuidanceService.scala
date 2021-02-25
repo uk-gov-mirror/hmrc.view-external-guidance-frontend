@@ -61,7 +61,7 @@ class GuidanceService @Inject() (
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, processCode, url, previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, flowStack, urlToPageId, backLink)) if process.meta.processCode == processCode =>
+      case Right(ProcessContext(process, answers, labelsMap, flowStack, stanzaPool, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
           logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
@@ -121,7 +121,7 @@ class GuidanceService @Inject() (
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveFormPageState(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq, labels.flowStack).map{
+      sessionRepository.saveFormPageState(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq, labels.flowStack, labels.updatedPool).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)
@@ -135,7 +135,7 @@ class GuidanceService @Inject() (
 
   def savePageState(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
-      sessionRepository.savePageState(docId, labels.updatedLabels.values.toSeq, labels.flowStack)
+      sessionRepository.savePageState(docId, labels.updatedLabels.values.toSeq, labels.flowStack, labels.updatedPool)
     )
 
   def retrieveAndCacheScratch(uuid: String, docId: String)

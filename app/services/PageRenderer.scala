@@ -25,7 +25,7 @@ import core.models.ocelot.{Page, Labels, Process}
 class PageRenderer @Inject() () {
 
   def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels, Option[DataInput]) = {
-    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap ++ labels.stanzaPool
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
     (visualStanzas, newLabels, optionalInput)
   }
@@ -40,7 +40,7 @@ class PageRenderer @Inject() () {
         case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
           case EndStanza => labels.takeFlow match {
-              case Some((nxt, stanzas, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
+              case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap)
               case None => (Some(next), labels)
             }
           case s: Stanza with Evaluate =>
@@ -50,13 +50,13 @@ class PageRenderer @Inject() () {
       }
     }
 
-    val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap ++ labels.stanzaPool
     val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)(stanzaMap)
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       dataInputStanza.eval(answer, page, newLabels) match {
         case (Some(Process.EndStanzaId), postInputLabels) => postInputLabels.takeFlow match {
-            case Some((next, stanzas, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
+            case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap)
             case None => (Some(Process.EndStanzaId), postInputLabels)
           }
         case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen, stanzaMap)
@@ -72,7 +72,7 @@ class PageRenderer @Inject() () {
       case None => (visualStanzas, labels, seen, stanzaId, None)
       case Some(s) => s match {
         case EndStanza => labels.takeFlow match {
-            case Some((nxt, stanzas, updatedLabels)) => evaluateStanzas(nxt, updatedLabels, visualStanzas, seen)
+            case Some((nxt, updatedLabels)) => evaluateStanzas(nxt, updatedLabels, visualStanzas, seen)
             case None => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
           }
         case s: VisualStanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
