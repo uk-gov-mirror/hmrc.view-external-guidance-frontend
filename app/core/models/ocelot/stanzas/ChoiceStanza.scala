@@ -85,37 +85,31 @@ sealed trait ChoiceTest {
   }
 }
 
+case class EqualsTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ == _, _ == _, _.isEqual(_), labels)
+}
+
+case class NotEqualsTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ != _, _ != _, !_.isEqual(_), labels)
+}
+
+case class MoreThanTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ > _, _ > _, _.isAfter(_), labels)
+}
+
+case class MoreThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ >= _, _ >= _, _.compareTo(_) >= 0, labels)
+}
+
+case class LessThanTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ < _, _ < _, _.isBefore(_), labels)
+}
+
+case class LessThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
+  def eval(labels: Labels): Boolean = op(_ <= _, _ <= _, _.compareTo(_) <= 0, labels)
+}
+
 object ChoiceTest {
-  implicit val eqreads: Reads[EqualsTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(EqualsTest.apply _)
-  implicit val eqwrites: OWrites[EqualsTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(EqualsTest.unapply))
-
-  implicit val neqreads: Reads[NotEqualsTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(NotEqualsTest.apply _)
-  implicit val neqwrites: OWrites[NotEqualsTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(NotEqualsTest.unapply))
-
-  implicit val mtreads: Reads[MoreThanTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanTest.apply _)
-  implicit val mtwrites: OWrites[MoreThanTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanTest.unapply))
-
-  implicit val mtereads: Reads[MoreThanOrEqualsTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanOrEqualsTest.apply _)
-  implicit val mtewrites: OWrites[MoreThanOrEqualsTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanOrEqualsTest.unapply))
-
-  implicit val ltreads: Reads[LessThanTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanTest.apply _)
-  implicit val ltwrites: OWrites[LessThanTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanTest.unapply))
-
-  implicit val ltereads: Reads[LessThanOrEqualsTest] =
-    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanOrEqualsTest.apply _)
-  implicit val ltewrites: OWrites[LessThanOrEqualsTest] =
-    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanOrEqualsTest.unapply))
-
   implicit val reads: Reads[ChoiceTest] = (js: JsValue) => {
     (js \ "type").validate[String] match {
       case err @ JsError(_) => err
@@ -141,28 +135,46 @@ object ChoiceTest {
   }
 }
 
-case class EqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ == _, _ == _, _.isEqual(_), labels)
+object EqualsTest {
+  implicit val reads: Reads[EqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(EqualsTest.apply _)
+  implicit val writes: OWrites[EqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(EqualsTest.unapply))
 }
 
-case class NotEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ != _, _ != _, !_.isEqual(_), labels)
+object NotEqualsTest {
+  implicit val reads: Reads[NotEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(NotEqualsTest.apply _)
+  implicit val writes: OWrites[NotEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(NotEqualsTest.unapply))
 }
 
-case class MoreThanTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ > _, _ > _, _.isAfter(_), labels)
+object MoreThanTest {
+  implicit val reads: Reads[MoreThanTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanTest.apply _)
+  implicit val writes: OWrites[MoreThanTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanTest.unapply))
 }
 
-case class MoreThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ >= _, _ >= _, _.compareTo(_) >= 0, labels)
+object MoreThanOrEqualsTest {
+  implicit val reads: Reads[MoreThanOrEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(MoreThanOrEqualsTest.apply _)
+  implicit val writes: OWrites[MoreThanOrEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(MoreThanOrEqualsTest.unapply))
 }
 
-case class LessThanTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ < _, _ < _, _.isBefore(_), labels)
+object LessThanTest {
+  implicit val reads: Reads[LessThanTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanTest.apply _)
+  implicit val writes: OWrites[LessThanTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanTest.unapply))
 }
 
-case class LessThanOrEqualsTest(left: String, right: String) extends ChoiceTest {
-  def eval(labels: Labels): Boolean = op(_ <= _, _ <= _, _.compareTo(_) <= 0, labels)
+object LessThanOrEqualsTest {
+  implicit val reads: Reads[LessThanOrEqualsTest] =
+    ((JsPath \ "left").read[String] and (JsPath \ "right").read[String])(LessThanOrEqualsTest.apply _)
+  implicit val writes: OWrites[LessThanOrEqualsTest] =
+    ((JsPath \ "left").write[String] and (JsPath \ "right").write[String])(unlift(LessThanOrEqualsTest.unapply))
 }
 
 case class Choice(override val next: Seq[String], tests: Seq[ChoiceTest]) extends Stanza with Evaluate {
