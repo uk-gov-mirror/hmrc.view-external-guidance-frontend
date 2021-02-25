@@ -61,7 +61,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
           next shouldBe Some("4")
           labels.value("Choice") shouldBe Some("First")
           labels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
-          labels.stackList.length shouldBe 3
+          labels.flowStack.length shouldBe 3
       }
     }
 
@@ -125,7 +125,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
             next shouldBe Some("2")
             labels.value("NestedSeqComplete") shouldBe Some("Yes")
 
-            labels.stackList shouldBe Nil
+            labels.flowStack shouldBe Nil
           })
         }
       )
@@ -152,7 +152,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
               next shouldBe Some("2")
               labels.value("NestedSeqComplete") shouldBe Some("Yes")
 
-              labels.stackList shouldBe Nil
+              labels.flowStack shouldBe Nil
             })
 
           })

@@ -473,10 +473,10 @@ class LabelSpec extends BaseSpec with ProcessJson {
     "Allow adding a Flow to top of stack" in {
       val labels = LabelCache().pushFlows(Seq("1","2"), "3", Some("loop"), Seq("One", "Two", "Three"), Map())
 
-      labels.stackList.length shouldBe 3
-      labels.stackList.head shouldBe Flow("1", Some(LabelValue("loop", Some("One"))))
-      labels.stackList(1) shouldBe Flow("2", Some(LabelValue("loop", Some("Two"))))
-      labels.stackList(2) shouldBe Continuation("3", Map())
+      labels.flowStack.length shouldBe 3
+      labels.flowStack.head shouldBe Flow("1", Some(LabelValue("loop", Some("One"))))
+      labels.flowStack(1) shouldBe Flow("2", Some(LabelValue("loop", Some("Two"))))
+      labels.flowStack(2) shouldBe Continuation("3", Map())
     }
 
     "Allow removal of Flow from top of stack" in {
@@ -485,15 +485,15 @@ class LabelSpec extends BaseSpec with ProcessJson {
       labels.takeFlow.map{t =>
         val(n0, _, l0) = t
         n0 shouldBe "1"
-        l0.stackList.length shouldBe 2
+        l0.flowStack.length shouldBe 2
         l0.takeFlow.map{t =>
           val(n1, _, l1) = t
           n1 shouldBe "2"
-          l1.stackList.length shouldBe 1
+          l1.flowStack.length shouldBe 1
           l1.takeFlow.map{t =>
             val(n2, _, l2) = t
             n2 shouldBe "3"
-            l2.stackList.length shouldBe 0
+            l2.flowStack.length shouldBe 0
 
             l2.takeFlow shouldBe None
           }
@@ -507,15 +507,15 @@ class LabelSpec extends BaseSpec with ProcessJson {
       labels.takeFlow.map{t =>
         val(n0, _, l0) = t
         n0 shouldBe "1"
-        l0.stackList.length shouldBe 2
+        l0.flowStack.length shouldBe 2
         l0.takeFlow.map{t =>
           val(n1, _, l1) = t
           n1 shouldBe "2"
-          l1.stackList.length shouldBe 1
+          l1.flowStack.length shouldBe 1
           l1.takeFlow.map{t =>
             val(n2, _, l2) = t
             n2 shouldBe "3"
-            l2.stackList.length shouldBe 0
+            l2.flowStack.length shouldBe 0
 
             l2.takeFlow shouldBe None
           }

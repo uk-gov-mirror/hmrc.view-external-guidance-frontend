@@ -96,7 +96,7 @@ class SequenceStanzaSpec extends BaseSpec {
       val blankPage: Page = Page("any", "/url", Seq.empty, Nil)
       val (next, updatedLabels) = expectedSequence.eval("0", blankPage, labels)
       next shouldBe Some("1")
-      updatedLabels.stackList shouldBe List(Continuation(Process.EndStanzaId, Map()))
+      updatedLabels.flowStack shouldBe List(Continuation(Process.EndStanzaId, Map()))
       updatedLabels.value("Items") shouldBe Some("One")
     }
 
@@ -112,7 +112,7 @@ class SequenceStanzaSpec extends BaseSpec {
       val blankPage: Page = Page("any", "/url", Seq.empty, Nil)
       val noopReturn: (Option[String], Labels) = (None, labels)
       expectedSequence.eval("24", blankPage, labels) shouldBe noopReturn
-      labels.stackList shouldBe Nil
+      labels.flowStack shouldBe Nil
     }
   }
 

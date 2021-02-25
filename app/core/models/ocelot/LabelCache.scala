@@ -32,7 +32,7 @@ trait Labels {
   // Persistence access
   def updatedLabels: Map[String, Label]
   def labelMap:Map[String, Label]
-  def stackList: List[FlowStage]
+  def flowStack: List[FlowStage]
   def flush(): Labels
 }
 
@@ -74,7 +74,7 @@ private class LabelCacheImpl(labels: Map[String, Label], cache: Map[String, Labe
 
   // Persistence access
   def labelMap:Map[String, Label] = labels
-  def stackList: List[FlowStage] = stack
+  def flowStack: List[FlowStage] = stack
   def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack)
 
   private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
