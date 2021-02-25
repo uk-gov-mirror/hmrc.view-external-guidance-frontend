@@ -123,6 +123,32 @@ sealed trait Operation {
   }
 }
 
+case class AddOperation(left: String, right: String, label: String) extends Operation {
+
+  def eval(labels: Labels): Labels = op(_ + _, (s1:String, s2:String) => Some(s1 + s2), unsupportedOperation("Add"), labels)
+
+}
+
+case class SubtractOperation(left: String, right: String, label: String) extends Operation {
+
+  def eval(labels: Labels): Labels = op(_ - _, unsupportedOperation("Subtract"), subtractDate, labels)
+
+  private def subtractDate(date: LocalDate, other: LocalDate) : Option[String] =
+    Some(other.until(date, ChronoUnit.DAYS).toString)
+}
+
+case class CeilingOperation(left: String, right: String, label: String) extends Operation {
+
+  def eval(labels: Labels): Labels = rounding(_.setScale(_, RoundingMode.CEILING), labels)
+
+}
+
+case class FloorOperation(left: String, right: String, label: String) extends Operation {
+
+  def eval(labels: Labels): Labels = rounding(_.setScale(_, RoundingMode.FLOOR), labels)
+
+}
+
 object Operation {
   implicit val addreads: Reads[AddOperation] =
     ((JsPath \ "left").read[String] and (JsPath \ "right").read[String] and (JsPath \ "label").read[String])(AddOperation.apply _)
@@ -165,32 +191,6 @@ object Operation {
   }
 }
 
-
-case class AddOperation(left: String, right: String, label: String) extends Operation {
-
-  def eval(labels: Labels): Labels = op(_ + _, (s1:String, s2:String) => Some(s1 + s2), unsupportedOperation("Add"), labels)
-
-}
-
-case class SubtractOperation(left: String, right: String, label: String) extends Operation {
-
-  def eval(labels: Labels): Labels = op(_ - _, unsupportedOperation("Subtract"), subtractDate, labels)
-
-  private def subtractDate(date: LocalDate, other: LocalDate) : Option[String] =
-    Some(other.until(date, ChronoUnit.DAYS).toString)
-}
-
-case class CeilingOperation(left: String, right: String, label: String) extends Operation {
-
-  def eval(labels: Labels): Labels = rounding(_.setScale(_, RoundingMode.CEILING), labels)
-
-}
-
-case class FloorOperation(left: String, right: String, label: String) extends Operation {
-
-  def eval(labels: Labels): Labels = rounding(_.setScale(_, RoundingMode.FLOOR), labels)
-
-}
 
 case class Calculation(override val next: Seq[String], calcs: Seq[Operation]) extends Stanza with Evaluate {
 
