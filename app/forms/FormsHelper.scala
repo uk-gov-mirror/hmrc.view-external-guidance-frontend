@@ -30,7 +30,7 @@ object FormsHelper {
     // Define form mapping for each data input type
     inputStanza match {
       case _: DateInput => bindSubmittedDateAnswer()
-      case _: Input | _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: Input | _: Question | _: Sequence => bindSubmittedTextAnswer(path -> nonEmptyText) // TODO - Temporary solution whilst rendering sequence
     }
 
   def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] =
