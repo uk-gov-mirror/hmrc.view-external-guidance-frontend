@@ -71,8 +71,8 @@ trait SessionRepository {
   def get(key:String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]]
-  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]]
+  def saveFormPageState(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
+  def savePageState(key: String, labels: Labels): Future[RequestOutcome[Unit]]
 }
 
 @Singleton
@@ -160,17 +160,19 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       }
   }
 
-  def saveFormPageState(key: String, url: String, answer: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]] =
+  def saveFormPageState(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]] = {
+    println(s"POOL: ${labels.updatedPool.toList.map(l => toFieldPair(s"labels.${l._1}", l._2))}")
+    println(s"LABELS: ${labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))}")
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
         "$set" -> Json.obj(
           (List(
             toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-            toFieldPair("flowStack", stack),
+            toFieldPair("flowStack", labels.flowStack),
             toFieldPair(s"answers.$url", answer)) ++
-            pool.toList.map(l => toFieldPair(s"labels.${l._1}", l._2)) ++
-            labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+            labels.updatedPool.toList.map(l => toFieldPair(s"stanzaPool.${l._1}", l._2)) ++
+            labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
         )
       )
     ).map { result =>
@@ -188,13 +190,14 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to update question answers and labels within session repo with _id=$key, url: $url, answer: $answer")
           Left(DatabaseError)
       }
+  }
 
-  def savePageState(key: String, labels: Seq[Label], stack: List[FlowStage], pool: Map[String, Stanza]): Future[RequestOutcome[Unit]] =
+  def savePageState(key: String, labels: Labels): Future[RequestOutcome[Unit]] =
       findAndUpdate(
         Json.obj("_id" -> key),
         Json.obj("$set" -> Json.obj(
-          (pool.toList.map(l => toFieldPair(s"labels.${l._1}", l._2)) ++
-           labels.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", stack) : _*)
+          (labels.updatedPool.toList.map(l => toFieldPair(s"stanzaPool.${l._1}", l._2)) ++
+           labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", labels.flowStack) : _*)
         )
       ).map { result =>
         result

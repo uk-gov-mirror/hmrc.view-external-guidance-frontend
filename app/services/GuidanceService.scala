@@ -121,7 +121,7 @@ class GuidanceService @Inject() (
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveFormPageState(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq, labels.flowStack, labels.updatedPool).map{
+      sessionRepository.saveFormPageState(ctx.sessionId, url, submittedAnswer, labels).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)
@@ -133,10 +133,7 @@ class GuidanceService @Inject() (
   def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
     ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
 
-  def savePageState(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
-    labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
-      sessionRepository.savePageState(docId, labels.updatedLabels.values.toSeq, labels.flowStack, labels.updatedPool)
-    )
+  def savePageState(docId: String, labels: Labels): Future[RequestOutcome[Unit]] = sessionRepository.savePageState(docId, labels)
 
   def retrieveAndCacheScratch(uuid: String, docId: String)
                              (implicit hc: HeaderCarrier, context: ExecutionContext): Future[RequestOutcome[(String,String)]] =

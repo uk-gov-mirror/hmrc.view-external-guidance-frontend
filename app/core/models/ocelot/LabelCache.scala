@@ -33,10 +33,9 @@ trait Labels {
 
   // Persistence access
   def updatedLabels: Map[String, Label]
-  def updatedPool: Map[String, Stanza]
   def labelMap:Map[String, Label]
   def flowStack: List[FlowStage]
-  def continuationPool: Map[String, Stanza]
+  def updatedPool: Map[String, Stanza]
   def flush(): Labels
 }
 
@@ -68,7 +67,7 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
       case (nxt, idx) => Flow(nxt, labelName.map(LabelValue(_, labelValues.lift(idx).fold[Option[String]](None)(v => Some(v)))))
     } match {
       case Nil => this
-      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ (Continuation(continue) :: stack), pool, updatePool(stanzas))
+      case flows => new LabelCacheImpl(labels, cache, flows.toList ++ (Continuation(continue) :: stack), pool, poolCache ++ stanzas)
     }
 
   def takeFlow: Option[(String, Labels)] = // Remove head of flow stack and update flow label if required
@@ -88,7 +87,6 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
   def labelMap:Map[String, Label] = labels
   def flowStack: List[FlowStage] = stack
   def updatedPool: Map[String, Stanza] = poolCache
-  def continuationPool: Map[String, Stanza] = pool
   def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack, pool, poolCache)
 
   // Label ops
@@ -101,10 +99,6 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
 
   private def updateOrAddListLabel(name: String, english: List[String], welsh: List[String] = Nil): Map[String, Label] =
     cache + (name -> cache.get(name).fold[Label](ListLabel(name, english, welsh))(l => ListLabel(l.name, english, welsh)))
-
-  // Pool ops
-  //private def stanza(id: String): Option[Stanza] = poolCache.get(id).fold(pool.get(id))(Some(_))
-  private def updatePool(stanzas: Map[String, Stanza]): Map[String, Stanza] = poolCache ++ stanzas.filterNot(t => pool.contains(t._1))
 }
 
 object LabelCache {
