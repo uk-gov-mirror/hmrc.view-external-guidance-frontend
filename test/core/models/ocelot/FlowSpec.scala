@@ -36,16 +36,6 @@ class FlowSpec extends BaseSpec {
         |}""".stripMargin
   )
 
-    val flowStageJson: JsValue = Json.parse(
-    s"""|{
-        |    "next": "1",
-        |    "labelValue": {
-        |     "name": "LabelName",
-        |     "value": "A value"
-        |    }
-        |}""".stripMargin
-  )
-
   val invalidFlowStageJson: JsValue = Json.parse(
     s"""|{
         |    "nextf": "1",
