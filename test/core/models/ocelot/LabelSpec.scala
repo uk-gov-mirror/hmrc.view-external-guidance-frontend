@@ -341,7 +341,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
       val stack = List(
         Flow("1", Some(LabelValue("loop", Some("One")))),
-        Flow("2", Some(LabelValue("loop", Some("One")))),
+        Flow("2", Some(LabelValue("loop", Some("Two")))),
         Flow("3", None)
       )
 

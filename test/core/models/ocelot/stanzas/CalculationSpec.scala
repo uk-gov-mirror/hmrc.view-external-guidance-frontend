@@ -149,7 +149,7 @@ class CalculationSpec extends BaseSpec {
       Json.toJson(stanza).toString shouldBe stanzaJson
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(json).as[Calculation] shouldBe calculation
     }
 

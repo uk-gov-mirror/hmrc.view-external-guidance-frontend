@@ -45,7 +45,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(eq).toString shouldBe testJson("[label:X]", "[label:Y]", EQ)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", EQ)).as[ChoiceTest] shouldBe EqualsTest("[label:X]", "[label:Y]")
     }
 
@@ -67,7 +67,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(neq).toString shouldBe testJson("[label:X]", "[label:Y]", NEQ)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", NEQ)).as[ChoiceTest] shouldBe NotEqualsTest("[label:X]", "[label:Y]")
     }
 
@@ -89,7 +89,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(mt).toString shouldBe testJson("[label:X]", "[label:Y]", MT)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", MT)).as[ChoiceTest] shouldBe MoreThanTest("[label:X]", "[label:Y]")
     }
 
@@ -111,7 +111,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(mte).toString shouldBe testJson("[label:X]", "[label:Y]", MTE)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", MTE)).as[ChoiceTest] shouldBe MoreThanOrEqualsTest("[label:X]", "[label:Y]")
     }
 
@@ -133,7 +133,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(lt).toString shouldBe testJson("[label:X]", "[label:Y]", LT)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", LT)).as[ChoiceTest] shouldBe LessThanTest("[label:X]", "[label:Y]")
     }
 
@@ -155,7 +155,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(lte).toString shouldBe testJson("[label:X]", "[label:Y]", LTE)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(testJson("[label:X]", "[label:Y]", LTE)).as[ChoiceTest] shouldBe LessThanOrEqualsTest("[label:X]", "[label:Y]")
     }
 
@@ -201,7 +201,7 @@ class ChoiceSpec extends BaseSpec {
       Json.toJson(stanza).toString shouldBe stanzaJson
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(json).as[Choice] shouldBe choice
     }
 
