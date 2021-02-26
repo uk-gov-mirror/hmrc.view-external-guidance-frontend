@@ -17,12 +17,12 @@
 package services
 
 import core.services._
-import base.{EnglishLanguage, BaseSpec}
+import base.{BaseSpec, EnglishLanguage}
 import core.models.ocelot._
 import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 import models.ui
-import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, Table, Text, WarningText, Words}
+import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4, InsetText, Link, Paragraph, RequiredErrorMsg, SequenceFormComponent, Table, Text, WarningText, Words}
 
 class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguage {
 
@@ -1520,6 +1520,151 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       case x => fail(s"Found $x")
       }
     }
+  }
+
+  "UIBuilder Sequence processing" must {
+
+    trait SequenceTest {
+
+      implicit val urlMap: Map[String, String] = Map(
+        Process.StartStanzaId -> "start",
+        "10" -> "page-2",
+        "35" -> "page-4",
+        "50" -> "page-10"
+      )
+
+      val next: Seq[String] = Seq("10", "35", "50")
+
+      val textPhrase: Phrase = Phrase(Vector("Select type of bee", "Welsh, Select type of bee"))
+      val textPhraseWithHint = Phrase(
+        Vector(
+          "Select type of bee [hint:For example Worker or Drone]",
+        "Welsh, Select type of bee [hint:For example Worker or Drone]"
+        )
+      )
+
+      val optionsPhrases: Seq[Phrase] = Seq(
+        Phrase(Vector("Drone", "Welsh, Drone")),
+        Phrase(Vector("Worker", "Welsh, Worker"))
+      )
+
+      val stanzas: Seq[KeyedStanza] = Seq(
+        KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
+        KeyedStanza(
+          "1",
+          ErrorCallout(
+          Phrase(Vector("You must select a type of bee", "Welsh, You must select a kind of bee")),
+          Seq("2"),
+          stack = false
+          )
+        ),
+        KeyedStanza(
+          "2",
+          SectionCallout(
+            Phrase(Vector("Questions about bees", "Welsh, Questions about bees")),
+              Seq("3"),
+              stack = false)
+          ),
+        KeyedStanza(
+          "3",
+          Instruction(
+            Phrase(Vector("General questions", "Welsh, General questions")),
+            Seq("4"),
+            None,
+            stack = false
+          )
+        )
+      )
+
+      val sequence = core.models.ocelot.stanzas.Sequence(textPhrase, next, optionsPhrases, None, stack = false)
+      val sequenceWithHint = core.models.ocelot.stanzas.Sequence(textPhraseWithHint, next, optionsPhrases, None, stack = false)
+
+      val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", sequence), Seq.empty)
+      val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", sequenceWithHint), Seq.empty)
+
+      val uiBuilder: UIBuilder = new UIBuilder()
+    }
+
+    "ignore error callouts if no errors have occurred" in new SequenceTest {
+
+      val uiPage: models.ui.Page = uiBuilder.buildPage(
+        page.url,
+        page.stanzas.collect{case s: VisualStanza => s}
+      )(urlMap, lang)
+
+      uiPage match {
+        case f: FormPage if(f.formComponent.errorMsgs.isEmpty) =>
+          f.formComponent match {
+            case s: SequenceFormComponent =>
+              s.text.asString shouldBe "Select type of bee"
+              s.options.size shouldBe 2
+              s.options.head.asString shouldBe "Drone"
+              s.options.last.asString shouldBe "Worker"
+              s.body.size shouldBe 2
+              s.body.head match {
+                case h3: H3 => h3.text.asString shouldBe "Questions about bees"
+                case _ => fail("The first component in the sequence body should be an H3")
+              }
+              s.body.last match {
+                case p: Paragraph => p.text.asString shouldBe "General questions"
+                case _ => fail("The second component in the sequence body should be a paragraph")
+              }
+            case _ => fail("Form component should be a sequence form component")
+          }
+        case _: FormPage => fail("No error callouts should be present in the sequence")
+        case otherPage => fail(s"Incorrect page type created by builder. Page : $otherPage")
+      }
+    }
+
+    "handle definition of hint in sequence title" in new SequenceTest {
+
+      val uiPageWithHint: models.ui.Page = uiBuilder.buildPage(
+        pageWithHint.url,
+        pageWithHint.stanzas.collect{case s: VisualStanza => s},
+        ValueMissingError
+      )(urlMap, lang)
+
+      uiPageWithHint match {
+        case f: FormPage =>
+          f.formComponent match {
+            case s: SequenceFormComponent =>
+              s.text.asString shouldBe "Select type of bee"
+              s.hint match {
+                case Some(value) => value.asString shouldBe "For example Worker or Drone"
+                case _ => fail("Hint text should be defined")
+              }
+            case _ => fail("Form component should be a sequence form component")
+          }
+        case otherPage => fail(s"Incorrect page type created by builder. Page : $otherPage")
+      }
+
+    }
+
+    "include errors when a missing input value error has occurred" in new SequenceTest {
+
+      val uiPage: models.ui.Page = uiBuilder.buildPage(
+        page.url,
+        page.stanzas.collect{case s: VisualStanza => s},
+        ValueMissingError
+      )(urlMap, lang)
+
+      uiPage match {
+        case f: FormPage if(f.formComponent.errorMsgs.nonEmpty) =>
+          f.formComponent match {
+            case s: SequenceFormComponent =>
+              s.errorMsgs.size shouldBe 1
+              s.errorMsgs.head match {
+                case r: RequiredErrorMsg => r.text.asString shouldBe "You must select a type of bee"
+                case otherError => fail(s"Unexpected error type encountered. Error is $otherError")
+              }
+            case _ => fail("Form component should be a sequence form component")
+          }
+        case _: FormPage => fail("An error message should be included in the sequence")
+        case otherPage => fail(s"Incorrect page type created by builder. Page : $otherPage")
+      }
+
+    }
+
   }
 }
 
