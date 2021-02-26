@@ -158,7 +158,7 @@ object Operation {
         case "sub" => js.validate[SubtractOperation]
         case "ceil" => js.validate[CeilingOperation]
         case "flr" => js.validate[FloorOperation]
-        case typeName => JsError(JsonValidationError(Seq("ChoiceTest"), typeName))
+        case typeName => JsError(JsonValidationError(Seq("Operation"), typeName))
       }
     }
   }
