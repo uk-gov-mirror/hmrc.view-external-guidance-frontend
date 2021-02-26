@@ -44,7 +44,7 @@ class CalculationSpec extends BaseSpec {
       Json.toJson(add).toString shouldBe opJson("[label:X]", "[label:Y]", "label", ADD)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(opJson("[label:X]", "[label:Y]", "label", ADD)).as[Operation] shouldBe AddOperation("[label:X]", "[label:Y]", "label")
     }
 
@@ -66,7 +66,7 @@ class CalculationSpec extends BaseSpec {
       Json.toJson(sub).toString shouldBe opJson("[label:X]", "[label:Y]", "label", SUB)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(opJson("[label:X]", "[label:Y]", "label", SUB)).as[Operation] shouldBe SubtractOperation("[label:X]", "[label:Y]", "label")
     }
 
@@ -88,7 +88,7 @@ class CalculationSpec extends BaseSpec {
       Json.toJson(ceil).toString shouldBe opJson("[label:X]", "[label:Y]", "label", CEIL)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(opJson("[label:X]", "[label:Y]", "label", CEIL)).as[Operation] shouldBe CeilingOperation("[label:X]", "[label:Y]", "label")
     }
 
@@ -110,7 +110,7 @@ class CalculationSpec extends BaseSpec {
       Json.toJson(flr).toString shouldBe opJson("[label:X]", "[label:Y]", "label", FLR)
     }
 
-    "Contruct from valid Json" in {
+    "Construct from valid Json" in {
       Json.parse(opJson("[label:X]", "[label:Y]", "label", FLR)).as[Operation] shouldBe FloorOperation("[label:X]", "[label:Y]", "label")
     }
 
