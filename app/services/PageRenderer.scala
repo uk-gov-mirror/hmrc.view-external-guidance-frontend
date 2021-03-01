@@ -71,10 +71,7 @@ class PageRenderer @Inject() () {
     stanzaMap.get(stanzaId) match {
       case None => (visualStanzas, labels, seen, stanzaId, None)
       case Some(s) => s match {
-        case EndStanza => labels.takeFlow match {
-            case Some((nxt, updatedLabels)) => evaluateStanzas(nxt, updatedLabels, visualStanzas, seen)
-            case None => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
-          }
+        case EndStanza => (visualStanzas, labels, seen :+ stanzaId, stanzaId, None)
         case s: VisualStanza with DataInput => (visualStanzas :+ s, labels, seen :+ stanzaId, stanzaId, Some(s))
         case s: Stanza with Evaluate =>
           val (next, updatedLabels) = s.eval(labels)
