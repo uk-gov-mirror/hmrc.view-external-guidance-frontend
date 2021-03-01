@@ -18,8 +18,8 @@ package forms
 
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms._
-
-import models.ui.{SubmittedTextAnswer, SubmittedDateAnswer}
+import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
+import models.ui.{SubmittedDateAnswer, SubmittedListAnswer, SubmittedTextAnswer}
 
 trait FormProvider
 
@@ -47,6 +47,20 @@ class SubmittedDateAnswerFormProvider extends FormProvider {
       )(SubmittedDateAnswer.apply)(SubmittedDateAnswer.unapply)
     )
   
+}
+
+class SubmittedListAnswerFormProvider extends FormProvider {
+
+  def apply(name: String): Form[SubmittedListAnswer] =
+
+    Form(
+      mapping(name -> list(text).verifying(validateListIsPopulated))
+      (SubmittedListAnswer.apply)(SubmittedListAnswer.unapply)
+    )
+
+  private def validateListIsPopulated[T]: Constraint[List[T]] =
+    Constraint[List[T]]("constraint.required")
+      {list => if(list.nonEmpty) Valid else Invalid(ValidationError("error.required"))}
 }
 
 

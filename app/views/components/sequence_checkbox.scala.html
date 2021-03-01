@@ -21,8 +21,12 @@
 
 @checkboxIdentifier(name:String, idx: Int) = @{s"$name[$idx]"}
 
+@itemChecked(name: String, idx: Int) = @{
+  form.data.get(checkboxIdentifier(name, idx)).fold(false){item => true}
+}
+
 <div class="govuk-checkboxes__item">
- <input class="govuk-checkboxes__input" id="@checkboxIdentifier(name, idx)" name="@name" type="checkbox" value="@idx">
+ <input class="govuk-checkboxes__input" id="@checkboxIdentifier(name, idx)" name="@checkboxIdentifier(name, idx)" type="checkbox" value="@idx" @{if(itemChecked(name, idx)) "checked"}>
  <label class="govuk-label govuk-checkboxes__label" for="@checkboxIdentifier(name, idx)">@components.render_text(option)</label>
 </div>
 @{

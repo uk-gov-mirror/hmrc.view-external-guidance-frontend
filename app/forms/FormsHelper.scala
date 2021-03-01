@@ -21,7 +21,7 @@ import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
 import core.models.ocelot.stanzas.{Input, DateInput, DataInput, Question, Sequence}
 import models.ui.DateInput.partitionSubmittedDateAnswer
-import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedTextAnswer}
+import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedListAnswer, SubmittedTextAnswer}
 
 object FormsHelper {
 
@@ -30,13 +30,15 @@ object FormsHelper {
     // Define form mapping for each data input type
     inputStanza match {
       case _: DateInput => bindSubmittedDateAnswer()
-      case _: Input | _: Question | _: Sequence => bindSubmittedTextAnswer(path -> nonEmptyText) // TODO - Temporary solution whilst rendering sequence
+      case _: Input | _: Question => bindSubmittedTextAnswer(path -> nonEmptyText)
+      case _: Sequence => bindSubmittedListAnswer(path)
     }
 
   def populatedForm(inputStanza: DataInput, path: String, answer: Option[String]): Form[_] =
     inputStanza match {
       case _: DateInput => populateSubmittedDateAnswerForm(answer)
-      case _: Input | _: Question | _: Sequence => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer) // TODO - Temporary solution whilst rendering sequence
+      case _: Input | _: Question => populateSubmittedTextAnswerForm(path -> nonEmptyText, path, answer)
+      case _: Sequence => populateSubmittedListAnswerForm(path, answer)
     }
 
   private def bindSubmittedTextAnswer(bindData: (String, Mapping[String]))
@@ -65,6 +67,19 @@ object FormsHelper {
       formData => Right((form.fill(formData), formData))
     )
 
+  }
+
+  private def bindSubmittedListAnswer(path: String)
+                                     (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
+
+    val formProvider: SubmittedListAnswerFormProvider = new SubmittedListAnswerFormProvider()
+
+    val form = formProvider(path)
+
+    form.bindFromRequest().fold(
+      formWithErrors => Left(formWithErrors),
+      formData => Right((form.fill(formData), formData))
+    )
   }
 
   private def populateSubmittedTextAnswerForm(bindData: (String, Mapping[String]), path: String, answer: Option[String]): Form[SubmittedTextAnswer] = {
@@ -100,6 +115,18 @@ object FormsHelper {
         )
 
       case None => form
+    }
+  }
+
+  private def populateSubmittedListAnswerForm(path: String, answer: Option[String]): Form[SubmittedListAnswer] = {
+
+    val formProvider: SubmittedListAnswerFormProvider = new SubmittedListAnswerFormProvider()
+
+    val form: Form[SubmittedListAnswer] = formProvider(path)
+
+    answer match {
+      case Some(value) if value != "" => form.fill(SubmittedListAnswer(value.split(",").map(_.trim).toList))
+      case _ => form
     }
   }
 
