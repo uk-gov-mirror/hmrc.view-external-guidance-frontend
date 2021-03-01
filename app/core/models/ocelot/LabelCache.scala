@@ -19,7 +19,17 @@ package core.models.ocelot
 import core.models.ocelot.stanzas.Stanza
 import play.api.i18n.Lang
 
-trait Labels {
+trait Flows {
+  def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels
+  def takeFlow: Option[(String, Labels)]
+  def stanzaPool: Map[String, Stanza]
+
+  // Persistence access
+  def flowStack: List[FlowStage]
+  def poolUpdates: Map[String, Stanza]  // Changes to initial pool
+}
+
+trait Labels extends Flows {
   def value(name: String): Option[String]
   def valueAsList(name: String): Option[List[String]]
   def displayValue(name: String)(implicit lang: Lang): Option[String]
@@ -27,15 +37,10 @@ trait Labels {
   def update(name: String, english: String, welsh: String): Labels
   def updateList(name: String, english: List[String]): Labels
   def updateList(name: String, english: List[String], welsh: List[String]): Labels
-  def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels
-  def takeFlow: Option[(String, Labels)]
-  def stanzaPool: Map[String, Stanza]
 
   // Persistence access
   def updatedLabels: Map[String, Label]
   def labelMap:Map[String, Label]
-  def flowStack: List[FlowStage]
-  def updatedPool: Map[String, Stanza]
   def flush(): Labels
 }
 
@@ -45,6 +50,7 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
                              pool: Map[String, Stanza] = Map(),
                              poolCache: Map[String, Stanza] = Map()) extends Labels {
 
+  // Labels
   def value(name: String): Option[String] = label(name).collect{case s: ScalarLabel => s.english.headOption.getOrElse("")}
   def valueAsList(name: String): Option[List[String]] = label(name).collect{case l: ListLabel => l.english}
   def displayValue(name: String)(implicit lang: Lang): Option[String] = label(name).map{lbl =>
@@ -62,6 +68,23 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
   def updateList(name: String, english: List[String], welsh: List[String]): Labels =
     new LabelCacheImpl(labels, updateOrAddListLabel(name, english, welsh), stack, pool, poolCache)
 
+  // Persistence access
+  def updatedLabels: Map[String, Label] = cache
+  def labelMap:Map[String, Label] = labels
+  def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack, pool, poolCache)
+
+  // Label ops
+  private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
+
+  private def updateOrAddScalarLabel(name: String, english: String, welsh: Option[String]): Map[String, Label] =
+    cache + (name -> cache.get(name).fold[Label]
+      (ScalarLabel(name, List(english), welsh.fold[List[String]](Nil)(w => List(w))))
+      (l => ScalarLabel(l.name, List(english), welsh.fold[List[String]](Nil)(w => List(w)))))
+
+  private def updateOrAddListLabel(name: String, english: List[String], welsh: List[String] = Nil): Map[String, Label] =
+    cache + (name -> cache.get(name).fold[Label](ListLabel(name, english, welsh))(l => ListLabel(l.name, english, welsh)))
+
+  // Flows
   def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels =
     flowNext.zipWithIndex.map{
       case (nxt, idx) => Flow(nxt, labelName.map(LabelValue(_, labelValues.lift(idx).fold[Option[String]](None)(v => Some(v)))))
@@ -83,22 +106,8 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
   def stanzaPool: Map[String, Stanza] = pool ++ poolCache
 
   // Persistence access
-  def updatedLabels: Map[String, Label] = cache
-  def labelMap:Map[String, Label] = labels
   def flowStack: List[FlowStage] = stack
-  def updatedPool: Map[String, Stanza] = poolCache
-  def flush(): Labels = new LabelCacheImpl(labels ++ cache.toList, Map(), stack, pool, poolCache)
-
-  // Label ops
-  private def label(name: String): Option[Label] = cache.get(name).fold(labels.get(name))(Some(_))
-
-  private def updateOrAddScalarLabel(name: String, english: String, welsh: Option[String]): Map[String, Label] =
-    cache + (name -> cache.get(name).fold[Label]
-      (ScalarLabel(name, List(english), welsh.fold[List[String]](Nil)(w => List(w))))
-      (l => ScalarLabel(l.name, List(english), welsh.fold[List[String]](Nil)(w => List(w)))))
-
-  private def updateOrAddListLabel(name: String, english: List[String], welsh: List[String] = Nil): Map[String, Label] =
-    cache + (name -> cache.get(name).fold[Label](ListLabel(name, english, welsh))(l => ListLabel(l.name, english, welsh)))
+  def poolUpdates: Map[String, Stanza] = poolCache
 }
 
 object LabelCache {

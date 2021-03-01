@@ -73,7 +73,7 @@ class GuidanceService @Inject() (
             },
             page => {
               val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
-              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap, Map(), flowStack))
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap, Map(), flowStack, stanzaPool))
 
               Right(
                 PageEvaluationContext(
