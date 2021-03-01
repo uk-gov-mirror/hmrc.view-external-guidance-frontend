@@ -231,7 +231,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     "return a BadRequest response" in new QuestionSubmissionTest {
       MockSessionRepository
         .get(processId, Some(s"tell-hmrc$path"), previousPageByLink = false)
-        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Map(), None))))
+        .returns(Future.successful(Right(ProcessContext(process, Map(), Map(), Nil, Map(), None))))
 
       override val fakeRequest = FakeRequest("POST", path).withSession(SessionKeys.sessionId -> processId).withFormUrlEncodedBody().withCSRFToken
       val result = target.submitPage("tell-hmrc", relativePath)(fakeRequest)
@@ -943,7 +943,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(PageContext(standardPage, Seq.empty, None, sessionId, Some("/hello"), Text(Nil), processId, processCode))))
 
       MockGuidanceService
-        .saveLabels(sessionId, LabelCache())
+        .savePageState(sessionId, LabelCache())
         .returns(Future.successful(Right({})))
 
       lazy val target =
@@ -1011,7 +1011,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         .returns(Future.successful(Right(PageContext(standardPage, Seq.empty, None, sessionId, Some("/hello"), Text(Nil), processId, processCode))))
 
       MockGuidanceService
-        .saveLabels(sessionId, LabelCache())
+        .savePageState(sessionId, LabelCache())
         .returns(Future.successful(Left(DatabaseError)))
 
       lazy val target =
