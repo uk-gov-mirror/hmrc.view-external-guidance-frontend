@@ -43,7 +43,7 @@ class GuidanceService @Inject() (
 ) {
   type Retrieve[A] = String => Future[RequestOutcome[A]]
 
-  val logger = Logger(getClass)
+  val logger: Logger = Logger(getClass)
 
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
@@ -61,7 +61,7 @@ class GuidanceService @Inject() (
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, processCode, url, previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, flowStack, stanzaPool, urlToPageId, backLink)) if process.meta.processCode == processCode =>
+      case Right(ProcessContext(process, answers, labelsMap, flowStack, continuationPool, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
           logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
@@ -72,8 +72,8 @@ class GuidanceService @Inject() (
               Left(InvalidProcessError)
             },
             page => {
-              val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
-              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap, Map(), flowStack, stanzaPool))
+              val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/$processCode${k}")}
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap, Map(), flowStack, continuationPool))
 
               Right(
                 PageEvaluationContext(
@@ -162,16 +162,16 @@ class GuidanceService @Inject() (
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
       case Right(process) =>
-        logger.warn(s"Process ${process.meta.id} loaded from backend, containing ${process.flow.keys.toList.length} stanzas and ${process.phrases.length} phrases")
+        logger.warn(s"Loaded process ${process.meta.id}, containing ${process.flow.keys.toList.length} stanzas, ${process.phrases.length} phrases")
         pageBuilder.pages(process, process.startPageId).fold(
         err => {
           logger.warn(s"Failed to parse process with error $err")
           Future.successful(Left(InvalidProcessError))
         },
-        pages => sessionRepository.set(docId, process, pages.map(p => (p.url -> p.id)).toMap).map {
+        pages => sessionRepository.set(docId, process, pages.map(p => p.url -> p.id).toMap).map {
           case Right(_) => Right((pages.head.url, process.meta.processCode))
           case Left(err) =>
-            logger.error(s"Failed to store new parsed process in session respository, $err")
+            logger.error(s"Failed to store new parsed process in session repository, $err")
             Left(err)
           }
         )

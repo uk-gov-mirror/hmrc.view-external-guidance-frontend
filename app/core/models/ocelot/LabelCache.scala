@@ -22,7 +22,7 @@ import play.api.i18n.Lang
 trait Flows {
   def pushFlows(flowNext: Seq[String], continue: String, labelName: Option[String], labelValues: Seq[String], stanzas: Map[String, Stanza]): Labels
   def takeFlow: Option[(String, Labels)]
-  def stanzaPool: Map[String, Stanza]
+  def continuationPool: Map[String, Stanza]
 
   // Persistence access
   def flowStack: List[FlowStage]
@@ -55,7 +55,7 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
   def valueAsList(name: String): Option[List[String]] = label(name).collect{case l: ListLabel => l.english}
   def displayValue(name: String)(implicit lang: Lang): Option[String] = label(name).map{lbl =>
     lang.code match {
-      case "cy" if(lbl.welsh.nonEmpty) => lbl.welsh.mkString(",")
+      case "cy" if lbl.welsh.nonEmpty => lbl.welsh.mkString(",")
       case _ => lbl.english.mkString(",")
     }
   }
@@ -103,7 +103,7 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
       case c: Continuation => (c.next, new LabelCacheImpl(labels, cache, stack.tail, pool, poolCache))
     }
 
-  def stanzaPool: Map[String, Stanza] = pool ++ poolCache
+  def continuationPool: Map[String, Stanza] = pool ++ poolCache
 
   // Persistence access
   def flowStack: List[FlowStage] = stack
@@ -115,5 +115,6 @@ object LabelCache {
   def apply(labels: Map[String, Label]): Labels = new LabelCacheImpl(labels)
   def apply(labels: Map[String, Label], cache: Map[String, Label]): Labels = new LabelCacheImpl(labels, cache)
   def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage]): Labels = new LabelCacheImpl(labels, cache, stack)
-  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage], pool: Map[String, Stanza]): Labels = new LabelCacheImpl(labels, cache, stack, pool)
+  def apply(labels: Map[String, Label], cache: Map[String, Label], stack: List[FlowStage], pool: Map[String, Stanza]): Labels =
+    new LabelCacheImpl(labels, cache, stack, pool)
 }

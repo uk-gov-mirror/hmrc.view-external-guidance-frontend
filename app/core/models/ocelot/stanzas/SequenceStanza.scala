@@ -36,7 +36,7 @@ object SequenceStanza {
       (js \ "label").validateOpt[String] and
       (js \ "stack").validate[Boolean]).tupled match {
       case err: JsError => err
-      case JsSuccess((text: Int, next: Seq[String], options: Seq[Int], label: Option[String], stack: Boolean), _) if next.length != (options.length+1) =>
+      case JsSuccess((text: Int, next: Seq[String], options: Seq[Int], label: Option[String], stack: Boolean), _) if next.length != (options.length + 1) =>
         JsError(Seq(JsPath \ "right" -> Seq(JsonValidationError(Seq("error", "error.listlengths.inconsistent")))))
       case JsSuccess((text: Int, next: Seq[String], options: Seq[Int], label: Option[String], stack: Boolean), _) =>
         JsSuccess(SequenceStanza(text, next, options, label, stack))
@@ -61,7 +61,7 @@ case class Sequence(text: Phrase,
   override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
   def eval(value: String, page: Page, labels: Labels): (Option[String], Labels) =
-    asListOfInt("0,3").fold[(Option[String], Labels)]((None, labels)){checked => {
+    asListOfInt(value).fold[(Option[String], Labels)]((None, labels)){checked => {
       val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
       // Collect any Evaluate stanzas following this Sequence for use when the Continuation is followed
       val continuationStanzas: Map[String, Stanza] = page.keyedStanzas
