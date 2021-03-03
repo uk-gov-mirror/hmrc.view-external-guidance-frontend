@@ -61,28 +61,24 @@ sealed trait Operation {
 
   def eval(labels: Labels): Labels
 
-  def value(arg: String, labels: Labels): String = labelReference(arg).fold(arg) { ref =>
-    labels.value(ref).getOrElse("")
-  }
-
-  def valueAsOption(arg: String, labels: Labels): Option[String] = labelReference(arg).fold[Option[String]](Some(arg)){ref =>
+  def value(arg: String, labels: Labels): Option[String] = labelReference(arg).fold[Option[String]](Some(arg)){ref =>
     labels.value(ref)
   }
 
-  def valueAsListOption(arg: String, labels: Labels): Option[List[String]] = {
+  def listValue(arg: String, labels: Labels): Option[List[String]] = {
     labelReference(arg).fold[Option[List[String]]](None){ref => labels.valueAsList(ref)}
   }
 
   def operands(labels: Labels): (Option[String], Option[List[String]], Option[String], Option[List[String]]) = {
 
-    val xScalar: Option[String] = valueAsOption(left, labels)
-    val yScalar: Option[String] = valueAsOption(right, labels)
+    val xScalar: Option[String] = value(left, labels)
+    val yScalar: Option[String] = value(right, labels)
 
     (xScalar, yScalar) match {
       case (Some(_), Some(_)) => (xScalar, None, yScalar, None) // Optimize for scalar on scalar as these are the most common operations
       case _ =>
-        val xList: Option[List[String]] = valueAsListOption(left, labels)
-        val yList: Option[List[String]] = valueAsListOption(right, labels)
+        val xList: Option[List[String]] = listValue(left, labels)
+        val yList: Option[List[String]] = listValue(right, labels)
 
         (xScalar, xList, yScalar, yList)
     }
@@ -134,8 +130,8 @@ sealed trait Operation {
 
   def rounding(f: (BigDecimal, Int) => BigDecimal, labels: Labels): Labels = {
 
-    val x: String = value(left, labels)
-    val y: String = value(right, labels)
+    val x: String = value(left, labels).getOrElse("")
+    val y: String = value(right, labels).getOrElse("")
 
     (asCurrency(x), asAnyInt(y)) match {
 
