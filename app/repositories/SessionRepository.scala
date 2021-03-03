@@ -50,7 +50,7 @@ case class ProcessContext(process: Process,
 }
 
 trait SessionRepository {
-  def get(key:String): Future[RequestOutcome[ProcessContext]]
+  def get(key: String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveFormPageState(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
