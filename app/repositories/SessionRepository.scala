@@ -243,7 +243,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   private def backlinkAndHistory(pageUrl: String,
                                  flowStack: List[FlowStage],
                                  previousPageByLink: Boolean,
-                                 priorHistory: List[PageHistory]): (Option[String], Option[List[PageHistory]], Option[List[FlowStage]]) =
+                                 priorHistory: List[PageHistory]): (Option[String], Option[List[PageHistory]], Option[List[FlowStage]]) = {
+    println(s"**** pageUrl $pageUrl")
+    println(s"""**** Initial page ${priorHistory.headOption.getOrElse("")}""")
     priorHistory.reverse match {
       // Initial page
       case Nil => (None, None, None)
@@ -251,11 +253,15 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs if x.url == pageUrl => (xs.headOption.map(_.url), Some(priorHistory), None)
       // BACK: pageHistory becomes y :: xs and backlink is head of xs
       case _ :: y :: xs if y.url == pageUrl && !previousPageByLink => (xs.headOption.map(_.url), Some((y :: xs).reverse), Some(y.flowStack))
+      // FORWARD to start url: Back link x, rewrite pageHistory with current flowStack in head
+      case x :: xs if priorHistory.headOption.fold(false)(h => h.url == pageUrl) =>
+        (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), priorHistory.headOption.map(_.flowStack))
       // FORWARD with a non-empty flowStack: Back link x, rewrite pageHistory with current flowStack in head
       case x :: xs if !flowStack.isEmpty => (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), None)
       // FORWARD: Back link x, pageHistory intact
       case x :: _ => (Some(x.url), None, None)
     }
+  }
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 
