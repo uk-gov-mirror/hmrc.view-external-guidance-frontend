@@ -255,7 +255,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       case x :: xs if priorHistory.headOption.fold(false)(h => h.url == pageUrl) =>
         (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), priorHistory.headOption.map(_.flowStack))
       // FORWARD with a non-empty flowStack: Back link x, rewrite pageHistory with current flowStack in head
-      case x :: xs if !flowStack.isEmpty => (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), None)
+      case x :: xs if flowStack.nonEmpty => (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), None)
       // FORWARD: Back link x, pageHistory intact
       case x :: _ => (Some(x.url), None, None)
     }
