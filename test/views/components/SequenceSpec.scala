@@ -18,13 +18,13 @@ package views.components
 
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.data.Forms.nonEmptyText
+import play.api.data.Form
 import play.api.inject.Injector
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import views.html._
-import forms.SubmittedTextAnswerFormProvider
-import models.ui.{FormPage, H2, Paragraph, Sequence, Text}
+import forms.SubmittedListAnswerFormProvider
+import models.ui.{FormPage, H2, Paragraph, RequiredErrorMsg, Sequence, SubmittedListAnswer, Text}
 import core.models.ocelot.{LabelCache, Labels}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
@@ -38,7 +38,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     private def injector: Injector = app.injector
 
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
-    def formProvider: SubmittedTextAnswerFormProvider = injector.instanceOf[SubmittedTextAnswerFormProvider] // TODO This may change
+    def formProvider: SubmittedListAnswerFormProvider = injector.instanceOf[SubmittedListAnswerFormProvider]
 
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
 
@@ -46,10 +46,13 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
 
     implicit val labels: Labels = LabelCache()
 
+    val path: String = "path"
+
     // Create test sequence data
     val sequenceTitle: Text = Text("Select your favourite sweets")
     val sequenceHint: Text = Text("Consider both chocolate and sugar style sweets")
     val sweetOptions: Seq[Text] = Seq(Text("Wine gums"), Text("Munchies"))
+    val errorMsg: RequiredErrorMsg = RequiredErrorMsg(Text("An input error has occurred"))
 
     val h2: H2 = H2(Text("Subtitle"))
     val p: Paragraph = Paragraph(Text("Introduction to sweets"))
@@ -78,9 +81,18 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       Seq.empty
     )
 
+    val sequenceWithError: Sequence = Sequence(
+      sequenceTitle,
+      None,
+      sweetOptions,
+      Seq.empty,
+      Seq(errorMsg)
+    )
+
     val pageWithoutHint: FormPage = FormPage("/start", sequenceWithoutHint)
     val pageWithHint: FormPage = FormPage("/start", sequenceWithHint)
     val pageWithBody: FormPage = FormPage("/start", sequenceWithBody)
+    val pageWithError: FormPage = FormPage("/start", sequenceWithError)
 
     val pageWithoutHintCtx: PageContext = PageContext(
       pageWithoutHint,
@@ -117,6 +129,18 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       "processCode",
       labels
     )
+
+    val pageWithErrorCtx: PageContext = PageContext(
+      pageWithError,
+      Seq.empty,
+      None,
+      "sessionId",
+      None,
+      Text(),
+      "processId",
+      "processCode",
+      labels
+    )
   }
 
   "Sequence component" must {
@@ -124,7 +148,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     "render sequence title for sequence without body inside legend" in new Test {
 
       val doc: Document = asDocument(
-        components.sequence(sequenceWithoutHint, "test", formProvider("test" -> nonEmptyText))
+        components.sequence(sequenceWithoutHint, path, formProvider(path))
         (fakeRequest, messages, pageWithoutHintCtx)
       )
 
@@ -144,7 +168,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     "render sequence hint for sequence when present" in new Test {
 
       val doc: Document = asDocument(
-        components.sequence(sequenceWithHint, "test", formProvider("test" -> nonEmptyText))
+        components.sequence(sequenceWithHint, path, formProvider(path))
         (fakeRequest, messages, pageWithHintCtx)
       )
 
@@ -162,7 +186,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     "sequence with hint should include hint id in aria-describedBy on field set" in new Test {
 
       val doc: Document = asDocument(
-        components.sequence(sequenceWithHint, "test", formProvider("test" -> nonEmptyText))
+        components.sequence(sequenceWithHint, path, formProvider(path))
         (fakeRequest, messages, pageWithHintCtx)
       )
 
@@ -176,7 +200,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     "render title for sequence with body outside legend" in new Test {
 
       val doc: Document = asDocument(
-        components.sequence(sequenceWithBody, "test", formProvider("test" -> nonEmptyText))
+        components.sequence(sequenceWithBody, path, formProvider(path))
         (fakeRequest, messages, pageWithBodyCtx)
       )
 
@@ -214,7 +238,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     "render a checkbox for each sequence option" in new Test {
 
       val doc: Document = asDocument(
-        components.sequence(sequenceWithoutHint, "test", formProvider("test" -> nonEmptyText))
+        components.sequence(sequenceWithoutHint, path, formProvider(path))
         (fakeRequest, messages, pageWithoutHintCtx)
       )
 
@@ -238,7 +262,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       val checkbox1LabelAttrs: Map[String, String] = elementAttrs(checkbox1Labels.first)
 
       checkbox1InputAttrs("class") shouldBe "govuk-checkboxes__input"
-      checkbox1InputAttrs("name") shouldBe "test"
+      checkbox1InputAttrs("name") shouldBe "path[0]"
 
       checkbox1LabelAttrs("class") shouldBe "govuk-label govuk-checkboxes__label"
 
@@ -249,21 +273,93 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
 
       val checkbox2InputAttrs: Map[String, String] = elementAttrs(checkbox2Inputs.first)
 
+      checkbox2InputAttrs("class") shouldBe "govuk-checkboxes__input"
+      checkbox2InputAttrs("name") shouldBe "path[1]"
+
       val checkbox2Labels: Elements = checkboxDivs.last.getElementsByTag("label")
 
       checkbox2Labels.size shouldBe 1
 
       val checkbox2LabelAttrs: Map[String, String] = elementAttrs(checkbox2Labels.first)
 
-      checkbox1InputAttrs("id") shouldBe "test[0]"
+      checkbox1InputAttrs("id") shouldBe "path[0]"
       checkbox1InputAttrs("value") shouldBe "0"
-      checkbox1LabelAttrs("for") shouldBe "test[0]"
+      checkbox1LabelAttrs("for") shouldBe "path[0]"
       checkbox1Labels.first.text() shouldBe sweetOptions.head.asString
 
-      checkbox2InputAttrs("id") shouldBe "test[1]"
+      checkbox2InputAttrs("id") shouldBe "path[1]"
       checkbox2InputAttrs("value") shouldBe "1"
-      checkbox2LabelAttrs("for") shouldBe "test[1]"
+      checkbox2LabelAttrs("for") shouldBe "path[1]"
       checkbox2Labels.first.text shouldBe sweetOptions.last.asString
+    }
+
+    "render checkboxes as 'checked' when they have been selected" in new Test {
+
+      val form: Form[SubmittedListAnswer] = formProvider(path)
+
+      val populatedForm: Form[SubmittedListAnswer] = form.fill(SubmittedListAnswer(List("0", "1")))
+
+      val doc: Document = asDocument(
+        components.sequence(sequenceWithoutHint, path, populatedForm)
+        (fakeRequest, messages, pageWithoutHintCtx)
+      )
+
+      val checkboxContainerDiv: Element = getSingleElementByClass(doc, "govuk-checkboxes")
+
+      val checkboxDivs: Elements = checkboxContainerDiv.getElementsByClass("govuk-checkboxes__item")
+
+      checkboxDivs.size shouldBe 2
+
+      // Check 'checked' attribute on first checkbox
+      val checkbox1Inputs: Elements = checkboxDivs.first.getElementsByTag("input")
+
+      checkbox1Inputs.size shouldBe 1
+
+      val checkbox1InputAttrs: Map[String, String] = elementAttrs(checkbox1Inputs.first)
+
+      checkbox1InputAttrs.contains("checked") shouldBe true
+
+      // Check 'checked' attribute on second checkbox
+      val checkbox2Inputs: Elements = checkboxDivs.last.getElementsByTag("input")
+
+      checkbox2Inputs.size shouldBe 1
+
+      val checkbox2InputAttrs: Map[String, String] = elementAttrs(checkbox2Inputs.first)
+
+      checkbox2InputAttrs.contains("checked") shouldBe true
+
+    }
+
+    "render an error message if an input error occurs" in new Test {
+
+      val doc: Document = asDocument(
+        components.sequence(sequenceWithError, path, formProvider(path))
+        (fakeRequest, messages, pageWithErrorCtx)
+      )
+
+      val formGroupDiv: Elements = doc.getElementsByClass("govuk-form-group")
+
+      formGroupDiv.size shouldBe 1
+
+      elementAttrs(formGroupDiv.first)("class") shouldBe "govuk-form-group govuk-form-group--error"
+
+      // Check aria described by on field set
+      val fieldSets: Elements = doc.getElementsByTag("fieldset")
+
+      fieldSets.size shouldBe 1
+
+      elementAttrs(fieldSets.first)("aria-describedby") shouldBe "required-error"
+
+      // Check error message above checkboxes is present
+      val outerErrorMsgSpan: Option[Element] = getElementById(doc, "required-error")
+
+      outerErrorMsgSpan match {
+        case Some(elem) =>
+          val innerErrorMsgSpans: Elements = elem.getElementsByTag("span")
+          innerErrorMsgSpans.size shouldBe 2
+          innerErrorMsgSpans.first.text() shouldBe s"Error: ${errorMsg.text.asString}"
+        case None => fail("Error message is missing")
+      }
     }
 
   }
