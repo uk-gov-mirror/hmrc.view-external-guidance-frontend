@@ -37,24 +37,6 @@ import reactivemongo.api.indexes.IndexType
 import reactivemongo.api.indexes.Index
 import reactivemongo.bson.BSONInteger
 
-object DefaultSessionRepository {
-  final case class SessionProcess(id: String,
-                                  processId: String,
-                                  process: Process,
-                                  labels: Map[String, Label],
-                                  flowStack: List[FlowStage],
-                                  continuationPool: Map[String, Stanza],
-                                  urlToPageId: Map[String, String],
-                                  answers: Map[String, String],
-                                  pageHistory: List[PageHistory],
-                                  lastAccessed: Instant)
-
-  object SessionProcess {
-    implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
-    implicit lazy val format: Format[SessionProcess] = ReactiveMongoFormats.mongoEntity { Json.format[SessionProcess] }
-  }
-}
-
 case class ProcessContext(process: Process,
                           answers: Map[String, String],
                           labels: Map[String, Label],
@@ -75,30 +57,58 @@ trait SessionRepository {
   def savePageState(key: String, labels: Labels): Future[RequestOutcome[Unit]]
 }
 
+object DefaultSessionRepository {
+  val LastAccessedIndexName = "lastAccessedIndex"
+  val ExpiryAfterOptionName = "expireAfterSeconds"
+  val TtlExpiryFieldName = "lastAccessed"
+
+  val CollectionName: String = "view-external-guidance-session"
+  val FlowStackKey: String = "flowStack"
+  val ContinuationPoolKey: String = "continuationPool"
+  val AnswersKey: String = "answers"
+  val PageHistoryKey: String = "pageHistory"
+  val LabelsKey: String = "labels"
+
+  final case class SessionProcess(id: String,
+                                  processId: String,
+                                  process: Process,
+                                  labels: Map[String, Label],
+                                  flowStack: List[FlowStage],
+                                  continuationPool: Map[String, Stanza],
+                                  urlToPageId: Map[String, String],
+                                  answers: Map[String, String],
+                                  pageHistory: List[PageHistory],
+                                  lastAccessed: Instant)
+
+  object SessionProcess {
+    implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
+    implicit lazy val format: Format[SessionProcess] = ReactiveMongoFormats.mongoEntity { Json.format[SessionProcess] }
+  }
+}
+
+import DefaultSessionRepository._
+
 @Singleton
 class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
   extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
-    collectionName = "view-external-guidance-session",
+    collectionName = CollectionName,
     mongo = component.mongoConnector.db,
     domainFormat = DefaultSessionRepository.SessionProcess.format
   )
   with SessionRepository {
   private type FieldAttr = (String, Json.JsValueWrapper)
-  val lastAccessedIndexName = "lastAccessedIndex"
-  val expiryAfterOptionName = "expireAfterSeconds"
-  val ttlExpiryFieldName = "lastAccessed"
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] =
     // If current configuration includes an update to the expiry period of the TTL index, drop the current index to allow its re-creation
     collection.indexesManager.list().flatMap { indexes =>
       indexes
         .filter(idx =>
-          idx.name.contains(lastAccessedIndexName) &&
-          idx.options.getAs[BSONInteger](expiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
+          idx.name.contains(LastAccessedIndexName) &&
+          idx.options.getAs[BSONInteger](ExpiryAfterOptionName).fold(false)(_.as[Int] != config.timeoutInSeconds)
         )
         .map { _ =>
-          logger.warn(s"Dropping $lastAccessedIndexName ready for re-creation, due to configured timeout change")
-          collection.indexesManager.drop(lastAccessedIndexName).map(ret => logger.info(s"Drop of $lastAccessedIndexName index returned $ret"))
+          logger.warn(s"Dropping $LastAccessedIndexName ready for re-creation, due to configured timeout change")
+          collection.indexesManager.drop(LastAccessedIndexName).map(ret => logger.info(s"Drop of $LastAccessedIndexName index returned $ret"))
         }
 
       super.ensureIndexes
@@ -108,9 +118,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     logger.info(s"SessionRepository TTL set to ${config.timeoutInSeconds} seconds")
     Seq(
       Index(
-        Seq(ttlExpiryFieldName -> IndexType.Ascending),
-        name = Some(lastAccessedIndexName),
-        options = BSONDocument(expiryAfterOptionName -> config.timeoutInSeconds)
+        Seq(TtlExpiryFieldName -> IndexType.Ascending),
+        name = Some(LastAccessedIndexName),
+        options = BSONDocument(ExpiryAfterOptionName -> config.timeoutInSeconds)
       )
     )
   }
@@ -129,8 +139,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
-        (List(toFieldPair("$set", Json.obj(toFieldPair(ttlExpiryFieldName, Json.obj("$date" -> Instant.now().toEpochMilli))))) ++
-              pageHistoryUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj("pageHistory" -> PageHistory(url, Nil))))
+        (List(toFieldPair("$set", Json.obj(toFieldPair(TtlExpiryFieldName, Json.obj("$date" -> Instant.now().toEpochMilli))))) ++
+              pageHistoryUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj(PageHistoryKey -> PageHistory(url, Nil))))
         ).toArray: _*),
       fetchNewObject = false
     ).flatMap { r =>
@@ -171,11 +181,11 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Json.obj(
         "$set" -> Json.obj(
           (List(
-            toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-            toFieldPair("flowStack", labels.flowStack),
-            toFieldPair(s"answers.$url", answer)) ++
-            labels.poolUpdates.toList.map(l => toFieldPair(s"continuationPool.${l._1}", l._2)) ++
-            labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray: _*
+            toFieldPair(TtlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+            toFieldPair(FlowStackKey, labels.flowStack),
+            toFieldPair(s"${AnswersKey}.$url", answer)) ++
+            labels.poolUpdates.toList.map(l => toFieldPair(s"${ContinuationPoolKey}.${l._1}", l._2)) ++
+            labels.updatedLabels.values.map(l => toFieldPair(s"${LabelsKey}.${l.name}", l))).toArray: _*
         )
       )
     ).map { result =>
@@ -198,8 +208,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       findAndUpdate(
         Json.obj("_id" -> key),
         Json.obj("$set" -> Json.obj(
-          (labels.poolUpdates.toList.map(l => toFieldPair(s"continuationPool.${l._1}", l._2)) ++
-           labels.updatedLabels.values.map(l => toFieldPair(s"labels.${l.name}", l))).toArray :+ toFieldPair("flowStack", labels.flowStack) : _*)
+          (labels.poolUpdates.toList.map(l => toFieldPair(s"${ContinuationPoolKey}.${l._1}", l._2)) ++
+           labels.updatedLabels.values.map(l => toFieldPair(s"${LabelsKey}.${l.name}", l))).toArray :+ toFieldPair(FlowStackKey, labels.flowStack) : _*)
         )
       ).map { result =>
         result
@@ -255,9 +265,9 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Json.obj(
         "$set" -> Json.obj(
             (List(
-              toFieldPair(ttlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
-              toFieldPair("pageHistory", pageHistory)) ++
-              flowStack.fold[List[FieldAttr]](Nil)(stack => List(toFieldPair("flowStack", stack)))).toArray: _*
+              toFieldPair(TtlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+              toFieldPair(PageHistoryKey, pageHistory)) ++
+              flowStack.fold[List[FieldAttr]](Nil)(stack => List(toFieldPair(FlowStackKey, stack)))).toArray: _*
         )
       )
     ).map { result =>
