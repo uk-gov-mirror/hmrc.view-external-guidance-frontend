@@ -110,7 +110,7 @@ class FlowSpec extends BaseSpec {
   val expectedLabelValue: LabelValue = LabelValue("LabelName", Some("A value"))
   val expectedFlow: Flow = Flow("1", Some(expectedLabelValue))
   val expectedContinuation: Continuation = Continuation("1")
-  // , Map("1" -> ValueStanza(List(Value(ScalarType, "labelName", "23")), Seq("11"), false))
+
 
   "Reading an invalid FlowStage" should {
     "Generate a JsonValidationError" in {
