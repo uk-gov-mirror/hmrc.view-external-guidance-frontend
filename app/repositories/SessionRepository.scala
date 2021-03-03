@@ -243,9 +243,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
   private def backlinkAndHistory(pageUrl: String,
                                  flowStack: List[FlowStage],
                                  previousPageByLink: Boolean,
-                                 priorHistory: List[PageHistory]): (Option[String], Option[List[PageHistory]], Option[List[FlowStage]]) = {
-    println(s"**** pageUrl $pageUrl")
-    println(s"""**** Initial page ${priorHistory.headOption.getOrElse("")}""")
+                                 priorHistory: List[PageHistory]): (Option[String], Option[List[PageHistory]], Option[List[FlowStage]]) =
     priorHistory.reverse match {
       // Initial page
       case Nil => (None, None, None)
@@ -261,7 +259,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       // FORWARD: Back link x, pageHistory intact
       case x :: _ => (Some(x.url), None, None)
     }
-  }
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 
