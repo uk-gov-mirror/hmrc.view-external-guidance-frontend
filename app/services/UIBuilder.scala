@@ -19,7 +19,7 @@ package services
 import javax.inject.Singleton
 import models._
 import models.ocelot.stanzas._
-import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, _}
+import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, Sequence, _}
 import core.models.ocelot.{Link, Phrase}
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
@@ -64,6 +64,7 @@ class UIBuilder {
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, errStrategy), errStrategy)
       case (in: Input) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
       case (q: Question) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
+      case (s: Sequence) :: xs => fromStanzas(Nil, Seq(fromSequence(s, acc)), errStrategy)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), errStrategy)
       case (wt: ImportantGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromImportantGroup(wt)), errStrategy)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), errStrategy)
@@ -195,5 +196,15 @@ class UIBuilder {
 
   private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
+
+  private def fromSequence(sequence: Sequence, components: Seq[UIComponent])
+                          (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+    val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+
+    val (text, hint) = TextBuilder.singleTextWithOptionalHint(sequence.text)
+    val options = sequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
+
+    ui.Sequence(text, hint, options, uiElements, errMsgs)
+  }
 
 }

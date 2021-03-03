@@ -21,7 +21,7 @@ sealed trait Page {
   val urlPath: String
   val components: Seq[UIComponent]
   val relativePath: String = urlPath.dropWhile(_ == '/')
-  lazy val reduceHeadings: Boolean =components.exists{
+  lazy val reduceHeadings: Boolean = components.exists{
     case c: SummaryList => true
     case t: Table => true
     case _ => false

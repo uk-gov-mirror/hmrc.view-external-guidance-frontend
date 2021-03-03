@@ -22,3 +22,8 @@ trait FormComponent extends UIComponent {
   val body: Seq[UIComponent]
   val errorMsgs: Seq[ErrorMsg]
 }
+
+
+trait SequenceFormComponent extends FormComponent {
+  val options: Seq[Text]
+}

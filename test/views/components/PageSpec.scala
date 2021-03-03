@@ -23,20 +23,20 @@ import play.api.inject.Injector
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
-import org.jsoup.Jsoup
 import views.html.standard_page
 import views.html.form_page
 import models.PageContext
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
-import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text}
+import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text, Sequence}
 import org.jsoup.nodes.{Document, Element}
+import org.jsoup.select.Elements
 
 import scala.collection.JavaConverters._
 import play.api.data.FormError
-import base.ViewFns
+import base.{ViewFns, ViewSpec}
 import forms.SubmittedTextAnswerFormProvider
 
-class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSuite {
+class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
   trait Test {
     private def injector: Injector = app.injector
@@ -98,6 +98,11 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
     val inputPage = FormPage("root", input)
     val inputPageWithErrors = FormPage("root", inputWithErrors)
 
+    val sequenceTitle: Text = Text("Select your fruit")
+    val fruitOptions: Seq[Text] = Seq(Text("Oranges"), Text("Pears"), Text("Mangoes"))
+    val fruitSequence: Sequence = Sequence(sequenceTitle, None, fruitOptions, Seq.empty, Seq.empty)
+    val sequencePage: FormPage = FormPage("/selectFruit", fruitSequence)
+
     def expectedTitleText(h1Text: String, section: Option[String] = None): String =
       section.fold(s"${h1Text} - ${messages("service.name")} - ${messages("service.govuk")}"){s =>
         s"${h1Text} - ${s} - ${messages("service.name")} - ${messages("service.govuk")}"
@@ -112,9 +117,18 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
         }
       }
 
-    val pageCtx = PageContext(simplePage, Seq.empty, None, "sessionId", Some("/"), Text("Title"), "processId", "processCode")
-    val questionPageContext = PageContext(questionPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
-    val inputPageContext = PageContext(inputPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
+    val pageCtx: PageContext = PageContext(simplePage, Seq.empty, None, "sessionId", Some("/"), Text("Title"), "processId", "processCode")
+    val questionPageContext: PageContext = PageContext(questionPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
+    val inputPageContext: PageContext = PageContext(inputPage, Seq.empty, None, "sessionId", Some("/here"), Text("Title"), "processId", "processCode")
+    val sequenceContext: PageContext = PageContext(
+      sequencePage,
+      Seq.empty,
+      None,
+      "sessionId",
+      Some("selectFruit"),
+      Text("Get your fruit"),
+      "processId",
+      "processCode")
   }
 
   "Standard Page component" should {
@@ -304,6 +318,35 @@ class PageSpec extends WordSpec with Matchers with ViewFns with GuiceOneAppPerSu
       Option(inputField).fold(fail("Missing fieldset")){inp =>
         elementAttrs(inp)("aria-describedby").contains("required-error") shouldBe true
       }
+    }
+  }
+
+  "sequence page" should {
+
+    "generate a sequence component with a title and multiple check boxes" in new Test {
+
+      val doc: Document = asDocument(
+        formPageView(
+          sequencePage,
+          sequenceContext,
+          "/fruit",
+          textFormProvider("test" -> nonEmptyText)
+        )(fakeRequest, messages)
+      )
+
+      checkTitle(doc)
+
+      val headings: Elements = doc.getElementsByTag("h1")
+
+      headings.size shouldBe 1
+
+      headings.first.text() shouldBe sequenceTitle.asString
+
+      val checkboxContainerDiv: Element = getSingleElementByClass(doc, "govuk-checkboxes")
+
+      val checkboxDivs: Elements = checkboxContainerDiv.getElementsByClass("govuk-checkboxes__item")
+
+      checkboxDivs.size() shouldBe 3
     }
   }
 }

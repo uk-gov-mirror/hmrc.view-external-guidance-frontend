@@ -488,7 +488,5 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
       newLabels.updatedLabels shouldBe expectedUpdatedLabels
     }
-
   }
-
 }

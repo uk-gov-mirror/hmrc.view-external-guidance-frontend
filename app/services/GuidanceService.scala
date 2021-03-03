@@ -61,7 +61,7 @@ class GuidanceService @Inject() (
   def getPageEvaluationContext(processCode: String, url: String, previousPageByLink: Boolean, sessionId: String)
                               (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageEvaluationContext]] =
     getProcessContext(sessionId, processCode, url, previousPageByLink).map {
-      case Right(ProcessContext(process, answers, labelsMap, urlToPageId, backLink)) if process.meta.processCode == processCode =>
+      case Right(ProcessContext(process, answers, labelsMap, flowStack, urlToPageId, backLink)) if process.meta.processCode == processCode =>
         urlToPageId.get(url).fold[RequestOutcome[PageEvaluationContext]]{
           logger.error(s"Unable to find url $url within cached process ${process.meta.id} using sessionId $sessionId")
           Left(BadRequestError)
@@ -73,7 +73,7 @@ class GuidanceService @Inject() (
             },
             page => {
               val stanzaIdToUrlMap = urlToPageId.map{case (k, v) => (v, s"${appConfig.baseUrl}/${processCode}${k}")}
-              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap))
+              val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(page, LabelCache(labelsMap, Map(), flowStack))
 
               Right(
                 PageEvaluationContext(
@@ -121,7 +121,7 @@ class GuidanceService @Inject() (
     val (optionalNext, labels) = pageRenderer.renderPagePostSubmit(ctx.page, ctx.labels, validatedAnswer)
     optionalNext.fold[Future[RequestOutcome[(Option[String], Labels)]]](Future.successful(Right((None, labels)))){next =>
       logger.info(s"Next page found at stanzaId: $next")
-      sessionRepository.saveUserAnswerAndLabels(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq).map{
+      sessionRepository.saveFormPageState(ctx.sessionId, url, submittedAnswer, labels.updatedLabels.values.toSeq, labels.flowStack).map{
         case Left(err) =>
           logger.error(s"Failed to save updated labels, error = $err")
           Left(InternalServerError)
@@ -133,9 +133,9 @@ class GuidanceService @Inject() (
   def validateUserResponse(ctx: PageEvaluationContext, response: String): Option[String] =
     ctx.dataInput.fold[Option[String]](None)(_.validInput(response))
 
-  def saveLabels(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
+  def savePageState(docId: String, labels: Labels): Future[RequestOutcome[Unit]] =
     labels.updatedLabels.values.headOption.fold[Future[RequestOutcome[Unit]]](Future.successful(Right({})))(_ =>
-      sessionRepository.saveLabels(docId, labels.updatedLabels.values.toSeq)
+      sessionRepository.savePageState(docId, labels.updatedLabels.values.toSeq, labels.flowStack)
     )
 
   def retrieveAndCacheScratch(uuid: String, docId: String)
@@ -165,6 +165,7 @@ class GuidanceService @Inject() (
         logger.warn(s"Unable to find process using identifier $processIdentifier, received $err")
         Future.successful(Left(err))
       case Right(process) =>
+        logger.warn(s"Process ${process.meta.id} loaded from backend, containing ${process.flow.keys.toList.length} stanzas and ${process.phrases.length} phrases")
         pageBuilder.pages(process, process.startPageId).fold(
         err => {
           logger.warn(s"Failed to parse process with error $err")
