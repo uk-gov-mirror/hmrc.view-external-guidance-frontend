@@ -1252,7 +1252,7 @@ class CalculationStanzaSpec extends BaseSpec {
 
       val (_, updatedLabels) = calculation.eval(labelCache)
 
-      updatedLabels.valueAsList("result3") shouldBe Some(List("one", "two", "three", "four"))
+      updatedLabels.valueAsList("result3") shouldBe Some(List("four", "one", "two", "three"))
     }
 
     "not apply addition if one of the operands does not exist" in {

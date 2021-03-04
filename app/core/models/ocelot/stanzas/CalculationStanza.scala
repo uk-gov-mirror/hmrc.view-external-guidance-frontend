@@ -155,8 +155,8 @@ case class AddOperation(left: String, right: String, label: String) extends Oper
 
     val updatedLabels: Labels = operands(labels) match {
       case (Some(x), None, Some(y), None) => op(x, y, _ + _, (s1:String, s2:String) => Some(s1 + s2), unsupportedOperation("Add"), labels)
-      case (None, Some(xList), Some(y), None) => listAndValueOp(xList, y, addStringToList, labels)
-      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, addStringToList, labels)
+      case (None, Some(xList), Some(y), None) => listAndValueOp(xList, y, appendStringToList, labels)
+      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, prependStringToList, labels)
       case (None, Some(xList), None, Some(yList)) => listOp(xList, yList, addListToList, labels)
       case _ => unsupportedOperation("Add")(None, None)
         labels
@@ -165,7 +165,9 @@ case class AddOperation(left: String, right: String, label: String) extends Oper
     updatedLabels
   }
 
-  private def addStringToList(l: List[String], s: String): List[String] = (s :: l.reverse).reverse
+  private def appendStringToList(l: List[String], s: String): List[String] = (s :: l.reverse).reverse
+
+  private def prependStringToList(l: List[String], s: String): List[String] = s :: l
 
   private def addListToList(list1: List[String], list2: List[String]): List[String] = list1 ::: list2
 }
