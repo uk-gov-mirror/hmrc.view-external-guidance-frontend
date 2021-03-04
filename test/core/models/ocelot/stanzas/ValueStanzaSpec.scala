@@ -20,7 +20,7 @@ import core.models.ocelot.LabelCache
 import base.BaseSpec
 import play.api.libs.json._
 
-import core.models.ocelot.{ListLabel, ScalarLabel}
+import core.models.ocelot.{Label, Labels, LabelCache, ListLabel, ScalarLabel}
 
 class ValueStanzaSpec extends BaseSpec {
 
@@ -37,6 +37,8 @@ class ValueStanzaSpec extends BaseSpec {
   val emptyListValue = ""
   val singleEntryListLabel = "single"
   val singleEntryListValue = "July"
+  val copiedScalarLabel = "copiedScalarLabel"
+  val scalarLabelReference = "[label:reference]"
   val next = "40"
   val stack = "false"
 
@@ -178,6 +180,42 @@ class ValueStanzaSpec extends BaseSpec {
     )
     .as[JsObject]
 
+  val validValueStanzaWithScalarLabelRefJson: JsObject = Json
+    .parse(
+      s"""{
+         |  "type": "${stanzaType}",
+         |  "values": [
+         |    {
+         |      "type": "${scalarType}",
+         |      "label": "${copiedScalarLabel}",
+         |      "value": "${scalarLabelReference}"
+         |    }
+         |  ],
+         |  "next": ["${next}"],
+         |  "stack": ${stack}
+         |}
+    """.stripMargin
+    )
+    .as[JsObject]
+
+  val validValueStanzaWithListLabelRefJson: JsObject = Json
+    .parse(
+      s"""{
+         |  "type": "${stanzaType}",
+         |  "values": [
+         |    {
+         |      "type": "${listType}",
+         |      "label": "${copiedScalarLabel}",
+         |      "value": "${scalarLabelReference}"
+         |    }
+         |  ],
+         |  "next": ["${next}"],
+         |  "stack": ${stack}
+         |}
+    """.stripMargin
+    )
+    .as[JsObject]
+
   "ValueStanza" must {
 
     "deserialize scalar label from json" in {
@@ -193,14 +231,14 @@ class ValueStanzaSpec extends BaseSpec {
     }
 
     "serialize scalar label to json" in {
-      val stanza: ValueStanza = ValueStanza(List(Value(ScalarType, "LabelName", "/")), Seq("4"), true)
+      val stanza: ValueStanza = ValueStanza(List(Value(ScalarType, "LabelName", "/")), Seq("4"), stack = true)
       val expectedJson: String = """{"values":[{"type":"scalar","label":"LabelName","value":"/"}],"next":["4"],"stack":true}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
     }
 
     "serialize scalar label to json from a Stanza reference" in {
-      val stanza: Stanza = ValueStanza(List(Value(ScalarType, "LabelName", "/")), Seq("4"), true)
+      val stanza: Stanza = ValueStanza(List(Value(ScalarType, "LabelName", "/")), Seq("4"), stack = true)
       val expectedJson: String = """{"next":["4"],"stack":true,"values":[{"type":"scalar","label":"LabelName","value":"/"}],"type":"ValueStanza"}"""
       val json: String = Json.toJson(stanza).toString
       json shouldBe expectedJson
@@ -287,6 +325,40 @@ class ValueStanzaSpec extends BaseSpec {
       updatedLabels.value(pageUrlLabel) shouldBe Some(pageUrl)
     }
 
+    "correctly evaluate a reference to a scalar label" in {
+
+      val stanza: ValueStanza = validValueStanzaWithScalarLabelRefJson.as[ValueStanza]
+
+      val labelMap: Map[String, Label] = Map(
+        "reference" -> ScalarLabel("reference", List("Some Data"))
+      )
+
+      val labels: Labels = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = stanza.eval(labels)
+
+      nextStanza shouldBe next
+
+      updatedLabels.value(copiedScalarLabel) shouldBe Some("Some Data")
+    }
+
+    "correctly evaluate a reference to a non-existent scalar label" in {
+
+      val stanza: ValueStanza = validValueStanzaWithScalarLabelRefJson.as[ValueStanza]
+
+      val labelMap: Map[String, Label] = Map(
+        "anotherReference" -> ScalarLabel("anotherReference", List("Some Data"))
+      )
+
+      val labels: Labels = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = stanza.eval(labels)
+
+      nextStanza shouldBe next
+
+      updatedLabels.value(copiedScalarLabel) shouldBe Some("")
+    }
+
     "correctly evaluate list labels" in {
 
       val stanza: ValueStanza = validValueStanzaWithMultipleListsListJson.as[ValueStanza]
@@ -300,6 +372,40 @@ class ValueStanzaSpec extends BaseSpec {
       updatedLabels.valueAsList(emptyListLabel) shouldBe Some(Nil)
       updatedLabels.valueAsList(singleEntryListLabel) shouldBe Some(List(singleEntryListValue))
       updatedLabels.valueAsList(listLabel) shouldBe Some(List("March", "April", "May"))
+    }
+
+    "correctly evaluate a reference to a list label" in {
+
+      val stanza: ValueStanza = validValueStanzaWithListLabelRefJson.as[ValueStanza]
+
+      val labelMap: Map[String, Label] = Map(
+        "reference" -> ListLabel("reference", List("Some Data", "Some more data"))
+      )
+
+      val labels: Labels = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = stanza.eval(labels)
+
+      nextStanza shouldBe next
+
+      updatedLabels.valueAsList(copiedScalarLabel) shouldBe Some(List("Some Data", "Some more data"))
+    }
+
+    "correctly evaluate a reference to a non-existent list label" in {
+
+      val stanza: ValueStanza = validValueStanzaWithListLabelRefJson.as[ValueStanza]
+
+      val labelMap: Map[String, Label] = Map(
+        "anotherReference" -> ListLabel("anotherReference", List("Some Data", "Some more data"))
+      )
+
+      val labels: Labels = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = stanza.eval(labels)
+
+      nextStanza shouldBe next
+
+      updatedLabels.valueAsList(copiedScalarLabel) shouldBe Some(Nil)
     }
 
     missingJsObjectAttrTests[ValueStanza](validValueStanzaJson, List("type"))

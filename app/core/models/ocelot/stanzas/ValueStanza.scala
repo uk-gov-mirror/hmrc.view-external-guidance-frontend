@@ -55,7 +55,8 @@ case class ValueStanza(values: List[Value], override val next: Seq[String], stac
 
     def assignValue(v: Value, labels: Labels): Labels = v.valueType match {
         case ScalarType => labels.update(v.label, labelReference(v.value).fold(v.value)(lr => labels.value(lr).getOrElse("")))
-        case ListType => labels.updateList(v.label, if(v.value.isEmpty) Nil else v.value.split(",").toList)
+        case ListType => labels.updateList(v.label, labelReference(v.value).fold[List[String]]
+          (if(v.value.isEmpty) Nil else v.value.split(",").toList)(lr => labels.valueAsList(lr).getOrElse(Nil)))
       }
 
     @tailrec
