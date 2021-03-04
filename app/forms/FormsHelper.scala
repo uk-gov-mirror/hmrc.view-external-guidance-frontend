@@ -125,7 +125,7 @@ object FormsHelper {
     val form: Form[SubmittedListAnswer] = formProvider(path)
 
     answer match {
-      case Some(value) if value != "" => form.fill(SubmittedListAnswer(value.split(",").map(_.trim).toList))
+      case Some(value) if value.nonEmpty => form.fill(SubmittedListAnswer(value.split(",").map(_.trim).toList))
       case _ => form
     }
   }
