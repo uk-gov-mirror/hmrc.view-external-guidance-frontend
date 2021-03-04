@@ -29,3 +29,9 @@ case class SubmittedDateAnswer(day: String, month: String, year: String) extends
     override val text: String = day + "/" + month + "/" + year
 
 }
+
+case class SubmittedListAnswer(items: List[String]) extends SubmittedAnswer {
+
+    override val text: String = items.mkString(",")
+
+}

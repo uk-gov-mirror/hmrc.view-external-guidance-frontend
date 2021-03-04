@@ -19,7 +19,7 @@ package forms
 import play.api.mvc._
 import play.api.data.Form
 import core.models.ocelot.Phrase
-import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question}
+import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question, Sequence}
 import models.ui.SubmittedAnswer
 
 import play.api.test.FakeRequest
@@ -41,6 +41,7 @@ class FormsHelperSpec extends BaseSpec {
     val monthAnswer: String = "5"
     val yearAnswer: String = "2019"
     val dateAnswer: String = dayAnswer + "/" + monthAnswer + "/" + yearAnswer
+    val sequenceAnswer: String = "0,2,4"
     val expectedErrorMessage: String = "error.required"
 
     val question: Question = Question(
@@ -77,6 +78,20 @@ class FormsHelperSpec extends BaseSpec {
       Phrase("Enter a random date", "Welsh, Enter a random date"),
       None,
       "randomDate",
+      None,
+      stack = false
+    )
+
+    val sequence: Sequence = Sequence(
+      Phrase("Select a day in the working week", "Welsh, Select a day in the working week"),
+      Seq("10", "20", "30", "40", "50", "60"),
+      Seq(
+        Phrase("Monday", "Welsh, Monday"),
+        Phrase("Tuesday", "Welsh, Tuesday"),
+        Phrase("Wednesday", "Welsh, Wednesday"),
+        Phrase("Thursday", "Welsh, Thursday"),
+        Phrase("Friday", "Welsh, Friday")
+      ),
       None,
       stack = false
     )
@@ -150,6 +165,27 @@ class FormsHelperSpec extends BaseSpec {
 
     }
 
+    "be able to bind data for a sequence input component" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody(
+          s"$relativePath[0]" -> "0",
+          s"$relativePath[2]" -> "2",
+          s"$relativePath[4]" -> "4"
+        )
+
+      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+
+      result match {
+        case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
+          form(s"$relativePath[0]").value shouldBe Some("0")
+          form(s"$relativePath[1]").value shouldBe Some("2")
+          form(s"$relativePath[2]").value shouldBe Some("4")
+          submittedAnswer.text shouldBe sequenceAnswer
+        case Left(_: Form[_]) => fail("Form binding returned a form with errors")
+      }
+    }
+
     "return a form with errors if the question answer is not mapped to the correct key in the request" in new Test {
 
       implicit val request: Request[_] = FakeRequest("POST", path)
@@ -213,6 +249,19 @@ class FormsHelperSpec extends BaseSpec {
 
     }
 
+    "return a form with error if the sequence is not mapped to the correct key in the request" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody(s"$incorrectPath[0]" -> "0")
+
+      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+
+      result match {
+        case Left(formWithErrors: Form[_]) => formWithErrors.errors.head.message shouldBe expectedErrorMessage
+        case _ => fail("Binding should fail for incorrect request data")
+      }
+    }
+
     "populate a form with the submitted answer for a question" in new Test {
 
       val form: Form[_] = FormsHelper.populatedForm(question, relativePath, Some(questionAnswer))
@@ -244,6 +293,15 @@ class FormsHelperSpec extends BaseSpec {
       form("day").value shouldBe Some(dayAnswer)
       form("month").value shouldBe Some(monthAnswer)
       form("year").value shouldBe Some(yearAnswer)
+    }
+
+    "populate a form with the submitted answer for a sequence" in new Test {
+
+      val form: Form[_] = FormsHelper.populatedForm(sequence, relativePath, Some(sequenceAnswer))
+
+      form(s"$relativePath[0]").value shouldBe Some("0")
+      form(s"$relativePath[1]").value shouldBe Some("2")
+      form(s"$relativePath[2]").value shouldBe Some("4")
     }
 
   }
