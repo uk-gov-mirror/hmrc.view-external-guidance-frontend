@@ -91,6 +91,13 @@ sealed trait Operation {
     None
   }
 
+  def unsupportedListOperation(operationName: String)(arg1: Any, arg2: Any): Option[List[String]] = {
+
+    logger.error("Unsupported \"" + operationName + "\" calculation stanza operation defined in guidance")
+
+    None
+  }
+
   def op(x : String,
          y: String,
          f: (BigDecimal, BigDecimal) => BigDecimal,
@@ -122,8 +129,8 @@ sealed trait Operation {
 
   }
 
-  def listAndValueOp(list: List[String], scalar: String, f:(List[String], String) => List[String], labels: Labels): Labels =
-    labels.updateList(label, f(list, scalar))
+  def listAndValueOp(list: List[String], scalar: String, f:(List[String], String) => Option[List[String]], labels: Labels): Labels =
+  f(list, scalar) match {case Some(value) => labels.updateList(label, value) case None => labels}
 
   def listOp(list1: List[String], list2: List[String], f:(List[String], List[String]) => List[String], labels: Labels): Labels =
     labels.updateList(label, f(list1, list2))
@@ -165,9 +172,9 @@ case class AddOperation(left: String, right: String, label: String) extends Oper
     updatedLabels
   }
 
-  private def appendStringToList(l: List[String], s: String): List[String] = (s :: l.reverse).reverse
+  private def appendStringToList(l: List[String], s: String): Option[List[String]] = Some((s :: l.reverse).reverse)
 
-  private def prependStringToList(l: List[String], s: String): List[String] = s :: l
+  private def prependStringToList(l: List[String], s: String): Option[List[String]] = Some(s :: l)
 
   private def addListToList(list1: List[String], list2: List[String]): List[String] = list1 ::: list2
 }
@@ -179,7 +186,7 @@ case class SubtractOperation(left: String, right: String, label: String) extends
     operands(labels) match {
       case (Some(x), None, Some(y), None) => op(x, y, _ - _, unsupportedOperation("Subtract"), subtractDate, labels)
       case (None, Some(xList), Some(y), None) => listAndValueOp(xList, y, subtractStringFromList, labels)
-      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, subtractStringFromList, labels)
+      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, unsupportedListOperation("Subtract list from string"), labels)
       case (None, Some(xList), None, Some(yList)) => listOp(xList, yList, subtractListFromList, labels)
       case _ => unsupportedOperation("Subtract")(None, None)
         labels
@@ -189,7 +196,7 @@ case class SubtractOperation(left: String, right: String, label: String) extends
   private def subtractDate(date: LocalDate, other: LocalDate) : Option[String] =
     Some(other.until(date, ChronoUnit.DAYS).toString)
 
-  private def subtractStringFromList(l: List[String], s: String): List[String] = l.filter(_ != s)
+  private def subtractStringFromList(l: List[String], s: String): Option[List[String]] = Some(l.filter(_ != s))
 
   @tailrec
   private def subtractListFromList(list1: List[String], list2: List[String]): List[String] = {

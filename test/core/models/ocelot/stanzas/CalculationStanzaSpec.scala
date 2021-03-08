@@ -1324,6 +1324,28 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels.valueAsList("result") shouldBe Some(List("January", "February", "March", "May"))
     }
 
+    "not evaluate subtraction of a list from a scalar label as this operation is not supported" in {
+
+      val calcOperation: Seq[CalcOperation] = Seq(CalcOperation("[label:a]", Subtraction, "[label:list]", "result1"))
+
+      val calculation: Calculation = createCalculation(calcOperation, Seq("8"))
+
+      val a: ScalarLabel = ScalarLabel("a", List("A"))
+
+      val list: ListLabel = ListLabel("list", List("A", "B", "C"))
+
+      val labelMap: Map[String, Label] = Map(
+        a.name -> a,
+        list.name -> list
+      )
+
+      val labels: Labels = LabelCache(labelMap)
+
+      val (_, updatedLabels) = calculation.eval(labels)
+
+      updatedLabels shouldBe labels
+    }
+
     "successfully handle subtraction from an empty list" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(CalcOperation("[label:emptyList]", Subtraction, "[label:minus]", "result"))
@@ -1350,9 +1372,9 @@ class CalculationStanzaSpec extends BaseSpec {
 
       val calcOperations: Seq[CalcOperation] = Seq(
         CalcOperation("[label:initialList]", Subtraction, "June", "result1"),
-        CalcOperation("[label:may]", Subtraction, "[label:result1]", "result2"),
+        CalcOperation("[label:result1]", Subtraction, "[label:may]", "result2"),
         CalcOperation("[label:result2]", Subtraction, "[label:september]", "result3"),
-        CalcOperation("April", Subtraction, "[label:result3]", "result4")
+        CalcOperation("[label:result3]", Subtraction, "April", "result4")
       )
 
       val calculation: Calculation = createCalculation(calcOperations, Seq("88"))
