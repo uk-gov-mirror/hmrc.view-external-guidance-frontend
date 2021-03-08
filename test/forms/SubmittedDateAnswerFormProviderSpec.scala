@@ -45,7 +45,7 @@ class SubmittedDateAnswerFormProviderSpec extends BaseSpec {
       boundForm.get shouldBe SubmittedDateAnswer(day, month, year)
     }
 
-    "be able to be able to execute the unapply method held in mapping" in {
+    "be able to execute the unbind method held in mapping" in {
 
       val form: Form[SubmittedDateAnswer] = formProvider()
 
