@@ -25,7 +25,7 @@ import core.models.ocelot.{Page, Labels, Process}
 class PageRenderer @Inject() () {
 
   def renderPage(page: Page, labels: Labels): (Seq[VisualStanza], Labels, Option[DataInput]) = {
-    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
+    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap ++ labels.continuationPool
     val (visualStanzas, newLabels, _, _, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
     (visualStanzas, newLabels, optionalInput)
   }
@@ -33,34 +33,34 @@ class PageRenderer @Inject() () {
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
 
     @tailrec
-    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String], stanzaMap: Map[String, Stanza]): (Option[String], Labels) = {
+    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String])(implicit stanzaMap: Map[String, Stanza]): (Option[String], Labels) = {
       if (next == page.id) (None, labels)                     // next indicates current page
       else stanzaMap.get(next) match {
         case None => (Some(next), labels)
         case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
           case EndStanza => labels.takeFlow match {
-              case Some((nxt, stanzas, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
+              case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
               case None => (Some(next), labels)
             }
           case s: Stanza with Evaluate =>
             val (next, updatedLabels) = s.eval(labels)
-            evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap)
+            evaluatePostInputStanzas(next, updatedLabels, seen)
         }
       }
     }
 
-    val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap
-    val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)(stanzaMap)
+    implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap ++ labels.continuationPool
+    val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       dataInputStanza.eval(answer, page, newLabels) match {
-        case (Some(Process.EndStanzaId), postInputLabels) => postInputLabels.takeFlow match {
-            case Some((next, stanzas, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen, stanzaMap ++ stanzas.toMap)
-            case None => (Some(Process.EndStanzaId), postInputLabels)
+        case (Some(Process.EndStanzaId), updatedLabels) => updatedLabels.takeFlow match {
+            case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
+            case None => (Some(Process.EndStanzaId), updatedLabels)
           }
-        case (Some(next), postInputLabels) => evaluatePostInputStanzas(next, postInputLabels, seen, stanzaMap)
-        case (None, postInputLabels) => (None, postInputLabels)
+        case (Some(next), updatedLabels) => evaluatePostInputStanzas(next, updatedLabels, seen)
+        case (None, updatedLabels) => (None, updatedLabels)
        }
     }
   }
