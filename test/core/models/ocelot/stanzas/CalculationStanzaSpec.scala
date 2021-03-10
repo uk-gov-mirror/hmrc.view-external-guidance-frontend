@@ -1159,6 +1159,46 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels shouldBe labelCache
     }
 
+    "ignore floor operations where the value to be rounded is not defined" in {
+
+      val calcOperation: Seq[CalcOperation] = Seq(CalcOperation("[label:missing]", Floor, "0", "output"))
+
+      val stanza: CalculationStanza = CalculationStanza(calcOperation, Seq("28"), stack = false)
+
+      val calculation: Calculation = Calculation(stanza)
+
+      val labelCache: Labels = LabelCache()
+
+      val (nextStanza, updatedLabels) = calculation.eval(labelCache)
+
+      nextStanza shouldBe "28"
+
+      updatedLabels shouldBe labelCache
+    }
+
+    "ignore ceiling operations where the scale value is not defined" in {
+
+      val calcOperation: Seq[CalcOperation] = Seq(CalcOperation("[label:value]", Ceiling, "[label:missing]", "output"))
+
+      val stanza: CalculationStanza = CalculationStanza(calcOperation, Seq("28"), stack = false)
+
+      val calculation: Calculation = Calculation(stanza)
+
+      val value: ScalarLabel = ScalarLabel("value", List("10.4"))
+
+      val labelMap: Map[String, Label] = Map(
+        value.name -> value
+      )
+
+      val labelCache: Labels = LabelCache(labelMap)
+
+      val (nextStanza, updatedLabels) = calculation.eval(labelCache)
+
+      nextStanza shouldBe "28"
+
+      updatedLabels shouldBe labelCache
+    }
+
     "evaluate addition to a list using a constant" in {
 
       val calcOperations: Seq[CalcOperation] = Seq(CalcOperation("[label:list]", Addition, "four", "result"))

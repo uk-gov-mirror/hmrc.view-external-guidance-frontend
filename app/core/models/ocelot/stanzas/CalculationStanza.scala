@@ -84,14 +84,7 @@ sealed trait Operation {
     }
   }
 
-  def unsupportedOperation(operationName: String)(arg1: Any, arg2: Any ): Option[String] = {
-
-    logger.error("Unsupported \"" + operationName + "\" calculation stanza operation defined in guidance")
-
-    None
-  }
-
-  def unsupportedListOperation(operationName: String)(arg1: Any, arg2: Any): Option[List[String]] = {
+  def unsupportedOperation[A](operationName: String)(arg1: Any, arg2: Any ): Option[A] = {
 
     logger.error("Unsupported \"" + operationName + "\" calculation stanza operation defined in guidance")
 
@@ -137,40 +130,36 @@ sealed trait Operation {
 
   def rounding(f: (BigDecimal, Int) => BigDecimal, labels: Labels): Labels = {
 
-    val x: String = value(left, labels).getOrElse("")
-    val y: String = value(right, labels).getOrElse("")
+    value(left, labels).fold(labels)(x => value(right, labels).fold(labels)(y =>
 
-    (asCurrency(x), asAnyInt(y)) match {
+      (asCurrency(x), asAnyInt(y)) match {
 
-      case (Some(value), Some(scale)) =>
+        case (Some(value), Some(scale)) =>
 
-        val scaledValue = f(value, scale)
-        labels.update(label, scaledValue.bigDecimal.toPlainString)
+          val scaledValue = f(value, scale)
+          labels.update(label, scaledValue.bigDecimal.toPlainString)
 
-      case _ =>
+        case _ =>
 
-        unsupportedOperation("Rounding")(x, y)
-        labels
+          unsupportedOperation("Rounding")(x, y)
+          labels
 
-    }
+      }))
+
   }
 }
 
 case class AddOperation(left: String, right: String, label: String) extends Operation {
 
-  def eval(labels: Labels): Labels = {
-
-    val updatedLabels: Labels = operands(labels) match {
-      case (Some(x), None, Some(y), None) => op(x, y, _ + _, (s1:String, s2:String) => Some(s1 + s2), unsupportedOperation("Add"), labels)
+  def eval(labels: Labels): Labels =
+    operands(labels) match {
+      case (Some(x), None, Some(y), None) => op(x, y, _ + _, (s1: String, s2: String) => Some(s1 + s2), unsupportedOperation("Add"), labels)
       case (None, Some(xList), Some(y), None) => listAndValueOp(xList, y, appendStringToList, labels)
       case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, prependStringToList, labels)
       case (None, Some(xList), None, Some(yList)) => listOp(xList, yList, addListToList, labels)
       case _ => unsupportedOperation("Add")(None, None)
         labels
     }
-
-    updatedLabels
-  }
 
   private def appendStringToList(l: List[String], s: String): Option[List[String]] = Some((s :: l.reverse).reverse)
 
@@ -181,17 +170,16 @@ case class AddOperation(left: String, right: String, label: String) extends Oper
 
 case class SubtractOperation(left: String, right: String, label: String) extends Operation {
 
-  def eval(labels: Labels): Labels = {
+  def eval(labels: Labels): Labels =
 
     operands(labels) match {
       case (Some(x), None, Some(y), None) => op(x, y, _ - _, unsupportedOperation("Subtract"), subtractDate, labels)
       case (None, Some(xList), Some(y), None) => listAndValueOp(xList, y, subtractStringFromList, labels)
-      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, unsupportedListOperation("Subtract list from string"), labels)
+      case (Some(x), None, None, Some(yList)) => listAndValueOp(yList, x, unsupportedOperation("Subtract list from string"), labels)
       case (None, Some(xList), None, Some(yList)) => listOp(xList, yList, subtractListFromList, labels)
       case _ => unsupportedOperation("Subtract")(None, None)
         labels
     }
-  }
 
   private def subtractDate(date: LocalDate, other: LocalDate) : Option[String] =
     Some(other.until(date, ChronoUnit.DAYS).toString)
@@ -199,12 +187,11 @@ case class SubtractOperation(left: String, right: String, label: String) extends
   private def subtractStringFromList(l: List[String], s: String): Option[List[String]] = Some(l.filter(_ != s))
 
   @tailrec
-  private def subtractListFromList(list1: List[String], list2: List[String]): List[String] = {
+  private def subtractListFromList(list1: List[String], list2: List[String]): List[String] =
     list2 match {
       case Nil => list1
       case x :: xs => subtractListFromList(list1.filter(_ != x), xs)
     }
-  }
 
 }
 
