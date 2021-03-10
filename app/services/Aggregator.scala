@@ -107,7 +107,7 @@ object Aggregator {
     inputSeq match {
       case (x: ErrorCallout) :: xs if x.stack => aggregateError(xs, acc :+ x)
       case xs if acc.length == 1 => (acc.head, xs)
-      case xs => (ErrorGroup(acc), xs)
+      case xs => (RequiredErrorGroup(acc), xs)
     }
 
 }

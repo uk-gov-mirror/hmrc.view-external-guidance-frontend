@@ -57,7 +57,7 @@ class UIBuilder @Inject() (messagesApi: MessagesApi) {
     stanzas match {
       case Nil => acc
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, errStrategy), errStrategy)
-      case (eg: ErrorGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromErrorGroup(eg, errStrategy)), errStrategy)
+      case (eg: RequiredErrorGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromRequiredErrorGroup(eg, errStrategy)), errStrategy)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), errStrategy)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), errStrategy)
@@ -183,10 +183,11 @@ class UIBuilder @Inject() (messagesApi: MessagesApi) {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
-  private def fromErrorGroup(eg: ErrorGroup, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
-
-    RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
-  }
+  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+    errStrategy match {
+      case e: ValueGroupError => RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
+      case _ => RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
+    }
 
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))

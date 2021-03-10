@@ -18,12 +18,12 @@ package models.ocelot.stanzas
 
 import core.models.ocelot.stanzas.{ErrorCallout, VisualStanza, Populated}
 
-case class ErrorGroup (override val next: Seq[String], group: Seq[ErrorCallout], stack: Boolean) extends VisualStanza with Populated
+case class RequiredErrorGroup (override val next: Seq[String], group: Seq[ErrorCallout], stack: Boolean) extends VisualStanza with Populated
 
-object ErrorGroup {
-  def apply(group: Seq[ErrorCallout]): ErrorGroup =
+object RequiredErrorGroup {
+  def apply(group: Seq[ErrorCallout]): RequiredErrorGroup =
     group match {
-      case Nil => ErrorGroup(Seq.empty, Seq.empty, false)
-      case _ => ErrorGroup(group.last.next, group, group.head.stack)
+      case Nil => RequiredErrorGroup(Seq.empty, Seq.empty, false)
+      case _ => RequiredErrorGroup(group.last.next, group, group.head.stack)
     }
 }
