@@ -50,6 +50,10 @@ object Aggregator {
         val (vs: VisualStanza, remainder) = aggregateYourCall(xs, Seq (x))
         aggregateStanzas(acc :+ vs)(remainder)
 
+      case (x: ErrorCallout) :: xs =>
+        val (vs: VisualStanza, remainder) = aggregateError(xs, Seq (x))
+        aggregateStanzas(acc :+ vs)(remainder)
+
       case x :: xs => aggregateStanzas(acc :+ x)(xs)
     }
 
@@ -96,6 +100,14 @@ object Aggregator {
       case (x: YourCallCallout) :: xs if x.stack => aggregateYourCall(xs, acc :+ x)
       case xs if acc.length == 1 => (acc.head, xs)
       case xs => (YourCallGroup(acc), xs)
+    }
+
+  @tailrec
+  private def aggregateError(inputSeq: Seq[VisualStanza], acc: Seq[ErrorCallout]): (VisualStanza, Seq[VisualStanza]) =
+    inputSeq match {
+      case (x: ErrorCallout) :: xs if x.stack => aggregateError(xs, acc :+ x)
+      case xs if acc.length == 1 => (acc.head, xs)
+      case xs => (ErrorGroup(acc), xs)
     }
 
 }

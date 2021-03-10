@@ -16,7 +16,8 @@
 
 package services
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
+import play.api.i18n.{Lang, MessagesApi}
 import models._
 import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, Sequence, _}
@@ -32,6 +33,7 @@ sealed trait ErrorStrategy {
 }
 case object NoError extends ErrorStrategy
 case object ValueMissingError extends ErrorStrategy
+case class ValueGroupError(fieldIndices: List[String]) extends ErrorStrategy
 case object ValueTypeError extends ErrorStrategy {
   override def default(stanzas: Seq[VisualStanza]): ErrorStrategy =
     stanzas.collect{case s:TypeErrorCallout => s}
@@ -40,7 +42,7 @@ case object ValueTypeError extends ErrorStrategy {
 }
 
 @Singleton
-class UIBuilder {
+class UIBuilder @Inject() (messagesApi: MessagesApi) {
   val logger: Logger = Logger(getClass)
   val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
     Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
@@ -55,6 +57,7 @@ class UIBuilder {
     stanzas match {
       case Nil => acc
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, errStrategy), errStrategy)
+      case (eg: ErrorGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromErrorGroup(eg, errStrategy)), errStrategy)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), errStrategy)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), errStrategy)
@@ -180,6 +183,11 @@ class UIBuilder {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
+  private def fromErrorGroup(eg: ErrorGroup, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+
+    RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
+  }
+
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
@@ -206,5 +214,9 @@ class UIBuilder {
 
     ui.Sequence(text, hint, options, uiElements, errMsgs)
   }
+
+  private def dayText(lang: Lang): String = messagesApi("label.day")(lang)
+  private def monthText(lang: Lang): String = messagesApi("label.month")(lang)
+  private def yearText(lang: Lang): String = messagesApi("label.year")(lang)
 
 }
