@@ -855,4 +855,139 @@ class AggregatorSpec extends BaseSpec {
 
   }
 
+  "ErrorCallout aggregation" must {
+
+    trait ErrorCalloutTest extends Test {
+      val phrase1 = Phrase(Vector("Error", "WelshError"))
+      val phrase2 = Phrase(Vector("Error {0}", "Welsh Error {0}"))
+      val phrase3 = Phrase(Vector("Error {0} {1}", "Welsh Error {0} {1}"))
+
+      val callout1 = ErrorCallout(phrase1, Seq(""), false)
+      val callout2 = ErrorCallout(phrase2, Seq(""), true)
+      val callout3 = ErrorCallout(phrase3, Seq(""), true)
+      val callout4 = ErrorCallout(phrase3, Seq(""), true)
+
+    }
+
+    "not create ImportantGroup  of length 1 when encountering isolated Important co" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] =
+        Seq(
+          callout,
+          callout1,
+          instruction)
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(0) shouldBe callout
+      aggregatedStanzas(1) shouldBe callout1
+    }
+
+    "leave two Important callouts with stack set to false" in new ErrorCalloutTest {
+
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout1,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe callout1
+      aggregatedStanzas(2) shouldBe callout1
+    }
+
+    "create a Important group with two entries for two contiguous Important cos with stack set to true" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout2,
+        callout3,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe RequiredErrorGroup(Seq(callout2, callout3))
+    }
+
+    "create a Important group with two Important co with stack set to false and true respectively" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        instruction,
+        callout1,
+        callout2,
+        instruction,
+        callout
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+
+      aggregatedStanzas(1) shouldBe RequiredErrorGroup(Seq(callout1, callout2))
+    }
+
+    "create a Important group with multiple Important cos" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        callout1,
+        callout2,
+        callout3,
+        callout4,
+        instruction
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(1) shouldBe RequiredErrorGroup(Seq(callout1, callout2, callout3, callout4))
+    }
+
+    "create two Important group of size two from four contiguous elems where stack is false for the third elem" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout2,
+        callout3,
+        callout1,
+        callout4
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(0) shouldBe RequiredErrorGroup(Seq(callout2, callout3))
+      aggregatedStanzas(1) shouldBe RequiredErrorGroup(Seq(callout1, callout4))
+    }
+
+    "leave two Important callouts in sequence of stanzas" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        callout1,
+        instruction1,
+        callout1,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(2) shouldBe callout1
+      aggregatedStanzas(four) shouldBe callout1
+    }
+
+    "create two Important group with multiple elems from a complex sequence of stanzas" in new ErrorCalloutTest {
+      val stanzas: Seq[VisualStanza] = Seq(
+        callout,
+        instruction,
+        instruction1,
+        callout1,
+        callout2,
+        callout3,
+        instructionGroup,
+        callout1,
+        callout2,
+        instruction2
+      )
+
+      val aggregatedStanzas: Seq[Stanza] = Aggregator.aggregateStanzas(Nil)(stanzas)
+      aggregatedStanzas(3) shouldBe RequiredErrorGroup(Seq(callout1, callout2, callout3))
+      aggregatedStanzas(five) shouldBe RequiredErrorGroup(Seq(callout1, callout2))
+    }
+
+
+    "Create a valid empty RequiredErrorGroup" in new ErrorCalloutTest {
+      RequiredErrorGroup(Nil) shouldBe RequiredErrorGroup(Seq.empty, Seq.empty, false)
+    }
+
+  }
+
 }
