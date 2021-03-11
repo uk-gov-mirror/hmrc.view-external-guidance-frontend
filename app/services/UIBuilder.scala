@@ -16,12 +16,11 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
-import play.api.i18n.{Lang, MessagesApi}
+import javax.inject.Singleton
 import models._
 import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, Sequence, _}
-import core.models.ocelot.{Link, Phrase}
+import core.models.ocelot.{Link, Phrase, EmbeddedParameterRegex}
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
@@ -33,7 +32,7 @@ sealed trait ErrorStrategy {
 }
 case object NoError extends ErrorStrategy
 case object ValueMissingError extends ErrorStrategy
-case class ValueGroupError(fieldIndices: List[String]) extends ErrorStrategy
+case class ValueMissingGroupError(missingFieldNames: List[String]) extends ErrorStrategy
 case object ValueTypeError extends ErrorStrategy {
   override def default(stanzas: Seq[VisualStanza]): ErrorStrategy =
     stanzas.collect{case s:TypeErrorCallout => s}
@@ -42,7 +41,7 @@ case object ValueTypeError extends ErrorStrategy {
 }
 
 @Singleton
-class UIBuilder @Inject() (messagesApi: MessagesApi) {
+class UIBuilder {
   val logger: Logger = Logger(getClass)
   val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
     Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
@@ -57,7 +56,7 @@ class UIBuilder @Inject() (messagesApi: MessagesApi) {
     stanzas match {
       case Nil => acc
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, errStrategy), errStrategy)
-      case (eg: RequiredErrorGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromRequiredErrorGroup(eg, errStrategy)), errStrategy)
+      case (eg: RequiredErrorGroup) :: xs => fromStanzas(xs, acc ++ fromRequiredErrorGroup(eg, errStrategy), errStrategy)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), errStrategy)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), errStrategy)
@@ -183,10 +182,19 @@ class UIBuilder @Inject() (messagesApi: MessagesApi) {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
-  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit lang: Lang): Seq[UIComponent] =
     errStrategy match {
-      case e: ValueGroupError => RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
-      case _ => RequiredErrorMsg(eg.group.map(co => TextBuilder.fromPhrase(co.text)))
+      case ValueMissingGroupError(Nil) =>
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == 0).fold[Seq[UIComponent]](Nil){errorCallout =>
+          Seq(RequiredErrorMsg(errorCallout.text))
+        }
+      case e: ValueMissingGroupError =>
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == e.missingFieldNames.length).fold[Seq[UIComponent]](Nil){errorCallout =>
+          Seq(RequiredErrorMsg(Text(EmbeddedParameterRegex.replaceSomeIn(errorCallout.text.value(lang), { m =>
+            Option(m.group(1)).map(_.toInt).fold[Option[String]](None)(idx => e.missingFieldNames.lift(idx))
+          }))))
+        }
+      case _ => Nil
     }
 
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
@@ -215,9 +223,5 @@ class UIBuilder @Inject() (messagesApi: MessagesApi) {
 
     ui.Sequence(text, hint, options, uiElements, errMsgs)
   }
-
-  private def dayText(lang: Lang): String = messagesApi("label.day")(lang)
-  private def monthText(lang: Lang): String = messagesApi("label.month")(lang)
-  private def yearText(lang: Lang): String = messagesApi("label.year")(lang)
 
 }

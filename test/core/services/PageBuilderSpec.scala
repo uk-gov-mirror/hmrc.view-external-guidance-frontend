@@ -96,7 +96,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       }
     }
 
-    "detect SharedDataInputStanza error" in {
+    "detect IncompleteDateInputPage error" in {
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/url", Seq("1"), true),
         "1" -> InstructionStanza(0, Seq("2"), None, false),
@@ -104,7 +104,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         "4" -> Choice(ChoiceStanza(Seq("5","end"), Seq(ChoiceStanzaTest("[label:label]", LessThanOrEquals, "8")), false)),
         "5" -> PageStanza("/url2", Seq("1"), true),
         "6" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> InputStanza(Currency, Seq("4"), 0, Some(0), "Label", None, false),
+        "2" -> InputStanza(Date, Seq("4"), 0, Some(0), "Label", None, false),
         "end" -> EndStanza
       )
       val process = Process(
@@ -119,8 +119,8 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         Vector[Link]()
       )
       pageBuilder.pagesWithValidation(process, Process.StartStanzaId) match {
-        case Left(Seq(SharedDataInputStanza("2", Seq(Process.StartStanzaId, "5")))) => succeed
-        case err => fail(s"SharedDataInputStanza not detected $err")
+        case Left(Seq(IncompleteDateInputPage("5"), IncompleteDateInputPage("start"))) => succeed
+        case err => fail(s"IncompleteDateInputPage not detected $err")
       }
     }
 
@@ -1267,7 +1267,7 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
         Vector[Link]()
       )
       case class Dummy(id: String, pageUrl: String, pageTitle: String)
-      pageBuilder.pagesWithValidation(process) match {
+      pageBuilder.pages(process) match {
         case Right(pages) =>
           val pageInfo = pageBuilder.fromPageDetails(pages)(Dummy)
 
