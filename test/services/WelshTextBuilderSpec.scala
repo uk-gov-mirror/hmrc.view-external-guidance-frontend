@@ -158,13 +158,13 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
 
   "TextBuilder answer processing" must {
     "return display answer text only when there is no hint" in new Test {
-      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithNoHint)
+      val (displayText, hintText) = TextBuilder.fromPhraseWithOptionalHint(answerWithNoHint)
       displayText shouldBe Text(answerWithNoHint.value(lang))
       hintText shouldBe None
     }
 
     "return display answer text with hint" in new Test {
-      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithHint)
+      val (displayText, hintText) = TextBuilder.fromPhraseWithOptionalHint(answerWithHint)
       displayText shouldBe answer
       hintText shouldBe Some(hint)
     }

@@ -110,14 +110,14 @@ class UIBuilder {
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit lang: Lang): UIComponent = {
+  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val answers = q.answers.map { ans =>
-      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
+      val (answer, hint) = TextBuilder.fromPhraseWithOptionalHint(ans)
       Answer(answer, hint)
     }
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
+    val (question, hint) = TextBuilder.fromPhraseWithOptionalHint(q.text)
     ui.Question(question, hint, uiElements, answers, errorMsgs)
   }
 
@@ -201,7 +201,7 @@ class UIBuilder {
                           (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
-    val (text, hint) = TextBuilder.singleTextWithOptionalHint(sequence.text)
+    val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(sequence.text)
     val options = sequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
 
     ui.Sequence(text, hint, options, uiElements, errMsgs)
