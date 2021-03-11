@@ -32,6 +32,7 @@ sealed trait ErrorStrategy {
 }
 case object NoError extends ErrorStrategy
 case object ValueMissingError extends ErrorStrategy
+case class ValueMissingGroupError(missingFieldIndices: List[String]) extends ErrorStrategy
 case object ValueTypeError extends ErrorStrategy {
   override def default(stanzas: Seq[VisualStanza]): ErrorStrategy =
     stanzas.collect{case s:TypeErrorCallout => s}
