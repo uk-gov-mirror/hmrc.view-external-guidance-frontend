@@ -14,5 +14,8 @@
  * limitations under the License.
  *@
 
-@(field: String, form: Form[_])
-@{if(form.errors.size > 1 || (form.errors.size == 1 && form.errors.head.key == field)) " govuk-input--error"}
+@import models.ui.{DateInput, RequiredErrorMsg}
+
+@(input: DateInput, field: String, form: Form[_])
+@{if((input.errorMsgs.nonEmpty && input.errorMsgs.collect{case r: RequiredErrorMsg => r}.size == 0) ||
+     (form.errors.size > 1 || (form.errors.size == 1 && form.errors.head.key == field))) " govuk-input--error"}

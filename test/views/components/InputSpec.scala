@@ -18,7 +18,8 @@ package views.components
 
 import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import core.models.ocelot.{Label, LabelCache, Labels, Phrase}
-import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H4, Input, NumberInput, Paragraph, RequiredErrorMsg, SubmittedDateAnswer, Text, TextInput}
+import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H4, Input, NumberInput}
+import models.ui.{Paragraph, RequiredErrorMsg, SubmittedDateAnswer, Text, TextInput, ValueErrorMsg}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
 import org.scalatest.{Matchers, WordSpec}
@@ -72,6 +73,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     val inputWithoutBody: Input = CurrencyInput(Text(i1), None, Seq.empty)
     val inputWithHintAndNoBody: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
     protected val errorMsg = RequiredErrorMsg(Text("An error has occurred"))
+    protected val valueErrorMsg = ValueErrorMsg(Text("A value error has occurred"))
     val inputWithErrors: Input = CurrencyInput(Text(i1), None, Seq.empty, Seq(errorMsg))
     val inputWithHintAndErrors: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(bpList, para1), Seq(errorMsg))
     implicit val labels: Labels = LabelCache()
@@ -275,6 +277,7 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       override val inputWithHintAndNoBody: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq.empty)
       override val inputWithErrors: DateInput = DateInput(Text(i1), None, Seq.empty, Seq(errorMsg))
       override val inputWithHintAndErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(errorMsg))
+      val inputWithValueErrors: DateInput = DateInput(Text(i1), Some(Text(i1Hint)), Seq(para1), Seq(valueErrorMsg))
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
       val datePage: FormPage = models.ui.FormPage("/url", dateInput)
       override val ctx = PageContext(datePage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
@@ -353,6 +356,41 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         span.text shouldBe i1Hint
       }
     }
+
+    "not render inputs with error class for required error messages on input component only" in new DateTest {
+
+      private val doc: Document = asDocument(components.input_date(inputWithErrors, "test", dateFormProvider())(fakeRequest, messages, ctx))
+
+      private val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+      dayAttrs("class").contains("govuk-input--error") shouldBe false
+
+      private val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+      monthAttrs("class").contains("govuk-input--error") shouldBe false
+
+      private val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+      yearAttrs("class").contains("govuk-input--error") shouldBe false
+    }
+
+    "render inputs with error class for value error messages on input component only" in new DateTest {
+
+      private val doc: Document = asDocument(components.input_date(inputWithValueErrors, "test", dateFormProvider())(fakeRequest, messages, ctx))
+
+      private val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+      dayAttrs("class").contains("govuk-input--error") shouldBe true
+
+      private val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+      monthAttrs("class").contains("govuk-input--error") shouldBe true
+
+      private val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+      yearAttrs("class").contains("govuk-input--error") shouldBe true
+    }
+
 
     "render day input with error class when day is missing" in new DateTest {
 
