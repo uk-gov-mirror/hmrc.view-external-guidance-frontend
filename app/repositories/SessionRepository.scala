@@ -81,6 +81,8 @@ object DefaultSessionRepository {
                                   lastAccessed: Instant)
 
   object SessionProcess {
+    def apply(id: String, processId: String, process: Process, urlToPageId: Map[String, String], lastAccessed: Instant): SessionProcess =
+      SessionProcess(id, processId, process, Map(), Nil, Map(), urlToPageId, Map(), Nil, lastAccessed)
     implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
     implicit lazy val format: Format[SessionProcess] = ReactiveMongoFormats.mongoEntity { Json.format[SessionProcess] }
   }
@@ -89,7 +91,9 @@ object DefaultSessionRepository {
 import DefaultSessionRepository._
 
 @Singleton
-class DefaultSessionRepository @Inject() (config: AppConfig, component: ReactiveMongoComponent)(implicit ec: ExecutionContext)
+class DefaultSessionRepository @Inject() (config: AppConfig,
+                                          component: ReactiveMongoComponent,
+                                          sessionProcessTransition: SessionProcessFSM)(implicit ec: ExecutionContext)
   extends ReactiveRepository[DefaultSessionRepository.SessionProcess, BSONObjectID](
     collectionName = CollectionName,
     mongo = component.mongoConnector.db,
@@ -135,12 +139,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       Left(DatabaseError)
     }
 
-  def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
+  def get(key: String, pageUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
         (List(toFieldPair("$set", Json.obj(toFieldPair(TtlExpiryFieldName, Json.obj("$date" -> Instant.now().toEpochMilli))))) ++
-              pageHistoryUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj(PageHistoryKey -> PageHistory(url, Nil))))
+              pageUrl.fold[List[FieldAttr]](Nil)(url => List("$push" -> Json.obj(PageHistoryKey -> PageHistory(url, Nil))))
         ).toArray: _*),
       fetchNewObject = false
     ).flatMap { r =>
@@ -150,12 +154,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
         }{ sp =>
           //
-          // pageHistory returned by findAndUpdate() is intentionally the history before the update!!
+          // SessionProcess returned by findAndUpdate() is intentionally that prior to the update!!
           //
-          pageHistoryUrl.fold(
+          pageUrl.fold(
             Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.continuationPool, sp.urlToPageId, None)))
-          ){pageUrl =>
-            val (backLink, historyUpdate, flowStack) = backlinkAndHistory(pageUrl, sp.flowStack, previousPageByLink, sp.pageHistory)
+          ){url =>
+            val (backLink, historyUpdate, flowStack) = sessionProcessTransition(url, sp, previousPageByLink)
             val processContext =
               ProcessContext(sp.process, sp.answers, sp.labels, flowStack.getOrElse(sp.flowStack), sp.continuationPool, sp.urlToPageId, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
@@ -231,7 +235,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
     collection
       .update(false)
       .one(Json.obj("_id" -> key),
-           Json.obj("$set" -> DefaultSessionRepository.SessionProcess(key, process.meta.id, process, Map(), Nil, Map(), urlToPageId, Map(), Nil, Instant.now)),
+           Json.obj("$set" -> DefaultSessionRepository.SessionProcess(key, process.meta.id, process, urlToPageId, Instant.now)),
            upsert = true)
       .map(_ => Right(()))
       .recover {
@@ -239,26 +243,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
           logger.error(s"Error $lastError while trying to persist process=${process.meta.id} to session repo using _id=$key")
           Left(DatabaseError)
       }
-
-  private def backlinkAndHistory(pageUrl: String,
-                                 flowStack: List[FlowStage],
-                                 previousPageByLink: Boolean,
-                                 priorHistory: List[PageHistory]): (Option[String], Option[List[PageHistory]], Option[List[FlowStage]]) =
-    priorHistory.reverse match {
-      // Initial page
-      case Nil => (None, None, None)
-      // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
-      case x :: xs if x.url == pageUrl => (xs.headOption.map(_.url), Some(priorHistory), None)
-      // BACK: pageHistory becomes y :: xs and backlink is head of xs
-      case _ :: y :: xs if y.url == pageUrl && !previousPageByLink => (xs.headOption.map(_.url), Some((y :: xs).reverse), Some(y.flowStack))
-      // FORWARD to start url: Back link x, rewrite pageHistory with current flowStack in head, set flowStack to that of initial page in history
-      case x :: xs if priorHistory.headOption.fold(false)(h => h.url == pageUrl) =>
-        (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), priorHistory.headOption.map(_.flowStack))
-      // FORWARD with a non-empty flowStack: Back link x, rewrite pageHistory with current flowStack in head
-      case x :: xs if flowStack.nonEmpty => (Some(x.url), Some((PageHistory(pageUrl, flowStack) :: x :: xs).reverse), None)
-      // FORWARD: Back link x, pageHistory intact
-      case x :: _ => (Some(x.url), None, None)
-    }
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 

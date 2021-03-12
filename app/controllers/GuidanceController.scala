@@ -116,7 +116,7 @@ class GuidanceController @Inject() (
                     logger.error(s"Page submission failed: $err")
                     InternalServerError(errorHandler.internalServerErrorTemplate)
                 }
-              }
+            }
           }
         }
       case Left(AuthenticationError) =>

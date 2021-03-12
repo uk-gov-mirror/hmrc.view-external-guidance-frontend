@@ -24,7 +24,7 @@ import core.models.ocelot._
 import play.api.libs.json._
 import core.models.StanzaHelper
 
-class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
+class PageBuilderSpec extends BaseSpec with ProcessJson with SequenceJson with StanzaHelper {
 
   // Define instance of class used in testing
   val pageBuilder: PageBuilder = new PageBuilder(new Placeholders(new DefaultTodayProvider))
@@ -93,34 +93,6 @@ class PageBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper {
       pageBuilder.buildPage("4", process) match {
         case Left(StanzaNotFound("4")) => succeed
         case _ => fail("Unknown stanza not detected")
-      }
-    }
-
-    "detect SharedDataInputStanza error" in {
-      val flow = Map(
-        Process.StartStanzaId -> PageStanza("/url", Seq("1"), true),
-        "1" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> InputStanza(Currency, Seq("4"), 0, Some(0), "Label", None, false),
-        "4" -> Choice(ChoiceStanza(Seq("5","end"), Seq(ChoiceStanzaTest("[label:label]", LessThanOrEquals, "8")), false)),
-        "5" -> PageStanza("/url2", Seq("1"), true),
-        "6" -> InstructionStanza(0, Seq("2"), None, false),
-        "2" -> InputStanza(Currency, Seq("4"), 0, Some(0), "Label", None, false),
-        "end" -> EndStanza
-      )
-      val process = Process(
-        metaSection,
-        flow,
-        Vector[Phrase](
-          Phrase(Vector("Some Text", "Welsh, Some Text")),
-          Phrase(Vector("Some Text1", "Welsh, Some Text1")),
-          Phrase(Vector("Some Text2", "Welsh, Some Text2")),
-          Phrase(Vector("Some Text3", "Welsh, Some Text3"))
-        ),
-        Vector[Link]()
-      )
-      pageBuilder.pagesWithValidation(process, Process.StartStanzaId) match {
-        case Left(Seq(SharedDataInputStanza("2", Seq(Process.StartStanzaId, "5")))) => succeed
-        case err => fail(s"SharedDataInputStanza not detected $err")
       }
     }
 

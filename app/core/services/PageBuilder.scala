@@ -85,7 +85,6 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
       pages => {
         checkQuestionPages(pages, Nil) ++
         duplicateUrlErrors(pages.reverse, Nil) ++
-        detectSharedStanzaUsage(pages) ++
         detectUnsupportedPageRedirect(pages) match {
           case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
           case errors =>
@@ -101,21 +100,15 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
           f(page.id, page.url, text.english)
         case YourCallCallout(text, _, _) =>
           f(page.id, page.url, text.english)
-        case q: Question =>
-          f(page.id, page.url, hintRegex.replaceAllIn(q.text.english, ""))
+        case i: Question =>
+          f(page.id, page.url, hintRegex.replaceAllIn(i.text.english, ""))
+        case i: Sequence =>
+          f(page.id, page.url, hintRegex.replaceAllIn(i.text.english, ""))
         case i: Input =>
           f(page.id, page.url, hintRegex.replaceAllIn(i.name.english, ""))
       }
     }
 
-  private def detectSharedStanzaUsage(pages: Seq[Page]): Seq[GuidanceError] = {
-    val dataInputByPage: Seq[(String, Seq[String])] = pages.map(p => (p.id, p.keyedStanzas.collect{case KeyedStanza(id, _: DataInput) => id}))
-    dataInputByPage.flatMap(_._2).distinct.flatMap{ id =>
-      dataInputByPage.collect{case(pId, stanzas) if stanzas.contains(id) => (id, pId)}
-    }.groupBy(t => t._1)
-     .collect{case (k, p) if p.length > 1 => SharedDataInputStanza(k, p.map(_._2))}
-     .toSeq
-  }
 
   private def detectUnsupportedPageRedirect(pages: Seq[Page]): Seq[GuidanceError] = {
     val pageIds = pages.map(_.id)
