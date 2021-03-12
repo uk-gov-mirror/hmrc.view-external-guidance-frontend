@@ -18,15 +18,16 @@ package views.components
 
 import forms.{SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import core.models.ocelot.{Label, LabelCache, Labels, Phrase}
-import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H4, Input, NumberInput, Paragraph, RequiredErrorMsg, Text, TextInput}
+import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H4, Input, NumberInput, Paragraph, RequiredErrorMsg, SubmittedDateAnswer, Text, TextInput}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.data.Form
 import play.api.data.Forms.nonEmptyText
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.inject.Injector
-import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import play.twirl.api.Html
 import views.html._
@@ -277,6 +278,10 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       val dateInput: DateInput = models.ui.DateInput(Text(), None, Seq.empty)
       val datePage: FormPage = models.ui.FormPage("/url", dateInput)
       override val ctx = PageContext(datePage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode", labels)
+
+      val dayAnswer: String = "10"
+      val monthAnswer: String = "7"
+      val yearAnswer: String = "2016"
     }
 
     "render input text as a header" in new DateTest {
@@ -349,36 +354,135 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       }
     }
 
-    "render inputs with error class for erroneous input" in new DateTest {
+    "render day input with error class when day is missing" in new DateTest {
 
-      private val doc: Document = asDocument(components.input_date(inputWithErrors, "test", dateFormProvider())(fakeRequest, messages, ctx))
+      private val commonInputClasses: List[String] = List( "govuk-input", "govuk-date-input__input")
 
-      private val commonInputClasses: List[String] = List( "govuk-input", "govuk-date-input__input", "govuk-input--error")
+      bindDateFormData( "month" -> monthAnswer, "year" -> yearAnswer) match {
+        case Right(_) => fail("Binding of data should fail owing to a missing field")
+        case Left(formWithErrors) =>
 
-      private val dayInput: Element = doc.getElementById("day")
+          val doc: Document = asDocument(components.input_date(inputWithErrors, "test", formWithErrors)(fakeRequest, messages, ctx))
 
-      private val dayAttrs: Map[String, String] = elementAttrs(dayInput)
+          val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
 
-      commonInputClasses.foreach{ cic => dayAttrs("class").contains(cic) shouldBe true}
+          commonInputClasses.foreach{ cic => dayAttrs("class").contains(cic) shouldBe true}
 
-      dayAttrs("class").contains("govuk-input--width-2") shouldBe true
+          dayAttrs("class").contains("govuk-input--error") shouldBe true
 
-      private val monthInput: Element = doc.getElementById("month")
+          dayAttrs("class").contains("govuk-input--width-2") shouldBe true
 
-      private val monthAttrs: Map[String, String] = elementAttrs(monthInput)
+          val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
 
-      commonInputClasses.foreach{ cic => monthAttrs("class").contains(cic) shouldBe true}
+          commonInputClasses.foreach{ cic => monthAttrs("class").contains(cic) shouldBe true}
 
-      monthAttrs("class").contains("govuk-input--width-2") shouldBe true
+          monthAttrs("class").contains("govuk-input--error") shouldBe false
 
-      private val yearInput: Element = doc.getElementById("year")
+          monthAttrs("class").contains("govuk-input--width-2") shouldBe true
 
-      private val yearAttrs: Map[String, String] = elementAttrs(yearInput)
+          val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
 
-      commonInputClasses.foreach{ cic => yearAttrs("class").contains(cic) shouldBe true}
+          commonInputClasses.foreach{ cic => yearAttrs("class").contains(cic) shouldBe true}
 
-      yearAttrs("class").contains("govuk-input--width-4") shouldBe true
+          yearAttrs("class").contains("govuk-input--error") shouldBe false
+
+          yearAttrs("class").contains("govuk-input--width-4") shouldBe true
+      }
+
     }
+
+    "render day input with error class when month is missing" in new DateTest {
+
+      bindDateFormData( "day" -> dayAnswer, "year" -> yearAnswer) match {
+        case Right(_) => fail("Binding of data should fail owing to a missing field")
+        case Left(formWithErrors) =>
+
+          val doc: Document = asDocument(components.input_date(inputWithErrors, "test", formWithErrors)(fakeRequest, messages, ctx))
+
+          val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+          dayAttrs("class").contains("govuk-input--error") shouldBe false
+
+          val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+          monthAttrs("class").contains("govuk-input--error") shouldBe true
+
+          val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+          yearAttrs("class").contains("govuk-input--error") shouldBe false
+      }
+
+    }
+
+    "render day input with error class when year is missing" in new DateTest {
+
+      bindDateFormData( "day" -> dayAnswer, "month" -> monthAnswer) match {
+        case Right(_) => fail("Binding of data should fail owing to a missing field")
+        case Left(formWithErrors) =>
+
+          val doc: Document = asDocument(components.input_date(inputWithErrors, "test", formWithErrors)(fakeRequest, messages, ctx))
+
+          val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+          dayAttrs("class").contains("govuk-input--error") shouldBe false
+
+          val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+          monthAttrs("class").contains("govuk-input--error") shouldBe false
+
+          val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+          yearAttrs("class").contains("govuk-input--error") shouldBe true
+      }
+
+    }
+
+    "render day input with error class when day and month are missing" in new DateTest {
+
+      bindDateFormData( "year" -> yearAnswer) match {
+        case Right(_) => fail("Binding of data should fail owing to missing fields")
+        case Left(formWithErrors) =>
+
+          val doc: Document = asDocument(components.input_date(inputWithErrors, "test", formWithErrors)(fakeRequest, messages, ctx))
+
+          val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+          dayAttrs("class").contains("govuk-input--error") shouldBe true
+
+          val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+          monthAttrs("class").contains("govuk-input--error") shouldBe true
+
+          val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+          yearAttrs("class").contains("govuk-input--error") shouldBe true
+      }
+
+    }
+
+    "render day input with error class when all input fields are missing" in new DateTest {
+
+      bindDateFormData() match {
+        case Right(_) => fail("Binding of data should fail owing to missing fields")
+        case Left(formWithErrors) =>
+
+          val doc: Document = asDocument(components.input_date(inputWithErrors, "test", formWithErrors)(fakeRequest, messages, ctx))
+
+          val dayAttrs: Map[String, String] = getElementAttributes(doc, "day")
+
+          dayAttrs("class").contains("govuk-input--error") shouldBe true
+
+          val monthAttrs: Map[String, String] = getElementAttributes(doc, "month")
+
+          monthAttrs("class").contains("govuk-input--error") shouldBe true
+
+          val yearAttrs: Map[String, String] = getElementAttributes(doc, "year")
+
+          yearAttrs("class").contains("govuk-input--error") shouldBe true
+      }
+
+    }
+
   }
 
   "English Number Input component" must {
@@ -463,6 +567,30 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
         }
       }
     }
+  }
+
+  private def bindDateFormData(data: (String, String)*): Either[Form[_], SubmittedDateAnswer] = {
+
+    implicit val bindRequest: Request[_] = FakeRequest("POST", "/")
+      .withFormUrlEncodedBody(data: _*)
+
+    val formProvider: SubmittedDateAnswerFormProvider = new SubmittedDateAnswerFormProvider()
+
+    val form: Form[SubmittedDateAnswer] = formProvider()
+
+    form.bindFromRequest().fold(
+      formWithErrors => Left(formWithErrors),
+      formData => Right(formData)
+    )
+  }
+
+  private def getElementAttributes(doc: Document, id: String) : Map[String, String] = {
+
+    Option(doc.getElementById(id)) match {
+      case Some(element) => elementAttrs(element)
+      case None => Map()
+    }
+
   }
 
 }
