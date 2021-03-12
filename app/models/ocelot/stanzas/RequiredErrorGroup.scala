@@ -22,5 +22,5 @@ case class RequiredErrorGroup (override val next: Seq[String], group: Seq[ErrorC
 
 object RequiredErrorGroup {
   def apply(group: Seq[ErrorCallout]): RequiredErrorGroup =
-    RequiredErrorGroup(group.reverse.headOption.fold[Seq[String]](Seq.empty)(_.next), group, group.headOption.fold[Boolean](false)(_.stack))
+    RequiredErrorGroup(group.lastOption.fold[Seq[String]](Seq.empty)(_.next), group, group.headOption.fold[Boolean](false)(_.stack))
 }
