@@ -1385,7 +1385,9 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
       val stanzas = Seq(
         KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-        KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
+        KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Error Text", "Welsh, Some Error Text")), Seq("11"), false)),
+        KeyedStanza("11", ErrorCallout(Phrase(Vector("Some Error Text {0}", "Welsh, Some Error Text {0}")), Seq("111"), true)),
+        KeyedStanza("111", ErrorCallout(Phrase(Vector("Some Error Text {0} and {1}", "Welsh, Some Error Text {0} and {1}")), Seq("3"), true)),
         KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
         KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
       )
@@ -1402,10 +1404,26 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       }
     }
 
-    "Include Error messages when there are errors" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+    "Include correct Error messages when all fields missing" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(Nil))(urlMap, lang) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
-        case _: FormPage => succeed
+        case s: FormPage => succeed
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include correct Error message for one missing field" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Blwyddyn")))(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Welsh, Some Error Text Blwyddyn")))
+        case x => fail(s"Should return FormPage: found $x")
+      }
+    }
+
+    "Include correct Error message for two missing fields" in new DateInputTest {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Dydd", "Blwyddyn")))(urlMap, lang) match {
+        case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
+        case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Welsh, Some Error Text Dydd and Blwyddyn")))
         case x => fail(s"Should return FormPage: found $x")
       }
     }

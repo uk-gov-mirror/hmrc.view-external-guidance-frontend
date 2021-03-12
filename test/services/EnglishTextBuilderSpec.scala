@@ -31,14 +31,14 @@ class EnglishTextBuilderSpec extends BaseSpec {
     val link2EnWords = "Another Link"
     val link2CyWords = "Welsh, Another Link"
 
-    val link1 = Link("https://www.bbc.co.uk", link1EnWords, false)
-    val link2 = Link("https://www.gov.uk", link2EnWords, false)
+    val link1 = "https://www.bbc.co.uk/news/#nw-c-most-watched-heading__title"
+    val link2 = "https://www.gov.uk"
     val urlMap1: Map[String, String] = Map("start" -> "dummy-path/start", "3" -> "dummy-path", "5" -> "dummy-path/blah", "34" -> "dummy-path/next")
 
     val txtWithLinks = Phrase(
       Vector(
-        s"[bold:This is a ][link:${link1EnWords}:https://www.bbc.co.uk] followed by [link:${link2EnWords}:https://www.gov.uk] and nothing",
-        s"[bold:Welsh, This is a ][link:${link1CyWords}:https://www.bbc.co.uk] Welsh, followed by [link:${link2CyWords}:https://www.gov.uk] Welsh, and nothing"
+        s"[bold:This is a ][link:${link1EnWords}:${link1}] followed by [link:${link2EnWords}:${link2}] and nothing",
+        s"[bold:Welsh, This is a ][link:${link1CyWords}:${link1}] Welsh, followed by [link:${link2CyWords}:${link2}] Welsh, and nothing"
       )
     )
 
@@ -67,7 +67,6 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert label reference with date output format placeholders within phrase to LabelRef TextItems" in new Test {
       val p = Phrase("""Sentence with a [label:BLAH:date] label reference""", """Welsh, Sentence with a [label:BLAH:date] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), LabelRef("BLAH", DateStandard), Words(" label reference"))
-
     }
 
     "Convert a label placeholder within a bold placeholder to a bold label ref" in new Test {
@@ -93,9 +92,9 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
       val txt = TextBuilder.fromPhrase(txtWithLinks)
       txt.items(0) shouldBe words1
-      txt.items(1).toWords shouldBe Link("https://www.bbc.co.uk", link1EnWords).toWords
+      txt.items(1).toWords shouldBe Link(link1, link1EnWords).toWords
       txt.items(2) shouldBe words2
-      txt.items(3).toWords shouldBe Link("https://www.gov.uk", link2EnWords).toWords
+      txt.items(3).toWords shouldBe Link(link2, link2EnWords).toWords
       txt.items(4) shouldBe words3
     }
 
