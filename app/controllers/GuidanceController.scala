@@ -22,7 +22,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc._
 import play.api.data.Form
-import services.{ErrorStrategy, GuidanceService, ValueMissingError, ValueTypeError}
+import services.{ErrorStrategy, GuidanceService, ValueTypeError}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import core.models.errors._
 import core.models.ocelot.SecuredProcess
@@ -99,8 +99,7 @@ class GuidanceController @Inject() (
           val inputName: String = formInputName(path)
           bindFormData(input, inputName) match {
             case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
-              // TODO Use errorStrategy above to define error strategy instead of ValueMissingError
-                Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError), inputName, formWithErrors)))
+                Future.successful(BadRequest(createInputView(service.getPageContext(ctx, errorStrategy), inputName, formWithErrors)))
             case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
               service.validateUserResponse(ctx, submittedAnswer.text).fold{
                 // Answer didn't pass page DataInput stanza validation
