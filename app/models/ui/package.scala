@@ -23,7 +23,6 @@ import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 package object ui {
-
   val PreviousPageLinkQuery: String = "p=1"
 
   implicit def toText(p: Phrase)(implicit lang: Lang): Text = Text(p.value(lang))
