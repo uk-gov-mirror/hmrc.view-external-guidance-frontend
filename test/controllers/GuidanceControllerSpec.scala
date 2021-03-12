@@ -40,6 +40,7 @@ import play.api.data.FormError
 import core.models.errors._
 import core.models.ocelot.LabelCache
 import core.services._
+
 import scala.concurrent.{ExecutionContext, Future}
 import controllers.actions.SessionIdAction
 import play.api.inject.Injector
@@ -1303,7 +1304,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
             .returns(Future.successful(Right(pec)))
 
           MockGuidanceService
-            .getPageContext(pec, ValueMissingError)
+            .getPageContext(pec, ValueMissingGroupError(List("label.year"))) // Use message key as message substitution isn't working
             .returns(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels))
 
           override val fakeRequest = FakeRequest("POST", path)
