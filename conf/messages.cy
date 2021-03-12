@@ -16,7 +16,7 @@ site.continue = Yn eich blaen
 
 label.day=Dydd
 label.month=Mis
-label.year=Blwyddyn
+label.year=Blwydd
 
 error.browser.title.prefix = Gwall:
 error.summary.title = Mae yna broblem
