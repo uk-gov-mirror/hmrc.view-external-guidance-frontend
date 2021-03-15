@@ -72,13 +72,15 @@ object TextBuilder {
     (txts.head.trim, hint)
   }
 
-  // Parses a string potentially containing a hint pattern[hint:<Text Hint>]
+  // Parses current lang value of Phrase potentially containing a hint pattern[hint:<Text Hint>]
   // The string before the first hint will be converted to a Text object
   // and returned along with optional hint
   // All characters after the optional hint pattern are discarded
-  def singleTextWithOptionalHint(txt: Phrase)(implicit lang: Lang): (Text, Option[Text]) = {
+  def fromPhraseWithOptionalHint(txt: Phrase)(implicit urlMap: Map[String, String], lang: Lang): (Text, Option[Text]) = {
+    val isEmpty: TextItem => Boolean = _.isEmpty
     val (str, hint) = singleStringWithOptionalHint(txt.value(lang))
-    (Text(str), hint.map(Text(_)))
+    val (texts, matches) = fromPattern(plregex, str)
+    (Text(merge(texts.map(Words(_)), placeholdersToItems(matches), Nil, isEmpty)), hint.map(Text(_)))
   }
 
   @tailrec
