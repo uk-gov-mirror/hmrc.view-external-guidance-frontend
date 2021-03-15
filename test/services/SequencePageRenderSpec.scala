@@ -61,7 +61,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
           next shouldBe Some("4")
           labels.value("Choice") shouldBe Some("First")
           labels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
-          labels.flowStack.length shouldBe 3
+          labels.flowStack.length shouldBe 4
       }
     }
 

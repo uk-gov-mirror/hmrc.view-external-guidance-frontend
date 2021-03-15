@@ -38,7 +38,7 @@ class PageRenderer @Inject() () {
       else stanzaMap.get(next) match {
         case None => (Some(next), labels)
         case Some(s) => s match {
-          case EndStanza => labels.takeFlow match {
+          case EndStanza => labels.nextFlow match {
               case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
               case None => (Some(next), labels)
             }
@@ -54,7 +54,7 @@ class PageRenderer @Inject() () {
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       dataInputStanza.eval(answer, page, newLabels) match {
-        case (Some(Process.EndStanzaId), updatedLabels) => updatedLabels.takeFlow match {
+        case (Some(Process.EndStanzaId), updatedLabels) => updatedLabels.nextFlow match {
             case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
             case None => (Some(Process.EndStanzaId), updatedLabels)
           }

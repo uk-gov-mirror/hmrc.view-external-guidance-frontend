@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+ // $COVERAGE-OFF$
+
 package repositories
 
 import javax.inject.{Inject, Singleton}
