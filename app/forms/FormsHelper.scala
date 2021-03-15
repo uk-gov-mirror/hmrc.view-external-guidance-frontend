@@ -19,14 +19,16 @@ package forms
 import play.api.mvc._
 import play.api.data.{Form, Mapping}
 import play.api.data.Forms.nonEmptyText
+import play.api.i18n.Messages
 import core.models.ocelot.stanzas.{Input, DateInput, DataInput, Question, Sequence}
 import models.ui.DateInput.partitionSubmittedDateAnswer
 import models.ui.{SubmittedAnswer, SubmittedDateAnswer, SubmittedListAnswer, SubmittedTextAnswer}
+import services.{ErrorStrategy, ValueMissingError, ValueMissingGroupError}
 
 object FormsHelper {
 
   def bindFormData(inputStanza: DataInput, path: String)
-                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] =
+                  (implicit request: Request[_], messages: Messages): Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] =
     // Define form mapping for each data input type
     inputStanza match {
       case _: DateInput => bindSubmittedDateAnswer()
@@ -42,42 +44,49 @@ object FormsHelper {
     }
 
   private def bindSubmittedTextAnswer(bindData: (String, Mapping[String]))
-                                  (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
+                                  (implicit request: Request[_]): Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = {
 
     val formProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
 
     val form = formProvider(bindData)
 
     form.bindFromRequest().fold(
-      formWithErrors => Left(formWithErrors),
+      formWithErrors => Left((formWithErrors, ValueMissingError)),
       formData => Right((form.fill(formData), formData))
     )
 
   }
 
   private def bindSubmittedDateAnswer()
-                                     (implicit request: Request[_] ): Either[Form[_], (Form[_], SubmittedAnswer)] = {
+                                     (implicit request: Request[_], messages: Messages): Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = {
 
     val formProvider: SubmittedDateAnswerFormProvider = new SubmittedDateAnswerFormProvider()
 
     val form = formProvider()
 
     form.bindFromRequest().fold(
-      formWithErrors => Left(formWithErrors),
+      formWithErrors => {
+        formWithErrors.errors.size match {
+          case 3 => Left((formWithErrors, ValueMissingGroupError(Nil)))
+          case _ =>
+            val errorItems: List[String] = formWithErrors.errors.toList.map(err => messages(s"label.${err.key}"))
+            Left((formWithErrors, ValueMissingGroupError(errorItems.map(_.toLowerCase))))
+        }
+      },
       formData => Right((form.fill(formData), formData))
     )
 
   }
 
   private def bindSubmittedListAnswer(path: String)
-                                     (implicit request: Request[_]): Either[Form[_], (Form[_], SubmittedAnswer)] = {
+                                     (implicit request: Request[_]): Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = {
 
     val formProvider: SubmittedListAnswerFormProvider = new SubmittedListAnswerFormProvider()
 
     val form = formProvider(path)
 
     form.bindFromRequest().fold(
-      formWithErrors => Left(formWithErrors),
+      formWithErrors => Left((formWithErrors, ValueMissingError)),
       formData => Right((form.fill(formData), formData))
     )
   }

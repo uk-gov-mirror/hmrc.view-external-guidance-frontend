@@ -18,17 +18,23 @@ package forms
 
 import play.api.mvc._
 import play.api.data.Form
+import play.api.i18n.{Lang, Messages, MessagesApi}
 import core.models.ocelot.Phrase
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question, Sequence}
 import models.ui.SubmittedAnswer
+import services.{ErrorStrategy, ValueMissingError, ValueMissingGroupError}
 
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.test.FakeRequest
 
 import base.BaseSpec
 
-class FormsHelperSpec extends BaseSpec {
+class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
   private trait Test {
+
+    val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]
+    implicit val messages: Messages = messagesApi.preferred(Seq(Lang("en")))
 
     val processId: String = "ext90000"
     val path: String = s"/guidance/$processId/question"
@@ -37,6 +43,9 @@ class FormsHelperSpec extends BaseSpec {
     val questionAnswer: String = "0"
     val currencyAnswer: String = "10.00"
     val currencyPoundsOnlyAnswer: String = "10"
+    val day: String = "day"
+    val month: String = "month"
+    val year: String = "year"
     val dayAnswer: String = "16"
     val monthAnswer: String = "5"
     val yearAnswer: String = "2019"
@@ -98,6 +107,14 @@ class FormsHelperSpec extends BaseSpec {
 
   }
 
+  private trait WelshTest extends Test {
+    override implicit val messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
+
+    override val day: String = "dydd"
+    override val month: String = "mis"
+    override val year: String = "blwydd"
+  }
+
   "FormsHelper's binding functionality" should {
 
     "be able to bind data for a question input component" in new Test {
@@ -105,13 +122,13 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(relativePath -> questionAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(question, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(question, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
           form(relativePath).value shouldBe Some(questionAnswer)
           submittedAnswer.text shouldBe questionAnswer
-        case Left(formWithErrors: Form[_]) => fail("Form binding returned a form with errors")
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
     }
 
@@ -120,13 +137,13 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(relativePath -> currencyAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyInput, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
           form(relativePath).value shouldBe Some(currencyAnswer)
           submittedAnswer.text shouldBe currencyAnswer
-        case Left(formWithErrors: Form[_]) => fail("Form binding returned a form with errors")
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
 
     }
@@ -136,13 +153,13 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(relativePath -> currencyPoundsOnlyAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyPoundsOnlyInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyPoundsOnlyInput, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
           form(relativePath).value shouldBe Some(currencyPoundsOnlyAnswer)
           submittedAnswer.text shouldBe currencyPoundsOnlyAnswer
-        case Left(formWithErrors: Form[_]) => fail("Form binding returned a form with errors")
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
 
     }
@@ -152,7 +169,7 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody("day" -> dayAnswer, "month" -> monthAnswer, "year" -> yearAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
@@ -160,7 +177,7 @@ class FormsHelperSpec extends BaseSpec {
           form("month").value shouldBe Some(monthAnswer)
           form("year").value shouldBe Some(yearAnswer)
           submittedAnswer.text shouldBe dateAnswer
-        case Left(formWithErrors: Form[_]) => fail("Form binding returned a form with errors")
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
 
     }
@@ -174,7 +191,7 @@ class FormsHelperSpec extends BaseSpec {
           s"$relativePath[4]" -> "4"
         )
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
@@ -182,7 +199,7 @@ class FormsHelperSpec extends BaseSpec {
           form(s"$relativePath[1]").value shouldBe Some("2")
           form(s"$relativePath[2]").value shouldBe Some("4")
           submittedAnswer.text shouldBe sequenceAnswer
-        case Left(_: Form[_]) => fail("Form binding returned a form with errors")
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
     }
 
@@ -191,12 +208,13 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(incorrectPath -> questionAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(question, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(question, relativePath)
 
       result match {
-        case Left(formWithErrors: Form[_]) =>
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
           formWithErrors.errors.head.key shouldBe relativePath
           formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingError
         case _ => fail("Binding should fail for incorrect request data")
       }
 
@@ -207,12 +225,13 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(incorrectPath -> currencyAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyInput, relativePath)
 
       result match {
-        case Left(formWithErrors: Form[_]) =>
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
           formWithErrors.errors.head.key shouldBe relativePath
           formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingError
         case _ => fail("Binding should fail for incorrect request data")
       }
 
@@ -223,27 +242,163 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(incorrectPath -> currencyPoundsOnlyAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyPoundsOnlyInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(currencyPoundsOnlyInput, relativePath)
 
       result match {
-        case Left(formWithErrors: Form[_]) =>
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
           formWithErrors.errors.head.key shouldBe relativePath
           formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingError
         case _ => fail("Binding should fail for incorrect request data")
       }
     }
 
-    "return a form with errors if a date is not fully defined in the request" in new Test {
+    "return a form in english with errors if a date is not fully defined in the request - missing day" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer, "year" -> yearAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.key shouldBe "day"
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingGroupError(List(day))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in welsh with errors if a date is not fully defined in the request - missing day" in new WelshTest {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer, "year" -> yearAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          errorStrategy shouldBe ValueMissingGroupError(List(day))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in english with errors if a date is not fully defined in the request - missing month" in new Test {
 
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody("day" -> dayAnswer, "year" -> yearAnswer)
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
 
       result match {
-        case Left(formWithErrors: Form[_]) =>
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
           formWithErrors.errors.head.key shouldBe "month"
           formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingGroupError(List(month))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in welsh with errors if a date is not fully defined in the request - missing month" in new WelshTest {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer, "year" -> yearAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          errorStrategy shouldBe ValueMissingGroupError(List(month))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in english with errors if a date is not fully defined in the request - missing year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer, "month" -> monthAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.key shouldBe "year"
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingGroupError(List(year))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in welsh with errors if a date is not fully defined in the request - missing year" in new WelshTest {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer, "month" -> monthAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          errorStrategy shouldBe ValueMissingGroupError(List(year))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in english with errors if a date is not fully defined in the request - missing day and year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.key shouldBe "day"
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          formWithErrors.errors.last.key shouldBe "year"
+          formWithErrors.errors.last.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingGroupError(List(day, year))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form in welsh with errors if a date is not fully defined in the request - missing day and year" in new WelshTest {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer)
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          errorStrategy shouldBe ValueMissingGroupError(List(day, year))
+        case _  => fail("Binding should fail for incorrect request data")
+      }
+
+    }
+
+    "return a form with errors if a date is not fully defined in the request - all values missing" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody()
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(dateInput, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.key shouldBe "day"
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          formWithErrors.errors(1).key shouldBe "month"
+          formWithErrors.errors(1).message shouldBe expectedErrorMessage
+          formWithErrors.errors.last.key shouldBe "year"
+          formWithErrors.errors.last.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingGroupError(Nil)
         case _  => fail("Binding should fail for incorrect request data")
       }
 
@@ -254,10 +409,12 @@ class FormsHelperSpec extends BaseSpec {
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(s"$incorrectPath[0]" -> "0")
 
-      val result: Either[Form[_], (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
 
       result match {
-        case Left(formWithErrors: Form[_]) => formWithErrors.errors.head.message shouldBe expectedErrorMessage
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingError
         case _ => fail("Binding should fail for incorrect request data")
       }
     }
