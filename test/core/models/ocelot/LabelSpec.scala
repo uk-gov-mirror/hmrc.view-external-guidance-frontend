@@ -536,6 +536,7 @@ class LabelSpec extends BaseSpec with ProcessJson {
 
     "Return None when the stack is empty" in {
       LabelCache().nextFlow shouldBe None
+      LabelCache().activeFlow shouldBe None
     }
 
   }
