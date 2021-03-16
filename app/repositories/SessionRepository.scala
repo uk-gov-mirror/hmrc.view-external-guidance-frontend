@@ -81,7 +81,7 @@ object DefaultSessionRepository {
                                   lastAccessed: Instant)
 
   object SessionProcess {
-    def apply(id: String, processId: String, process: Process, urlToPageId: Map[String, String], lastAccessed: Instant): SessionProcess =
+    def apply(id: String, processId: String, process: Process, urlToPageId: Map[String, String] = Map(), lastAccessed: Instant = Instant.now()): SessionProcess =
       SessionProcess(id, processId, process, Map(), Nil, Map(), urlToPageId, Map(), Nil, lastAccessed)
     implicit val dateFormat: Format[Instant] = MongoDateTimeFormats.instantFormats
     implicit lazy val format: Format[SessionProcess] = ReactiveMongoFormats.mongoEntity { Json.format[SessionProcess] }
