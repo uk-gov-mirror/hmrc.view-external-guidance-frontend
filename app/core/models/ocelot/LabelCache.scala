@@ -110,14 +110,6 @@ private class LabelCacheImpl(labels: Map[String, Label] = Map(),
         )
       case x :: (c: Continuation) :: xs => Some((c.next, new LabelCacheImpl(labels, cache, xs, pool, poolCache)))
     }
-    // stack.headOption.map{
-    //   case f: Flow =>
-    //   (f.next,
-    //    f.labelValue.flatMap(lv => lv.value.map(v => new LabelCacheImpl(labels, updateOrAddScalarLabel(lv.name, v, None), stack.tail, pool, poolCache)))
-    //     .getOrElse(new LabelCacheImpl(labels, cache, stack.tail, pool, poolCache))
-    //   )
-    //   case c: Continuation => (c.next, new LabelCacheImpl(labels, cache, stack.tail, pool, poolCache))
-    // }
 
   def activeFlow: Option[FlowStage] = stack.headOption
 

@@ -342,12 +342,6 @@ class LabelSpec extends BaseSpec with ProcessJson {
         "Colours"->ListLabel("Colours", List("Yellow", "Violet"))
       )
 
-      // val stack = List(
-      //   Flow("1", Some(LabelValue("loop", Some("One")))),
-      //   Flow("2", Some(LabelValue("loop", Some("Two")))),
-      //   Flow("3", None)
-      // )
-
       val labels = LabelCache(labelsMap, cacheMap, Nil)
 
       labels.value("X") shouldBe Some("46.5")
