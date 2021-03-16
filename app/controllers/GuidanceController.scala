@@ -17,11 +17,12 @@
 package controllers
 
 import config.{AppConfig, ErrorHandler}
+
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.{Lang, Messages}
 import play.api.mvc._
 import play.api.data.Form
-import services.{ValueTypeError, ValueMissingError, GuidanceService}
+import services.{ErrorStrategy, GuidanceService, ValueTypeError}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import core.models.errors._
 import core.models.ocelot.SecuredProcess
@@ -29,9 +30,11 @@ import models.{PageContext, PageEvaluationContext}
 import models.ui.{FormPage, StandardPage, SubmittedAnswer}
 import views.html.{form_page, standard_page}
 import play.api.Logger
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import controllers.actions.SessionIdAction
 import play.twirl.api.Html
+
 import scala.concurrent.Future
 import forms.FormsHelper.{bindFormData, populatedForm}
 
@@ -86,7 +89,8 @@ class GuidanceController @Inject() (
   }
 
   def submitPage(processCode: String, path: String): Action[AnyContent] = Action.async { implicit request =>
-    implicit val lang: Lang = mcc.messagesApi.preferred(request).lang
+    implicit val messages: Messages = mcc.messagesApi.preferred(request)
+    implicit val lang: Lang = messages.lang
     withExistingSession[PageEvaluationContext](service.getPageEvaluationContext(processCode, s"/$path", previousPageByLink = false, _)).flatMap {
       case Right(ctx) => ctx.dataInput.fold{
           logger.error( s"Unable to locate input stanza for process ${ctx.processCode} on submission")
@@ -94,8 +98,8 @@ class GuidanceController @Inject() (
         }{ input =>
           val inputName: String = formInputName(path)
           bindFormData(input, inputName) match {
-            case Left(formWithErrors: Form[_]) =>
-                Future.successful(BadRequest(createInputView(service.getPageContext(ctx, ValueMissingError), inputName, formWithErrors)))
+            case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+                Future.successful(BadRequest(createInputView(service.getPageContext(ctx, errorStrategy), inputName, formWithErrors)))
             case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
               service.validateUserResponse(ctx, submittedAnswer.text).fold{
                 // Answer didn't pass page DataInput stanza validation

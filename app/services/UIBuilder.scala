@@ -20,7 +20,7 @@ import javax.inject.Singleton
 import models._
 import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, Sequence, _}
-import core.models.ocelot.{Link, Phrase}
+import core.models.ocelot.{Link, Phrase, EmbeddedParameterRegex}
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
@@ -32,6 +32,7 @@ sealed trait ErrorStrategy {
 }
 case object NoError extends ErrorStrategy
 case object ValueMissingError extends ErrorStrategy
+case class ValueMissingGroupError(missingFieldNames: List[String]) extends ErrorStrategy
 case object ValueTypeError extends ErrorStrategy {
   override def default(stanzas: Seq[VisualStanza]): ErrorStrategy =
     stanzas.collect{case s:TypeErrorCallout => s}
@@ -55,6 +56,7 @@ class UIBuilder {
     stanzas match {
       case Nil => acc
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, errStrategy), errStrategy)
+      case (eg: RequiredErrorGroup) :: xs => fromStanzas(xs, acc ++ fromRequiredErrorGroup(eg, errStrategy), errStrategy)
       case (i: Instruction) :: xs => fromStanzas(xs, acc ++ Seq(fromInstruction(i)), errStrategy)
       case (ig: InstructionGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromInstructionGroup(ig)), errStrategy)
       case (rg: RowGroup) :: xs if rg.isCYASummaryList => fromStanzas(xs, acc ++ Seq(fromCYASummaryListRowGroup(rg)), errStrategy)
@@ -110,14 +112,14 @@ class UIBuilder {
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit lang: Lang): UIComponent = {
+  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val answers = q.answers.map { ans =>
-      val (answer, hint) = TextBuilder.singleTextWithOptionalHint(ans)
+      val (answer, hint) = TextBuilder.fromPhraseWithOptionalHint(ans)
       Answer(answer, hint)
     }
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-    val (question, hint) = TextBuilder.singleTextWithOptionalHint(q.text)
+    val (question, hint) = TextBuilder.fromPhraseWithOptionalHint(q.text)
     ui.Question(question, hint, uiElements, answers, errorMsgs)
   }
 
@@ -180,6 +182,21 @@ class UIBuilder {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
+  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit lang: Lang): Seq[UIComponent] =
+    errStrategy match {
+      case ValueMissingGroupError(Nil) =>
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == 0).fold[Seq[UIComponent]](Nil){errorCallout =>
+          Seq(RequiredErrorMsg(errorCallout.text))
+        }
+      case e: ValueMissingGroupError =>
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == e.missingFieldNames.length).fold[Seq[UIComponent]](Nil){errorCallout =>
+          Seq(RequiredErrorMsg(Text(EmbeddedParameterRegex.replaceSomeIn(errorCallout.text.value(lang), { m =>
+            Option(m.group(1)).map(_.toInt).fold[Option[String]](None)(idx => e.missingFieldNames.lift(idx))
+          }))))
+        }
+      case _ => Nil
+    }
+
   private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
@@ -201,7 +218,7 @@ class UIBuilder {
                           (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
-    val (text, hint) = TextBuilder.singleTextWithOptionalHint(sequence.text)
+    val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(sequence.text)
     val options = sequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
 
     ui.Sequence(text, hint, options, uiElements, errMsgs)

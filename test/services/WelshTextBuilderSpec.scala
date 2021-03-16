@@ -57,36 +57,43 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
     "Convert label reference with default output format placeholders within phrase to LabelRef TextItems" in new Test {
       val p = Phrase("""Sentence with a [label:BLAH] label reference""", """Welsh, Sentence with a [label:BLAH] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Txt), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Txt), Words(" label reference"))
     }
 
     "Convert label reference with currency output format placeholders within phrase to LabelRef TextItems" in new Test {
       val p = Phrase("""Sentence with a [label:BLAH:currency] label reference""", """Welsh, Sentence with a [label:BLAH:currency] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Currency), Words(" label reference"))
     }
 
     "Convert label reference with date output format placeholders within phrase to LabelRef TextItems" in new Test {
       val p = Phrase("""Sentence with a [label:BLAH:date] label reference""", """Welsh, Sentence with a [label:BLAH:date] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", DateStandard), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", DateStandard), Words(" label reference"))
     }
 
     "Convert a label placeholder within a bold placeholder to a bold label ref" in new Test {
       val p = Phrase("""Sentence with a [bold:[label:BLAH]] label reference""", """Welsh, Sentence with a [bold:[label:BLAH]] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Txt, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", Txt, true), Words(" label reference"))
     }
 
     "Convert a label placeholder with currency output format within a bold placeholder to a bold label ref" in new Test {
       val p = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Welsh, Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""")
       TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", CurrencyPoundsOnly, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), LabelRef("BLAH", CurrencyPoundsOnly, true), Words(" label reference"))
     }
 
     "Convert button link placeholders within phrase to Link as button TextItems" in new Test {
       val p = Phrase("""Sentence with a [button:BLAH:3] label reference""", """Welsh, Sentence with a [button:BLAH:3] label reference""")
       TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Welsh, Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)(urlMap1, lang)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
     }
 
     "Convert button link in tab placeholders within phrase to Link as button TextItems" in new Test {
       val p = Phrase("""Sentence with a [button-tab:BLAH:3] label reference""", """Welsh, Sentence with a [button-tab:BLAH:3] label reference""")
       TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Welsh, Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)(urlMap1, lang)._1.items shouldBe Seq(Words("Welsh, Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
     }
 
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
@@ -96,12 +103,23 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
       txt.items(2) shouldBe words2
       txt.items(3).toWords shouldBe Link("https://www.gov.uk", link2CyWords).toWords
       txt.items(4) shouldBe words3
+
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(txtWithLinks)._1
+      altTxt.items(0) shouldBe words1
+      altTxt.items(1).toWords shouldBe Link("https://www.bbc.co.uk", link1CyWords).toWords
+      altTxt.items(2) shouldBe words2
+      altTxt.items(3).toWords shouldBe Link("https://www.gov.uk", link2CyWords).toWords
+      altTxt.items(4) shouldBe words3
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
       val txt: Text = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1, lang)
       txt.items.length shouldBe 1
       txt.items(0) shouldBe Words("Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
+
+      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(brokenLinkPhrase)(urlMap1, lang)._1
+      altTxt.items.length shouldBe 1
+      altTxt.items(0) shouldBe Words("Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]")
     }
 
     "convert syntactically correct link placeholders into Link objects" in new Test {
@@ -114,6 +132,14 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah")
       txt.items(2) shouldBe Words(" ")
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah")
+
+      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)(urlMap1, lang)._1
+
+      altTxt.items.length shouldBe 4
+      altTxt.items(0) shouldBe Words("Welsh, Hello ")
+      altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah")
+      altTxt.items(2) shouldBe Words(" ")
+      altTxt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah")
     }
 
     "Convert all link placeholders into appropriate Link objects" in new Test {
@@ -125,6 +151,13 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
+
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)(urlMap1, lang)._1
+
+      altTxt.items.length shouldBe 6
+      altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
+      altTxt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
+      altTxt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
     }
 
     "Convert all link-same placeholders into appropriate Link objects" in new Test {
@@ -136,6 +169,13 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
+
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkSamePhrase)(urlMap1, lang)._1
+
+      altTxt.items.length shouldBe 6
+      altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
+      altTxt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
+      altTxt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
     }
 
     "Convert all link-tab placeholders into appropriate Link objects" in new Test {
@@ -147,6 +187,13 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", true)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", true)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", true)
+
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkTabPhrase)(urlMap1, lang)._1
+
+      altTxt.items.length shouldBe 6
+      altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", true)
+      altTxt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", true)
+      altTxt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", true)
     }
 
     "Flatten all placeholders within a line of text to include the text only" in new Test {
@@ -156,17 +203,17 @@ class WelshTextBuilderSpec extends BaseSpec with WelshLanguage {
     }
   }
 
-  "TextBuilder answer processing" must {
-    "return display answer text only when there is no hint" in new Test {
-      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithNoHint)
-      displayText shouldBe Text(answerWithNoHint.value(lang))
-      hintText shouldBe None
+  "TextBuilder.fromPhraseWithOptionalHint" must {
+    "Return hint when present" in new Test {
+      val (mainText, optionalHint): (Text, Option[Text]) = TextBuilder.fromPhraseWithOptionalHint(answerWithHint)
+       mainText shouldBe Text("Welsh, Yes")
+       optionalHint shouldBe Some(Text("Welsh, You agree with the assertion"))
     }
 
-    "return display answer text with hint" in new Test {
-      val (displayText, hintText) = TextBuilder.singleTextWithOptionalHint(answerWithHint)
-      displayText shouldBe answer
-      hintText shouldBe Some(hint)
+    "Return no hint when not present" in new Test {
+      val (mainText, optionalHint): (Text, Option[Text]) = TextBuilder.fromPhraseWithOptionalHint(answerWithNoHint)
+       mainText shouldBe Text("Welsh, Yes")
+       optionalHint shouldBe None
     }
   }
 }

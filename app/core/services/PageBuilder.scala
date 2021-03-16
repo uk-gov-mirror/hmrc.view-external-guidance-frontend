@@ -85,6 +85,7 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
       pages => {
         checkQuestionPages(pages, Nil) ++
         duplicateUrlErrors(pages.reverse, Nil) ++
+        checkDateInputErrorCallouts(pages, Nil) ++
         detectUnsupportedPageRedirect(pages) match {
           case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
           case errors =>
@@ -109,6 +110,34 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
       }
     }
 
+  @tailrec
+  private def checkDateInputErrorCallouts(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] = {
+    // Sufficient: 3 stacked callouts with messages containing 0,1 and 2 embedded parameters
+    def checkCalloutSufficiency(p: Page): List[GuidanceError] = {
+      val callouts: Seq[ErrorCallout] = p.keyedStanzas
+                                         .map(_.stanza)
+                                         .collect{case e: ErrorCallout => e}
+
+      callouts
+       .map(co => EmbeddedParameterRegex.findAllIn(co.text.english).length)
+       .sorted match {
+          case List(0,1,2) if callouts(1).stack && callouts(2).stack => Nil
+          case _ => List(IncompleteDateInputPage(p.id))
+       }
+    }
+
+    pages match {
+      case Nil => errors
+      case p +: xs => p.keyedStanzas.find(
+          _.stanza match {
+            case i: DateInput => true
+            case _ => false
+        }) match {
+        case Some(_) => checkDateInputErrorCallouts(xs, checkCalloutSufficiency(p) ++ errors)
+        case None => checkDateInputErrorCallouts(xs, errors)
+      }
+    }
+  }
 
   private def detectUnsupportedPageRedirect(pages: Seq[Page]): Seq[GuidanceError] = {
     val pageIds = pages.map(_.id)
