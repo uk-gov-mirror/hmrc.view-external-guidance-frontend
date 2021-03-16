@@ -86,7 +86,6 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
         checkQuestionPages(pages, Nil) ++
         duplicateUrlErrors(pages.reverse, Nil) ++
         checkDateInputErrorCallouts(pages, Nil) ++
-        checkForRepeatedPages(pages) ++
         detectUnsupportedPageRedirect(pages) match {
           case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
           case errors =>
@@ -110,13 +109,6 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
           f(page.id, page.url, hintRegex.replaceAllIn(i.name.english, ""))
       }
     }
-
-  private def checkForRepeatedPages(pages: Seq[Page]): List[GuidanceError] = {
-    pages.foreach{p =>
-      println(s"Page ${p.url}, ${p.id} - linked to ${p.next}")
-    }
-    Nil
-  }
 
   @tailrec
   private def checkDateInputErrorCallouts(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] = {
