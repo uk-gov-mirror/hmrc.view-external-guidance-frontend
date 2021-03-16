@@ -47,23 +47,28 @@ class SessionProcessFSM @Inject() {
       case Nil =>
         println(s"@@@@@ Nil")
         (None, None, None)
-      // REFRESH: Rewrite pageHistory as current history without current page just added, Back link is x
+
+      // REFRESH: new url equals current url
       case x :: xs if x.url == url =>
         println(s"@@@@@ REFRESH")
         (xs.headOption.map(_.url), Some(priorSp.pageHistory), None)
-      // BACK: pageHistory becomes y :: xs and backlink is head of xs (without flowstack update)
+
+      // BACK: new url equals previous url and prior flowStack equals the previous flowStack
       case _ :: y :: xs if y.url == url && !forceForward && priorSp.flowStack == y.flowStack =>
         println(s"@@@@@ BACK (No flowStack update)")
         (xs.headOption.map(_.url), Some((y :: xs).reverse), None)
-      // BACK: pageHistory becomes y :: xs and backlink is head of xs (without flowstack update)
+
+      // BACK: flowStack change
       case _ :: y :: xs if y.url == url && !forceForward =>
         println(s"@@@@@ BACK")
         (xs.headOption.map(_.url), Some((y :: xs).reverse), Some(y.flowStack))
-      // FORWARD with a non-empty flowStack: Back link x, rewrite pageHistory with current flowStack in head
+
+      // FORWARD with a non-empty flowStack
       case x :: xs if priorSp.flowStack.nonEmpty =>
         println(s"@@@@@ FORCE FORWARD")
         (Some(x.url), Some((PageHistory(url, priorSp.flowStack) :: x :: xs).reverse), None)
-      // FORWARD: Back link x, pageHistory intact
+
+      // FORWARD:
       case x :: _ =>
         println(s"@@@@@ FORWARD")
         (Some(x.url), None, None)
