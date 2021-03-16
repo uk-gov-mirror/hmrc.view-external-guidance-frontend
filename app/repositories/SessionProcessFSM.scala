@@ -41,6 +41,7 @@ class SessionProcessFSM @Inject() {
     println(s"**** FSM url $url, forceForward, $forceForward")
     println(s"**** FSM hist ${priorSp.pageHistory.reverse}")
     println(s"**** FSM flow ${priorSp.flowStack}")
+    //println(s"**** FSM flow ${priorSp}")
     val newState = priorSp.pageHistory.reverse match {
       // Initial page
       case Nil =>
@@ -69,7 +70,7 @@ class SessionProcessFSM @Inject() {
     }
     println(s"**** OUT backlink ${newState._1}")
     println(s"**** OUT hist ${newState._2.map(_.reverse)}")
-    println(s"**** OUT flow ${newState._3}")
+    println(s"**** OUT flow ${newState._3.map(_.reverse)}")
     newState
   }
 }

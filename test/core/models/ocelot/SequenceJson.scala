@@ -41,7 +41,7 @@ trait SequenceJson {
             "4",
             "6",
             "8",
-            "8",
+            "88",
             "2"
           ],
           "options": [
@@ -109,6 +109,14 @@ trait SequenceJson {
           ],
           "stack": false
         },
+        "88": {
+          "type": "PageStanza",
+          "url": "/fourth",
+          "next": [
+            "9"
+          ],
+          "stack": false
+        },
         "9": {
           "type": "InstructionStanza",
           "text": 6,
@@ -169,7 +177,7 @@ trait SequenceJson {
             "4",
             "6",
             "8",
-            "8",
+            "88",
             "2"
           ],
           "options": [
@@ -238,6 +246,14 @@ trait SequenceJson {
         "8": {
           "type": "PageStanza",
           "url": "/third",
+          "next": [
+            "9"
+          ],
+          "stack": false
+        },
+        "88": {
+          "type": "PageStanza",
+          "url": "/fourth",
           "next": [
             "9"
           ],
@@ -339,7 +355,7 @@ trait SequenceJson {
             "4",
             "6",
             "8",
-            "8",
+            "88",
             "2"
           ],
           "options": [
@@ -400,6 +416,14 @@ trait SequenceJson {
         "8": {
           "type": "PageStanza",
           "url": "/third",
+          "next": [
+            "9"
+          ],
+          "stack": false
+        },
+        "88": {
+          "type": "PageStanza",
+          "url": "/fourth",
           "next": [
             "9"
           ],
