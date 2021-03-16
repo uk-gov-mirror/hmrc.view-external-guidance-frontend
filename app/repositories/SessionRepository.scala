@@ -159,11 +159,12 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
           pageUrl.fold(
             Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.continuationPool, sp.urlToPageId, None)))
           ){url =>
-            val (backLink, historyUpdate, flowStack) = sessionProcessTransition(url, sp, previousPageByLink)
+            val (backLink, historyUpdate, flowStackUpdate, labelUpdate) = sessionProcessTransition(url, sp, previousPageByLink)
+            val labels = labelUpdate.fold(sp.labels)(l => sp.labels + (l.name -> l))
             val processContext =
-              ProcessContext(sp.process, sp.answers, sp.labels, flowStack.getOrElse(sp.flowStack), sp.continuationPool, sp.urlToPageId, backLink)
+              ProcessContext(sp.process, sp.answers, labels, flowStackUpdate.getOrElse(sp.flowStack), sp.continuationPool, sp.urlToPageId, backLink)
             historyUpdate.fold(Future.successful(Right(processContext)))(history =>
-              savePageHistory(key, history, flowStack).map {
+              savePageHistory(key, history, flowStackUpdate, labelUpdate).map {
                 case Left(err) =>
                   logger.error(s"Unable to save backlink history, error = $err")
                   Right(processContext)
@@ -246,7 +247,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
 
   private def toFieldPair[A](name: String, value: A)(implicit w: Writes[A]): FieldAttr = name -> Json.toJsFieldJsValueWrapper(value)
 
-  private def savePageHistory(key: String, pageHistory: List[PageHistory], flowStack: Option[List[FlowStage]]): Future[RequestOutcome[Unit]] =
+  private def savePageHistory(key: String, pageHistory: List[PageHistory], flowStack: Option[List[FlowStage]], labelUpdate: Option[Label]): Future[RequestOutcome[Unit]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
@@ -254,6 +255,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
             (List(
               toFieldPair(TtlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
               toFieldPair(PageHistoryKey, pageHistory)) ++
+              labelUpdate.fold[List[FieldAttr]](Nil)(l => List(toFieldPair(s"${LabelsKey}.${l.name}", l))) ++
               flowStack.fold[List[FieldAttr]](Nil)(stack => List(toFieldPair(FlowStackKey, stack)))).toArray: _*
         )
       )
