@@ -39,48 +39,32 @@ class SessionProcessFSM @Inject() {
   // optional page history update
   // optional flowStack update
   def apply(url: String, priorSp: SessionProcess, forceForward: Boolean):
-    (Option[String], Option[List[PageHistory]], Option[List[FlowStage]], Option[Label]) = {
-    println(s"**** FSM url $url, forceForward, $forceForward")
-    println(s"**** FSM hist ${priorSp.pageHistory.reverse}")
-    println(s"**** FSM flow ${priorSp.flowStack}")
-    //println(s"**** FSM flow ${priorSp}")
-    val newState = priorSp.pageHistory.reverse match {
+    (Option[String], Option[List[PageHistory]], Option[List[FlowStage]], Option[Label]) =
+    priorSp.pageHistory.reverse match {
       // Initial page
       case Nil =>
-        println(s"@@@@@ Nil")
         (None, None, None, None)
 
       // REFRESH: new url equals current url
       case x :: xs if x.url == url =>
-        println(s"@@@@@ REFRESH")
         (xs.headOption.map(_.url), Some(priorSp.pageHistory), None, None)
 
       // BACK: new url equals previous url and prior flowStack equals the previous flowStack
       case _ :: y :: xs if y.url == url && !forceForward && priorSp.flowStack == y.flowStack =>
-        println(s"@@@@@ BACK (No flowStack update)")
         (xs.headOption.map(_.url), Some((y :: xs).reverse), None, None)
 
       // BACK: flowStack change
       case _ :: y :: xs if y.url == url && !forceForward =>
-        println(s"@@@@@ BACK")
         val labelValue: Option[ScalarLabel] = y.flowStack.headOption.collect{case Flow(_, Some(lv)) => ScalarLabel(lv.name, List(lv.value), Nil)}
         (xs.headOption.map(_.url), Some((y :: xs).reverse), Some(y.flowStack), labelValue)
 
       // FORWARD with a non-empty flowStack
       case x :: xs if priorSp.flowStack.nonEmpty =>
-        println(s"@@@@@ FORCE FORWARD")
         (Some(x.url), Some((PageHistory(url, priorSp.flowStack) :: x :: xs).reverse), None, None)
 
       // FORWARD:
       case x :: _ =>
-        println(s"@@@@@ FORWARD")
         (Some(x.url), None, None, None)
     }
-    println(s"**** OUT backlink ${newState._1}")
-    println(s"**** OUT hist ${newState._2.map(_.reverse)}")
-    println(s"**** OUT flow ${newState._3.map(_.reverse)}")
-    println(s"**** OUT labels ${newState._4}")
-    newState
-  }
 }
 
