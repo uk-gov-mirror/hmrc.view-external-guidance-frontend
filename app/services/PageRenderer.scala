@@ -18,7 +18,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-import core.models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
+import core.models.ocelot.stanzas.{PageStanza, EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
 import core.models.ocelot.{Page, Labels, Process}
 
 @Singleton
@@ -34,10 +34,11 @@ class PageRenderer @Inject() () {
 
     @tailrec
     def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String])(implicit stanzaMap: Map[String, Stanza]): (Option[String], Labels) =
-      if (next == page.id || seen.contains(next)) (None, labels)   // next indicates current page, legacy support - any seen id
+      if (seen.contains(next)) (None, labels)   // next indicates any seen id
       else stanzaMap.get(next) match {
         case None => (Some(next), labels)
         case Some(s) => s match {
+          case p: PageStanza => (Some(next), labels)
           case EndStanza => labels.nextFlow match {
               case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
               case None => (Some(next), labels)
