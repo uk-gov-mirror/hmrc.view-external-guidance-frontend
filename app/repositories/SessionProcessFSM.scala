@@ -26,7 +26,7 @@ import core.models.ocelot.{Label, ScalarLabel}
 class SessionProcessFSM @Inject() {
   // Input
   // url ,incoming url
-  // priorSp, prior SessionProcess corresponding to last url processed. Note. The db record will have the head of the page history updated
+  // priorSp, prior SessionProcess corresponding to the previous url processed. Note. The db record will have the head of the page history updated
   //          to include incoming url and flowStack Nil, this update is not within priorSp. This is an optimisation, as the most common transition
   //          is forward in a process containing no Sequences (i.e. the flowStack will always be empty), this transition will result in
   //          no page history or flowstack updates given the update described has already taken place.
