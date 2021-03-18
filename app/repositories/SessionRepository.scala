@@ -52,6 +52,7 @@ case class ProcessContext(process: Process,
 trait SessionRepository {
   def get(key: String): Future[RequestOutcome[ProcessContext]]
   def get(key: String, pageHistoryUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]]
+  def getResetSession(key: String): Future[RequestOutcome[ProcessContext]]
   def set(key: String, process: Process, urlToPageId: Map[String, String]): Future[RequestOutcome[Unit]]
   def saveFormPageState(key: String, url: String, answer: String, labels: Labels): Future[RequestOutcome[Unit]]
   def savePageState(key: String, labels: Labels): Future[RequestOutcome[Unit]]
@@ -172,6 +173,33 @@ class DefaultSessionRepository @Inject() (config: AppConfig, component: Reactive
       .recover {
         case lastError =>
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
+          Left(DatabaseError)
+      }
+
+  def getResetSession(key: String): Future[RequestOutcome[ProcessContext]] =
+    findAndUpdate(
+      Json.obj("_id" -> key),
+      Json.obj(
+        "$set" -> Json.obj(
+          (List(
+            toFieldPair(TtlExpiryFieldName, Json.obj(toFieldPair("$date", Instant.now().toEpochMilli))),
+            toFieldPair(FlowStackKey, List[FlowStage]()),
+            toFieldPair(PageHistoryKey, List[PageHistory]()),
+            toFieldPair(ContinuationPoolKey, Map[String, Stanza]()),
+            toFieldPair(LabelsKey, Map[String, Label]()))).toArray: _*
+        )
+      ),
+      fetchNewObject = true
+    ).flatMap { r =>
+        r.result[DefaultSessionRepository.SessionProcess]
+         .fold {
+          logger.warn(s"Attempt to retrieve cached reset process from session repo with _id=$key returned no result, lastError ${r.lastError}")
+          Future.successful(Left(NotFoundError): RequestOutcome[ProcessContext])
+          }(sp => Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.continuationPool, sp.urlToPageId, None))))
+      }
+      .recover {
+        case lastError =>
+          logger.error(s"Error $lastError while trying to retrieve reset process from session repo with _id=$key")
           Left(DatabaseError)
       }
 

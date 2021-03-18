@@ -52,6 +52,17 @@ class GuidanceController @Inject() (
 
   val logger: Logger = Logger(getClass)
 
+  def sessionRestart(processCode: String): Action[AnyContent] = sessionIdAction.async { implicit request =>
+    withExistingSession[String](service.sessionRestart(processCode, _)).flatMap {
+      case Right(url) =>
+        logger.info(s"Redirecting to guidance start url $url after session reset")
+        Future.successful(Redirect(controllers.routes.GuidanceController.getPage(processCode, url.drop(1), None).url))
+      case Left(err) =>
+        logger.error(s"Request for Reset ProcessContext returned $err, returning InternalServerError")
+        Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
+    }
+  }
+
   def getPage(processCode: String, path: String, p: Option[String]): Action[AnyContent] = sessionIdAction.async { implicit request =>
     implicit val messages: Messages = mcc.messagesApi.preferred(request)
     implicit val lang: Lang = messages.lang
