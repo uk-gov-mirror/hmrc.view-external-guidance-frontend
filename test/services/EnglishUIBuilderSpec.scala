@@ -1594,8 +1594,8 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         )
       )
 
-      val sequence = core.models.ocelot.stanzas.Sequence(textPhrase, next, optionsPhrases, None, stack = false)
-      val sequenceWithHint = core.models.ocelot.stanzas.Sequence(textPhraseWithHint, next, optionsPhrases, None, stack = false)
+      val sequence = core.models.ocelot.stanzas.Sequence(textPhrase, next, optionsPhrases, exclusive = false, None, stack = false)
+      val sequenceWithHint = core.models.ocelot.stanzas.Sequence(textPhraseWithHint, next, optionsPhrases, exclusive = false, None, stack = false)
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", sequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", sequenceWithHint), Seq.empty)

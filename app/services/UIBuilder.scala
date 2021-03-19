@@ -221,7 +221,7 @@ class UIBuilder {
     val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(sequence.text)
     val options = sequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
 
-    ui.Sequence(text, hint, options, uiElements, errMsgs)
+    ui.Sequence(text, hint, options, sequence.exclusive, uiElements, errMsgs)
   }
 
 }

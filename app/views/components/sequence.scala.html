@@ -33,7 +33,7 @@
 
     @{sequence.hint.map(hintText => <span id="sequence-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
    @components.error_message(sequence.errorMsgs)
-   @components.sequence_checkboxes(name, sequence.options, form)
+   @components.sequence_checkboxes(name, sequence.options, sequence.exclusive, form)
  </fieldset>
 
 </div>

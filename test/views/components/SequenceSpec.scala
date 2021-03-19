@@ -24,13 +24,15 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import views.html._
 import forms.SubmittedListAnswerFormProvider
+import models.PageContext
 import models.ui.{FormPage, H2, Paragraph, RequiredErrorMsg, Sequence, SubmittedListAnswer, Text}
 import core.models.ocelot.{LabelCache, Labels}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 
 import base.{ViewFns, ViewSpec}
-import models.PageContext
+
+import scala.collection.JavaConverters._
 
 class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
@@ -54,6 +56,13 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     val sweetOptions: Seq[Text] = Seq(Text("Wine gums"), Text("Munchies"))
     val errorMsg: RequiredErrorMsg = RequiredErrorMsg(Text("An input error has occurred"))
 
+    val exclusiveSequenceTitle: Text = Text("Where are you going on your holidays?")
+    val holidayOptions: Seq[Text] = Seq(
+      Text("The UK"),
+      Text("Europe"),
+      Text("Elsewhere")
+    )
+
     val h2: H2 = H2(Text("Subtitle"))
     val p: Paragraph = Paragraph(Text("Introduction to sweets"))
 
@@ -61,6 +70,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       sequenceTitle,
       None,
       sweetOptions,
+      exclusive = false,
       Seq.empty,
       Seq.empty
     )
@@ -69,6 +79,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       sequenceTitle,
       Some(sequenceHint),
       sweetOptions,
+      exclusive = false,
       Seq.empty,
       Seq.empty
     )
@@ -77,6 +88,7 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       sequenceTitle,
       None,
       sweetOptions,
+      exclusive = false,
       Seq(h2, p),
       Seq.empty
     )
@@ -85,14 +97,25 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       sequenceTitle,
       None,
       sweetOptions,
+      exclusive = false,
       Seq.empty,
       Seq(errorMsg)
+    )
+
+    val exclusiveSequence: Sequence = Sequence(
+      exclusiveSequenceTitle,
+      None,
+      holidayOptions,
+      exclusive = true,
+      Seq(h2, p),
+      Seq.empty
     )
 
     val pageWithoutHint: FormPage = FormPage("/start", sequenceWithoutHint)
     val pageWithHint: FormPage = FormPage("/start", sequenceWithHint)
     val pageWithBody: FormPage = FormPage("/start", sequenceWithBody)
     val pageWithError: FormPage = FormPage("/start", sequenceWithError)
+    val pageWithExclusiveSequence: FormPage = FormPage("/start", exclusiveSequence)
 
     val pageWithoutHintCtx: PageContext = PageContext(
       pageWithoutHint,
@@ -140,6 +163,18 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       "processId",
       "processCode",
       labels
+    )
+
+    val pageWithExclusiveSequenceCtx: PageContext = PageContext(
+    pageWithExclusiveSequence,
+    Seq.empty,
+    None,
+    "sessionId",
+    None,
+    Text(),
+    "processId",
+    "processCode",
+    labels
     )
   }
 
@@ -293,6 +328,20 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
       checkbox2Labels.first.text shouldBe sweetOptions.last.asString
     }
 
+    "not render a paragraph element inside the field set of a non-exclusive sequence" in new Test {
+
+      val doc: Document = asDocument(
+        components.sequence(sequenceWithoutHint, path, formProvider(path))
+      (fakeRequest, messages, pageWithoutHintCtx)
+      )
+
+      val fieldSet: Element = getSingleElementByClass(doc, "govuk-fieldset")
+
+      val paragraphs: Elements = fieldSet.getElementsByTag("p")
+
+      paragraphs.size shouldBe 0
+    }
+
     "render checkboxes as 'checked' when they have been selected" in new Test {
 
       val form: Form[SubmittedListAnswer] = formProvider(path)
@@ -360,6 +409,32 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
           innerErrorMsgSpans.first.text() shouldBe s"Error: ${errorMsg.text.asString}"
         case None => fail("Error message is missing")
       }
+    }
+
+    "render checkboxes with a dividing paragraph element for an exclusive sequence" in new Test {
+
+      val doc: Document = asDocument(
+        components.sequence(exclusiveSequence, path, formProvider(path))
+        (fakeRequest, messages, pageWithExclusiveSequenceCtx)
+      )
+
+      val checkboxContainerDiv: Element = getSingleElementByClass(doc, "govuk-checkboxes")
+
+      val containerChildren: List[Element] = checkboxContainerDiv.children().asScala.toList
+
+      containerChildren.size shouldBe 4
+
+      containerChildren.head.tagName() shouldBe "div"
+      elementAttrs(containerChildren.head)("class") shouldBe "govuk-checkboxes__item"
+
+      containerChildren(1).tagName() shouldBe "div"
+      elementAttrs(containerChildren(1))("class") shouldBe "govuk-checkboxes__item"
+
+      containerChildren(2).tagName() shouldBe "p"
+      elementAttrs(containerChildren(2))("class").contains("govuk-body")
+
+      containerChildren.last.tagName() shouldBe "div"
+      elementAttrs(containerChildren.last)("class") shouldBe "govuk-checkboxes__item"
     }
 
   }

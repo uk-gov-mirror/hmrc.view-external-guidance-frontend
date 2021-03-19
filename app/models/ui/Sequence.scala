@@ -16,4 +16,5 @@
 
 package models.ui
 
-case class Sequence(text: Text, hint: Option[Text], options: Seq[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg]) extends SequenceFormComponent
+case class Sequence(text: Text, hint: Option[Text], options: Seq[Text], exclusive: Boolean, body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg])
+  extends SequenceFormComponent

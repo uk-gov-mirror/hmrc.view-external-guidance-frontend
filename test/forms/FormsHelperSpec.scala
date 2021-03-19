@@ -101,6 +101,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
         Phrase("Thursday", "Welsh, Thursday"),
         Phrase("Friday", "Welsh, Friday")
       ),
+      exclusive = false,
       None,
       stack = false
     )
@@ -110,9 +111,9 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
   private trait WelshTest extends Test {
     override implicit val messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
 
-    override val day: String = "dydd"
+    override val day: String = "diwrnod"
     override val month: String = "mis"
-    override val year: String = "blwydd"
+    override val year: String = "blwyddyn"
   }
 
   "FormsHelper's binding functionality" should {

@@ -22,9 +22,7 @@ import play.api.data.Forms.nonEmptyText
 import play.api.inject.Injector
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
-import play.twirl.api.Html
-import views.html.standard_page
-import views.html.form_page
+import forms.{SubmittedListAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.PageContext
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
 import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text, Sequence}
@@ -32,9 +30,7 @@ import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 
 import scala.collection.JavaConverters._
-import play.api.data.FormError
 import base.{ViewFns, ViewSpec}
-import forms.SubmittedTextAnswerFormProvider
 
 class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with GuiceOneAppPerSuite {
 
@@ -46,21 +42,21 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
 
     val standardPageView = app.injector.instanceOf[views.html.standard_page]
     val formPageView = app.injector.instanceOf[views.html.form_page]
-    val title = Text("Telling HMRC about extra income")
+    val title: Text = Text("Telling HMRC about extra income")
 
-    val openingPara = Text("Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.")
+    val openingPara: Text = Text("Check if you need to tell HMRC about extra money you’ve made by selling goods or services, or renting land or property.")
 
-    val bulletPointLeadingText = Text("For example:")
+    val bulletPointLeadingText: Text = Text("For example:")
 
-    val bulletPointOne = Text("selling items online or face to face")
+    val bulletPointOne: Text = Text("selling items online or face to face")
 
-    val bulletPointTwo =
+    val bulletPointTwo: Text =
       Text("selling freelance services (such as gardening or babysitting)")
-    val bulletPointThree = Text("hiring out personal equipment (such as power tools)")
+    val bulletPointThree: Text = Text("hiring out personal equipment (such as power tools)")
 
-    val para = Paragraph(openingPara)
-    val bulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
-    val simplePage = StandardPage("root", Seq(para, H1(title), bulletPointList))
+    val para: Paragraph = Paragraph(openingPara)
+    val bulletPointList: BulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
+    val simplePage: StandardPage = StandardPage("root", Seq(para, H1(title), bulletPointList))
 
     val confirmationPanelLeadingText = Text("Calculation Complete")
     val confirmationPanelOne = Text("you need to pay IHT")
@@ -88,6 +84,7 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
     val errorMsg = RequiredErrorMsg(Text("An error has occurred"))
     val questionWithErrors = Question(questionText, None, Seq(para, bulletPointList), answers, Seq(errorMsg))
     val textFormProvider = new SubmittedTextAnswerFormProvider()
+    val listFormProvider = new SubmittedListAnswerFormProvider()
     val questionPage = FormPage("root", question)
     val questionPageWithErrors = FormPage("root", questionWithErrors)
 
@@ -100,8 +97,14 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
 
     val sequenceTitle: Text = Text("Select your fruit")
     val fruitOptions: Seq[Text] = Seq(Text("Oranges"), Text("Pears"), Text("Mangoes"))
-    val fruitSequence: Sequence = Sequence(sequenceTitle, None, fruitOptions, Seq.empty, Seq.empty)
+    val fruitSequence: Sequence = Sequence(sequenceTitle, None, fruitOptions, exclusive = false, Seq.empty, Seq.empty)
     val sequencePage: FormPage = FormPage("/selectFruit", fruitSequence)
+
+    val exclusiveSequenceTitle: Text = Text("What kind of car would you like?")
+    val carTypeOptions: Seq[Text] = Seq(Text("Sports car"), Text("SUV"), Text("People carrier"), Text("Other"))
+    var exclusiveSequence: Sequence = Sequence(
+      exclusiveSequenceTitle, None, carTypeOptions, exclusive = true, Seq.empty, Seq.empty)
+    var exclusiveSequencePage: FormPage = FormPage("/cars-you-like", exclusiveSequence)
 
     def expectedTitleText(h1Text: String, section: Option[String] = None): String =
       section.fold(s"${h1Text} - ${messages("service.name")} - ${messages("service.govuk")}"){s =>
@@ -129,6 +132,16 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
       Text("Get your fruit"),
       "processId",
       "processCode")
+    val exclusiveSequenceContext: PageContext = PageContext(
+      exclusiveSequencePage,
+      Seq.empty,
+      None,
+      "sessionId",
+      Some("/cars-you-like"),
+      Text("Select a car you like"),
+      "processId",
+      "processCode"
+    )
   }
 
   "Standard Page component" should {
@@ -329,8 +342,8 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
         formPageView(
           sequencePage,
           sequenceContext,
-          "/fruit",
-          textFormProvider("test" -> nonEmptyText)
+          "fruit",
+          listFormProvider("fruit")
         )(fakeRequest, messages)
       )
 
@@ -347,6 +360,44 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
       val checkboxDivs: Elements = checkboxContainerDiv.getElementsByClass("govuk-checkboxes__item")
 
       checkboxDivs.size() shouldBe 3
+    }
+  }
+
+  "exclusive sequence page" should {
+
+    "generate a sequence component with a title, multiple check boxes and divider" in new Test {
+
+      val doc:Document = asDocument(
+        formPageView(
+          exclusiveSequencePage,
+          exclusiveSequenceContext,
+          "cars",
+          listFormProvider("cars")
+        )(fakeRequest, messages)
+      )
+
+      checkTitle(doc)
+
+      val headings: Elements = doc.getElementsByTag("h1")
+
+      headings.size shouldBe 1
+
+      headings.first.text() shouldBe exclusiveSequenceTitle.asString
+
+      val checkboxContainerDiv: Element = getSingleElementByClass(doc, "govuk-checkboxes")
+
+      val containerChildren: List[Element] = checkboxContainerDiv.children().asScala.toList
+
+      containerChildren.size shouldBe 5
+
+      elementAttrs(containerChildren.head)("class") shouldBe "govuk-checkboxes__item"
+      elementAttrs(containerChildren(1))("class") shouldBe "govuk-checkboxes__item"
+      elementAttrs(containerChildren(2))("class") shouldBe "govuk-checkboxes__item"
+
+      containerChildren(3).tagName() shouldBe "p"
+      elementAttrs(containerChildren(3))("class").contains("govuk-body")
+
+      elementAttrs(containerChildren.last)("class") shouldBe "govuk-checkboxes__item"
     }
   }
 }

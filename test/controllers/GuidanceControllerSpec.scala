@@ -105,6 +105,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         Phrase("Thursday", "Welsh, Thursday"),
         Phrase("Friday", "Welsh, Friday")
       ),
+      exclusive = false,
       None,
       stack = false
     )
@@ -1410,6 +1411,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
             Text("Thursday"),
             Text("Friday")
           ),
+          exclusive = false,
           Seq(Paragraph(Text("When did you go into work?"))),
           Seq.empty
         )
