@@ -23,7 +23,7 @@ import core.models.ocelot.{Label, ScalarLabel}
 
 
 @Singleton
-class SessionProcessFSM @Inject() {
+class SessionProcessFSM @Inject() () {
   // Input
   // url ,incoming url
   // priorSp, prior SessionProcess corresponding to the previous url processed. Note. The db record will have the head of the page history updated
