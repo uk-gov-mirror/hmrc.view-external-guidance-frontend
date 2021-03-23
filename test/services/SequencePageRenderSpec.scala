@@ -48,7 +48,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
     "build into pages which include all sub-flows" in new SimpleFlowTest {
       pageBuilder.pages(process) match {
         case Left(err) => fail(err.toString)
-        case Right(pages) => pages.length shouldBe 5
+        case Right(pages) => pages.length shouldBe 6
       }
     }
 
@@ -61,7 +61,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
           next shouldBe Some("4")
           labels.value("Choice") shouldBe Some("First")
           labels.valueAsList("Choice_seq") shouldBe Some(List("First", "Third", "Fourth"))
-          labels.flowStack.length shouldBe 3
+          labels.flowStack.length shouldBe 4
       }
     }
 
@@ -79,7 +79,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
           followNext(next, labels, process, (p,l) => {
             val (next, labels) = renderer.renderPagePostSubmit(p, l, answer = "0")
 
-            next shouldBe Some("8")
+            next shouldBe Some("88")
             labels.value("YesNo") shouldBe Some("Yes")
             labels.value("Choice") shouldBe Some("Fourth")
 
@@ -115,7 +115,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
         pages => {
           val (next, labels) = renderer.renderPagePostSubmit(pages.head, emptyLabels, answer = "3")
 
-          next shouldBe Some("8")
+          next shouldBe Some("88")
           labels.valueAsList("Choice_seq") shouldBe Some(List("Fourth"))
           labels.value("Choice") shouldBe Some("Fourth")
 
@@ -137,7 +137,7 @@ class SequencePageRenderSpec extends BaseSpec with ProcessJson  {
         pages => {
           val (next, labels) = renderer.renderPagePostSubmit(pages.head, emptyLabels, answer = "3")
 
-          next shouldBe Some("8")
+          next shouldBe Some("88")
           labels.valueAsList("Choice_seq") shouldBe Some(List("Fourth"))
           labels.value("Choice") shouldBe Some("Fourth")
 

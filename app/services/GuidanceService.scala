@@ -49,11 +49,11 @@ class GuidanceService @Inject() (
 
   def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean)
                        (implicit context: ExecutionContext): Future[RequestOutcome[ProcessContext]] = {
-    val optionalPageHistoryUrl: Option[String] = if (isAuthenticationUrl(url)) None else Some(s"$processCode$url")
-    sessionRepository.get(sessionId, optionalPageHistoryUrl, previousPageByLink).map{ ctx =>
-      (ctx, optionalPageHistoryUrl) match {
+    val pageUrl: Option[String] = if (isAuthenticationUrl(url)) None else Some(s"$processCode$url")
+    sessionRepository.get(sessionId, pageUrl, previousPageByLink).map{ result =>
+      (result, pageUrl) match {
         case (Right(ctx), Some(_)) if !ctx.secure => Left(AuthenticationError)
-        case (result, _) => result
+        case _ => result
       }
     }
   }
