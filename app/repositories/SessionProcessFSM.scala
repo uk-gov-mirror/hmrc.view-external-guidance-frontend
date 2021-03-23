@@ -31,6 +31,7 @@ class SessionProcessFSM @Inject() () {
   //          is forward in a process containing no Sequences (i.e. the flowStack will always be empty), this transition will result in
   //          no page history or flowstack updates given the update described has already taken place.
   // forceForward, true indicates that a url similar to head of prior history (looks like a BACK) should be treated as a forward movement
+  // sentinelUrl. generally url of the first page, arrival here will always clear down the page history
 
   // New state == (priorSp + new Pagehistory head) ++ pageHistory and flowStack output updates
   //
@@ -38,7 +39,7 @@ class SessionProcessFSM @Inject() () {
   // optional backlink to be displayed on page with incoming url
   // optional page history update
   // optional flowStack update
-  def apply(url: String, priorSp: SessionProcess, forceForward: Boolean):
+  def apply(url: String, priorSp: SessionProcess, forceForward: Boolean, sentinelUrl: String):
     (Option[String], Option[List[PageHistory]], Option[List[FlowStage]], Option[Label]) =
     priorSp.pageHistory.reverse match {
       // Initial page
@@ -58,11 +59,19 @@ class SessionProcessFSM @Inject() () {
         val labelValue: Option[ScalarLabel] = y.flowStack.headOption.collect{case Flow(_, Some(lv)) => ScalarLabel(lv.name, List(lv.value), Nil)}
         (xs.headOption.map(_.url), Some((y :: xs).reverse), Some(y.flowStack), labelValue)
 
+      // FORWARD with a non-empty flowStack to first page of guidance
+      case x :: xs if priorSp.flowStack.nonEmpty && url == sentinelUrl =>
+        (None, Some(List(PageHistory(url, Nil))), Some(Nil), None)
+
       // FORWARD with a non-empty flowStack
       case x :: xs if priorSp.flowStack.nonEmpty =>
         (Some(x.url), Some((PageHistory(url, priorSp.flowStack) :: x :: xs).reverse), None, None)
 
-      // FORWARD:
+      // FORWARD with empty flowStack to first page of guidance
+      case x :: _ if url == sentinelUrl =>
+        (None, Some(List(PageHistory(url, Nil))), None, None)
+
+      // FORWARD with empty flowStack
       case x :: _ =>
         (Some(x.url), None, None, None)
     }

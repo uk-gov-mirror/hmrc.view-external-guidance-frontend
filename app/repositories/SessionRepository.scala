@@ -159,7 +159,8 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
           pageUrl.fold(
             Future.successful(Right(ProcessContext(sp.process, sp.answers, sp.labels, sp.flowStack, sp.continuationPool, sp.urlToPageId, None)))
           ){url =>
-            val (backLink, historyUpdate, flowStackUpdate, labelUpdate) = sessionProcessTransition(url, sp, previousPageByLink)
+            val firstPageUrl: String = s"${sp.process.meta.processCode}${sp.process.startUrl.getOrElse("")}"
+            val (backLink, historyUpdate, flowStackUpdate, labelUpdate) = sessionProcessTransition(url, sp, previousPageByLink, firstPageUrl)
             val labels = labelUpdate.fold(sp.labels)(l => sp.labels + (l.name -> l))
             val processContext =
               ProcessContext(sp.process, sp.answers, labels, flowStackUpdate.getOrElse(sp.flowStack), sp.continuationPool, sp.urlToPageId, backLink)
