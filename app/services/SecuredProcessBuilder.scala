@@ -43,7 +43,7 @@ class SecuredProcessBuilder @Inject()(messagesApi: MessagesApi) {
                 None,
                 false)),
     (ChoiceId, ChoiceStanza(
-                Seq(Process.StartStanzaId, PassPhrasePageId),
+                Seq(Process.StartStanzaId, InputId),
                 Seq(ChoiceStanzaTest(s"[label:${PassPhraseResponseLabelName}]", Equals, passPhrase)), false))
   )
 }

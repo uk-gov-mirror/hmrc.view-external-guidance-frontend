@@ -304,7 +304,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
     }
 
-    "Evaluate the stanzas after user input stanza when question which indicate a return to current page (identifying page stanza id)" in new Test {
+    "Evaluate the stanzas after user input stanza when question which indicate a return to current page (identifying first stanza after the page stanza)" in new Test {
 
       val instructionStanza = InstructionStanza(3, Seq("3"), None, false)
       val questionStanza = Question(questionPhrase, answers, Seq("23","23","23"), None, false)
@@ -314,7 +314,7 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
                         KeyedStanza("2", instructionStanza),
                         KeyedStanza("3", questionStanza),
                         KeyedStanza("23", ValueStanza(List(Value(ScalarType, "X", "467")), Seq("24"), true)),
-                        KeyedStanza("24", Choice(ChoiceStanza(Seq("end","start"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
+                        KeyedStanza("24", Choice(ChoiceStanza(Seq("end","1"), Seq(ChoiceStanzaTest("[label:X]", LessThanOrEquals, "8")), false))),
                         KeyedStanza("end", EndStanza)
                       )
       val page = Page(Process.StartStanzaId, "/test-page", stanzas, answerDestinations)

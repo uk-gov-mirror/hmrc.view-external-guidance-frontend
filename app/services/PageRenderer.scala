@@ -18,7 +18,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import scala.annotation.tailrec
-import core.models.ocelot.stanzas.{EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
+import core.models.ocelot.stanzas.{PageStanza, EndStanza, VisualStanza, Stanza, Evaluate, DataInput}
 import core.models.ocelot.{Page, Labels, Process}
 
 @Singleton
@@ -33,13 +33,13 @@ class PageRenderer @Inject() () {
   def renderPagePostSubmit(page: Page, labels: Labels, answer: String): (Option[String], Labels) = {
 
     @tailrec
-    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String])(implicit stanzaMap: Map[String, Stanza]): (Option[String], Labels) = {
-      if (next == page.id) (None, labels)                     // next indicates current page
+    def evaluatePostInputStanzas(next: String, labels: Labels, seen: Seq[String])(implicit stanzaMap: Map[String, Stanza]): (Option[String], Labels) =
+      if (seen.contains(next)) (None, labels)   // next indicates any seen id
       else stanzaMap.get(next) match {
         case None => (Some(next), labels)
-        case Some(_) if seen.contains(next) => (None, labels) // Legacy: Interpret redirect to stanza prior to input as current page
         case Some(s) => s match {
-          case EndStanza => labels.takeFlow match {
+          case p: PageStanza => (Some(next), labels)
+          case EndStanza => labels.nextFlow match {
               case Some((nxt, updatedLabels)) => evaluatePostInputStanzas(nxt, updatedLabels, seen)
               case None => (Some(next), labels)
             }
@@ -48,14 +48,14 @@ class PageRenderer @Inject() () {
             evaluatePostInputStanzas(next, updatedLabels, seen)
         }
       }
-    }
+
 
     implicit val stanzaMap: Map[String, Stanza] = page.keyedStanzas.map(ks => (ks.key, ks.stanza)).toMap ++ labels.continuationPool
     val (_, newLabels, seen, nextPageId, optionalInput) = evaluateStanzas(stanzaMap(page.id).next.head, labels)
 
     optionalInput.fold[(Option[String], Labels)]((Some(nextPageId), newLabels)){dataInputStanza =>
       dataInputStanza.eval(answer, page, newLabels) match {
-        case (Some(Process.EndStanzaId), updatedLabels) => updatedLabels.takeFlow match {
+        case (Some(Process.EndStanzaId), updatedLabels) => updatedLabels.nextFlow match {
             case Some((next, updatedLabels)) => evaluatePostInputStanzas(next, updatedLabels, seen)
             case None => (Some(Process.EndStanzaId), updatedLabels)
           }
