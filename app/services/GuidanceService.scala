@@ -48,8 +48,7 @@ class GuidanceService @Inject() (
   def sessionRestart(processCode: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
     sessionRepository.getResetSession(sessionId).map{
       case Right(ctx) if processCode == ctx.process.meta.processCode =>
-        (ctx.urlToPageId.toList.map(e => (e._2, e._1)).toMap)
-          .get(ctx.process.startPageId)
+        ctx.urlToPageId.collectFirst{case (k,v) if v == ctx.process.startPageId => k}
           .fold[RequestOutcome[String]]{
             logger.error(s"Process start pageId (${ctx.process.startPageId}) missing from retreived session map" )
             Left(InternalServerError)
