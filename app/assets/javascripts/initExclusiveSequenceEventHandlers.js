@@ -30,7 +30,7 @@ var ready = (callback) => {
 
         for(var i = 0; i < checkboxes.length; i++){
           if(isExclusiveCheckbox(checkboxes[i])){
-            if(checkboxes[i].checked)checkboxes[i].checked = false;
+            checkboxes[i].checked = false;
           }
         }
 
@@ -45,7 +45,7 @@ var ready = (callback) => {
 
         for(var i = 0; i < checkboxes.length; i++){
           if(!isExclusiveCheckbox(checkboxes[i])){
-            if(checkboxes[i].checked)checkboxes[i].checked = false;
+            checkboxes[i].checked = false;
           }
         }
 
