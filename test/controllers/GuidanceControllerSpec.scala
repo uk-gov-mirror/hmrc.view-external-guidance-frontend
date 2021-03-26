@@ -187,6 +187,26 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
               )
   }
 
+  "Calling sessionRestart" should {
+    "Return a SEE_OTHER" in new QuestionTest {
+      MockGuidanceService
+        .sessionRestart(processId, processId)
+        .returns(Future.successful(Right("/start")))
+
+      val result = target.sessionRestart(processId)(fakeRequest)
+      status(result) shouldBe Status.SEE_OTHER
+    }
+
+    "Return INTERNAL_SERVER_ERROR after service failure" in new QuestionTest {
+      MockGuidanceService
+        .sessionRestart(processId, processId)
+        .returns(Future.successful(Left(InternalServerError)))
+
+      val result = target.sessionRestart(processId)(fakeRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+  }
+
   "Calling a valid URL path to a Question page in a process" should {
 
     "return an OK response" in new QuestionTest {

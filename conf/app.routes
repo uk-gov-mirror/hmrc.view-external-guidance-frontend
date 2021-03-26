@@ -10,6 +10,7 @@ GET   /:processCode/session-timeout      controllers.SessionTimeoutPageControlle
 
 GET   /:processCode                      controllers.entry.StartGuidanceController.published(processCode: String)
 
+GET   /:processCode/session-restart      controllers.GuidanceController.sessionRestart(processCode: String)
 GET   /:processCode/*path                controllers.GuidanceController.getPage(processCode: String, path: String, p: Option[String])
 POST  /:processCode/*path                controllers.GuidanceController.submitPage(processCode: String, path: String)
 

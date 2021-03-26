@@ -45,6 +45,22 @@ class GuidanceService @Inject() (
 
   val logger: Logger = Logger(getClass)
 
+  def sessionRestart(processCode: String, sessionId: String)(implicit context: ExecutionContext): Future[RequestOutcome[String]] =
+    sessionRepository.getResetSession(sessionId).map{
+      case Right(ctx) if processCode == ctx.process.meta.processCode =>
+        ctx.urlToPageId.collectFirst{case (k,v) if v == ctx.process.startPageId => k}
+          .fold[RequestOutcome[String]]{
+            logger.error(s"Process start pageId (${ctx.process.startPageId}) missing from retreived session map" )
+            Left(InternalServerError)
+          }(Right(_))
+
+      case Right(_) =>
+        logger.error(s"Referenced session ( $sessionId ) does not contain a process with processCode $processCode after session reset")
+        Left(InternalServerError)
+      case Left(err) =>
+        Left(InternalServerError)
+    }
+
   def getProcessContext(sessionId: String): Future[RequestOutcome[ProcessContext]] = sessionRepository.get(sessionId)
 
   def getProcessContext(sessionId: String, processCode: String, url: String, previousPageByLink: Boolean)
@@ -82,7 +98,7 @@ class GuidanceService @Inject() (
                   dataInput,
                   sessionId,
                   stanzaIdToUrlMap,
-                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}${startUrl}"),
+                  process.startUrl.map( startUrl => s"${appConfig.baseUrl}/${processCode}/session-restart"),
                   process.title,
                   process.meta.id,
                   processCode,

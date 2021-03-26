@@ -69,6 +69,12 @@ trait MockGuidanceService extends MockFactory {
         .expects(sessionId)
     }
 
+    def sessionRestart(processCode: String, sessionId: String): CallHandler[Future[RequestOutcome[String]]] = {
+      (mockGuidanceService
+        .sessionRestart(_: String, _: String)(_: ExecutionContext))
+        .expects(processCode, sessionId, *)
+    }
+
     def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy): CallHandler[PageContext] = {
       (mockGuidanceService
         .getPageContext(_: PageEvaluationContext, _: ErrorStrategy)(_: Lang))
