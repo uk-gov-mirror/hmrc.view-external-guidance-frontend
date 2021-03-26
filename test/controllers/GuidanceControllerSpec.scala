@@ -31,7 +31,7 @@ import play.api.test.Helpers.stubMessagesControllerComponents
 import uk.gov.hmrc.http.SessionKeys
 import models.{PageContext, PageEvaluationContext}
 import core.models.ocelot.{KeyedStanza, Labels, Page, Phrase, Process, ProcessJson}
-import core.models.ocelot.stanzas.{CurrencyInput, DateInput, Question, Sequence, _}
+import core.models.ocelot.stanzas.{CurrencyInput, DateInput, ExclusiveSequence, NonExclusiveSequence, Question, _}
 import models.ui
 import models.ui._
 import repositories.ProcessContext
@@ -95,7 +95,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     val questionStanza: Question = Question(Phrase("Which?","Which?"), Seq(Phrase("yes","yes"),Phrase("no","no")), Seq("4","5"), None, false)
     val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
     val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
-    val sequence: Sequence = Sequence(
+    val nonExclusiveSequence: NonExclusiveSequence = NonExclusiveSequence(
       Phrase("Select a working day of the week", "Welsh, Select a working day of the week"),
       Seq("10", "20", "30", "40", "50", "60"),
       Seq(
@@ -105,7 +105,19 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         Phrase("Thursday", "Welsh, Thursday"),
         Phrase("Friday", "Welsh, Friday")
       ),
-      exclusive = false,
+      None,
+      stack = false
+    )
+    val exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
+      Phrase("Select a holiday destination", "Welsh, Select a holiday destination"),
+      Seq("10", "20", "30", "40", "50", "60"),
+      Seq(
+        Phrase("Europe", "Welsh, Europe"),
+        Phrase("Africa", "Welsh, Africa"),
+        Phrase("Americas", "Welsh, Americas"),
+        Phrase("Asia", "Welsh, Asia")
+      ),
+      Seq(Phrase("Elsewhere [exclusive]", "Welsh, Elsewhere")),
       None,
       stack = false
     )
@@ -122,17 +134,24 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       KeyedStanza("3", dateInputStanza)
     )
 
-    val stanzasWithSequence: Seq[KeyedStanza] = Seq(
+    val stanzasWithNonExclusiveSequence: Seq[KeyedStanza] = Seq(
       KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
       KeyedStanza("1", instructionStanza),
-      KeyedStanza("3", sequence)
+      KeyedStanza("3", nonExclusiveSequence)
+    )
+
+    val stanzasWithExclusiveSequence: Seq[KeyedStanza] = Seq(
+      KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
+      KeyedStanza("1", instructionStanza),
+      KeyedStanza("3", exclusiveSequence)
     )
 
     val page = Page("start", "/test-page", stanzas, Seq("4","5"))
     val inputPage = Page("start", "/test-page", stanzasWithInput, Seq("4"))
     val nonQuestionPage = Page("start", "/test-page", stanzas.drop(1), Seq("3"))
     val dateInputPage = Page("start", "/test-page", stanzasWithDateInput, Seq("4"))
-    val sequenceInputPage: Page = Page("start", "/test-page", stanzasWithSequence, Seq("4"))
+    val nonExclusiveSequenceInputPage: Page = Page("start", "/test-page", stanzasWithNonExclusiveSequence, Seq("4"))
+    val exclusiveSequenceInputPage: Page = Page("start", "/test-page", stanzasWithExclusiveSequence, Seq("4"))
   }
 
   trait QuestionTest extends MockGuidanceService with TestData {
@@ -1395,13 +1414,13 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     }
   }
 
-  "Sequence input processing" should {
+  "Non-exclusive sequence input processing" should {
 
     trait SequenceInputTest extends MockGuidanceService with TestData {
 
       override lazy val expectedPage: ui.Page = FormPage(
         path,
-        ui.Sequence(
+        ui.NonExclusiveSequence(
           Text("Select a working day of the week"),
           None,
           Seq(
@@ -1411,7 +1430,6 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
             Text("Thursday"),
             Text("Friday")
           ),
-          exclusive = false,
           Seq(Paragraph(Text("When did you go into work?"))),
           Seq.empty
         )
@@ -1433,10 +1451,10 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
       val initialLabels: Labels = LabelCache()
       val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer()
-        .renderPage(sequenceInputPage, initialLabels)
+        .renderPage(nonExclusiveSequenceInputPage, initialLabels)
 
       val pec: PageEvaluationContext = PageEvaluationContext(
-        sequenceInputPage,
+        nonExclusiveSequenceInputPage,
         vStanzas,
         di,
         sessionId,
@@ -1478,7 +1496,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
 
     }
 
-    "Calling a sequence input page when a selection has been made previously" should {
+    "Calling a non-exclusive sequence input page when a selection has been made previously" should {
 
       "return an Ok response" in new SequenceInputTest {
 
@@ -1594,6 +1612,207 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           status(result) shouldBe Status.BAD_REQUEST
         }
       }
+    }
+
+  }
+
+  "Exclusive sequence input processing" should {
+
+    trait ExclusiveSequenceInputTest extends MockGuidanceService with TestData {
+
+      override lazy val expectedPage: ui.Page = FormPage(
+        path,
+        ui.ExclusiveSequence(
+          Text("Select a holiday destination"),
+          None,
+          Seq(
+            Text("Europe"),
+            Text("Africa"),
+            Text("Americas"),
+            Text("Asia")
+          ),
+          Text("Elsewhere"),
+          Seq(Paragraph(Text("When did you go into work?"))),
+          Seq.empty
+        )
+      )
+
+      val fakeRequest = FakeRequest("POST", path)
+        .withSession(SessionKeys.sessionId -> processId)
+        .withFormUrlEncodedBody().withCSRFToken
+
+      val target: GuidanceController = new GuidanceController(
+        MockAppConfig,
+        fakeSessionIdAction,
+        errorHandler,
+        view,
+        formView,
+        mockGuidanceService,
+        stubMessagesControllerComponents()
+      )
+
+      val initialLabels: Labels = LabelCache()
+      val (vStanzas: Seq[VisualStanza], labels: Labels, di: Option[DataInput]) = new PageRenderer()
+        .renderPage(exclusiveSequenceInputPage, initialLabels)
+
+      val pec: PageEvaluationContext = PageEvaluationContext(
+        exclusiveSequenceInputPage,
+        vStanzas,
+        di,
+        sessionId,
+        Map("4" -> "somewhere-else"),
+        Some("Hello"),
+        Text(),
+        processId,
+        processCode,
+        labels
+      )
+
+      val validExclusiveSequenceAnswer: String = "0,3"
+      val invalidExclusiveSequenceAnswer: String = "0,3,6"
+    }
+
+    "Calling a valid Url path to a sequence input page" should {
+
+      "return an OK response" in new ExclusiveSequenceInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.OK
+      }
+
+      "be a HTML response" in new ExclusiveSequenceInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        contentType(result) shouldBe Some("text/html")
+      }
+
+    }
+
+    "Calling a non-exclusive sequence input page when a selection has been made previously" should {
+
+      "return an Ok response" in new ExclusiveSequenceInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels, None, Some(validExclusiveSequenceAnswer)))))
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.OK
+      }
+    }
+
+    "Calling a page with a missing exclusive sequence input component" should {
+
+      "return a bad request response" in new ExclusiveSequenceInputTest {
+
+        MockGuidanceService
+          .getPageContext(processId, path, previousPageByLink = false, processId)
+          .returns(
+            Future.successful(Right(PageContext(expectedPage, Seq.empty, None, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels)))
+          )
+
+        val result = target.getPage(processId, relativePath, None)(fakeRequest)
+
+        status(result) shouldBe Status.BAD_REQUEST
+      }
+
+    }
+
+    "Submitting a valid answer to a sequence input page" should {
+
+      "return a see other response" in new ExclusiveSequenceInputTest {
+
+        MockGuidanceService
+          .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+          .returns(Future.successful(Right(pec)))
+
+        MockGuidanceService
+          .validateUserResponse(pec, validExclusiveSequenceAnswer)
+          .returns(Some(validExclusiveSequenceAnswer))
+
+        MockGuidanceService
+          .submitPage(pec, path, validExclusiveSequenceAnswer, validExclusiveSequenceAnswer)
+          .returns(Future.successful(Right((Some("4"), LabelCache()))))
+
+        override val fakeRequest = FakeRequest("POST", path)
+          .withSession(SessionKeys.sessionId -> processId)
+          .withFormUrlEncodedBody(
+            s"$relativePath[0]" -> "0",
+            s"$relativePath[2]" -> "3"
+          )
+          .withCSRFToken
+
+        val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+        status(result) shouldBe Status.SEE_OTHER
+      }
+
+      "submitting a form with no options selected" should {
+
+        "returns a bad request response" in new ExclusiveSequenceInputTest {
+
+          MockGuidanceService
+            .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+            .returns(Future.successful(Right(pec)))
+
+          MockGuidanceService
+            .getPageContext(pec, ValueMissingError)
+            .returns(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels))
+
+          override val fakeRequest = FakeRequest("POST", path)
+            .withSession(SessionKeys.sessionId -> processId)
+            .withFormUrlEncodedBody()
+            .withCSRFToken
+
+          val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+          status(result) shouldBe Status.BAD_REQUEST
+        }
+
+      }
+
+      "Submitting an invalid selection" should {
+
+        "return a bad request response" in new ExclusiveSequenceInputTest {
+
+          MockGuidanceService
+            .getPageEvaluationContext(processId, path, previousPageByLink = false, processId)
+            .returns(Future.successful(Right(pec)))
+
+          MockGuidanceService
+            .validateUserResponse(pec, invalidExclusiveSequenceAnswer)
+            .returns(None)
+
+          MockGuidanceService
+            .getPageContext(pec, ValueTypeError)
+            .returns(PageContext(expectedPage, vStanzas, di, sessionId, Some("/"), Text(Nil), processId, processCode, initialLabels))
+
+          override val fakeRequest = FakeRequest("POST", path)
+            .withSession(SessionKeys.sessionId -> processId)
+            .withFormUrlEncodedBody(
+              s"$relativePath[0]" -> "0",
+              s"$relativePath[3]" -> "3",
+              s"$relativePath[4]" -> "6"
+            )
+            .withCSRFToken
+
+          val result = target.submitPage(processId, relativePath)(fakeRequest)
+
+          status(result) shouldBe Status.BAD_REQUEST
+        }
+      }
+
     }
 
   }

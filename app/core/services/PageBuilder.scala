@@ -86,6 +86,7 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
         checkQuestionPages(pages, Nil) ++
         duplicateUrlErrors(pages.reverse, Nil) ++
         checkDateInputErrorCallouts(pages, Nil) ++
+          checkExclusiveSequencePages(pages, Nil) ++
         detectUnsupportedPageRedirect(pages) match {
           case Nil => Right(pages.head +: pages.tail.sortWith((x,y) => x.id < y.id))
           case errors =>
@@ -103,7 +104,9 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
           f(page.id, page.url, text.english)
         case i: Question =>
           f(page.id, page.url, hintRegex.replaceAllIn(i.text.english, ""))
-        case i: Sequence =>
+        case i: NonExclusiveSequence =>
+          f(page.id, page.url, hintRegex.replaceAllIn(i.text.english, ""))
+        case i: ExclusiveSequence =>
           f(page.id, page.url, hintRegex.replaceAllIn(i.text.english, ""))
         case i: Input =>
           f(page.id, page.url, hintRegex.replaceAllIn(i.name.english, ""))
@@ -194,4 +197,22 @@ class PageBuilder @Inject() (val placeholders: Placeholders) extends ProcessPopu
             checkQuestionPages(xs, anyErrors ++ errors)
         }
     }
+
+  @tailrec
+  private def checkExclusiveSequencePages(pages: Seq[Page], errors: List[GuidanceError]): List[GuidanceError] = {
+    pages match {
+      case Nil => errors
+      case x +: xs => x.keyedStanzas.collectFirst{case KeyedStanza(key, exSeq: ExclusiveSequence) => (key, exSeq)}
+      match {
+          case Some((key, exclusiveSequence)) =>
+            if(exclusiveSequence.exclusiveOptions.size > 1) {
+              checkExclusiveSequencePages(xs, MultipleExclusiveOptionsError(key) +: errors)
+            } else {
+              checkExclusiveSequencePages(xs, errors)
+            }
+          case None => checkExclusiveSequencePages(xs, errors)
+        }
+    }
+  }
+
 }

@@ -23,8 +23,12 @@ trait FormComponent extends UIComponent {
   val errorMsgs: Seq[ErrorMsg]
 }
 
+trait SequenceFormComponent extends FormComponent
 
-trait SequenceFormComponent extends FormComponent {
+trait NonExclusiveSequenceFormComponent extends SequenceFormComponent {
   val options: Seq[Text]
-  val exclusive: Boolean
+}
+
+trait ExclusiveSequenceFormComponent extends NonExclusiveSequenceFormComponent {
+  val exclusiveOption: Text
 }

@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import forms.{SubmittedListAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.PageContext
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
-import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text, Sequence}
+import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text, ExclusiveSequence, NonExclusiveSequence}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 
@@ -97,13 +97,13 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
 
     val sequenceTitle: Text = Text("Select your fruit")
     val fruitOptions: Seq[Text] = Seq(Text("Oranges"), Text("Pears"), Text("Mangoes"))
-    val fruitSequence: Sequence = Sequence(sequenceTitle, None, fruitOptions, exclusive = false, Seq.empty, Seq.empty)
+    val fruitSequence: NonExclusiveSequence = NonExclusiveSequence(sequenceTitle, None, fruitOptions, Seq.empty, Seq.empty)
     val sequencePage: FormPage = FormPage("/selectFruit", fruitSequence)
 
     val exclusiveSequenceTitle: Text = Text("What kind of car would you like?")
-    val carTypeOptions: Seq[Text] = Seq(Text("Sports car"), Text("SUV"), Text("People carrier"), Text("Other"))
-    var exclusiveSequence: Sequence = Sequence(
-      exclusiveSequenceTitle, None, carTypeOptions, exclusive = true, Seq.empty, Seq.empty)
+    val carTypeOptions: Seq[Text] = Seq(Text("Sports car"), Text("SUV"), Text("People carrier"))
+    var exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
+      exclusiveSequenceTitle, None, carTypeOptions, Text("Other"), Seq.empty, Seq.empty)
     var exclusiveSequencePage: FormPage = FormPage("/cars-you-like", exclusiveSequence)
 
     def expectedTitleText(h1Text: String, section: Option[String] = None): String =

@@ -68,12 +68,12 @@ trait ProcessPopulation {
 
       phrases(s.options, Nil, id, process).fold(Left(_),
         options => {
-          processSequenceOptions(id, options) match {
-            case Right((orderedOptions, exclusive)) =>
-              phrase(s.text, id, process).fold(Left(_),
-                text => Right(Sequence(s, text, orderedOptions, exclusive)))
-            case Left(err) => Left(err)
-          }
+          phrase(s.text, id, process).fold(Left(_),
+                text => {
+                  val (nonExclusiveOptions, exclusiveOptions) = processSequenceOptions(options)
+                  Right(createSequence(s, text, nonExclusiveOptions, exclusiveOptions))
+                }
+          )
         })
 
     }
@@ -117,24 +117,22 @@ trait ProcessPopulation {
         }
     }
 
-  private def processSequenceOptions(id: String, options: Seq[Phrase]): Either[GuidanceError,(Seq[Phrase], Boolean)] = {
+  private def processSequenceOptions(options: Seq[Phrase]): (Seq[Phrase], Option[Seq[Phrase]]) = {
 
-    val exclusiveOptions: Seq[Phrase] = options.filter{p => exclusiveOptionRegex.findAllMatchIn(p.english).nonEmpty}
+    val exclusiveOptions: Seq[Phrase] = options.filter{p => exclusiveOptionRegex.findFirstMatchIn(p.english).nonEmpty}
 
-    exclusiveOptions.size match {
-      case size if size == 0 => Right((options, false))
-      case size if size == 1 =>
-        val nonExclusiveOptions: Seq[Phrase] = options.filter{p => exclusiveOptionRegex.findAllMatchIn(p.english).isEmpty}
-        nonExclusiveOptions.size match {
-          case nonExOpsSize if nonExOpsSize > 0 =>
-            val exclusiveOption: Phrase = Phrase(
-              exclusiveOptionRegex.replaceAllIn(exclusiveOptions.head.english,"").trim,
-              exclusiveOptionRegex.replaceAllIn(exclusiveOptions.head.welsh,"").trim
-            )
-            Right(((exclusiveOption +: nonExclusiveOptions.reverse).reverse, true))
-          case _ => Left(MissingNonExclusiveOptionError(id))
-        }
-      case size if size > 1 => Left(MultipleExclusiveOptionsError(id))
+    exclusiveOptions match {
+      case Nil => (options, None)
+      case _ =>
+        (options.filter{p => exclusiveOptionRegex.findFirstMatchIn(p.english).isEmpty}, Some(exclusiveOptions))
+    }
+  }
+
+  private def createSequence(s: SequenceStanza, text: Phrase, nonExclusiveOptions: Seq[Phrase], exclusiveOptions: Option[Seq[Phrase]]): Sequence = {
+
+    exclusiveOptions match {
+      case Some(options) => ExclusiveSequence(s, text, nonExclusiveOptions, options)
+      case None => NonExclusiveSequence(s, text, nonExclusiveOptions)
     }
 
   }

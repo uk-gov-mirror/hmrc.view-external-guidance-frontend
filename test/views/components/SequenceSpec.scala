@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 import views.html._
 import forms.SubmittedListAnswerFormProvider
 import models.PageContext
-import models.ui.{FormPage, H2, Paragraph, RequiredErrorMsg, Sequence, SubmittedListAnswer, Text}
+import models.ui.{FormPage, H2, Paragraph, RequiredErrorMsg, ExclusiveSequence, NonExclusiveSequence, SubmittedListAnswer, Text}
 import core.models.ocelot.{LabelCache, Labels}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
@@ -59,54 +59,50 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
     val exclusiveSequenceTitle: Text = Text("Where are you going on your holidays?")
     val holidayOptions: Seq[Text] = Seq(
       Text("The UK"),
-      Text("Europe"),
-      Text("Elsewhere")
+      Text("Europe")
     )
+    val exclusiveHolidayOption: Text = Text("Elsewhere")
 
     val h2: H2 = H2(Text("Subtitle"))
     val p: Paragraph = Paragraph(Text("Introduction to sweets"))
 
-    val sequenceWithoutHint: Sequence = Sequence(
+    val sequenceWithoutHint: NonExclusiveSequence = NonExclusiveSequence(
       sequenceTitle,
       None,
       sweetOptions,
-      exclusive = false,
       Seq.empty,
       Seq.empty
     )
 
-    val sequenceWithHint: Sequence = Sequence(
+    val sequenceWithHint: NonExclusiveSequence = NonExclusiveSequence(
       sequenceTitle,
       Some(sequenceHint),
       sweetOptions,
-      exclusive = false,
       Seq.empty,
       Seq.empty
     )
 
-    val sequenceWithBody: Sequence = Sequence(
+    val sequenceWithBody: NonExclusiveSequence = NonExclusiveSequence(
       sequenceTitle,
       None,
       sweetOptions,
-      exclusive = false,
       Seq(h2, p),
       Seq.empty
     )
 
-    val sequenceWithError: Sequence = Sequence(
+    val sequenceWithError: NonExclusiveSequence = NonExclusiveSequence(
       sequenceTitle,
       None,
       sweetOptions,
-      exclusive = false,
       Seq.empty,
       Seq(errorMsg)
     )
 
-    val exclusiveSequence: Sequence = Sequence(
+    val exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
       exclusiveSequenceTitle,
       None,
       holidayOptions,
-      exclusive = true,
+      exclusiveHolidayOption,
       Seq(h2, p),
       Seq.empty
     )
