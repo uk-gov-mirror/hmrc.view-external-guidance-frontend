@@ -86,10 +86,11 @@ trait Sequence extends VisualStanza with Populated with DataInput {
 }
 
 object Sequence {
-  def apply(s: SequenceStanza, text: Phrase, options: Seq[Phrase]): Sequence = {
-    if (options.exists(o => exclusiveOptionRegex.findFirstMatchIn(o.english).nonEmpty)) ExclusiveSequence(text, s.next, options, s.label, s.stack)
-    else NonExclusiveSequence(text, s.next, options, s.label, s.stack)
-  }
+  def apply(s: SequenceStanza, text: Phrase, options: Seq[Phrase]): Sequence =
+    if (options.exists(o => exclusiveOptionRegex.findFirstMatchIn(o.english).nonEmpty))
+      ExclusiveSequence(text, s.next, options, s.label, s.stack)
+    else
+      NonExclusiveSequence(text, s.next, options, s.label, s.stack)
 }
 
 case class NonExclusiveSequence(text: Phrase,
