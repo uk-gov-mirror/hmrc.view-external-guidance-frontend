@@ -17,7 +17,7 @@
 package core.services
 
 import core.models.ocelot.stanzas._
-import core.models.ocelot.{Link, Phrase, Process, exclusiveOptionRegex, pageLinkIds}
+import core.models.ocelot.{Link, Phrase, Process, pageLinkIds}
 import core.models.ocelot.errors._
 
 import scala.annotation.tailrec
@@ -64,19 +64,10 @@ trait ProcessPopulation {
         case Left(err) => Left(err)
       }
 
-    def populateSequence(id: String, s: SequenceStanza): Either[GuidanceError, Sequence] = {
-
-      phrases(s.options, Nil, id, process).fold(Left(_),
-        options => {
-          phrase(s.text, id, process).fold(Left(_),
-                text => {
-                  val (nonExclusiveOptions, exclusiveOptions) = processSequenceOptions(options)
-                  Right(createSequence(s, text, nonExclusiveOptions, exclusiveOptions))
-                }
-          )
-        })
-
-    }
+    def populateSequence(id: String, s: SequenceStanza): Either[GuidanceError, Sequence] =
+      phrases(s.options, Nil, id, process).fold(Left(_), options =>
+        phrase(s.text, id, process).fold(Left(_), text => Right(Sequence(s, text, options)))
+      )
 
     def link(linkIndex: Int): Either[LinkNotFound, Link] =
       process.linkOption(linkIndex).map(Right(_)).getOrElse(Left(LinkNotFound(id, linkIndex)))
@@ -116,25 +107,4 @@ trait ProcessPopulation {
           case Left(err) => Left(err)
         }
     }
-
-  private def processSequenceOptions(options: Seq[Phrase]): (Seq[Phrase], Option[Seq[Phrase]]) = {
-
-    val exclusiveOptions: Seq[Phrase] = options.filter{p => exclusiveOptionRegex.findFirstMatchIn(p.english).nonEmpty}
-
-    exclusiveOptions match {
-      case Nil => (options, None)
-      case _ =>
-        (options.filter{p => exclusiveOptionRegex.findFirstMatchIn(p.english).isEmpty}, Some(exclusiveOptions))
-    }
-  }
-
-  private def createSequence(s: SequenceStanza, text: Phrase, nonExclusiveOptions: Seq[Phrase], exclusiveOptions: Option[Seq[Phrase]]): Sequence = {
-
-    exclusiveOptions match {
-      case Some(options) => ExclusiveSequence(s, text, nonExclusiveOptions, options)
-      case None => NonExclusiveSequence(s, text, nonExclusiveOptions)
-    }
-
-  }
-
 }

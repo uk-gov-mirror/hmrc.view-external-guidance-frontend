@@ -16,7 +16,7 @@
 
 package core.models.ocelot.stanzas
 
-import core.models.ocelot.{labelReferences, ScalarLabel, Page, Labels, Label, Phrase, asListOfInt}
+import core.models.ocelot.{labelReferences, ScalarLabel, Page, Labels, Label, Phrase, asListOfInt, exclusiveOptionRegex}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json.{JsSuccess, JsError, JsValue, JsonValidationError, JsPath, OWrites, Reads}
@@ -53,14 +53,16 @@ object SequenceStanza {
 }
 
 trait Sequence extends VisualStanza with Populated with DataInput {
-
-  def getOptions: Seq[Phrase]
-  def getLabel: Option[String]
+  val text: Phrase
+  val options: Seq[Phrase]
+  val label: Option[String]
+  override val labelRefs: List[String] = labelReferences(text.english) ++ options.flatMap(a => labelReferences(a.english))
+  override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
 
   def eval(value: String, page: Page, labels: Labels): (Option[String], Labels) =
     validInput(value).fold[(Option[String], Labels)]((None, labels)){checkedItems =>
       asListOfInt(checkedItems).fold[(Option[String], Labels)]((None, labels)){checked => {
-        val chosenOptions: List[String] = checked.flatMap(idx => getOptions.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
+        val chosenOptions: List[String] = checked.flatMap(idx => options.lift(idx).fold[List[String]](Nil)(p => List(p.english)))
         // Collect any Evaluate stanzas following this Sequence for use when the Continuation is followed
         val continuationStanzas: Map[String, Stanza] = page.keyedStanzas
           .dropWhile{ks => ks.stanza match {
@@ -73,49 +75,34 @@ trait Sequence extends VisualStanza with Populated with DataInput {
           .toMap
         // push the flows and Continuation corresponding to the checked items, then
         // nextFlow and redirect to the first flow (setting list and first flow label)
-        getLabel.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
-          .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))), next.last, getLabel, chosenOptions, continuationStanzas)
+        label.fold(labels)(l => labels.updateList(s"${l}_seq", chosenOptions))
+          .pushFlows(checked.flatMap(idx => next.lift(idx).fold[List[String]](Nil)(List(_))), next.last, label, chosenOptions, continuationStanzas)
         }
       }
     }
 
   def validInput(value: String): Option[String] =
-    asListOfInt(value).fold[Option[String]](None)(l => if (l.forall(getOptions.indices.contains(_))) Some(value) else None)
+    asListOfInt(value).fold[Option[String]](None)(l => if (l.forall(options.indices.contains(_))) Some(value) else None)
+}
+
+object Sequence {
+  def apply(s: SequenceStanza, text: Phrase, options: Seq[Phrase]): Sequence = {
+    if (options.exists(o => exclusiveOptionRegex.findFirstMatchIn(o.english).nonEmpty)) ExclusiveSequence(text, s.next, options, s.label, s.stack)
+    else NonExclusiveSequence(text, s.next, options, s.label, s.stack)
+  }
 }
 
 case class NonExclusiveSequence(text: Phrase,
-                    override val next: Seq[String],
-                    options: Seq[Phrase],
-                    label: Option[String],
-                    stack: Boolean) extends Sequence {
-
-  override val labelRefs: List[String] = labelReferences(text.english) ++ options.flatMap(a => labelReferences(a.english))
-  override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
-
-  override def getOptions: Seq[Phrase] = options
-  override def getLabel: Option[String] = label
-}
+                                override val next: Seq[String],
+                                options: Seq[Phrase],
+                                label: Option[String],
+                                stack: Boolean) extends Sequence
 
 case class ExclusiveSequence(text: Phrase,
                              override val next: Seq[String],
                              options: Seq[Phrase],
-                             exclusiveOptions: Seq[Phrase],
                              label: Option[String],
                              stack: Boolean) extends Sequence {
-
-  override val labelRefs: List[String] = labelReferences(
-    text.english) ++ options.flatMap(a => labelReferences(a.english)) ++ exclusiveOptions.flatMap(b => labelReferences(b.english))
-  override val labels: List[Label] = label.fold[List[Label]](Nil)(l => List(ScalarLabel(l)))
-
-  override def getOptions: Seq[Phrase] = options ++ exclusiveOptions
-  override def getLabel: Option[String] = label
-}
-
-object NonExclusiveSequence {
-  def apply(s: SequenceStanza, text: Phrase, options: Seq[Phrase]): NonExclusiveSequence = NonExclusiveSequence(text, s.next, options, s.label, s.stack)
-}
-
-object ExclusiveSequence {
-  def apply(s: SequenceStanza, text: Phrase, options: Seq[Phrase], exclusiveOptions: Seq[Phrase]): ExclusiveSequence =
-    ExclusiveSequence(text, s.next, options, exclusiveOptions, s.label, s.stack)
+  val exclusiveOptions: Seq[Phrase] = options.filter{p => exclusiveOptionRegex.findFirstMatchIn(p.english).nonEmpty}
+  val nonExclusiveOptions: Seq[Phrase] = options.filterNot{p => exclusiveOptionRegex.findFirstMatchIn(p.english).nonEmpty}
 }
