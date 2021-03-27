@@ -232,7 +232,7 @@ class UIBuilder {
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
     val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(exclusiveSequence.text)
-    val options: Seq[Text] = exclusiveSequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
+    val options: Seq[Text] = exclusiveSequence.nonExclusiveOptions.map{phrase => TextBuilder.fromPhrase(phrase)}
 
     val exclusiveOptionPhrase: Phrase = Phrase(
       exclusiveOptionRegex.replaceAllIn(exclusiveSequence.exclusiveOptions.head.english,"").trim,
