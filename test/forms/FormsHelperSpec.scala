@@ -20,7 +20,7 @@ import play.api.mvc._
 import play.api.data.Form
 import play.api.i18n.{Lang, Messages, MessagesApi}
 import core.models.ocelot.Phrase
-import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question, Sequence}
+import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Question, ExclusiveSequence, NonExclusiveSequence}
 import models.ui.SubmittedAnswer
 import services.{ErrorStrategy, ValueMissingError, ValueMissingGroupError}
 
@@ -50,7 +50,8 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
     val monthAnswer: String = "5"
     val yearAnswer: String = "2019"
     val dateAnswer: String = dayAnswer + "/" + monthAnswer + "/" + yearAnswer
-    val sequenceAnswer: String = "0,2,4"
+    val nonExclusiveSequenceAnswer: String = "0,2,4"
+    val exclusiveSequenceAnswer: String = "0,2"
     val expectedErrorMessage: String = "error.required"
 
     val question: Question = Question(
@@ -91,7 +92,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
       stack = false
     )
 
-    val sequence: Sequence = Sequence(
+    val nonExclusiveSequence: NonExclusiveSequence = NonExclusiveSequence(
       Phrase("Select a day in the working week", "Welsh, Select a day in the working week"),
       Seq("10", "20", "30", "40", "50", "60"),
       Seq(
@@ -105,14 +106,27 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
       stack = false
     )
 
+    val exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
+      Phrase("Select your favorite colour", "Welsh, Select your favourite colour"),
+      Seq("10", "20", "30", "40"),
+      Seq(
+        Phrase("Red", "Welsh, Red"),
+        Phrase("Green", "Welsh, Green"),
+        Phrase("Blue", "Welsh, Blue"),
+        Phrase("Not a primary colour [exclusive]","Welsh, Not a primary colour")
+      ),
+      None,
+      stack = false
+    )
+
   }
 
   private trait WelshTest extends Test {
     override implicit val messages: Messages = messagesApi.preferred(Seq(Lang("cy")))
 
-    override val day: String = "dydd"
+    override val day: String = "diwrnod"
     override val month: String = "mis"
-    override val year: String = "blwydd"
+    override val year: String = "blwyddyn"
   }
 
   "FormsHelper's binding functionality" should {
@@ -182,7 +196,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     }
 
-    "be able to bind data for a sequence input component" in new Test {
+    "be able to bind data for a non-exclusive sequence input component" in new Test {
 
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(
@@ -191,16 +205,36 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
           s"$relativePath[4]" -> "4"
         )
 
-      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(nonExclusiveSequence, relativePath)
 
       result match {
         case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
           form(s"$relativePath[0]").value shouldBe Some("0")
           form(s"$relativePath[1]").value shouldBe Some("2")
           form(s"$relativePath[2]").value shouldBe Some("4")
-          submittedAnswer.text shouldBe sequenceAnswer
+          submittedAnswer.text shouldBe nonExclusiveSequenceAnswer
         case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
       }
+    }
+
+    "be able to bind data for an exclusive sequence input component" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody(
+          s"$relativePath[0]" -> "0",
+          s"$relativePath[2]" -> "2"
+        )
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(exclusiveSequence, relativePath)
+
+      result match {
+        case Right((form: Form[_], submittedAnswer: SubmittedAnswer)) =>
+          form(s"$relativePath[0]").value shouldBe Some("0")
+          form(s"$relativePath[1]").value shouldBe Some("2")
+          submittedAnswer.text shouldBe exclusiveSequenceAnswer
+        case Left((_: Form[_], _: ErrorStrategy)) => fail("Form binding returned a form with errors")
+      }
+
     }
 
     "return a form with errors if the question answer is not mapped to the correct key in the request" in new Test {
@@ -404,12 +438,27 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     }
 
-    "return a form with error if the sequence is not mapped to the correct key in the request" in new Test {
+    "return a form with error if the non-exclusive sequence is not mapped to the correct key in the request" in new Test {
 
       implicit val request: Request[_] = FakeRequest("POST", path)
         .withFormUrlEncodedBody(s"$incorrectPath[0]" -> "0")
 
-      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(sequence, relativePath)
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(nonExclusiveSequence, relativePath)
+
+      result match {
+        case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
+          formWithErrors.errors.head.message shouldBe expectedErrorMessage
+          errorStrategy shouldBe ValueMissingError
+        case _ => fail("Binding should fail for incorrect request data")
+      }
+    }
+
+    "return a form with error if the exclusive sequence is not mapped to the correct key in the request" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody(s"$incorrectPath[0]" -> "0")
+
+      val result: Either[(Form[_], ErrorStrategy), (Form[_], SubmittedAnswer)] = FormsHelper.bindFormData(exclusiveSequence, relativePath)
 
       result match {
         case Left((formWithErrors: Form[_], errorStrategy: ErrorStrategy)) =>
@@ -452,13 +501,23 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
       form("year").value shouldBe Some(yearAnswer)
     }
 
-    "populate a form with the submitted answer for a sequence" in new Test {
+    "populate a form with the submitted answer for a non-exclusive sequence" in new Test {
 
-      val form: Form[_] = FormsHelper.populatedForm(sequence, relativePath, Some(sequenceAnswer))
+      val form: Form[_] = FormsHelper.populatedForm(nonExclusiveSequence, relativePath, Some(nonExclusiveSequenceAnswer))
 
       form(s"$relativePath[0]").value shouldBe Some("0")
       form(s"$relativePath[1]").value shouldBe Some("2")
       form(s"$relativePath[2]").value shouldBe Some("4")
+      form(s"$relativePath[3]").value shouldBe None
+    }
+
+    "populate a form with the submitted answer for an exclusive sequence" in new Test {
+
+      val form: Form[_] = FormsHelper.populatedForm(exclusiveSequence, relativePath, Some(exclusiveSequenceAnswer))
+
+      form(s"$relativePath[0]").value shouldBe Some("0")
+      form(s"$relativePath[1]").value shouldBe Some("2")
+      form(s"$relativePath[2]").value shouldBe None
     }
 
   }

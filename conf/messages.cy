@@ -14,9 +14,11 @@ getpagehelp.linkText = Help gyda’r dudalen hon (yn agor tab newydd)
 
 site.continue = Yn eich blaen
 
-label.day=Dydd
+label.day=Diwrnod
 label.month=Mis
-label.year=Blwydd
+label.year=Blwyddyn
+
+exclusive.checkbox.or = neu
 
 error.browser.title.prefix = Gwall:
 error.summary.title = Mae yna broblem

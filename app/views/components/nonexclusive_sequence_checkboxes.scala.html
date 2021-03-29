@@ -17,16 +17,10 @@
 @import models.ui._
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 
-@(name: String, option: models.ui.Text, idx: Int, exclusive: Boolean, form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
-
-@checkboxIdentifier(name:String, idx: Int) = @{s"$name[$idx]"}
-
-@itemChecked(idx: Int) = @{form.data.valuesIterator.exists(_ == idx.toString)}
-
-<div class="govuk-checkboxes__item">
- <input class="govuk-checkboxes__input" id="@checkboxIdentifier(name, idx)" name="@checkboxIdentifier(name, idx)" type="checkbox" value="@idx" @{if(itemChecked(idx)) "checked"} @{if(exclusive) dataExclusive()}>
- <label class="govuk-label govuk-checkboxes__label" for="@checkboxIdentifier(name, idx)">@components.render_text(option)</label>
-</div>
+@(name: String, options: Seq[models.ui.Text], form: Form[_])(implicit request: Request[_], messages: Messages, ctx: PageContext)
+  <div class="govuk-checkboxes">
+    @{options.zipWithIndex.map{case (option, idx) => components.sequence_checkbox(name, option, idx, false, form)}}
+  </div>
 @{
 //$COVERAGE-OFF$
 }

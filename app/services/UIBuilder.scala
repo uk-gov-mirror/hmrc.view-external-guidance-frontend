@@ -19,8 +19,9 @@ package services
 import javax.inject.Singleton
 import models._
 import models.ocelot.stanzas._
-import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question, Sequence, _}
-import core.models.ocelot.{Link, Phrase, EmbeddedParameterRegex}
+import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question}
+import core.models.ocelot.stanzas.{ExclusiveSequence, NonExclusiveSequence, _}
+import core.models.ocelot.{Link, Phrase, EmbeddedParameterRegex, exclusiveOptionRegex}
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
@@ -66,7 +67,8 @@ class UIBuilder {
       case (c: Callout) :: xs => fromStanzas(xs, acc ++ fromCallout(c, errStrategy), errStrategy)
       case (in: Input) :: xs => fromStanzas(Nil, Seq(fromInput(in, acc)), errStrategy)
       case (q: Question) :: xs => fromStanzas(Nil, Seq(fromQuestion(q, acc)), errStrategy)
-      case (s: Sequence) :: xs => fromStanzas(Nil, Seq(fromSequence(s, acc)), errStrategy)
+      case (ns: NonExclusiveSequence) :: xs => fromStanzas(Nil, Seq(fromNonExclusiveSequence(ns, acc)), errStrategy)
+      case (es: ExclusiveSequence) :: xs => fromStanzas(Nil, Seq(fromExclusiveSequence(es, acc)), errStrategy)
       case (ng: NoteGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromNoteGroup(ng)), errStrategy)
       case (wt: ImportantGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromImportantGroup(wt)), errStrategy)
       case (ycg: YourCallGroup) :: xs => fromStanzas(xs, acc ++ Seq(fromYourCallGroup(ycg)), errStrategy)
@@ -214,14 +216,30 @@ class UIBuilder {
   private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
 
-  private def fromSequence(sequence: Sequence, components: Seq[UIComponent])
+  private def fromNonExclusiveSequence(nonExclusiveSequence: NonExclusiveSequence, components: Seq[UIComponent])
                           (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
-    val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(sequence.text)
-    val options = sequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
+    val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(nonExclusiveSequence.text)
+    val options: Seq[Text] = nonExclusiveSequence.options.map{phrase => TextBuilder.fromPhrase(phrase)}
 
-    ui.Sequence(text, hint, options, uiElements, errMsgs)
+    ui.NonExclusiveSequence(text, hint, options, uiElements, errMsgs)
+  }
+
+  private def fromExclusiveSequence(exclusiveSequence: ExclusiveSequence, components: Seq[UIComponent])
+                                   (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+
+    val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
+
+    val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(exclusiveSequence.text)
+    val options: Seq[Text] = exclusiveSequence.nonExclusiveOptions.map{phrase => TextBuilder.fromPhrase(phrase)}
+
+    val exclusiveOptionPhrase: Phrase = Phrase(
+      exclusiveOptionRegex.replaceAllIn(exclusiveSequence.exclusiveOptions.head.english,"").trim,
+      exclusiveOptionRegex.replaceAllIn(exclusiveSequence.exclusiveOptions.head.welsh,"").trim
+    )
+
+    ui.ExclusiveSequence(text, hint, options, TextBuilder.fromPhrase(exclusiveOptionPhrase), uiElements, errMsgs)
   }
 
 }
