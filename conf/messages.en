@@ -17,6 +17,8 @@ label.day=Day
 label.month=Month
 label.year=Year
 
+exclusive.checkbox.or = or
+
 error.browser.title.prefix = Error:
 error.summary.title = There is a problem
 
