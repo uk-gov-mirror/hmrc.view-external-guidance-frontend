@@ -115,9 +115,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
         Phrase("Europe", "Welsh, Europe"),
         Phrase("Africa", "Welsh, Africa"),
         Phrase("Americas", "Welsh, Americas"),
-        Phrase("Asia", "Welsh, Asia")
+        Phrase("Asia", "Welsh, Asia"),
+        Phrase("Elsewhere [exclusive]", "Welsh, Elsewhere")
       ),
-      Seq(Phrase("Elsewhere [exclusive]", "Welsh, Elsewhere")),
       None,
       stack = false
     )

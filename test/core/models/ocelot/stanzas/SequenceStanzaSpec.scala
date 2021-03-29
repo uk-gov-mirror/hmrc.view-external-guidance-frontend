@@ -71,19 +71,21 @@ class SequenceStanzaSpec extends BaseSpec {
 
   val expectedNonExclusiveSequence: NonExclusiveSequence =
     NonExclusiveSequence(
-      expectedStanza,
       Phrase("Select","Select"),
-      Seq(Phrase("One","One"),Phrase("Two","Two"),Phrase("Three","Three"),Phrase("Four","Four"))
+      expectedStanza.next,
+      Seq(Phrase("One","One"),Phrase("Two","Two"),Phrase("Three","Three"),Phrase("Four","Four")),
+      expectedStanza.label,
+      expectedStanza.stack
     )
 
   val expectedExclusiveSequence: ExclusiveSequence =
   ExclusiveSequence(
-    expectedStanza,
     Phrase("Select","Select"),
-    Seq(Phrase("One","One"),Phrase("Two","Two"),Phrase("Three","Three")),
-    Seq(Phrase("Four","Four"))
+    expectedStanza.next,
+    Seq(Phrase("One","One"),Phrase("Two","Two"),Phrase("Three","Three"), Phrase("Four [exclusive]","Four [exclusive]")),
+    expectedStanza.label,
+    expectedStanza.stack
   )
-
 
   "Reading valid JSON" should {
     "create a Sequence Stanza" in {

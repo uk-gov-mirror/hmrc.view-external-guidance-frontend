@@ -112,9 +112,9 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
       Seq(
         Phrase("Red", "Welsh, Red"),
         Phrase("Green", "Welsh, Green"),
-        Phrase("Blue", "Welsh, Blue")
+        Phrase("Blue", "Welsh, Blue"),
+        Phrase("Not a primary colour [exclusive]","Welsh, Not a primary colour")
       ),
-      Seq(Phrase("Not a primary colour [exclusive]","Welsh, Not a primary colour")),
       None,
       stack = false
     )

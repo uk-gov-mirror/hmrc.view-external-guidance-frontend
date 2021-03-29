@@ -18,12 +18,12 @@ package services
 
 import core.services._
 import base.{BaseSpec, EnglishLanguage}
-import core.models.ocelot._
+import core.models.ocelot.{Phrase, _}
 import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 import models.ui
 import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4}
-import models.ui.{InsetText, Link, Paragraph, RequiredErrorMsg, ExclusiveSequenceFormComponent, NonExclusiveSequenceFormComponent, Table, Text, WarningText, Words}
+import models.ui.{ExclusiveSequenceFormComponent, InsetText, Link, NonExclusiveSequenceFormComponent, Paragraph, RequiredErrorMsg, Table, Text, WarningText, Words}
 
 class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguage {
 
@@ -1709,10 +1709,9 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val optionsPhrases: Seq[Phrase] = Seq(
         Phrase(Vector("Drone", "Welsh, Drone")),
-        Phrase(Vector("Worker", "Welsh, Worker"))
+        Phrase(Vector("Worker", "Welsh, Worker")),
+        Phrase(Vector("Queen [exclusive]", "Welsh, Queen [exclusive]"))
       )
-
-      val exclusiveOptionPhrase: Seq[Phrase] = Seq(Phrase("Queen [exclusive]", "Welsh, Queen [exclusive]"))
 
       val stanzas: Seq[KeyedStanza] = Seq(
         KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
@@ -1742,8 +1741,8 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         )
       )
 
-      val exclusiveSequence = core.models.ocelot.stanzas.ExclusiveSequence(textPhrase, next, optionsPhrases, exclusiveOptionPhrase, None, stack = false)
-      val exclusiveSequenceWithHint = core.models.ocelot.stanzas.ExclusiveSequence(textPhraseWithHint, next, optionsPhrases, exclusiveOptionPhrase, None, stack = false)
+      val exclusiveSequence = core.models.ocelot.stanzas.ExclusiveSequence(textPhrase, next, optionsPhrases, None, stack = false)
+      val exclusiveSequenceWithHint = core.models.ocelot.stanzas.ExclusiveSequence(textPhraseWithHint, next, optionsPhrases, None, stack = false)
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequenceWithHint), Seq.empty)

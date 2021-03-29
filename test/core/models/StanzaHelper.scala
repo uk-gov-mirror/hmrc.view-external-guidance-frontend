@@ -99,11 +99,11 @@ trait StanzaHelper extends TestConstants {
     exclusiveSequencePhrases(nine),
     Seq("4", "4", "4", "4", "6"),
     Seq(
+      Phrase("Other [exclusive]", "Welsh, Other [exclusive]"),
       exclusiveSequencePhrases(eleven),
       exclusiveSequencePhrases(twelve),
-      exclusiveSequencePhrases(thirteen),
+      exclusiveSequencePhrases(thirteen)
     ),
-    Seq(Phrase("Other [exclusive]", "Welsh, Other [exclusive]")),
     None,
     stack = false
   )

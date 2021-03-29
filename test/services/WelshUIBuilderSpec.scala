@@ -1715,10 +1715,9 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       )
       val optionsPhrases: Seq[Phrase] = Seq(
         Phrase(Vector("Drone", "Welsh, Drone")),
-        Phrase(Vector("Worker", "Welsh, Worker"))
+        Phrase(Vector("Worker", "Welsh, Worker")),
+        Phrase(Vector("Queen [exclusive]", "Welsh, Queen [exclusive]"))
       )
-
-      val exclusiveOptionPhrase: Seq[Phrase] =  Seq(Phrase("Queen [exclusive]", "Welsh, Queen [exclusive]"))
 
       val stanzas: Seq[KeyedStanza] = Seq(
         KeyedStanza("start", PageStanza("/start", Seq("1"), stack = false)),
@@ -1748,8 +1747,8 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         )
       )
 
-      val exclusiveSequence = core.models.ocelot.stanzas.ExclusiveSequence(textPhrase, next, optionsPhrases, exclusiveOptionPhrase, None, stack = false)
-      val exclusiveSequenceWithHint = core.models.ocelot.stanzas.ExclusiveSequence(textPhraseWithHint, next, optionsPhrases, exclusiveOptionPhrase, None, stack = false)
+      val exclusiveSequence = core.models.ocelot.stanzas.ExclusiveSequence(textPhrase, next, optionsPhrases, None, stack = false)
+      val exclusiveSequenceWithHint = core.models.ocelot.stanzas.ExclusiveSequence(textPhraseWithHint, next, optionsPhrases, None, stack = false)
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequenceWithHint), Seq.empty)
