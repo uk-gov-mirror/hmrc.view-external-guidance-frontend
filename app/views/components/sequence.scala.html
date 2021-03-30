@@ -32,7 +32,7 @@
    }
 
     @{sequence.hint.map(hintText => <span id="sequence-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
-   @components.error_message(sequence.errorMsgs)
+    @components.error_message(sequence.errorMsgs)
 
     @{sequence match {
       case nonExSeq: NonExclusiveSequence => components.nonexclusive_sequence_checkboxes(name, nonExSeq.options, form)
