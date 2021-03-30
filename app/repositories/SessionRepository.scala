@@ -140,8 +140,7 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
       Left(DatabaseError)
     }
 
-  def get(key: String, pageUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] = {
-    println(s" ***** get $key, $pageUrl, $previousPageByLink")
+  def get(key: String, pageUrl: Option[String], previousPageByLink: Boolean): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(
       Json.obj("_id" -> key),
       Json.obj(
@@ -182,7 +181,6 @@ class DefaultSessionRepository @Inject() (config: AppConfig,
           logger.error(s"Error $lastError while trying to retrieve process from session repo with _id=$key")
           Left(DatabaseError)
       }
-    }
 
   def getResetSession(key: String): Future[RequestOutcome[ProcessContext]] =
     findAndUpdate(

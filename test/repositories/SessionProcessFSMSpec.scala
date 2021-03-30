@@ -332,26 +332,24 @@ class SessionProcessFSMSpec extends BaseSpec {
                                                                        PageHistory("/somepage", Nil),
                                                                        PageHistory("/another", Nil))), true, "/start"),
                Some("/another"),
-               Some(List(PageHistory("/start", Nil),
-                         PageHistory("/next", List(Flow("8",None),Continuation("2"))),
-                         PageHistory("/somepage", Nil),
-                         PageHistory("/another", Nil),
-                         PageHistory("/somepage",List(Flow("8",None), Continuation("2"))))),
                None,
+               Some(Nil),
                Nil)
     }
 
     "Return backlink, PageHistory update with multiple element history, when returning to a page within a sequence flow, forceForward false (FORWARD to HISTORIC)" in new FlowStackTest {
-        verify(fsm("/next", sessionProcess.copy(pageHistory = List(PageHistory("/start", Nil),
-                                                                   PageHistory("/next", List(Flow("8",None),Continuation("2"))),
-                                                                   PageHistory("/somepage", Nil),
-                                                                   PageHistory("/another", Nil))), true, "/start"),
+        val sp = sessionProcess.copy(pageHistory = List(PageHistory("/start", Nil),
+                                                        PageHistory("/next", List(Flow("8",None),Continuation("2"))),
+                                                        PageHistory("/somepage", Nil),
+                                                        PageHistory("/another", Nil)))
+
+        verify(fsm("/next", sp, true, "/start"),
                Some("/another"),
                Some(List(PageHistory("/start", Nil),
                          PageHistory("/next", List(Flow("8",None),Continuation("2"))),
                          PageHistory("/somepage", Nil),
                          PageHistory("/another", Nil),
-                         PageHistory("/next", List(Flow("8",None), Continuation("2"))))),
+                         PageHistory("/next", sp.flowStack))),
                None,
                Nil)
     }
