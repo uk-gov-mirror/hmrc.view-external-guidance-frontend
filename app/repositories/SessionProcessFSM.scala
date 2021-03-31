@@ -74,9 +74,9 @@ class SessionProcessFSM @Inject() () {
         findPreviousFlowAndLabelState(url, priorSp.pageHistory).fold[BackLinkAndStateUpdate]{
           (Some(x.url), Some((PageHistory(url, priorSp.flowStack) :: x :: xs).reverse), None, Nil)
         }{
-          case (labels, Nil) =>
+          case (_, Nil) =>
             (Some(x.url), None, Some(Nil), Nil)
-          case (labels, flowStack) =>
+          case (_, flowStack) =>
             (Some(x.url), Some((PageHistory(url, priorSp.flowStack) :: x :: xs).reverse), None, Nil)
         }
 
@@ -85,7 +85,7 @@ class SessionProcessFSM @Inject() () {
         findPreviousFlowAndLabelState(url, priorSp.pageHistory).fold[BackLinkAndStateUpdate]{
           (Some(x.url), None, None, Nil)
         }{
-          case (labels, Nil) =>
+          case (_, Nil) =>
             (Some(x.url), None, None, Nil)
           case (labels, flowStack) =>
             (Some(x.url), Some((PageHistory(url, flowStack) :: x :: xs).reverse), Some(flowStack), labels)
