@@ -356,20 +356,4 @@ class SessionProcessFSMSpec extends BaseSpec {
 
   }
 
-  trait NestedFlowStackTest extends SequenceJson {
-    val sessionProcess: SessionProcess =
-      new SessionProcess(
-        "id",
-        "processId",
-        nestedSeqJson.as[Process],
-        Map("Choice" -> ScalarLabel("Choice",List("Third"),List()), "Choice_seq" -> ListLabel("Choice_seq",List("Third", "Fourth"),List())),
-        List(Flow("8",Some(LabelValue("Choice","Third"))), Flow("88",Some(LabelValue("Choice","Fourth"))), Continuation("2")),
-        Map("6" -> ValueStanza(List(Value(ScalarType,"SecondSeqChoice","Loop value = [label:Choice]")),Vector("end"),false)),
-        Map("/done" -> "2", "/one" -> "4", "/third" -> "8", "/start" -> "start", "/fourth" -> "88"),
-        Map("/start" -> "2,3"),
-        List(PageHistory("/start", Nil)),
-        Instant.now
-      )
-  }
-
 }
