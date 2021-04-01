@@ -17,7 +17,7 @@
 package services
 
 import models._
-import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, boldPattern, linkPattern}
+import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, labelRefRegex, boldPattern, linkPattern, Labels}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -59,6 +59,11 @@ object TextBuilder {
         }
       })(labelName => LabelRef(labelName, OutputFormat(labelFormatOpt(m))))
     }
+
+  def expandLabels(p: Phrase, labels: Labels)(implicit lang: Lang): Phrase = {
+    def replace(m: Match): String = OutputFormat(Option(m.group(2))).asString(labels.displayValue(m.group(1)))
+    Phrase(labelRefRegex.replaceAllIn(p.english, replace _), labelRefRegex.replaceAllIn(p.welsh, replace _))
+  }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String], lang: Lang): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty
