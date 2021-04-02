@@ -27,8 +27,9 @@ import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, E
 import models.ui.{InsetText, Link, Paragraph, RequiredErrorMsg, ExclusiveSequenceFormComponent, NonExclusiveSequenceFormComponent, Table, Text, WarningText, Words}
 
 class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
-
+  implicit val labels: Labels = LabelCache()
   trait QuestionTest {
+
     implicit val urlMap: Map[String, String] =
       Map(
         Process.StartStanzaId -> "/blah",
@@ -68,7 +69,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   "UIBulider Question processing" must {
 
     "Ignore Error Callouts when there are no errors" in new QuestionTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, NoError)(urlMap, lang) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, NoError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case s: FormPage => fail("No error messages should be included on page")
         case _ => fail("Should return FormPage")
@@ -77,7 +78,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include Error messages when there are errors" in new QuestionTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => succeed
         case _ => fail("Should return FormPage")
@@ -105,7 +106,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a question hint appended to the question text" in new QuestionTest {
-      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.hint == Some(Text(questionHintString)) => succeed
         case s: FormPage => fail("No hint found within Question")
         case _ => fail("Should return FormPage")
@@ -114,7 +115,6 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   }
 
   trait Test extends ProcessJson {
-
     case class UnsupportedVisualStanza(override val next: Seq[String], stack: Boolean) extends VisualStanza with Populated
 
     val lang0 = Vector("Some Text", "Welsh, Some Text")
@@ -886,7 +886,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect { case s: VisualStanza => s }
-      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap, lang)
+      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap, lang, labels)
 
       val leadingTextItems: Text = Text("Welsh: You've received income that you have not yet paid tax on from:")
       val bulletPointOne: Text = Text("a business you own or control (such as a partnership or limited company)")
@@ -980,7 +980,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   "UIBuilder TextInput Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -989,7 +989,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1013,7 +1013,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1024,7 +1024,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   "UIBuilder NumberInput Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1033,7 +1033,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1057,7 +1057,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1068,7 +1068,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
   "UIBuilder Currency Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1077,7 +1077,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1101,7 +1101,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1111,7 +1111,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
   "UIBuilder CurrencyPoundsOnly Input processing" must {
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1119,7 +1119,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include Error messages when there are errors" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s }, ValueMissingError)(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1144,7 +1144,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1398,7 +1398,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1406,7 +1406,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include correct Error messages when all fields missing" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(Nil))(urlMap, lang) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(Nil))(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1414,7 +1414,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include correct Error message for one missing field" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Blwyddyn")))(urlMap, lang) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Blwyddyn")))(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Welsh, Some Error Text Blwyddyn")))
         case x => fail(s"Should return FormPage: found $x")
@@ -1422,7 +1422,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include correct Error message for two missing fields" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Dydd", "Blwyddyn")))(urlMap, lang) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Dydd", "Blwyddyn")))(urlMap, lang, labels) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Welsh, Some Error Text Dydd and Blwyddyn")))
         case x => fail(s"Should return FormPage: found $x")
@@ -1446,7 +1446,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     }
 
     "Include a page hint appended to the input text" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect { case s: VisualStanza => s })(urlMap, lang) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect { case s: VisualStanza => s })(urlMap, lang, labels) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Welsh, Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1616,7 +1616,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val uiPage: models.ui.Page = uiBuilder.buildPage(
         page.url,
         page.stanzas.collect{case s: VisualStanza => s}
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.isEmpty) =>
@@ -1648,7 +1648,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         pageWithHint.url,
         pageWithHint.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPageWithHint match {
         case f: FormPage =>
@@ -1672,7 +1672,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         page.url,
         page.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.nonEmpty) =>
@@ -1761,7 +1761,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val uiPage: models.ui.Page = uiBuilder.buildPage(
         page.url,
         page.stanzas.collect{case s: VisualStanza => s}
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.isEmpty) =>
@@ -1794,7 +1794,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         pageWithHint.url,
         pageWithHint.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPageWithHint match {
         case f: FormPage =>
@@ -1818,7 +1818,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         page.url,
         page.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang)
+      )(urlMap, lang, labels)
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.nonEmpty) =>

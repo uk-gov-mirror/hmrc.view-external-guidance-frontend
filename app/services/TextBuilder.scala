@@ -61,7 +61,7 @@ object TextBuilder {
     }
 
   def expandLabels(p: Phrase, labels: Labels)(implicit lang: Lang): Phrase = {
-    def replace(m: Match): String = OutputFormat(Option(m.group(2))).asString(labels.displayValue(m.group(1)))
+    def replace(m: Match): String = OutputFormat(labelFormatOpt(m)).asString(labels.displayValue(m.group(1)))
     Phrase(labelRefRegex.replaceAllIn(p.english, replace _), labelRefRegex.replaceAllIn(p.welsh, replace _))
   }
 
