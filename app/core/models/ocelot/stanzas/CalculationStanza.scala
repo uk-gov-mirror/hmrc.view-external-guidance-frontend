@@ -248,8 +248,8 @@ object Operation {
   implicit val writes: Writes[Operation] = {
     case o: AddOperation => Json.obj("type" -> "add") ++ Json.toJsObject[AddOperation](o)
     case o: SubtractOperation => Json.obj("type" -> "sub") ++ Json.toJsObject[SubtractOperation](o)
-    case o: MultiplyOperation => Json.obj("type" -> "sub") ++ Json.toJsObject[MultiplyOperation](o)
-    case o: DivideOperation => Json.obj("type" -> "sub") ++ Json.toJsObject[DivideOperation](o)
+    case o: MultiplyOperation => Json.obj("type" -> "mult") ++ Json.toJsObject[MultiplyOperation](o)
+    case o: DivideOperation => Json.obj("type" -> "div") ++ Json.toJsObject[DivideOperation](o)
     case o: CeilingOperation => Json.obj("type" -> "ceil") ++ Json.toJsObject[CeilingOperation](o)
     case o: FloorOperation => Json.obj("type" -> "flr") ++ Json.toJsObject[FloorOperation](o)
   }
