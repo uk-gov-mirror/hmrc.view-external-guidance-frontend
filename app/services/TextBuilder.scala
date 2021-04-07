@@ -17,7 +17,7 @@
 package services
 
 import models._
-import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, boldPattern, linkPattern}
+import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, labelRefRegex, boldPattern, linkPattern, Labels}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -25,6 +25,9 @@ import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 object TextBuilder {
+  val English: Lang = Lang("en")
+  val Welsh: Lang = Lang("cy")
+
   object Placeholders {
     val plregex: Regex = s"$labelPattern|$boldPattern|$linkPattern".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
@@ -59,6 +62,11 @@ object TextBuilder {
         }
       })(labelName => LabelRef(labelName, OutputFormat(labelFormatOpt(m))))
     }
+
+  def expandLabels(p: Phrase, labels: Labels): Phrase = {
+    def replace(lang: Lang)(m: Match): String = OutputFormat(labelFormatOpt(m)).asString(labels.displayValue(m.group(1))(lang))
+    Phrase(labelRefRegex.replaceAllIn(p.english, replace(English) _), labelRefRegex.replaceAllIn(p.welsh, replace(Welsh) _))
+  }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String], lang: Lang): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty

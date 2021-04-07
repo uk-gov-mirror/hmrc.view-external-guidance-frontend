@@ -21,7 +21,7 @@ import models._
 import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question}
 import core.models.ocelot.stanzas.{ExclusiveSequence, NonExclusiveSequence, _}
-import core.models.ocelot.{Link, Phrase, EmbeddedParameterRegex, exclusiveOptionRegex}
+import core.models.ocelot.{Labels, Link, Phrase, EmbeddedParameterRegex, exclusiveOptionRegex}
 import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
@@ -44,12 +44,20 @@ case object ValueTypeError extends ErrorStrategy {
 @Singleton
 class UIBuilder {
   val logger: Logger = Logger(getClass)
-  val stanzaTransformPipeline: Seq[Seq[VisualStanza] => Seq[VisualStanza]] =
-    Seq(BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
 
   def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy = NoError)
-               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Page =
+               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang, labels: Labels): Page = {
+    val stanzaTransformPipeline: List[Seq[VisualStanza] => Seq[VisualStanza]] =
+      List(expandLabelReferences(Nil), BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
     Page(url, fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil, errStrategy.default(stanzas)))
+  }
+
+  private def expandLabelReferences(acc: List[VisualStanza])(stanzas: Seq[VisualStanza])(implicit labels: Labels, lang: Lang): Seq[VisualStanza] =
+    stanzas match {
+      case Nil => acc.reverse
+      case (i: Instruction) +: xs => expandLabelReferences(i.copy(text = TextBuilder.expandLabels(i.text, labels)) :: acc)(xs)
+      case s +: xs => expandLabelReferences(s :: acc)(xs)
+    }
 
   @tailrec
   private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], errStrategy: ErrorStrategy)
