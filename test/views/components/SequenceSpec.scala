@@ -313,14 +313,16 @@ class SequenceSpec extends WordSpec with Matchers with ViewSpec with ViewFns wit
 
       val checkbox2LabelAttrs: Map[String, String] = elementAttrs(checkbox2Labels.first)
 
-      checkbox1InputAttrs("id") shouldBe "path[0]"
+      checkbox1InputAttrs("id") shouldBe "path-0"
+      checkbox1InputAttrs("name") shouldBe "path[0]"
       checkbox1InputAttrs("value") shouldBe "0"
-      checkbox1LabelAttrs("for") shouldBe "path[0]"
+      checkbox1LabelAttrs("for") shouldBe "path-0"
       checkbox1Labels.first.text() shouldBe sweetOptions.head.asString
 
-      checkbox2InputAttrs("id") shouldBe "path[1]"
+      checkbox2InputAttrs("id") shouldBe "path-1"
+      checkbox2InputAttrs("name") shouldBe "path[1]"
       checkbox2InputAttrs("value") shouldBe "1"
-      checkbox2LabelAttrs("for") shouldBe "path[1]"
+      checkbox2LabelAttrs("for") shouldBe "path-1"
       checkbox2Labels.first.text shouldBe sweetOptions.last.asString
     }
 

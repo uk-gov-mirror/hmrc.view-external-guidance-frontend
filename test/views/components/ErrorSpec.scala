@@ -18,46 +18,385 @@ package views.components
 
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.data.Form
+import play.api.data.Forms._
 import play.api.inject.Injector
-import play.api.i18n.{Messages, MessagesApi, Lang}
+import play.api.i18n.{Lang, Messages, MessagesApi}
+import play.api.mvc.Request
 import play.api.test.FakeRequest
-import play.twirl.api.Html
-import org.jsoup.Jsoup
 import views.html._
-import models.ui.{Paragraph, Text, Question, Answer, RequiredErrorMsg}
-import core.models.ocelot.LabelCache
+import forms.{SubmittedListAnswerFormProvider, SubmittedDateAnswerFormProvider, SubmittedTextAnswerFormProvider}
+import models.PageContext
+import models.ui.{CurrencyInput, DateInput, FormPage, NonExclusiveSequence, RequiredErrorMsg, TypeErrorMsg}
+import models.ui.{SubmittedDateAnswer, SubmittedListAnswer, SubmittedTextAnswer, Text, ValueErrorMsg}
+import base.ViewFns
 import org.jsoup.nodes.{Document, Element}
+
 import scala.collection.JavaConverters._
 
-class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
-
-  def asDocument(html: Html): Document = Jsoup.parse(html.toString)
+class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with ViewFns {
 
   trait Test {
+
     private def injector: Injector = app.injector
     def messagesApi: MessagesApi = injector.instanceOf[MessagesApi]
     implicit def messages: Messages = messagesApi.preferred(Seq(Lang("en")))
-    val errorString = "Please select"
-    val fakeRequest = FakeRequest("GET", "/")
-    val heading = Text("HEADING")
-    val errorMsgs = Seq(RequiredErrorMsg(Text(errorString)))
-    val currencyInput = models.ui.CurrencyInput(Text(), None, Seq.empty)
-    val page = models.ui.FormPage("/url", currencyInput)
-    implicit val ctx = models.PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode")
+
+    val path: String = "/guidanceInput"
+    val relativePath: String = "guidanceInput"
+
+    val dayAnswer: String = "9"
+    val monthAnswer: String = "11"
+    val yearAnswer: String = "2017"
+
+    val requiredSelectionError: String = "Please make a selection"
+    val requiredDateComponentError: String = "Parts of the date are absent"
+    val valueError: String = "Please enter a valid amount"
+
+    val dateAnswerFormProvider: SubmittedDateAnswerFormProvider = new SubmittedDateAnswerFormProvider()
+    val listAnswerFormProvider: SubmittedListAnswerFormProvider = new SubmittedListAnswerFormProvider()
+    val textAnswerFormProvider: SubmittedTextAnswerFormProvider = new SubmittedTextAnswerFormProvider()
+    
+    val currencyInput: CurrencyInput = CurrencyInput(Text(), None, Seq.empty)
+    val page: FormPage = FormPage("/url", currencyInput)
+    implicit val ctx: PageContext = PageContext(page, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode")
+
+    val requiredErrMsgs: Seq[RequiredErrorMsg] = Seq(RequiredErrorMsg(Text(requiredSelectionError)))
+    val requiredDateComponentsErrorMsgs: Seq[RequiredErrorMsg] = Seq(RequiredErrorMsg(Text(requiredDateComponentError)))
+    val valueErrorMsgs: Seq[ValueErrorMsg] = Seq(ValueErrorMsg(Text(valueError)))
+
+    val currencyInputWithErrors: CurrencyInput = CurrencyInput(Text(), None, Seq.empty, valueErrorMsgs)
+    val currencyInputWithErrorsPage: FormPage = FormPage("/currencyInput", currencyInputWithErrors)
+
+    implicit val currencyInputWithErrorsCtx: PageContext = PageContext(
+      currencyInputWithErrorsPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode"
+    )
+
+    val sequenceWithErrors: NonExclusiveSequence = NonExclusiveSequence(Text(), None, Seq.empty, Seq.empty, requiredErrMsgs)
+    val sequenceWithErrorsPage: FormPage = FormPage("/sequenceInput", sequenceWithErrors)
+
+    implicit val sequenceWithErrorsCtx: PageContext = PageContext(
+      sequenceWithErrorsPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode"
+    )
+
+    val dateInputWithErrors: DateInput = DateInput(Text(), None, Seq.empty, requiredDateComponentsErrorMsgs)
+    val dateInputWithErrorsPage: FormPage = FormPage("/dateInput", dateInputWithErrors)
+
+    implicit val dateInputWithErrorsCtx: PageContext = PageContext(
+      dateInputWithErrorsPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode"
+    )
+
   }
 
   "error_summary" must {
 
-    "render error header and list of messages" in new Test {
-      val doc = asDocument(components.error_summary(heading, "inputName", errorMsgs)(messages, ctx))
-      val head = doc.getElementById("error-summary-title")
+    "render error header and list of messages for currency input with value error" in new Test {
+
+      val form: Form[SubmittedTextAnswer] = textAnswerFormProvider(relativePath -> nonEmptyText)
+
+      val doc: Document = asDocument(components.error_summary(currencyInputWithErrors, relativePath, form)
+      (messages, currencyInputWithErrorsCtx))
+
+      val head: Element = doc.getElementById("error-summary-title")
 
       head.text() shouldBe messages("error.summary.title")
 
-      val lists = doc.getElementsByTag("ul").asScala.toList
-      val listItems = lists(0).getElementsByTag("li").asScala.toList
+      val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
 
-      listItems(0).text() shouldBe errorString
+      lists.size shouldBe 1
+
+      val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+      listItems.size shouldBe 1
+
+      listItems.head.text() shouldBe valueError
+
+      // Check link on error message
+      val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+      anchors.size shouldBe 1
+
+      elementAttrs(anchors.head)("href") shouldBe s"#$relativePath-0"
+    }
+
+    "render error message with link when invalid data input to sequence" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody()
+
+      val form:Form[SubmittedListAnswer] = listAnswerFormProvider(relativePath)
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(sequenceWithErrors, relativePath, formWithErrors)
+          (messages, sequenceWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          lists.size shouldBe 1
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.size shouldBe 1
+
+          listItems.head.text() shouldBe requiredSelectionError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          anchors.size shouldBe 1
+
+          elementAttrs(anchors.head)("href") shouldBe s"#$relativePath-0"
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+    }
+
+    "render error message and define link for date input with missing day" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer, "year" -> yearAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          lists.size shouldBe 1
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.size shouldBe 1
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          anchors.size shouldBe 1
+
+          elementAttrs(anchors.head)("href") shouldBe "#day"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing month" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer, "year" -> yearAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#month"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer, "month" -> monthAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#year"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing day and month" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("year" -> yearAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#day"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing month and year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("day" -> dayAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#month"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing day and year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody("month" -> monthAnswer)
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#day"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and define link for date input with missing day month, and year" in new Test {
+
+      implicit val request: Request[_] = FakeRequest("POST", path)
+        .withFormUrlEncodedBody()
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      form.bindFromRequest().fold(
+        formWithErrors => {
+
+          val doc: Document = asDocument(components.error_summary(dateInputWithErrors, relativePath, formWithErrors)
+          (messages, dateInputWithErrorsCtx))
+
+          val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+          val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+          listItems.head.text() shouldBe requiredDateComponentError
+
+          // Check link on error message
+          val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+          elementAttrs(anchors.head)("href") shouldBe "#day"
+
+        },
+        formData => fail(s"Binding of empty request should cause form binding to fail. Returned form data : $formData")
+      )
+
+    }
+
+    "render error message and link for date input with invalid day" in new Test {
+
+      val invalidDayError: String = "The value of the day is invalid"
+      val invalidDayErrorMsgs: Seq[TypeErrorMsg] = Seq(TypeErrorMsg(Text(invalidDayError)))
+
+      val dateInputWithInvalidDay: DateInput = DateInput(Text(), None, Seq.empty, invalidDayErrorMsgs)
+      val dateInputWithInvalidDayPage: FormPage = FormPage("/dateInput",  dateInputWithInvalidDay)
+
+      implicit val dateInputWithInvalidDayCtx: PageContext = PageContext(
+        dateInputWithInvalidDayPage, Seq.empty, None, "sessionId", None, Text(), "processId", "processCode"
+      )
+
+      val form: Form[SubmittedDateAnswer] = dateAnswerFormProvider()
+
+      val doc: Document = asDocument(components.error_summary(dateInputWithInvalidDay, relativePath, form)
+      (messages, dateInputWithInvalidDayCtx))
+
+      val lists: List[Element] = doc.getElementsByTag("ul").asScala.toList
+
+      val listItems: List[Element] = lists.head.getElementsByTag("li").asScala.toList
+
+      listItems.head.text() shouldBe invalidDayError
+
+      // Check link on error message
+      val anchors: List[Element] = listItems.head.getElementsByTag("a").asScala.toList
+
+      elementAttrs(anchors.head)("href") shouldBe "#day"
+
     }
 
   }
@@ -65,18 +404,18 @@ class ErrorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
   "error_message" must {
 
     "render error message" in new Test {
-      val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
-      val span = doc.getElementsByTag("span").asScala.toList.filter(_.id == "required-error")
+      val doc: Document = asDocument(components.error_message(requiredErrMsgs)(messages, ctx))
+      val span: List[Element] = doc.getElementsByTag("span").asScala.toList.filter(_.id == "required-error")
 
-      span(0).text() shouldBe messages("error.browser.title.prefix") + " " + errorString
+      span.head.text() shouldBe messages("error.browser.title.prefix") + " " + requiredSelectionError
     }
 
     "render hidden text with error message" in new Test {
 
-      val doc = asDocument(components.error_message(errorMsgs)(messages, ctx))
-      val hidden = doc.getElementsByClass("govuk-visually-hidden").asScala.toList
+      val doc: Document = asDocument(components.error_message(requiredErrMsgs)(messages, ctx))
+      val hidden: List[Element] = doc.getElementsByClass("govuk-visually-hidden").asScala.toList
 
-      hidden(0).text() shouldBe messages("error.browser.title.prefix")
+      hidden.head.text() shouldBe messages("error.browser.title.prefix")
     }
 
   }
