@@ -25,6 +25,9 @@ import play.api.i18n.Lang
 import scala.annotation.tailrec
 
 object TextBuilder {
+  val English: Lang = Lang("en")
+  val Welsh: Lang = Lang("cy")
+
   object Placeholders {
     val plregex: Regex = s"$labelPattern|$boldPattern|$linkPattern".r
     def labelNameOpt(m: Match): Option[String] = Option(m.group(1))
@@ -60,9 +63,9 @@ object TextBuilder {
       })(labelName => LabelRef(labelName, OutputFormat(labelFormatOpt(m))))
     }
 
-  def expandLabels(p: Phrase, labels: Labels)(implicit lang: Lang): Phrase = {
-    def replace(m: Match): String = OutputFormat(labelFormatOpt(m)).asString(labels.displayValue(m.group(1)))
-    Phrase(labelRefRegex.replaceAllIn(p.english, replace _), labelRefRegex.replaceAllIn(p.welsh, replace _))
+  def expandLabels(p: Phrase, labels: Labels): Phrase = {
+    def replace(lang: Lang)(m: Match): String = OutputFormat(labelFormatOpt(m)).asString(labels.displayValue(m.group(1))(lang))
+    Phrase(labelRefRegex.replaceAllIn(p.english, replace(English) _), labelRefRegex.replaceAllIn(p.welsh, replace(Welsh) _))
   }
 
   def fromPhrase(txt: Phrase)(implicit urlMap: Map[String, String], lang: Lang): Text = {

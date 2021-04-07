@@ -208,8 +208,7 @@ class EnglishTextBuilderSpec extends BaseSpec {
   "TextBuilder expandLabels" must {
     val labelsMap = Map(
       "BLAH"->ScalarLabel("BLAH", List("33.5")),
-      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")),
-      "Name" -> ScalarLabel("Name", List("Coltrane")))
+      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")))
     val labels = LabelCache(labelsMap)
 
     "Convert label reference with default output format placeholders within phrase" in new Test {
