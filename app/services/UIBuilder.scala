@@ -22,7 +22,7 @@ import models.ocelot.stanzas._
 import core.models.ocelot.stanzas.{CurrencyInput, CurrencyPoundsOnlyInput, DateInput, Input, Question}
 import core.models.ocelot.stanzas.{ExclusiveSequence, NonExclusiveSequence, _}
 import core.models.ocelot.{Labels, Link, Phrase, EmbeddedParameterRegex, exclusiveOptionRegex}
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
+import models.ui.{Answer, BulletPointList, ComplexDetails, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
 import play.api.Logger
 import play.api.i18n.Lang
@@ -152,21 +152,12 @@ class UIBuilder {
     }
 
   private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
-    def createBulletPointItems(leadingEn: String, leadingCy: String, remainder: Seq[Instruction])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] =
-      remainder.map { instruction =>
-        val bulletPointEnglish: String = instruction.text.english.substring(leadingEn.length, instruction.text.english.length).trim
-        val bulletPointWelsh: String = instruction.text.welsh.substring(leadingCy.length, instruction.text.welsh.length).trim
 
-        TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
-      }
+    val phraseGroup: Seq[Phrase] = insGroup.group.map(_.text)
 
-    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, _.english)
-    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(insGroup, _.welsh)
-    // Process bullet points
-    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, insGroup.group)
+    val bulletPointComponents: Seq[Text] = createBulletPointListComponents(phraseGroup)
 
-    BulletPointList(TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)), bulletPointListItems)
+    BulletPointList(bulletPointComponents.head, bulletPointComponents.tail)
   }
 
   private def fromInput(input: Input, components: Seq[UIComponent])
@@ -218,8 +209,20 @@ class UIBuilder {
     ConfirmationPanel(texts.head, texts.tail)
   }
 
-  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
-    Details(caption, ng.group.map(co => TextBuilder.fromPhrase(co.text)))
+  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+
+    val noteCallouts: Seq[Seq[Phrase]] = BulletPointBuilder.groupBulletPointNoteCalloutPhrases(Nil)(ng.group)
+
+    val detailsComponents: Seq[Seq[Text]] = noteCallouts.map{ phraseSeq =>
+      if(phraseSeq.size > 1) createBulletPointListComponents(phraseSeq) else Seq(TextBuilder.fromPhrase(phraseSeq.head))
+    }
+
+    if(detailsComponents.forall(_.size == 1)) {
+      Details(caption, detailsComponents.flatten)
+    } else {
+      ComplexDetails(caption, detailsComponents)
+    }
+  }
 
   private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
     Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
@@ -248,6 +251,27 @@ class UIBuilder {
     )
 
     ui.ExclusiveSequence(text, hint, options, TextBuilder.fromPhrase(exclusiveOptionPhrase), uiElements, errMsgs)
+  }
+
+  private def createBulletPointListComponents(phraseGroup: Seq[Phrase])
+                                    (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+
+    def createBulletPointItems(leadingEn: String, leadingCy: String, items: Seq[Phrase])
+                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] = {
+      items.map{phrase =>
+        val bulletPointEnglish: String = phrase.english.substring(leadingEn.length, phrase.english.length).trim
+        val bulletPointWelsh: String = phrase.welsh.substring(leadingCy.length, phrase.welsh.length).trim
+
+        TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
+      }
+    }
+
+    val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english)
+    val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh)
+    // Process bullet points
+    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, phraseGroup)
+
+    TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)) +: bulletPointListItems
   }
 
 }

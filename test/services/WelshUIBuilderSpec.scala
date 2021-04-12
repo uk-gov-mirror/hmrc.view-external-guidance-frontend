@@ -23,7 +23,7 @@ import core.models.ocelot._
 import core.models.ocelot.stanzas._
 import models.ocelot.stanzas._
 import models.ui
-import models.ui.{BulletPointList, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4}
+import models.ui.{BulletPointList, ComplexDetails, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, FormPage, H1, H3, H4}
 import models.ui.{InsetText, Link, Paragraph, RequiredErrorMsg, ExclusiveSequenceFormComponent, NonExclusiveSequenceFormComponent, Table, Text, WarningText, Words}
 
 class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
@@ -1465,6 +1465,43 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val stackedNote2 = NoteCallout(num2Phrase, Seq(""), stack = true)
       val unstackedNote = NoteCallout(num2Phrase, Seq(""), stack = false)
       val subSectionCallout: Callout = SubSectionCallout(sectionPhrase, Seq("8"), stack = false)
+
+      // Define callouts for details with bullet point lists
+      val detailSectionPhrase: Phrase = Phrase("Bullet point detail", "Welsh: Bullet point detail")
+
+      val startPhrase: Phrase = Phrase("Start", "Welsh: Start")
+      val bpl1Phrase1: Phrase = Phrase(
+        "The days of the week include Monday",
+        "Welsh: The days of the week include Monday"
+      )
+      val bpl1Phrase2: Phrase = Phrase(
+        "The days of the week include Tuesday",
+        "Welsh: The days of the week include Tuesday"
+      )
+      val bpl1Phrase3: Phrase = Phrase(
+        "The days of the week include Wednesday",
+        "Welsh: The days of the week include Wednesday"
+      )
+      val endPhrase: Phrase = Phrase("End", "Welsh: End")
+      val bpl2Phrase1: Phrase = Phrase(
+        "You can apply for a job",
+        "Welsh: You can apply for a job"
+      )
+      val bpl2Phrase2: Phrase = Phrase(
+        "You can apply for an apprenticeship",
+        "Welsh: You can apply for an apprenticeship"
+      )
+      val middlePhrase: Phrase = Phrase("Middle", "Welsh: Middle")
+
+      val detailSectionCallout: SubSectionCallout = SubSectionCallout(detailSectionPhrase, Seq(""), stack = false)
+      val detailStackedNote1: NoteCallout = NoteCallout(startPhrase, Seq(""), stack = true)
+      val detailStackedNote2: NoteCallout = NoteCallout(endPhrase, Seq(""), stack = true)
+      val detailStackedNote3: NoteCallout = NoteCallout(bpl1Phrase1, Seq(""), stack = true)
+      val detailStackedNote4: NoteCallout = NoteCallout(bpl1Phrase2, Seq(""), stack = true)
+      val detailStackedNote5: NoteCallout = NoteCallout(bpl1Phrase3, Seq(""), stack = true)
+      val detailStackedNote6: NoteCallout = NoteCallout(bpl2Phrase1, Seq(""), stack = true)
+      val detailStackedNote7: NoteCallout = NoteCallout(bpl2Phrase2, Seq(""), stack = true)
+      val detailStackedNote8: NoteCallout = NoteCallout(middlePhrase, Seq(""), stack = true)
     }
 
     "Convert a subSection callout and single stacked note callout into a single Details component" in new DetailsTest {
@@ -1497,6 +1534,120 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         case x => fail(s"Found $x")
       }
     }
+
+    "convert a subSection callout followed by three note callouts into a complex details component with a bullet point list group" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote3,
+          detailStackedNote4,
+          detailStackedNote5
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 1
+          complexDetails.additionalTextComponents.head.size shouldBe 4
+
+          complexDetails.additionalTextComponents.head.head.asString shouldBe "Welsh: The days of the week include"
+          complexDetails.additionalTextComponents.head(1).asString shouldBe "Monday"
+          complexDetails.additionalTextComponents.head(2).asString shouldBe "Tuesday"
+          complexDetails.additionalTextComponents.head.last.asString shouldBe "Wednesday"
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+    }
+
+    "convert a SubSection callout followed by four note callouts into a complex details component with text and a bullet point list group" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote1,
+          detailStackedNote3,
+          detailStackedNote4,
+          detailStackedNote5
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 2
+
+          complexDetails.additionalTextComponents.head.size shouldBe 1
+          complexDetails.additionalTextComponents.head.head.asString shouldBe "Welsh: Start"
+
+          complexDetails.additionalTextComponents.last.size shouldBe 4
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+    }
+
+    "convert a SubSection callout followed by four note callouts into a complex details component with bullet point group followed by text" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote3,
+          detailStackedNote4,
+          detailStackedNote5,
+          detailStackedNote2
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 2
+
+          complexDetails.additionalTextComponents.head.size shouldBe 4
+
+          complexDetails.additionalTextComponents.last.size shouldBe 1
+          complexDetails.additionalTextComponents.last.head.asString shouldBe "Welsh: End"
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+    }
+
+    "convert a Subsection callout followed by note callouts into text and bullet point groups" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote1,
+          detailStackedNote3,
+          detailStackedNote4,
+          detailStackedNote5,
+          detailStackedNote8,
+          detailStackedNote6,
+          detailStackedNote7,
+          detailStackedNote2
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 5
+
+          complexDetails.additionalTextComponents.head.size shouldBe 1
+          complexDetails.additionalTextComponents(1).size shouldBe 4
+          complexDetails.additionalTextComponents(2).size  shouldBe 1
+          complexDetails.additionalTextComponents(3).size shouldBe 3
+          complexDetails.additionalTextComponents.last.size shouldBe 1
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+    }
+
   }
 
   "UIBuilder Important Group processing" must {
