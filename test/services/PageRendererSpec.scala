@@ -68,24 +68,24 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
     )
 
     private val phrases = Vector[Phrase](
-      Phrase(Vector("Some Text", "Welsh, Some Text")),
-      Phrase(Vector(s"Some Text1 [link:Link to stanza 17:$pageId7]", s"Welsh, Some Text1 [link:Link to stanza 17:$pageId7]")),
-      Phrase(Vector(s"Some [link:PageId3:$pageId3] Text2", s"Welsh, Some [link:PageId3:$pageId3] Text2")),
-      Phrase(Vector(s"Some [link:Link to stanza 11:$pageId5] Text3", s"Welsh, Some [link:Link to stanza 11:$pageId5] Text3"))
+      Phrase(Vector("Some Text", "Welsh: Some Text")),
+      Phrase(Vector(s"Some Text1 [link:Link to stanza 17:$pageId7]", s"Welsh: Some Text1 [link:Link to stanza 17:$pageId7]")),
+      Phrase(Vector(s"Some [link:PageId3:$pageId3] Text2", s"Welsh: Some [link:PageId3:$pageId3] Text2")),
+      Phrase(Vector(s"Some [link:Link to stanza 11:$pageId5] Text3", s"Welsh: Some [link:Link to stanza 11:$pageId5] Text3"))
     )
 
     private val links = Vector(Link(0, pageId3, "", false), Link(1, pageId6, "", false), Link(2, Process.StartStanzaId, "Back to the start", false))
 
     val processWithLinks = Process(metaSection, simpleFlow, phrases, links)
     val answers =
-      Seq(Phrase(Vector("Some Text 1", "Welsh, Some Text 1")),
-          Phrase(Vector("Some Text 2", "Welsh, Some Text 2")),
-          Phrase(Vector("Some Text 3", "Welsh, Some Text 3")))
+      Seq(Phrase(Vector("Some Text 1", "Welsh: Some Text 1")),
+          Phrase(Vector("Some Text 2", "Welsh: Some Text 2")),
+          Phrase(Vector("Some Text 3", "Welsh: Some Text 3")))
 
     val answerDestinations = Seq("4", "5", "6")
-    val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+    val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
     val questionHintString = "A hint!!"
-    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
+    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh: Some Text[hint:${questionHintString}]"))
 
     val question: core.models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
 
@@ -102,8 +102,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
   "PageRenderer" must {
     "Determine the correct sequence of stanzas within a page with no user input" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
-      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
-      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("3"), false)
+      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("4"), false)
 
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                         KeyedStanza("1", callout1),
@@ -123,8 +123,8 @@ class PageRendererSpec extends BaseSpec with ProcessJson  {
 
     "Determine the correct sequence of stanzas within the final page of guidance" in new Test {
       val instructionStanza = InstructionStanza(3, Seq("5"), None, false)
-      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)
-      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)
+      val callout1 = ErrorCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("3"), false)
+      val callout2 = SectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("4"), false)
 
       val stanzas: Seq[KeyedStanza] = Seq(KeyedStanza("start", PageStanza("/start", Seq("1"), false)),
                         KeyedStanza("1", callout1),

@@ -55,10 +55,10 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
     val expectedErrorMessage: String = "error.required"
 
     val question: Question = Question(
-      Phrase("Which way is the artic?", "Welsh, which way is the arctic?"),
+      Phrase("Which way is the artic?", "Welsh: which way is the arctic?"),
       Seq(
-        Phrase("North", "Welsh, North"),
-        Phrase("South", "Welsh, South")
+        Phrase("North", "Welsh: North"),
+        Phrase("South", "Welsh: South")
       ),
       Seq("2", "3"),
       None,
@@ -67,7 +67,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     val currencyInput: CurrencyInput = CurrencyInput(
       Seq("4"),
-      Phrase("How much money do you have?", "Welsh, How much money do you have?"),
+      Phrase("How much money do you have?", "Welsh: How much money do you have?"),
       None,
       "moneyInHand",
       None,
@@ -76,7 +76,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     val currencyPoundsOnlyInput: CurrencyPoundsOnlyInput = CurrencyPoundsOnlyInput(
       Seq("5"),
-      Phrase("How much money do you have rounded to the nearest pound?", "Welsh, How much money do you have rounded to the nearest pound?"),
+      Phrase("How much money do you have rounded to the nearest pound?", "Welsh: How much money do you have rounded to the nearest pound?"),
       None,
       "roundedMoneyInHand",
       None,
@@ -85,7 +85,7 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
 
     val dateInput: DateInput = DateInput(
       Seq("25"),
-      Phrase("Enter a random date", "Welsh, Enter a random date"),
+      Phrase("Enter a random date", "Welsh: Enter a random date"),
       None,
       "randomDate",
       None,
@@ -93,27 +93,27 @@ class FormsHelperSpec extends BaseSpec with GuiceOneAppPerSuite {
     )
 
     val nonExclusiveSequence: NonExclusiveSequence = NonExclusiveSequence(
-      Phrase("Select a day in the working week", "Welsh, Select a day in the working week"),
+      Phrase("Select a day in the working week", "Welsh: Select a day in the working week"),
       Seq("10", "20", "30", "40", "50", "60"),
       Seq(
-        Phrase("Monday", "Welsh, Monday"),
-        Phrase("Tuesday", "Welsh, Tuesday"),
-        Phrase("Wednesday", "Welsh, Wednesday"),
-        Phrase("Thursday", "Welsh, Thursday"),
-        Phrase("Friday", "Welsh, Friday")
+        Phrase("Monday", "Welsh: Monday"),
+        Phrase("Tuesday", "Welsh: Tuesday"),
+        Phrase("Wednesday", "Welsh: Wednesday"),
+        Phrase("Thursday", "Welsh: Thursday"),
+        Phrase("Friday", "Welsh: Friday")
       ),
       None,
       stack = false
     )
 
     val exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
-      Phrase("Select your favorite colour", "Welsh, Select your favourite colour"),
+      Phrase("Select your favorite colour", "Welsh: Select your favourite colour"),
       Seq("10", "20", "30", "40"),
       Seq(
-        Phrase("Red", "Welsh, Red"),
-        Phrase("Green", "Welsh, Green"),
-        Phrase("Blue", "Welsh, Blue"),
-        Phrase("Not a primary colour [exclusive]","Welsh, Not a primary colour")
+        Phrase("Red", "Welsh: Red"),
+        Phrase("Green", "Welsh: Green"),
+        Phrase("Blue", "Welsh: Blue"),
+        Phrase("Not a primary colour [exclusive]","Welsh: Not a primary colour")
       ),
       None,
       stack = false

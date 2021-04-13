@@ -65,8 +65,8 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
     protected val h2: H2 = H2(Text("h2"))
     protected val h3: H3 = H3(Text("h3"))
     protected val h4: H4 = H4(Text("h4"))
-    val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-    val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
+    val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
+    val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh: Help text"))
 
     val input: Input = CurrencyInput(Text(i1), Some(Text(i1Hint)), Seq(h2, h3, h4, bpList, para1))
 
