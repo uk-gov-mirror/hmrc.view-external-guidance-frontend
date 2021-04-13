@@ -25,31 +25,31 @@ class AggregatorSpec extends BaseSpec {
 
   private trait Test {
 
-    val titlePhrase: Phrase = Phrase(Vector("Title", "Welsh, Title"))
-    val instructionPhrase: Phrase = Phrase(Vector("Instruction", "Welsh, Instruction"))
-    val instruction1Phrase: Phrase = Phrase(Vector("Instruction 1", "Welsh, Instruction 1"))
-    val instruction2Phrase: Phrase = Phrase(Vector("Instruction 2", "Welsh, Instruction 2"))
+    val titlePhrase: Phrase = Phrase(Vector("Title", "Welsh: Title"))
+    val instructionPhrase: Phrase = Phrase(Vector("Instruction", "Welsh: Instruction"))
+    val instruction1Phrase: Phrase = Phrase(Vector("Instruction 1", "Welsh: Instruction 1"))
+    val instruction2Phrase: Phrase = Phrase(Vector("Instruction 2", "Welsh: Instruction 2"))
 
-    val r1c1: Phrase = Phrase(Vector("Row 1 - Cell 1", "Welsh, Row 1 - Cell 1"))
-    val r1c2: Phrase = Phrase(Vector("Row 1 - Cell 2", "Welsh, Row 1 - Cell 2"))
-    val r1c3: Phrase = Phrase(Vector("Row 1 - Cell 3", "Welsh, Row 1 - Cell 3"))
+    val r1c1: Phrase = Phrase(Vector("Row 1 - Cell 1", "Welsh: Row 1 - Cell 1"))
+    val r1c2: Phrase = Phrase(Vector("Row 1 - Cell 2", "Welsh: Row 1 - Cell 2"))
+    val r1c3: Phrase = Phrase(Vector("Row 1 - Cell 3", "Welsh: Row 1 - Cell 3"))
 
     val r1Cells: Seq[Phrase] = Seq(r1c1, r1c2, r1c3)
 
-    val r2c1: Phrase = Phrase(Vector("Row 2 - Cell 1", "Welsh, Row 2 - Cell 1"))
-    val r2c2: Phrase = Phrase(Vector("Row 2 - Cell 2", "Welsh, Row 2 - Cell 2"))
+    val r2c1: Phrase = Phrase(Vector("Row 2 - Cell 1", "Welsh: Row 2 - Cell 1"))
+    val r2c2: Phrase = Phrase(Vector("Row 2 - Cell 2", "Welsh: Row 2 - Cell 2"))
 
     val r2Cells: Seq[Phrase] = Seq(r2c1, r2c2)
 
-    val r3c1: Phrase = Phrase(Vector("Row 3 - Cell 1", "Welsh, Row 3 - Cell 1"))
-    val r3c2: Phrase = Phrase(Vector("Row 3 - Cell 2", "Welsh, Row 3 - Cell 2"))
-    val r3c3: Phrase = Phrase(Vector("Row 3 - Cell 3", "Welsh, Row 3 - Cell 3"))
-    val r3c4: Phrase = Phrase(Vector("Row 3 - Cell 4", "Welsh, Row 3 - Cell 4"))
+    val r3c1: Phrase = Phrase(Vector("Row 3 - Cell 1", "Welsh: Row 3 - Cell 1"))
+    val r3c2: Phrase = Phrase(Vector("Row 3 - Cell 2", "Welsh: Row 3 - Cell 2"))
+    val r3c3: Phrase = Phrase(Vector("Row 3 - Cell 3", "Welsh: Row 3 - Cell 3"))
+    val r3c4: Phrase = Phrase(Vector("Row 3 - Cell 4", "Welsh: Row 3 - Cell 4"))
 
     val r3Cells: Seq[Phrase] = Seq(r3c1, r3c2, r3c3, r3c4)
 
-    val r4c1: Phrase = Phrase(Vector("Row 4 - Cell 1", "Welsh, Row 4 - Cell 1"))
-    val r4c2: Phrase = Phrase(Vector("Row 4 - Cell 2", "Welsh, Row 4 - Cell 2"))
+    val r4c1: Phrase = Phrase(Vector("Row 4 - Cell 1", "Welsh: Row 4 - Cell 1"))
+    val r4c2: Phrase = Phrase(Vector("Row 4 - Cell 2", "Welsh: Row 4 - Cell 2"))
 
     val r4Cells: Seq[Phrase] = Seq(r4c1, r4c2)
     val r5Cells: Seq[Phrase] = Seq()

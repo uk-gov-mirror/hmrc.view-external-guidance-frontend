@@ -39,20 +39,20 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         "34" -> "dummy-path/next"
       )
     val answerDestinations = Seq("4", "5", "6")
-    val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
+    val questionPhrase: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
     val questionHintString = "A hint!!"
-    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh, Some Text[hint:${questionHintString}]"))
+    val questionWithHintPhrase: Phrase = Phrase(Vector(s"Some Text[hint:${questionHintString}]", s"Welsh: Some Text[hint:${questionHintString}]"))
 
     val answers =
-      Seq(Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")), Phrase(Vector("Some Text", "Welsh, Some Text")))
+      Seq(Phrase(Vector("Some Text", "Welsh: Some Text")), Phrase(Vector("Some Text", "Welsh: Some Text")), Phrase(Vector("Some Text", "Welsh: Some Text")))
     val question: core.models.ocelot.stanzas.Question = Question(questionPhrase, answers, answerDestinations, None, false)
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
-      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("31"), false)),
-      KeyedStanza("31", SubSectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
-      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
+      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("3"), false)),
+      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("31"), false)),
+      KeyedStanza("31", SubSectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("4"), false)),
+      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("end"), None, false))
     )
 
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionPhrase, answers, answerDestinations, None, false)), Seq.empty)
@@ -115,12 +115,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
   trait Test extends ProcessJson {
     case class UnsupportedVisualStanza(override val next: Seq[String], stack: Boolean) extends VisualStanza with Populated
-    val lang0 = Vector("Some Text", "Welsh, Some Text")
-    val lang1 = Vector("Some Text1", "Welsh, Some Text1")
-    val lang2 = Vector("Some Text2", "Welsh, Some Text2")
-    val lang3 = Vector("Some Text3", "Welsh, Some Text3")
-    val lang4 = Vector("Some Text4", "Welsh, Some Text4")
-    val lang5 = Vector("Some Text5", "Welsh, Some Text5")
+    val lang0 = Vector("Some Text", "Welsh: Some Text")
+    val lang1 = Vector("Some Text1", "Welsh: Some Text1")
+    val lang2 = Vector("Some Text2", "Welsh: Some Text2")
+    val lang3 = Vector("Some Text3", "Welsh: Some Text3")
+    val lang4 = Vector("Some Text4", "Welsh: Some Text4")
+    val lang5 = Vector("Some Text5", "Welsh: Some Text5")
     val ltxt1 = Text(Words("This is a ", true))
     val ltxt2 = Text(" followed by ")
     val ltxt3 = Text(" and nothing")
@@ -131,13 +131,13 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val link2Txt2 = "Another Link at end of phrase"
     val pageLink1Text = "A page link"
     val pageLink2Text = "Another page link"
-    val q1 = Vector("Do you agree?", "Welsh, Do you agree?")
-    val ans1 = Vector("Yes", "Welsh, Yes")
-    val ans2 = Vector("No", "Welsh, Yes")
-    val ans3 = Vector("Not sure", "Welsh, Yes")
-    val ans1WithHint = Vector("Yes[hint:You agree with the assertion]", "Welsh, Yes[hint:Welsh, You agree with the assertion]")
-    val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh, Yes[hint:Welsh, You DONT agree with the assertion]")
-    val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh, Yes[hint:Welsh, You dont know]")
+    val q1 = Vector("Do you agree?", "Welsh: Do you agree?")
+    val ans1 = Vector("Yes", "Welsh: Yes")
+    val ans2 = Vector("No", "Welsh: Yes")
+    val ans3 = Vector("Not sure", "Welsh: Yes")
+    val ans1WithHint = Vector("Yes[hint:You agree with the assertion]", "Welsh: Yes[hint:Welsh: You agree with the assertion]")
+    val ans2WithHint = Vector("No[hint:You DONT agree with the assertion]", "Welsh: Yes[hint:Welsh: You DONT agree with the assertion]")
+    val ans3WithHint = Vector("Not sure[hint:You dont know]", "Welsh: Yes[hint:Welsh: You dont know]")
     val hint1 = Text("You agree with the assertion")
     val hint2 = Text("You DONT agree with the assertion")
     val hint3 = Text("You dont know")
@@ -165,28 +165,28 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val txtWithLinks = Phrase(
       Vector(
         "[bold:This is a ][link:A link:https://www.bbc.co.uk] followed by [link:Another Link:https://www.gov.uk] and nothing",
-        "[bold:Welsh, This is a ][link:Welsh, A link:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link:https://www.gov.uk] Welsh, and nothing"
+        "[bold:Welsh: This is a ][link:Welsh: A link:https://www.bbc.co.uk] Welsh: followed by [link:Welsh: Another Link:https://www.gov.uk] Welsh: and nothing"
       )
     )
 
     val txtWithLinks2 = Phrase(
       Vector(
         "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:Another Link at end of phrase:https://www.gov.uk]",
-        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, Another Link at end of phrase:https://www.gov.uk]"
+        "[link:Welsh: A link at start of phrase:https://www.bbc.co.uk] Welsh: followed by [link:Welsh: Another Link at end of phrase:https://www.gov.uk]"
       )
     )
 
     val txtWithPageLinks = Phrase(
       Vector(
         "[bold:This is a ][link:A page link:34] followed by [link:Another page link:3] and nothing",
-        "[bold:Welsh, This is a ][link:Welsh, A page link:34] Welsh, followed by [link:Welsh, Another page link:3] Welsh, and nothing"
+        "[bold:Welsh: This is a ][link:Welsh: A page link:34] Welsh: followed by [link:Welsh: Another page link:3] Welsh: and nothing"
       )
     )
 
     val txtWithAllLinks = Phrase(
       Vector(
         "[link:A link at start of phrase:https://www.bbc.co.uk] followed by [link:A page link:34][link:Back to beginning:start]",
-        "[link:Welsh, A link at start of phrase:https://www.bbc.co.uk] Welsh, followed by [link:Welsh, A page link:34][link:Back to beginning:start]"
+        "[link:Welsh: A link at start of phrase:https://www.bbc.co.uk] Welsh: followed by [link:Welsh: A page link:34][link:Back to beginning:start]"
       )
     )
 
@@ -275,7 +275,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     val pageWithEmbeddH4 = Page(Process.StartStanzaId, "/test-page", stanzasWithEmbeddedSubsection, Seq.empty)
 
-    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh, Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
+    val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh: Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
     // for multi page testing
     val pageBuilder: PageBuilder = new PageBuilder(new Placeholders(new DefaultTodayProvider))
     val stanzaPages = pageBuilder.pages(prototypeJson.as[Process]).right.get
@@ -298,7 +298,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val sparseRows = Seq(rows(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rows(2))
     val phraseWithLinkAndHint = Phrase(Vector("[link:Change[hint:HELLO]:3]", "[link:Change[hint:HELLO]:3]"))
     val rowsWithLinkAndHint = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndHint), Seq()))
-    val phraseWithLinkAndFakedWelsh = Phrase(Vector("[link:Change[hint:HELLO]:3]", "Welsh, [link:Change[hint:HELLO]:3]"))
+    val phraseWithLinkAndFakedWelsh = Phrase(Vector("[link:Change[hint:HELLO]:3]", "Welsh: [link:Change[hint:HELLO]:3]"))
     val rowsWithFakedWelshLinK = Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World")), phraseWithLinkAndFakedWelsh), Seq()))
     val sparseRowsWithLinkAndHint = Seq(rowsWithLinkAndHint(0), Row(Seq(Phrase(Vector("HELLO", "HELLO"))), Seq()), rowsWithLinkAndHint(2))
 
@@ -312,7 +312,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
                                                                Text("World"),
                                                                Text.link("dummy-path","Change", false, false, Some("HELLO"))))
     val expectedDLWithLinkAndHint = CyaSummaryList(dlRowsWithLinkAndHint)
-    val headingPhrase = Phrase("Heading", "Welsh, Heading")
+    val headingPhrase = Phrase("Heading", "Welsh: Heading")
   }
 
   trait TableTest extends Test {
@@ -320,12 +320,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val simpleRowGroup = RowGroup(rows)
     val stackedRowGroup = RowGroup(Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true)))
-    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:Welsh, HELLO]")), Phrase(Vector("[bold:World]", "[bold:Welsh, World]"))), Seq(), true) +:
+    val rowsWithHeading = Row(Seq(Phrase(Vector("[bold:HELLO]", "[bold:Welsh: HELLO]")), Phrase(Vector("[bold:World]", "[bold:Welsh: World]"))), Seq(), true) +:
                Seq.fill(3)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("World", "World"))), Seq(), true))
     val tableHeading = rowsWithHeading(0).cells.map(TextBuilder.fromPhrase(_))
     val tableRowGroup = RowGroup(rowsWithHeading)
     val numericRowGroup = RowGroup(Seq.fill(4)(Row(Seq(Phrase(Vector("HELLO", "HELLO")), Phrase(Vector("[label:Money:currency]", "[label:Money:currency]"))), Seq(), true)))
-    val headingPhrase = Phrase("Heading", "Welsh, Heading")
+    val headingPhrase = Phrase("Heading", "Welsh: Heading")
     val headingText = Text(headingPhrase.value(lang))
 
     val emptyRows = Seq.fill(3)(Row(Seq.empty, Seq.empty, true))
@@ -335,7 +335,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   }
 
   trait NumberListTest extends Test {
-    val headingPhrase = Phrase("Heading", "Welsh, Heading")
+    val headingPhrase = Phrase("Heading", "Welsh: Heading")
     val num1Phrase = Phrase(Vector("Line1", "Welsh Line1"))
     val num2Phrase = Phrase(Vector("Line2", "Welsh Line2"))
     val num3Phrase = Phrase(Vector("Line3", "Welsh Line3"))
@@ -952,14 +952,14 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         "34" -> "dummy-path/next"
       )
     val inputNext = Seq("4")
-    val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-    val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
+    val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
+    val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh: Help text"))
 
     val stanzas = Seq(
       KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("3"), false)),
-      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
-      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
+      KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("3"), false)),
+      KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("4"), false)),
+      KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("end"), None, false))
     )
     val input1 = core.models.ocelot.stanzas.CurrencyInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
     val page = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", input1), Seq.empty)
@@ -1161,13 +1161,13 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         "34" -> "dummy-path/next"
       )
 
-    val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh, Confirmation"))
-    val confirmationPanelAdditionalText1Phrase: Phrase =  Phrase(Vector("Additional line 1", "Welsh, Additional line 1"))
-    val confirmationPanelAdditionalText2Phrase: Phrase = Phrase(Vector("Additional line 2", "Welsh, Additional line 2"))
-    val instruction1Phrase: Phrase = Phrase(Vector("Instruction one", "Welsh, Instruction one"))
-    val instruction2Phrase: Phrase = Phrase(Vector("Instruction two", "Welsh, Instruction two"))
-    val sectionCallOutPhrase: Phrase = Phrase(Vector("Section title", "Welsh, Section title"))
-    val subSectionCalloutPhrase: Phrase = Phrase(Vector("Subsection title", "Welsh, Subsection title"))
+    val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh: Confirmation"))
+    val confirmationPanelAdditionalText1Phrase: Phrase =  Phrase(Vector("Additional line 1", "Welsh: Additional line 1"))
+    val confirmationPanelAdditionalText2Phrase: Phrase = Phrase(Vector("Additional line 2", "Welsh: Additional line 2"))
+    val instruction1Phrase: Phrase = Phrase(Vector("Instruction one", "Welsh: Instruction one"))
+    val instruction2Phrase: Phrase = Phrase(Vector("Instruction two", "Welsh: Instruction two"))
+    val sectionCallOutPhrase: Phrase = Phrase(Vector("Section title", "Welsh: Section title"))
+    val subSectionCalloutPhrase: Phrase = Phrase(Vector("Subsection title", "Welsh: Subsection title"))
 
     val confirmationPanelHeader: Callout = YourCallCallout(confirmationPanelHeaderPhrase, Seq("2"), stack = false)
     val stackedConfirmationPanelHeader: Callout = YourCallCallout(confirmationPanelHeaderPhrase, Seq("2"), stack = true)
@@ -1380,15 +1380,15 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
           "34" -> "dummy-path/next"
         )
       val inputNext = Seq("4")
-      val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-      val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh, Help text"))
+      val inputPhrase: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
+      val helpPhrase: Phrase = Phrase(Vector("Help text", "Welsh: Help text"))
       val stanzas = Seq(
         KeyedStanza("start", PageStanza("/blah", Seq("1"), false)),
-        KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Error Text", "Welsh, Some Error Text")), Seq("11"), false)),
-        KeyedStanza("11", ErrorCallout(Phrase(Vector("Some Error Text {0}", "Welsh, Some Error Text {0}")), Seq("111"), true)),
-        KeyedStanza("111", ErrorCallout(Phrase(Vector("Some Error Text {0} and {1}", "Welsh, Some Error Text {0} and {1}")), Seq("3"), true)),
-        KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("4"), false)),
-        KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh, Some Text")), Seq("end"), None, false))
+        KeyedStanza("1", ErrorCallout(Phrase(Vector("Some Error Text", "Welsh: Some Error Text")), Seq("11"), false)),
+        KeyedStanza("11", ErrorCallout(Phrase(Vector("Some Error Text {0}", "Welsh: Some Error Text {0}")), Seq("111"), true)),
+        KeyedStanza("111", ErrorCallout(Phrase(Vector("Some Error Text {0} and {1}", "Welsh: Some Error Text {0} and {1}")), Seq("3"), true)),
+        KeyedStanza("3", SectionCallout(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("4"), false)),
+        KeyedStanza("4", Instruction(Phrase(Vector("Some Text", "Welsh: Some Text")), Seq("end"), None, false))
       )
       val dateInput = DateInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
       val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
@@ -1555,17 +1555,17 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val next: Seq[String] = Seq("10", "35", "50")
 
-      val textPhrase: Phrase = Phrase(Vector("Select type of bee", "Welsh, Select type of bee"))
+      val textPhrase: Phrase = Phrase(Vector("Select type of bee", "Welsh: Select type of bee"))
       val textPhraseWithHint = Phrase(
         Vector(
           "Select type of bee [hint:For example Worker or Drone]",
-        "Welsh, Select type of bee [hint:For example Worker or Drone]"
+        "Welsh: Select type of bee [hint:For example Worker or Drone]"
         )
       )
 
       val optionsPhrases: Seq[Phrase] = Seq(
-        Phrase(Vector("Drone", "Welsh, Drone")),
-        Phrase(Vector("Worker", "Welsh, Worker"))
+        Phrase(Vector("Drone", "Welsh: Drone")),
+        Phrase(Vector("Worker", "Welsh: Worker"))
       )
 
       val stanzas: Seq[KeyedStanza] = Seq(
@@ -1573,7 +1573,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         KeyedStanza(
           "1",
           ErrorCallout(
-          Phrase(Vector("You must select a type of bee", "Welsh, You must select a kind of bee")),
+          Phrase(Vector("You must select a type of bee", "Welsh: You must select a kind of bee")),
           Seq("2"),
           stack = false
           )
@@ -1581,14 +1581,14 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         KeyedStanza(
           "2",
           SectionCallout(
-            Phrase(Vector("Questions about bees", "Welsh, Questions about bees")),
+            Phrase(Vector("Questions about bees", "Welsh: Questions about bees")),
               Seq("3"),
               stack = false)
           ),
         KeyedStanza(
           "3",
           Instruction(
-            Phrase(Vector("General questions", "Welsh, General questions")),
+            Phrase(Vector("General questions", "Welsh: General questions")),
             Seq("4"),
             None,
             stack = false
@@ -1700,18 +1700,18 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val next: Seq[String] = Seq("10", "35", "40", "50")
 
-      val textPhrase: Phrase = Phrase(Vector("Select type of bee", "Welsh, Select type of bee"))
+      val textPhrase: Phrase = Phrase(Vector("Select type of bee", "Welsh: Select type of bee"))
       val textPhraseWithHint: Phrase = Phrase(
         Vector(
           "Select type of bee [hint:For example Worker or Drone]",
-          "Welsh, Select type of bee [hint:For example Worker or Drone]"
+          "Welsh: Select type of bee [hint:For example Worker or Drone]"
         )
       )
 
       val optionsPhrases: Seq[Phrase] = Seq(
-        Phrase(Vector("Drone", "Welsh, Drone")),
-        Phrase(Vector("Worker", "Welsh, Worker")),
-        Phrase(Vector("Queen [exclusive]", "Welsh, Queen [exclusive]"))
+        Phrase(Vector("Drone", "Welsh: Drone")),
+        Phrase(Vector("Worker", "Welsh: Worker")),
+        Phrase(Vector("Queen [exclusive]", "Welsh: Queen [exclusive]"))
       )
 
       val stanzas: Seq[KeyedStanza] = Seq(
@@ -1719,7 +1719,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         KeyedStanza(
           "1",
           ErrorCallout(
-            Phrase(Vector("You must select a type of bee", "Welsh, You must select a kind of bee")),
+            Phrase(Vector("You must select a type of bee", "Welsh: You must select a kind of bee")),
             Seq("2"),
             stack = false
           )
@@ -1727,14 +1727,14 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         KeyedStanza(
           "2",
           SectionCallout(
-            Phrase(Vector("Questions about bees", "Welsh, Questions about bees")),
+            Phrase(Vector("Questions about bees", "Welsh: Questions about bees")),
             Seq("3"),
             stack = false)
         ),
         KeyedStanza(
           "3",
           Instruction(
-            Phrase(Vector("General questions", "Welsh, General questions")),
+            Phrase(Vector("General questions", "Welsh: General questions")),
             Seq("4"),
             None,
             stack = false
