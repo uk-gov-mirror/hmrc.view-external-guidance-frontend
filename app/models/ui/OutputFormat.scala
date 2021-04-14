@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatter.ofPattern
 import java.util.Locale.UK
 
-import core.models.ocelot.{asCurrency, asDate, DateOutputFormat}
+import core.models.ocelot.{asDecimal, asDate, DateOutputFormat}
 
 trait Name {
   val name: String
@@ -38,7 +38,7 @@ case object Currency extends OutputFormat with Name {
   override def isNumeric: Boolean = true
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
-      asCurrency(value) match {
+      asDecimal(value) match {
         case Some(x) => NumberFormat.getCurrencyInstance(UK).format(x)
         case None => value
       }
@@ -51,7 +51,7 @@ case object CurrencyPoundsOnly extends OutputFormat with Name {
   override def asString(optValue: Option[String]): String =
     optValue.fold("")(value =>
       // Extract as simple number, then format as pounds only
-      asCurrency(value) match {
+      asDecimal(value) match {
         case Some(x) =>
           val formatter = NumberFormat.getCurrencyInstance(UK)
           formatter.setMaximumFractionDigits(0)
