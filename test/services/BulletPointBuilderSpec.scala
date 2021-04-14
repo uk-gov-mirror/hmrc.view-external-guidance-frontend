@@ -1171,8 +1171,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
       val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = false)
 
-      val phrase1: Phrase = Phrase(Vector("Some Text", "Welsh, Some Text"))
-      val phrase2: Phrase = Phrase(Vector("Some Text1", "Welsh, Some Text1"))
+      val phrase1: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
+      val phrase2: Phrase = Phrase(Vector("Some Text1", "Welsh: Some Text1"))
 
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),
@@ -1200,9 +1200,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
       val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = true)
 
-      val phrase1: Phrase = Phrase(Vector("Today I bought some beetroot", "Welsh, Today I bought some beetroot"))
-      val phrase2: Phrase = Phrase(Vector("Today I bought some carrots", "Welsh, Today I bought some carrots"))
-      val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", "Welsh, Today I bought some peppers"))
+      val phrase1: Phrase = Phrase(Vector("Today I bought some beetroot", "Welsh: Today I bought some beetroot"))
+      val phrase2: Phrase = Phrase(Vector("Today I bought some carrots", "Welsh: Today I bought some carrots"))
+      val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", "Welsh: Today I bought some peppers"))
 
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),
@@ -1247,15 +1247,15 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val instructionStanza7: InstructionStanza = InstructionStanza(eight, Seq("end"), None, stack = true)
 
       // Define phrases
-      val phrase1: Phrase = Phrase(Vector("Main title", "Welsh, Main title"))
-      val phrase2: Phrase = Phrase(Vector("My favourite sweets are Wine gums", "Welsh, My favourite sweets are Wine gums"))
-      val phrase3: Phrase = Phrase(Vector("My favourite sweets are humbugs", "Welsh, My favourite sweets are humbugs"))
-      val phrase4: Phrase = Phrase(Vector("Today is Monday", "Welsh, Today is Monday"))
-      val phrase5: Phrase = Phrase(Vector("More news", "Welsh, More news"))
-      val phrase6: Phrase = Phrase(Vector("Today in the West Midlands", "Welsh, Today in the West Midlands"))
-      val phrase7: Phrase = Phrase(Vector("Late night in Brierly hill", "Welsh, Late night in Brierly hill"))
-      val phrase8: Phrase = Phrase(Vector("What is happening in Dudley", "Welsh, What is happening in Dudley"))
-      val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", "Welsh, What is happening in Halesowen"))
+      val phrase1: Phrase = Phrase(Vector("Main title", "Welsh: Main title"))
+      val phrase2: Phrase = Phrase(Vector("My favourite sweets are Wine gums", "Welsh: My favourite sweets are Wine gums"))
+      val phrase3: Phrase = Phrase(Vector("My favourite sweets are humbugs", "Welsh: My favourite sweets are humbugs"))
+      val phrase4: Phrase = Phrase(Vector("Today is Monday", "Welsh: Today is Monday"))
+      val phrase5: Phrase = Phrase(Vector("More news", "Welsh: More news"))
+      val phrase6: Phrase = Phrase(Vector("Today in the West Midlands", "Welsh: Today in the West Midlands"))
+      val phrase7: Phrase = Phrase(Vector("Late night in Brierly hill", "Welsh: Late night in Brierly hill"))
+      val phrase8: Phrase = Phrase(Vector("What is happening in Dudley", "Welsh: What is happening in Dudley"))
+      val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", "Welsh: What is happening in Halesowen"))
 
       val flow = Map(
         Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),

@@ -81,15 +81,15 @@ class ChoiceStanzaSpec extends BaseSpec {
       |    }
       |  },
       |  "phrases": [
-      |    ["Ask the customer if they have a tea bag", "Welsh, Ask the customer if they have a tea bag"],
-      |    ["Do you have a tea bag?", "Welsh, Do you have a tea bag?"],
-      |    ["Yes - they do have a tea bag", "Welsh, Yes - they do have a tea bag"],
-      |    ["No - they do not have a tea bag", "Welsh, No - they do not have a tea bag"],
-      |    ["Ask the customer if they have a cup", "Welsh, Ask the customer if they have a cup"],
-      |    ["Do you have a cup?", "Welsh, Do you have a cup?"],
-      |    ["yes - they do have a cup ", "Welsh, yes - they do have a cup "],
-      |    ["no - they don’t have a cup", "Welsh, no - they don’t have a cup"],
-      |    ["Customer wants to make a cup of tea", "Welsh, Customer wants to make a cup of tea"]
+      |    ["Ask the customer if they have a tea bag", "Welsh: Ask the customer if they have a tea bag"],
+      |    ["Do you have a tea bag?", "Welsh: Do you have a tea bag?"],
+      |    ["Yes - they do have a tea bag", "Welsh: Yes - they do have a tea bag"],
+      |    ["No - they do not have a tea bag", "Welsh: No - they do not have a tea bag"],
+      |    ["Ask the customer if they have a cup", "Welsh: Ask the customer if they have a cup"],
+      |    ["Do you have a cup?", "Welsh: Do you have a cup?"],
+      |    ["yes - they do have a cup ", "Welsh: yes - they do have a cup "],
+      |    ["no - they don’t have a cup", "Welsh: no - they don’t have a cup"],
+      |    ["Customer wants to make a cup of tea", "Welsh: Customer wants to make a cup of tea"]
       |  ]
       |}
     """.stripMargin
@@ -419,6 +419,26 @@ class ChoiceStanzaSpec extends BaseSpec {
 
       LessThanOrEqualsTest("21/01/2021", "20/01/2021").eval(LabelCache()) shouldBe false
     }
+
+    "provide support to ContainsTest" in {
+      ContainsTest("2354", "5").eval(LabelCache()) shouldBe true
+
+      ContainsTest("23 54", "5").eval(LabelCache()) shouldBe true
+
+      ContainsTest("Hello World", "wor").eval(LabelCache()) shouldBe true
+
+      ContainsTest("4", "3").eval(LabelCache()) shouldBe false
+
+      ContainsTest("hello", "hello").eval(LabelCache()) shouldBe true
+
+      ContainsTest("4", "hello").eval(LabelCache()) shouldBe false
+
+      ContainsTest("20/01/2021", "21/01/2021").eval(LabelCache()) shouldBe false
+
+      ContainsTest("20/01/2021", "20/01/2021").eval(LabelCache()) shouldBe true
+
+      ContainsTest("21/01/2021", "20/01/2021").eval(LabelCache()) shouldBe false
+    }
   }
 
   "ChoiceStanzaTest" must {
@@ -429,6 +449,7 @@ class ChoiceStanzaSpec extends BaseSpec {
     val ne = """{"left": "VAL-3","test": "notEquals","right": "VAL-4"}"""
     val m = """{"left": "VAL-3","test": "moreThan","right": "VAL-4"}"""
     val me = """{"left": "VAL-3","test": "moreThanOrEquals","right": "VAL-4"}"""
+    val con = """{"left": "VAL-3","test": "contains","right": "VAL-4"}"""
     def choiceStanzaJson(t1: String, t2: String) = s"""{"type": "ChoiceStanza","tests": [$t1,$t2],"next": ["1", "2", "3"],"stack": true}"""
 
     "DeSerialize EqualsTest" in {
@@ -498,6 +519,19 @@ class ChoiceStanzaSpec extends BaseSpec {
           }
         )
     }
+    "DeSerialize ContainsTest" in {
+      Json
+        .parse(choiceStanzaJson(con, con))
+        .validate[ChoiceStanza]
+        .fold(
+          err => fail,
+          cs => {
+            val choice = Choice(cs)
+            choice.tests(0) shouldBe ContainsTest("VAL-3", "VAL-4")
+            choice.tests(1) shouldBe ContainsTest("VAL-3", "VAL-4")
+          }
+        )
+    }
 
     "Serialize EqualsTest" in {
       Json.toJson(ChoiceStanzaTest("3", Equals, "4")).toString shouldBe """{"left":"3","test":"equals","right":"4"}"""
@@ -516,6 +550,9 @@ class ChoiceStanzaSpec extends BaseSpec {
     }
     "Serialize MoreThanOrEqualsTest" in {
       Json.toJson(ChoiceStanzaTest("3", MoreThanOrEquals, "4")).toString shouldBe """{"left":"3","test":"moreThanOrEquals","right":"4"}"""
+    }
+    "Serialize ContainsTest" in {
+      Json.toJson(ChoiceStanzaTest("3", Contains, "4")).toString shouldBe """{"left":"3","test":"contains","right":"4"}"""
     }
 
     "Detect unknown test type strings at json parse level" in {

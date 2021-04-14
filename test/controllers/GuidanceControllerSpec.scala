@@ -96,27 +96,27 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
     val currencyInputStanza: CurrencyInput = CurrencyInput(Seq("4"),Phrase("",""), None, "PRICE", None, false)
     val dateInputStanza: DateInput = DateInput(Seq("4"),Phrase("",""), None, "Date of birth?", None, false)
     val nonExclusiveSequence: NonExclusiveSequence = NonExclusiveSequence(
-      Phrase("Select a working day of the week", "Welsh, Select a working day of the week"),
+      Phrase("Select a working day of the week", "Welsh: Select a working day of the week"),
       Seq("10", "20", "30", "40", "50", "60"),
       Seq(
-        Phrase("Monday", "Welsh, Monday"),
-        Phrase("Tuesday", "Welsh, Tuesday"),
-        Phrase("Wednesday", "Welsh, Wednesday"),
-        Phrase("Thursday", "Welsh, Thursday"),
-        Phrase("Friday", "Welsh, Friday")
+        Phrase("Monday", "Welsh: Monday"),
+        Phrase("Tuesday", "Welsh: Tuesday"),
+        Phrase("Wednesday", "Welsh: Wednesday"),
+        Phrase("Thursday", "Welsh: Thursday"),
+        Phrase("Friday", "Welsh: Friday")
       ),
       None,
       stack = false
     )
     val exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
-      Phrase("Select a holiday destination", "Welsh, Select a holiday destination"),
+      Phrase("Select a holiday destination", "Welsh: Select a holiday destination"),
       Seq("10", "20", "30", "40", "50", "60"),
       Seq(
-        Phrase("Europe", "Welsh, Europe"),
-        Phrase("Africa", "Welsh, Africa"),
-        Phrase("Americas", "Welsh, Americas"),
-        Phrase("Asia", "Welsh, Asia"),
-        Phrase("Elsewhere [exclusive]", "Welsh, Elsewhere")
+        Phrase("Europe", "Welsh: Europe"),
+        Phrase("Africa", "Welsh: Africa"),
+        Phrase("Americas", "Welsh: Americas"),
+        Phrase("Asia", "Welsh: Asia"),
+        Phrase("Elsewhere [exclusive]", "Welsh: Elsewhere")
       ),
       None,
       stack = false
