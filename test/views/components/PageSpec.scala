@@ -24,8 +24,9 @@ import play.api.i18n.{Lang, Messages, MessagesApi}
 import play.api.test.FakeRequest
 import forms.{SubmittedListAnswerFormProvider, SubmittedTextAnswerFormProvider}
 import models.PageContext
-import models.ui.{Answer, BulletPointList, ConfirmationPanel, CurrencyInput, RequiredErrorMsg, H1, Input, FormPage, InsetText, WarningText}
-import models.ui.{NumberedCircleList, NumberedList, Page, Paragraph, Question, FormPage, StandardPage, CyaSummaryList, Text, ExclusiveSequence, NonExclusiveSequence}
+import models.ui.{Answer, BulletPointList, ComplexDetails, ConfirmationPanel, CurrencyInput, CyaSummaryList}
+import models.ui.{ExclusiveSequence, FormPage, H1, InsetText, NonExclusiveSequence, NumberedCircleList, NumberedList}
+import models.ui.{Paragraph, Question, RequiredErrorMsg, StandardPage, Text, WarningText}
 import org.jsoup.nodes.{Document, Element}
 import org.jsoup.select.Elements
 
@@ -58,23 +59,23 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
     val bulletPointList: BulletPointList = BulletPointList(bulletPointLeadingText, Seq(bulletPointOne, bulletPointTwo, bulletPointThree))
     val simplePage: StandardPage = StandardPage("root", Seq(para, H1(title), bulletPointList))
 
-    val confirmationPanelLeadingText = Text("Calculation Complete")
-    val confirmationPanelOne = Text("you need to pay IHT")
-    val confirmationPanelTwo = Text("£325,000")
-    val confirmationPanel = ConfirmationPanel(confirmationPanelLeadingText, Seq(confirmationPanelOne, confirmationPanelTwo))
-    val listOne = Text("Line 1")
-    val listTwo = Text("Line 2")
-    val listThree = Text("Line 2")
-    val numberedList = NumberedList(Seq(listOne, listTwo, listThree))
-    val numberedCircleList = NumberedCircleList(Seq(listOne, listTwo, listThree))
-    val insetOne = Text("Inset 1")
-    val insetTwo = Text("Inset 2")
-    val insetText = InsetText(Seq(insetOne, insetTwo))
-    val warningOne = Text("Warning 1")
-    val warningTwo = Text("Warning 2")
-    val warningText = WarningText(Seq(warningOne, warningTwo))
-    val summaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
-    val outcomePage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList, warningText))
+    val confirmationPanelLeadingText: Text = Text("Calculation Complete")
+    val confirmationPanelOne:Text = Text("you need to pay IHT")
+    val confirmationPanelTwo: Text = Text("£325,000")
+    val confirmationPanel: ConfirmationPanel = ConfirmationPanel(confirmationPanelLeadingText, Seq(confirmationPanelOne, confirmationPanelTwo))
+    val listOne: Text = Text("Line 1")
+    val listTwo: Text = Text("Line 2")
+    val listThree: Text = Text("Line 2")
+    val numberedList: NumberedList = NumberedList(Seq(listOne, listTwo, listThree))
+    val numberedCircleList: NumberedCircleList = NumberedCircleList(Seq(listOne, listTwo, listThree))
+    val insetOne: Text = Text("Inset 1")
+    val insetTwo: Text = Text("Inset 2")
+    val insetText: InsetText = InsetText(Seq(insetOne, insetTwo))
+    val warningOne: Text = Text("Warning 1")
+    val warningTwo: Text = Text("Warning 2")
+    val warningText: WarningText = WarningText(Seq(warningOne, warningTwo))
+    val summaryList: CyaSummaryList = CyaSummaryList(Seq(Seq(listOne, listOne), Seq(listTwo, listThree)))
+    val outcomePage: StandardPage = StandardPage("root", Seq(confirmationPanel, numberedList, insetText, numberedCircleList, summaryList, warningText))
 
     val a1 = Answer(Text("Yes"), None)
     val a2 = Answer(Text("No"), None)
@@ -105,6 +106,26 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
     var exclusiveSequence: ExclusiveSequence = ExclusiveSequence(
       exclusiveSequenceTitle, None, carTypeOptions, Text("Other"), Seq.empty, Seq.empty)
     var exclusiveSequencePage: FormPage = FormPage("/cars-you-like", exclusiveSequence)
+
+    // Complex details with single bullet point
+    val caption: Text = Text("Title")
+
+    val bpl1LeadingText: Text = Text("Choose your favourite sweets")
+
+    val bpl1ListItem1: Text = Text("Wine gums")
+    val bpl1ListItem2: Text = Text("Bonbons")
+    val bpl1ListItem3: Text = Text("Fruit pastilles")
+
+    val bpl1TextGroup1: Seq[Text] = Seq(
+      bpl1LeadingText,
+      bpl1ListItem1,
+      bpl1ListItem2,
+      bpl1ListItem3
+    )
+
+    val complexDetails: ComplexDetails = ComplexDetails(caption, Seq(bpl1TextGroup1))
+
+    val complexDetailsPage: StandardPage = StandardPage("/complex-details-page", Seq(complexDetails))
 
     def expectedTitleText(h1Text: String, section: Option[String] = None): String =
       section.fold(s"${h1Text} - ${messages("service.name")} - ${messages("service.govuk")}"){s =>
@@ -139,6 +160,16 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
       "sessionId",
       Some("/cars-you-like"),
       Text("Select a car you like"),
+      "processId",
+      "processCode"
+    )
+    val complexDetailsContext: PageContext = PageContext(
+      complexDetailsPage,
+      Seq.empty,
+      None,
+      "sessionId",
+      Some("/complexDetails"),
+      Text(),
       "processId",
       "processCode"
     )
@@ -398,6 +429,41 @@ class PageSpec extends WordSpec with Matchers with ViewSpec with ViewFns with Gu
       elementAttrs(containerChildren(3))("class").contains("govuk-body")
 
       elementAttrs(containerChildren.last)("class") shouldBe "govuk-checkboxes__item"
+    }
+  }
+
+  "complex details page" should {
+
+    "generate a complex details page with a single bullet point list" in new Test {
+
+      val doc: Document = asDocument(standardPageView(complexDetailsPage, complexDetailsContext)(fakeRequest, messages))
+
+      val details: Elements = doc.getElementsByTag("details")
+
+      details.size shouldBe 1
+
+      val summaries: Elements = details.first.getElementsByTag("summary")
+
+      summaries.size shouldBe 1
+
+      summaries.text() shouldBe caption.asString
+
+      val divs: Elements = details.first.getElementsByTag("div")
+
+      divs.size shouldBe 1
+
+      val div: Element = divs.first
+
+      val divChildren: Elements = div.children()
+
+      divChildren.first.tag.toString shouldBe "p"
+      divChildren.first.text() shouldBe bpl1LeadingText.asString
+
+      divChildren.last.tag.toString shouldBe "ul"
+
+      val listItems: List[Element] = divChildren.last.getElementsByTag("li").asScala.toList
+
+      listItems.size shouldBe 3
     }
   }
 }

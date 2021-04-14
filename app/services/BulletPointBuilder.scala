@@ -17,7 +17,7 @@
 package services
 
 import core.models.ocelot.Phrase
-import core.models.ocelot.stanzas.{VisualStanza, Instruction}
+import core.models.ocelot.stanzas.{Instruction, NoteCallout, VisualStanza}
 import models.ocelot.stanzas.InstructionGroup
 import scala.util.matching.Regex
 import Regex._
@@ -46,21 +46,46 @@ object BulletPointBuilder {
     }
 
   @tailrec
+  def groupBulletPointNoteCalloutPhrases(acc: Seq[Seq[Phrase]])(inputSeq: Seq[NoteCallout]): Seq[Seq[Phrase]] =
+    inputSeq match {
+      case Nil => acc
+      case x :: xs =>
+        val matchedCallouts: Seq[NoteCallout] = groupMatchingNoteCallouts(xs, Seq(x))
+        if(matchedCallouts.size > 1) {
+          groupBulletPointNoteCalloutPhrases(acc :+ matchedCallouts.map(_.text))(xs.drop(matchedCallouts.size - 1))
+        } else {
+          groupBulletPointNoteCalloutPhrases(acc :+ matchedCallouts.map(_.text))(xs)
+        }
+    }
+
+  @tailrec
   private def groupMatchedInstructions(inputSeq: Seq[VisualStanza], acc: Seq[Instruction]): Seq[Instruction] =
     inputSeq match {
       case Nil => acc
       case x :: xs =>
         x match {
-          case i: Instruction if(i.stack && BulletPointBuilder.matchInstructions(acc.last, i)) => groupMatchedInstructions(xs, acc :+ i)
+          case i: Instruction if(i.stack && BulletPointBuilder.matchPhrases(acc.last.text, i.text)) => groupMatchedInstructions(xs, acc :+ i)
           case _ => acc
         }
     }
 
-  def determineMatchedLeadingText(instructionGroup: InstructionGroup, phraseText: Phrase => String): String = {
+  @tailrec
+  private def groupMatchingNoteCallouts(inputSeq: Seq[NoteCallout], acc: Seq[NoteCallout]): Seq[NoteCallout] =
+    inputSeq match {
+      case Nil => acc
+      case x :: xs =>
+        if(BulletPointBuilder.matchPhrases(acc.last.text, x.text)) {
+          groupMatchingNoteCallouts(xs, acc :+ x)
+        } else {
+          acc
+        }
+    }
 
-    val noOfMatchedWords = noOfMatchedLeadingWordsForInstructionGroup(instructionGroup, phraseText)
+  def determineMatchedLeadingText(phraseGroup: Seq[Phrase], phraseText: Phrase => String): String = {
 
-    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(phraseText(instructionGroup.group.head.text))
+    val noOfMatchedWords = noOfMatchedLeadingWordsForPhraseGroup(phraseGroup, phraseText)
+
+    val (texts, matches) = TextBuilder.placeholderTxtsAndMatches(phraseText(phraseGroup.head))
 
     val (wordsProcessed, outputTexts, outputMatches) = locateTextsAndMatchesContainingLeadingText(
       noOfMatchedWords,
@@ -76,14 +101,14 @@ object BulletPointBuilder {
     constructLeadingText(noOfMatchedWords, outputTexts, 0, outputMatches, 0, Nil, wordsProcessed = 0).mkString
   }
 
-  private def noOfMatchedLeadingWordsForInstructionGroup(instructionGroup: InstructionGroup, phraseText: Phrase => String): Int = {
+  private def noOfMatchedLeadingWordsForPhraseGroup(phraseGroup: Seq[Phrase], phraseText: Phrase => String): Int = {
 
-    val firstInstruction = instructionGroup.group.head
+    val firstPhrase: Phrase = phraseGroup.head
 
-    val remainingInstructions = instructionGroup.group.drop(1)
+    val remainingPhrases: Seq[Phrase] = phraseGroup.drop(1)
 
-    val matchedWordsSeq = remainingInstructions.map { i =>
-      matchInstructionText(phraseText(firstInstruction.text), phraseText(i.text))._3
+    val matchedWordsSeq = remainingPhrases.map { p =>
+      matchInstructionText(phraseText(firstPhrase), phraseText(p))._3
     }
 
     matchedWordsSeq.map(_.size).min
@@ -304,12 +329,12 @@ object BulletPointBuilder {
     }
   }
 
-  def matchInstructions(i1: Instruction, i2: Instruction): Boolean = {
+  def matchPhrases(p1: Phrase, p2: Phrase): Boolean = {
     // Apply matching logic to English text as this is how Ocelot works currently
-    val (i1NoOfWordsToDisplay, i2NoOfWordsToDisplay, matchedWords) = matchInstructionText(i1.text.english, i2.text.english)
+    val (p1NoOfWordsToDisplay, p2NoOfWordsToDisplay, matchedWords) = matchInstructionText(p1.english, p2.english)
 
     // Matching instructions must have matching leading text followed dissimilar trailing text
-    matchedWords.size >= matchLimit && (matchedWords.size < i1NoOfWordsToDisplay) && (matchedWords.size < i2NoOfWordsToDisplay)
+    matchedWords.size >= matchLimit && (matchedWords.size < p1NoOfWordsToDisplay) && (matchedWords.size < p2NoOfWordsToDisplay)
   }
 
   private def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {

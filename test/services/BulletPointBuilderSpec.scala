@@ -45,6 +45,14 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
     InstructionGroup(Seq(instruction1, instruction2))
   }
 
+  def createPhraseGroup(text1: String, text2: String): Seq[Phrase] = {
+
+    val phrase1: Phrase = Phrase(text1, s"$welshPrefix $text1")
+    val phrase2: Phrase = Phrase(text2, s"$welshPrefix $text2")
+
+    Seq(phrase1, phrase2)
+  }
+
   val welshPrefix: String = "Welsh - "
 
   "BulletPointBuilder bold text annotation removal processing" must {
@@ -278,11 +286,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Types of fruit you can buy: apples"
       val text2: String = "Types of fruit you can buy: oranges"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Types of fruit you can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "Types of fruit you can buy:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Types of fruit you can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix Types of fruit you can buy:"
     }
 
     "Identify leading text in sentences starting with bold text" in {
@@ -290,11 +298,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[bold:Types of automobile] you can buy saloon"
       val text2: String = "[bold:Types of automobile] you can buy sports utility vehicle"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Types of automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[bold:Types of automobile] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of automobile] you can buy"
     }
 
     "Identify leading text in complex sentences" in {
@@ -304,12 +312,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text2: String =
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting"
     }
 
@@ -320,11 +328,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Things you might like [bold:TO DO] this very day"
       val text2: String = "Things you might like [bold:TO DO] on another day"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Things you might like [bold:TO DO]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "Things you might like [bold:TO DO]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Things you might like [bold:TO DO]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix Things you might like [bold:TO DO]"
     }
 
     "Identify leading text in sentences where the leading text contains bold text items embedded in normal text" in {
@@ -332,11 +340,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Things [bold:to do] on sunny [bold:days] in the winter season"
       val text2: String = "Things [bold:to do] on sunny [bold:days] in the summer season"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Things [bold:to do] on sunny [bold:days] in the"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "Things [bold:to do] on sunny [bold:days] in the"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Things [bold:to do] on sunny [bold:days] in the"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix Things [bold:to do] on sunny [bold:days] in the"
     }
 
     "Identify leading text in sentences where the leading text contains normal text embedded in bold text" in {
@@ -344,11 +352,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] mud"
       val text2: String = "[bold:How long] must we [bold:continue to] be [bold:stuck in] snow"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[bold:How long] must we [bold:continue to] be [bold:stuck in]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:How long] must we [bold:continue to] be [bold:stuck in]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [bold:How long] must we [bold:continue to] be [bold:stuck in]"
     }
 
     "Identify leading text in simple sentences with multiple spaces between some words" in {
@@ -356,11 +364,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Types of  fruit you  can buy: apples"
       val text2: String = "Types of  fruit you  can buy: oranges"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "Types of  fruit you  can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "Types of  fruit you  can buy:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix Types of  fruit you  can buy:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix Types of  fruit you  can buy:"
     }
 
     "Identify leading text in sentences starting with bold text with multiple spaces between some of the bold words" in {
@@ -368,11 +376,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[bold:Types of  automobile] you can buy saloon"
       val text2: String = "[bold:Types of  automobile] you can buy sports utility vehicle"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Types of  automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[bold:Types of  automobile] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of  automobile] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [bold:Types of  automobile] you can buy"
     }
 
     "Identify leading text in sentences starting with link text" in {
@@ -380,11 +388,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[link:Types of automobile:http://mydomain/cars] you can buy saloon"
       val text2: String = "[link:Types of automobile:http://mydomain/cars] you can buy sports utility vehicle"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[link:Types of automobile:http://mydomain/cars] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[link:Types of automobile:http://mydomain/cars] you can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of automobile:http://mydomain/cars] you can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of automobile:http://mydomain/cars] you can buy"
     }
 
     "Identify leading text is sentences where the leading text ends with link text" in {
@@ -394,12 +402,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] this very day"
       val text2: String = "Things you might like [link:to consider buying:https://mydomain/products?catalog=books] on another day"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix Things you might like [link:to consider buying:https://mydomain/products?catalog=books]"
     }
 
@@ -408,12 +416,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the winter season"
       val text2: String = "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the summer season"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix Things to do on [link:sunny:5] days [link:at school:http://mydomain/schools] in the"
     }
 
@@ -424,12 +432,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text2: String =
         "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck] snow covered mountains"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "[link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix [link:How long:https://mydomain/duration/epochs] must we [link:continue to:2] be [link:stuck in://http://www.stuck.com/stuck]"
     }
 
@@ -438,11 +446,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[link:Types of  automobile:5] you  can buy saloon"
       val text2: String = "[link:Types of  automobile:5] you  can buy sports utility vehicle"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[link:Types of  automobile:5] you  can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[link:Types of  automobile:5] you  can buy"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of  automobile:5] you  can buy"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [link:Types of  automobile:5] you  can buy"
     }
 
     "Identify leading text in sentences starting with leading text with both links and bold text" in {
@@ -450,12 +458,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Silverstone"
       val text2: String = "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at Hednesford Raceway"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix Today is a [bold:good day] to enjoy [link:motor racing:http://mydomain/motor-racing] at"
     }
 
@@ -464,11 +472,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[bold:Today is the first day in ][bold:May]"
       val text2: String = "[bold:Today is the first day in ][bold:July]"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "[bold:Today is the first day in ]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "[bold:Today is the first day in ]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix [bold:Today is the first day in ]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix [bold:Today is the first day in ]"
     }
 
     "Identify leading text in sentences where leading text and trailing text are both in links" in {
@@ -476,12 +484,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:May:https://nydomain/calendar/may]"
       val text2: String = "[link:Today is the first day in :https://mydomain/calendar/today][link:July:https://mydomain/calendar/july]"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "[link:Today is the first day in :https://mydomain/calendar/today]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix [link:Today is the first day in :https://mydomain/calendar/today]"
     }
 
@@ -490,11 +498,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy the [bold:following]: apples"
       val text2: String = "You can buy the [bold:following]: oranges"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy the [bold:following]:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "You can buy the [bold:following]:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy the [bold:following]:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix You can buy the [bold:following]:"
     }
 
     "Identify leading text where text includes a bold section followed immediately by a non-white space character and then further texts" in {
@@ -502,11 +510,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can [bold:buy], things such as, various antiques"
       val text2: String = "You can [bold:buy], things such as, various trinkets"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can [bold:buy], things such as, various"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "You can [bold:buy], things such as, various"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can [bold:buy], things such as, various"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix You can [bold:buy], things such as, various"
     }
 
     "Identify leading text where text includes both bold and link placeholders immediately followed by non-whitespace characters" in {
@@ -514,12 +522,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your friends"
       val text2: String = "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your acquaintances"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix You can [bold:buy], if you like, anything at [link:the general store:https://mydomain/store], and sell it to your"
     }
 
@@ -528,11 +536,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy[bold:-categories] fruit"
       val text2: String = "You can buy[bold:-categories] vegetables"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy[bold:-categories]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "You can buy[bold:-categories]"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories]"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories]"
     }
 
     "Identify leading text where text includes a placeholder immediately following none-whitespace text followed by further matching text" in {
@@ -540,11 +548,11 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy[bold:-categories] fruit and veg: potato"
       val text2: String = "You can buy[bold:-categories] fruit and veg: parsnip"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe "You can buy[bold:-categories] fruit and veg:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe "You can buy[bold:-categories] fruit and veg:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories] fruit and veg:"
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe s"$welshPrefix You can buy[bold:-categories] fruit and veg:"
     }
 
     "Identify leading text where text includes both bold and link placeholders with leading text" in {
@@ -552,12 +560,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] : potato"
       val text2: String = "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] : parsnip"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] :"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy[bold:-categories] fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg] :"
     }
 
@@ -566,12 +574,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as pears and apples"
       val text2: String = "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as carrots and turnips"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix Today please note[bold:(Important)] we are selling[link:<link>:http://mydomain/items/fruitAndVeg] such as"
     }
 
@@ -580,12 +588,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]: potato"
       val text2: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]: parsnip"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.english) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
         "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]:"
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg]:"
     }
 
@@ -594,9 +602,12 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val text1: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as, potatoes"
       val text2: String = "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as, oranges"
 
-      val instructionGroup: InstructionGroup = createInstructionGroup(text1, text2)
+      val phraseGroup: Seq[Phrase] = createPhraseGroup(text1, text2)
 
-      BulletPointBuilder.determineMatchedLeadingText(instructionGroup, _.welsh) shouldBe
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english) shouldBe
+        "You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as,"
+
+      BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh) shouldBe
         s"$welshPrefix You can buy fruit and vegetables[link:<link>:http://mydomain/fruitAndVeg], such as,"
     }
 
@@ -658,9 +669,9 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
     }
   }
 
-  "Bullet point list instruction match testing" must {
+  "Bullet point list phrase match testing" must {
 
-    "Not match instructions with no similar text" in {
+    "Not match phrases with no similar text" in {
 
       val firstInstructionText: String = "Good Morning"
       val secondInstructionText: String = "Buen día"
@@ -668,13 +679,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Not match instructions with two similar leading words" in {
+    "Not match phrases with two similar leading words" in {
 
       val firstInstructionText: String = "Today is Wednesday"
       val secondInstructionText: String = "Today is Thursday"
@@ -682,13 +690,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Match instructions with three similar leading words" in {
+    "Match phrases with three similar leading words" in {
 
       val firstInstructionText: String = "I have bought: apples"
       val secondInstructionText: String = "I have bought: oranges"
@@ -696,13 +701,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Match instructions with multiple similar leading words" in {
+    "Match phrases with multiple similar leading words" in {
 
       val firstInstructionText: String = "The road is long and winding over there"
       val secondInstructionText: String = "The road is long and winding and here"
@@ -710,13 +712,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Not match instructions with multiple similar leading words but different spacing between the second and third words" in {
+    "Not match phrases with multiple similar leading words but different spacing between the second and third words" in {
 
       val firstInstructionText: String = "The road   is long and winding over there"
       val secondInstructionText: String = "The road is long and winding and here"
@@ -724,13 +723,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Not match instructions with two similar leading words in bold" in {
+    "Not match phrases with two similar leading words in bold" in {
 
       val firstInstructionText: String = "[bold:Today is Monday]"
       val secondInstructionText: String = "[bold:Today is Thursday]"
@@ -738,13 +734,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Match instructions with three similar leading words in bold" in {
+    "Match phrases with three similar leading words in bold" in {
 
       val firstInstructionText: String = "[bold:I have bought: apples]"
       val secondInstructionText: String = "[bold:I have bought: oranges]"
@@ -752,13 +745,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Not match instructions with three similar leading words in bold but different spacings between the first and second words" in {
+    "Not match phrases with three similar leading words in bold but different spacings between the first and second words" in {
 
       val firstInstructionText: String = "[bold:I have bought: apples]"
       val secondInstructionText: String = "[bold:I  have bought: oranges]"
@@ -766,13 +756,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, true)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Not match instructions with two similar leading words one normal text and one bold" in {
+    "Not match phrases with two similar leading words one normal text and one bold" in {
 
       val firstInstructionText: String = "Today [bold:is Monday]"
       val secondInstructionText: String = "Today [bold:is Thursday]"
@@ -780,13 +767,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Match instructions with three similar leading words one normal text and two bold" in {
+    "Match phrases with three similar leading words one normal text and two bold" in {
 
       val firstInstructionText: String = "Today [bold:is Monday] 1st"
       val secondInstructionText: String = "Today [bold:is Monday] 2nd"
@@ -794,13 +778,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Match instructions with multiple similar leading words with multiple sets of bold words" in {
+    "Match phrases with multiple similar leading words with multiple sets of bold words" in {
 
       val firstInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 4th"
       val secondInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 7th"
@@ -808,13 +789,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Not match instructions with two similar leading words in links" in {
+    "Not match phrases with two similar leading words in links" in {
 
       val firstInstructionText: String = "[link:Today is Monday:http://mydomain/test]"
       val secondInstructionText: String = "[link:Today is Thursday:http://mydomain/test]"
@@ -822,13 +800,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Match instructions with link in leading text" in {
+    "Match phrases with link in leading text" in {
 
       val firstInstructionText: String = "[link:The news this: morning:https://mydomain/news/morning] Early riser fails to get up"
       val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
@@ -836,13 +811,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Not match instructions with link in leading text but differing spaces between the second and third words" in {
+    "Not match phrases with link in leading text but differing spaces between the second and third words" in {
 
       val firstInstructionText: String = "[link:The news  this: morning:https://mydomain/news/morning] Early riser fails to get up"
       val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
@@ -850,13 +822,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe false
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
 
-    "Match instructions with links in trailing text" in {
+    "Match phrases with links in trailing text" in {
 
       val firstInstructionText: String = "Today I bought some [link:oranges:http://mydomain/fruits/oranges]"
       val secondInstructionText: String = "Today I bought some [link:apples:http://mydomain/fruits/apples]"
@@ -864,13 +833,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Match instructions with complex leading and trailing text" in {
+    "Match phrases with complex leading and trailing text" in {
 
       val firstInstructionText: String =
         "Today [bold: I bought] some [link:fruits:http://mydomain/fruits] at [bold:Stafford Fruit Market] see [link:Staffordshire markets:https://mydomain/markets/staffordshire]"
@@ -880,13 +846,10 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
-    "Match test instructions from Json prototype 1" in {
+    "Match test phrases from Json prototype 1" in {
 
       val firstInstructionText: String =
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting a flat or house"
@@ -896,10 +859,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
 
     "Match test instructions from Json prototype 2" in {
@@ -912,10 +872,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
       val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
 
-      val i1: Instruction = new Instruction(firstInstructionPhrase, Nil, None, false)
-      val i2: Instruction = new Instruction(secondInstructionPhrase, Nil, None, false)
-
-      BulletPointBuilder.matchInstructions(i1, i2) shouldBe true
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
   }
 
@@ -951,7 +908,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val visualStanzas = pages.head.stanzas.collect{case s:VisualStanza => s}
           val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
 
-          stanzas(0) shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
+          stanzas.head shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
           stanzas(1) shouldBe Instruction(instructionStanza2, phrase2, None, Nil)
 
         case Left(err) => fail(s"Flow error $err")
@@ -982,7 +939,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val visualStanzas = pages.head.stanzas.collect{case s:VisualStanza => s}
           val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
 
-          stanzas(0) shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
+          stanzas.head shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
           stanzas(1) shouldBe Instruction(instructionStanza2, phrase2, None, Nil)
 
         case Left(err) => fail(s"Flow error $err")
@@ -1018,7 +975,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(0) shouldBe expectedInstructionGroup
+          stanzas.head shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1053,7 +1010,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(0) shouldBe expectedInstructionGroup
+          stanzas.head shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1085,7 +1042,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val visualStanzas = pages.head.stanzas.collect{case s:VisualStanza => s}
           val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
 
-          stanzas(0) shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
+          stanzas.head shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
           stanzas(1) shouldBe Instruction(instructionStanza2, phrase2, None, Nil)
           stanzas(2) shouldBe Instruction(instructionStanza3, phrase3, None, Nil)
 
@@ -1124,7 +1081,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
 
-          stanzas(0) shouldBe expectedInstructionGroup
+          stanzas.head shouldBe expectedInstructionGroup
           stanzas(1) shouldBe Instruction(instructionStanza3, phrase3, None, Nil)
 
         case Left(err) => fail(s"Flow error $err")
@@ -1157,7 +1114,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val visualStanzas = pages.head.stanzas.collect{case s:VisualStanza => s}
           val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
 
-          stanzas(0) shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
+          stanzas.head shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
 
           val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None, Nil)
           val instruction3: Instruction = Instruction(instructionStanza3, phrase3, None, Nil)
@@ -1202,7 +1159,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
 
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
 
-          stanzas(0) shouldBe expectedInstructionGroup
+          stanzas.head shouldBe expectedInstructionGroup
 
         case Left(err) => fail(s"Flow error $err")
       }
@@ -1211,14 +1168,14 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
   }
     "Return ungrouped Instruction stanzas when text contents do not start with similar text" in {
 
-      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, false)
-      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, false)
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = false)
 
       val phrase1: Phrase = Phrase(Vector("Some Text", "Welsh: Some Text"))
       val phrase2: Phrase = Phrase(Vector("Some Text1", "Welsh: Some Text1"))
 
       val flow = Map(
-        Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
+        Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),
         "1" -> instructionStanza1,
         "2" -> instructionStanza2,
         "end" -> EndStanza
@@ -1226,29 +1183,29 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val process = Process(metaSection, flow, Vector[Phrase](phrase1, phrase2), Vector[Link]())
 
       pageBuilder.pagesWithValidation(process) match {
-        case Right(pages) => {
+        case Right(pages) =>
 
           assert(pages.head.stanzas.size == 4)
 
           pages.head.stanzas(1) shouldBe Instruction(instructionStanza1, phrase1, None, Nil)
           pages.head.stanzas(2) shouldBe Instruction(instructionStanza2, phrase2, None, Nil)
-        }
+
         case Left(err) => fail(s"Flow error $err")
       }
     }
 
     "Return grouped Instruction stanzas when text contents start with similar text" in {
 
-      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, false)
-      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, true)
-      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, true)
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("end"), None, stack = true)
 
       val phrase1: Phrase = Phrase(Vector("Today I bought some beetroot", "Welsh: Today I bought some beetroot"))
       val phrase2: Phrase = Phrase(Vector("Today I bought some carrots", "Welsh: Today I bought some carrots"))
       val phrase3: Phrase = Phrase(Vector("Today I bought some peppers", "Welsh: Today I bought some peppers"))
 
       val flow = Map(
-        Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
+        Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),
         "1" -> instructionStanza1,
         "2" -> instructionStanza2,
         "3" -> instructionStanza3,
@@ -1258,7 +1215,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val process = Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3), Vector[Link]())
 
       pageBuilder.pagesWithValidation(process) match {
-        case Right(pages) => {
+        case Right(pages) =>
 
           assert(pages.head.stanzas.size == 5)
 
@@ -1270,24 +1227,24 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
 
           val visualStanzas = pages.head.stanzas.collect{case s:VisualStanza => s}
-          BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)(0) shouldBe expectedInstructionGroup
-        }
+          BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas).head shouldBe expectedInstructionGroup
+
         case Left(err) => fail(s"Flow error $err")
       }
     }
 
     "Correctly group instructions stanzas in a complex page" in {
 
-      val calloutStanza1: CalloutStanza = CalloutStanza(Title, 0, Seq("2"), false)
-      val calloutStanza2: CalloutStanza = CalloutStanza(SubTitle, four, Seq("6"), false)
+      val calloutStanza1: CalloutStanza = CalloutStanza(Title, 0, Seq("2"), stack = false)
+      val calloutStanza2: CalloutStanza = CalloutStanza(SubTitle, four, Seq("6"), stack = false)
 
-      val instructionStanza1: InstructionStanza = InstructionStanza(1, Seq("3"), None, true)
-      val instructionStanza2: InstructionStanza = InstructionStanza(2, Seq("4"), None, true)
-      val instructionStanza3: InstructionStanza = InstructionStanza(3, Seq("5"), None, false)
-      val instructionStanza4: InstructionStanza = InstructionStanza(five, Seq("7"), None, false)
-      val instructionStanza5: InstructionStanza = InstructionStanza(six, Seq("9"), None, false)
-      val instructionStanza6: InstructionStanza = InstructionStanza(seven, Seq("10"), None, false)
-      val instructionStanza7: InstructionStanza = InstructionStanza(eight, Seq("end"), None, true)
+      val instructionStanza1: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
+      val instructionStanza2: InstructionStanza = InstructionStanza(2, Seq("4"), None, stack = true)
+      val instructionStanza3: InstructionStanza = InstructionStanza(3, Seq("5"), None, stack = false)
+      val instructionStanza4: InstructionStanza = InstructionStanza(five, Seq("7"), None, stack = false)
+      val instructionStanza5: InstructionStanza = InstructionStanza(six, Seq("9"), None, stack = false)
+      val instructionStanza6: InstructionStanza = InstructionStanza(seven, Seq("10"), None, stack = false)
+      val instructionStanza7: InstructionStanza = InstructionStanza(eight, Seq("end"), None, stack = true)
 
       // Define phrases
       val phrase1: Phrase = Phrase(Vector("Main title", "Welsh: Main title"))
@@ -1301,14 +1258,14 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val phrase9: Phrase = Phrase(Vector("What is happening in Halesowen", "Welsh: What is happening in Halesowen"))
 
       val flow = Map(
-        Process.StartStanzaId -> PageStanza("/this", Seq("1"), false),
+        Process.StartStanzaId -> PageStanza("/this", Seq("1"), stack = false),
         "1" -> calloutStanza1,
         "2" -> instructionStanza1,
         "3" -> instructionStanza2,
         "4" -> instructionStanza3,
         "5" -> calloutStanza2,
         "6" -> instructionStanza4,
-        "7" -> ValueStanza(List(Value(ScalarType, "Region", "West Midlands")), Seq("8"), false),
+        "7" -> ValueStanza(List(Value(ScalarType, "Region", "West Midlands")), Seq("8"), stack = false),
         "8" -> instructionStanza5,
         "9" -> instructionStanza6,
         "10" -> instructionStanza7,
@@ -1319,7 +1276,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
         Process(metaSection, flow, Vector[Phrase](phrase1, phrase2, phrase3, phrase4, phrase5, phrase6, phrase7, phrase8, phrase9), Vector[Link]())
 
       pageBuilder.pagesWithValidation(process) match {
-        case Right(pages) => {
+        case Right(pages) =>
 
           assert(pages.head.stanzas.size == 12)
 
@@ -1339,7 +1296,7 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val expectedInstructionGroup2: InstructionGroup = InstructionGroup(Seq(instruction6, instruction7))
 
           BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)(six) shouldBe expectedInstructionGroup2
-        }
+
         case Left(err) => fail(s"Flow error $err")
       }
 
