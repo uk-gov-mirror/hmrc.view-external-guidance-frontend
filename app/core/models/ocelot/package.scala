@@ -22,12 +22,12 @@ import scala.util.Try
 import scala.util.matching.Regex
 
 package object ocelot {
-  val labelPattern = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly|date|number))?\\]"
-  val boldPattern = s"\\[bold:($labelPattern|[^\\]]+)\\]"
-  val linkToPageOnlyPattern = s"\\[link:(.+?):(\\d+|${Process.StartStanzaId})\\]"
-  val toPageLinkPattern = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]"
-  val linkPattern = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&#]+)\\]"
-  val commaSeparatedIntsPattern = "^\\d+\\s*(?:,\\s*\\d+\\s*)*$"
+  val labelPattern: String = "\\[label:([A-Za-z0-9\\s\\-_]+)(:(currency|currencyPoundsOnly|date|number))?\\]"
+  val boldPattern: String = s"\\[bold:($labelPattern|[^\\]]+)\\]"
+  val linkToPageOnlyPattern: String = s"\\[link:(.+?):(\\d+|${Process.StartStanzaId})\\]"
+  val toPageLinkPattern: String = s"\\[(button|link)(-same|-tab)?:([^\\]]+?):(\\d+|${Process.StartStanzaId})\\]"
+  val linkPattern: String = s"\\[(button|link)(-same|-tab)?:(.+?):(\\d+|${Process.StartStanzaId}|https?:[a-zA-Z0-9\\/\\.\\-\\?_\\.=&#]+)\\]"
+  val commaSeparatedIntsPattern: String = "^\\d+\\s*(?:,\\s*\\d+\\s*)*$"
   val hintRegex: Regex = "\\[hint:([^\\]]+)\\]".r
   val pageLinkRegex: Regex = s"${toPageLinkPattern}".r
   val labelRefRegex: Regex = labelPattern.r
@@ -48,10 +48,10 @@ package object ocelot {
   def labelReferences(str: String): List[String] = plSingleGroupCaptures(labelRefRegex, str)
   def labelReference(str: String): Option[String] = plSingleGroupCaptures(labelRefRegex, str).headOption
   def asTextString(value: String): Option[String] = value.trim.headOption.fold[Option[String]](None)(_ => Some(value.trim))
-  def asDecimal(value: String): Option[BigDecimal] = inputCurrencyRegex.findFirstIn(value.filterNot(c => c==' '))
-                                                                        .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
-  def asCurrencyPounds(value: String): Option[BigDecimal] = inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' '))
-                                                                        .map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
+  def asDecimal(value: String): Option[BigDecimal] =
+    inputCurrencyRegex.findFirstIn(value.filterNot(c => c==' ')).map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
+  def asCurrencyPounds(value: String): Option[BigDecimal] =
+    inputCurrencyPoundsRegex.findFirstIn(value.filterNot(c => c==' ')).map(s => BigDecimal(s.filterNot(ignoredCurrencyChars.contains(_))))
   def asDate(value: String): Option[LocalDate] = Try(LocalDate.parse(value.filterNot(_.equals(' ')), dateFormatter)).map(d => d).toOption
   def stringFromDate(when: LocalDate): String = when.format(dateFormatter)
   def asInt(value: String): Option[Int] = integerRegex.findFirstIn(value).map(_.toInt)
