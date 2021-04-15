@@ -208,7 +208,9 @@ class EnglishTextBuilderSpec extends BaseSpec {
   "TextBuilder expandLabels" must {
     val labelsMap = Map(
       "BLAH"->ScalarLabel("BLAH", List("33.5")),
-      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")))
+      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")),
+      "SomeList" -> ListLabel("SomeList", List("x", "y", "z"))
+    )
     val labels = LabelCache(labelsMap)
 
     "Convert label reference with default output format placeholders within phrase" in new Test {
@@ -238,6 +240,12 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert a label placeholder with currency output format within a bold placeholder" in new Test {
       val phrase = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Welsh: Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""")
       val expectedPhrase = Phrase("""Sentence with a [bold:£33] label reference""", """Welsh: Sentence with a [bold:£33] label reference""")
+      TextBuilder.expandLabels(phrase, labels) shouldBe expectedPhrase
+    }
+
+    "Convert a list length placeholder " in new Test {
+      val phrase = Phrase("""SomeList has length [list:SomeList:length]""", """Welsh: SomeList has length [list:SomeList:length]""")
+      val expectedPhrase = Phrase("""SomeList has length 3""", """Welsh: SomeList has length 3""")
       TextBuilder.expandLabels(phrase, labels) shouldBe expectedPhrase
     }
 

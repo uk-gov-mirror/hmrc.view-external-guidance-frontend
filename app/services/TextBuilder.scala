@@ -17,7 +17,7 @@
 package services
 
 import models._
-import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, labelAndListRegex, boldPattern, linkPattern, Labels}
+import core.models.ocelot.{Link, Phrase, hintRegex, labelPattern, labelAndListRegex, labelScalarMatch, boldPattern, linkPattern, Labels}
 import models.ui._
 import scala.util.matching.Regex
 import Regex._
@@ -64,7 +64,10 @@ object TextBuilder {
     }
 
   def expandLabels(p: Phrase, labels: Labels): Phrase = {
-    def replace(lang: Lang)(m: Match): String = OutputFormat(labelFormatOpt(m)).asString(labels.displayValue(m.group(1))(lang))
+    def replace(lang: Lang)(m: Match): String = {
+      def labelValue(name: String): Option[String] = labels.displayValue(name)(lang)
+      OutputFormat(labelFormatOpt(m)).asString(labelScalarMatch(m, labels, labelValue _))
+    }
     Phrase(labelAndListRegex.replaceAllIn(p.english, replace(English) _), labelAndListRegex.replaceAllIn(p.welsh, replace(Welsh) _))
   }
 
