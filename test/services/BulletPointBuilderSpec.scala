@@ -669,15 +669,15 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
     }
   }
 
-  "Bullet point list phrase match testing" must {
+  "Bullet point list implicit phrase match testing" must {
 
     "Not match phrases with no similar text" in {
 
       val firstInstructionText: String = "Good Morning"
       val secondInstructionText: String = "Buen día"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -687,8 +687,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "Today is Wednesday"
       val secondInstructionText: String = "Today is Thursday"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -698,8 +698,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "I have bought: apples"
       val secondInstructionText: String = "I have bought: oranges"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -709,8 +709,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "The road is long and winding over there"
       val secondInstructionText: String = "The road is long and winding and here"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -720,8 +720,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "The road   is long and winding over there"
       val secondInstructionText: String = "The road is long and winding and here"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -731,8 +731,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[bold:Today is Monday]"
       val secondInstructionText: String = "[bold:Today is Thursday]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -742,8 +742,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[bold:I have bought: apples]"
       val secondInstructionText: String = "[bold:I have bought: oranges]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -753,8 +753,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[bold:I have bought: apples]"
       val secondInstructionText: String = "[bold:I  have bought: oranges]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -764,8 +764,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "Today [bold:is Monday]"
       val secondInstructionText: String = "Today [bold:is Thursday]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -775,8 +775,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "Today [bold:is Monday] 1st"
       val secondInstructionText: String = "Today [bold:is Monday] 2nd"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -786,8 +786,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 4th"
       val secondInstructionText: String = "Today is [bold:Monday and] tomorrow will [bold:be Tuesday] 7th"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -797,8 +797,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[link:Today is Monday:http://mydomain/test]"
       val secondInstructionText: String = "[link:Today is Thursday:http://mydomain/test]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -808,8 +808,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[link:The news this: morning:https://mydomain/news/morning] Early riser fails to get up"
       val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -819,8 +819,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "[link:The news  this: morning:https://mydomain/news/morning] Early riser fails to get up"
       val secondInstructionText: String = "[link:The news this: afternoon:https://mydomain/news/afternoon] Lunch goes missing"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
     }
@@ -830,8 +830,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val firstInstructionText: String = "Today I bought some [link:oranges:http://mydomain/fruits/oranges]"
       val secondInstructionText: String = "Today I bought some [link:apples:http://mydomain/fruits/apples]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -843,8 +843,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val secondInstructionText: String =
         "Today [bold: I bought] some [link:fruits:http://mydomain/fruits] at [bold:Shrewsbury Market] see [link:Shropshire markets:https://mydomain/markets/shropshire]"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -856,8 +856,8 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val secondInstructionText: String =
         "The property allowance lets you earn up to \u00a311,000 in rental income, tax free, in each tax year. For example: renting out a room in your home"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
     }
@@ -869,18 +869,183 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
       val secondInstructionText: String =
         "In some circumstances, you do not have to tell HMRC about extra income you've made. In each tax year you can earn up to £11,000, tax free, if you are: renting land or property"
 
-      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, "")
-      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, "")
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionText, s"Welsh: $firstInstructionText")
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionText, s"Welsh: $secondInstructionText")
 
       BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe true
+    }
+
+    "not match two phrases where the english components match, but the welsh do not" in {
+
+      val firstInstructionEnglish: String = "The days of the week include Monday"
+      val firstInstructionWelsh: String = "First day of the week is Monday"
+
+      val secondInstructionEnglish: String = "The days of the week include Tuesday"
+      val secondInstructionWelsh: String = "Second day of the week is Tuesday"
+
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionEnglish, firstInstructionWelsh)
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionEnglish, secondInstructionWelsh)
+
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
+    }
+
+    "not match two phrases where the welsh components match, but the english do not" in {
+
+      val firstInstructionEnglish: String = "Every day is an adventure"
+      val firstInstructionWelsh: String = "Welsh: Every day is an adventure"
+
+      val secondInstructionEnglish: String = "The days of the week include Tuesday"
+      val secondInstructionWelsh: String = "Second day of the week is Tuesday"
+
+      val firstInstructionPhrase: Phrase = Phrase(firstInstructionEnglish, firstInstructionWelsh)
+      val secondInstructionPhrase: Phrase = Phrase(secondInstructionEnglish, secondInstructionWelsh)
+
+      BulletPointBuilder.matchPhrases(firstInstructionPhrase, secondInstructionPhrase) shouldBe false
+
+    }
+  }
+
+  "Bullet point explicit testing determination" must {
+
+    "not apply explicit testing if neither of the phrases contains the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("","")
+      val secondPhrase: Phrase = Phrase("","")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "apply explicit testing if the english component of the first phrase contains the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite fruits are[break]oranges","Welsh: My favourite fruits are oranges")
+      val secondPhrase: Phrase = Phrase("My favourite fruits are bananas","Welsh: My favourite fruits are bananas")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe true
+    }
+
+    "apply explicit testing if the welsh component of the first phrase contains the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite fruits are oranges","Welsh: My favourite fruits are[break]oranges")
+      val secondPhrase: Phrase = Phrase("My favourite fruits are bananas","Welsh: My favourite fruits are bananas")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe true
+    }
+
+    "apply explicit testing if the english component of the second phrase contains the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite fruits are oranges","Welsh: My favourite fruits are oranges")
+      val secondPhrase: Phrase = Phrase("My favourite fruits are[break]bananas","Welsh: My favourite fruits are bananas")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe true
+    }
+
+    "apply explicit testing if the welsh component of the second phrase contains the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite fruits are oranges","Welsh: My favourite fruits are oranges")
+      val secondPhrase: Phrase = Phrase("My favourite fruits are bananas","Welsh: My favourite fruits are[break]bananas")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe true
+    }
+
+    "apply explicit testing if all components of the two phrases contain the explicit break marker" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite fruits are[break]oranges","Welsh: My favourite fruits are[break]oranges")
+      val secondPhrase: Phrase = Phrase("My favourite fruits are[break]bananas","Welsh: My favourite fruits are[break]bananas")
+
+      BulletPointBuilder.useExplicitMatch(firstPhrase, secondPhrase) shouldBe true
+    }
+  }
+
+  "Bullet point list explicit and implicit phrase match testing" must {
+
+    "not match two empty phrases" in {
+
+      val firstPhrase: Phrase = Phrase("","")
+      val secondPhrase: Phrase = Phrase("","")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two identical phrases" in {
+
+      val firstPhrase: Phrase = Phrase("My favourite colour is red","Welsh: My favourite colour is red")
+      val secondPhrase: Phrase = Phrase("My favourite colour is red","Welsh: My favourite colour is red")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two dissimilar phrases" in {
+
+      val firstPhrase: Phrase = Phrase("The long and winding road","Welsh: The long and winding road")
+      val secondPhrase: Phrase = Phrase("Every day is an adventure","Welsh: Every day is an adventure")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two phrases where one phrase contains a break marker and the other does not and there is no implicit match" in {
+
+      val firstPhrase: Phrase = Phrase("The long[break] and winding road leads to Manchester","Welsh: The long[break] and winding road leads to Manchester")
+      val secondPhrase: Phrase = Phrase("The long and winding road leads to Leeds","Welsh: The long and winding road leads to Leeds")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two phrases where both phrases start with the break marker and there is no implicit match" in {
+
+      val firstPhrase: Phrase = Phrase("[break]The long and winding road","Welsh: [break]The long and winding road")
+      val secondPhrase: Phrase = Phrase("[break]Every day is an adventure","Welsh: [break]Every day is an adventure")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two phrases where both phrases include the break marker but the leading text differs" in {
+
+      val firstPhrase: Phrase = Phrase("The long and winding[break] road","Welsh: The long and winding[break] road")
+      val secondPhrase: Phrase = Phrase("Every day is[break] an adventure","Welsh: Every day is[break] an adventure")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "match two phrases where both phrases include the break marker and the leading text is the same" in {
+
+      val firstPhrase: Phrase = Phrase("The long[break] and winding river","Welsh: The long[break] and winding river")
+      val secondPhrase: Phrase = Phrase("The long[break] way","Welsh: The long[break] way")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe true
+    }
+
+    "not match two phrases where the first phrase defines an explicit break but the second does not but there is an implicit match" in {
+
+      val firstPhrase: Phrase = Phrase("The long and winding road[break] leads to Manchester","Welsh: The long and winding road[break] leads to Manchester")
+      val secondPhrase: Phrase = Phrase("The long and winding road leads to Leeds","Welsh: The long and winding road leads to Leeds")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
+    }
+
+    "not match two phrases where the second phrase defines an explicit break but the first does not but there is an implicit match" in {
+
+      val firstPhrase: Phrase = Phrase("The long and winding road leads to Leeds","Welsh: The long and winding road leads to Leeds")
+      val secondPhrase: Phrase = Phrase("The long and winding road[break] leads to Manchester","Welsh: The long and winding road[break] leads to Manchester")
+
+      BulletPointBuilder.matchPhrases(firstPhrase, secondPhrase) shouldBe false
     }
   }
 
   "Bullet point list instruction stacking" must {
 
-    val phrase1: Phrase = Phrase(Vector("My favourite sweets are wine gums", "Welsh - My favourite sweets are wine gums"))
-    val phrase2: Phrase = Phrase(Vector("My favourite sweets are porkie percys", "Welsh - My favourite sweets are porkie percys"))
-    val phrase3: Phrase = Phrase(Vector("My favourite sweets are lemon bon bons", "Welsh - My favourite sweets are lemon bon bons"))
+    val phrase1: Phrase = Phrase("My favourite sweets are wine gums", "Welsh: My favourite sweets are wine gums")
+    val phrase2: Phrase = Phrase("My favourite sweets are porkie percys", "Welsh: My favourite sweets are porkie percys")
+    val phrase3: Phrase = Phrase("My favourite sweets are lemon bon bons", "Welsh: My favourite sweets are lemon bon bons")
+    val phrase4: Phrase = Phrase("The important dates are[break] 6th March 2000", "Welsh: The important dates are[break] 6th March 2000")
+    val phrase5: Phrase = Phrase("The important dates are[break] 6th March 2021", "Welsh: The important dates are[break] 6th March 2021")
+    val phrase6: Phrase = Phrase("I like to go on holiday to Ibiza", "Welsh: I like to go on holiday to Ibiza")
+    val phrase7: Phrase = Phrase("I like to go on holiday to France", "Welsh: I like to go on holiday to France")
+    val phrase8: Phrase = Phrase("I like to go on holiday in the UK", "Welsh: I like to go on holiday in the UK")
+    val phrase9: Phrase = Phrase("The three primary colours are[break] red", "Welsh: The three primary colours are[break] red")
+    val phrase10: Phrase = Phrase("The three primary colours are[break] green", "Welsh: The three primary colours are[break] green")
+    val phrase11: Phrase = Phrase("The three primary colours are[break] blue", "Welsh: The three primary colours are[break] blue")
+    val phrase12: Phrase = Phrase("My favourite sweets are[break] wine gums", "Welsh: My favourite sweets are wine gums")
+    val phrase13: Phrase = Phrase("My favourite sweets are[break] porkie percys", "Welsh: My favourite sweets are porkie percys")
 
     val pageBuilder: PageBuilder = new PageBuilder(new Placeholders(new DefaultTodayProvider))
 
@@ -1160,6 +1325,177 @@ class BulletPointBuilderSpec extends BaseSpec with ProcessJson with StanzaHelper
           val expectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
 
           stanzas.head shouldBe expectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "handle both implicit and explicit phrase matching in instruction stanzas" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("3"), None, stack = true)
+      val instructionStanza3: InstructionStanza = InstructionStanza(2, Seq("4"), None, stack = true)
+      val instructionStanza4: InstructionStanza = InstructionStanza(3, Seq("5"), None, stack = false)
+      val instructionStanza5: InstructionStanza = InstructionStanza(four, Seq("6"), None, stack = true)
+      val instructionStanza6: InstructionStanza = InstructionStanza(five, Seq("7"), None, stack = false)
+      val instructionStanza7: InstructionStanza = InstructionStanza(six, Seq("8"), None, stack = true)
+      val instructionStanza8: InstructionStanza = InstructionStanza(seven, Seq("9"), None, stack = true)
+      val instructionStanza9: InstructionStanza = InstructionStanza(eight, Seq("10"), None, stack = false)
+      val instructionStanza10: InstructionStanza = InstructionStanza(nine, Seq("11"), None, stack = true)
+      val instructionStanza11: InstructionStanza = InstructionStanza(ten, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/start", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "3" -> instructionStanza3,
+        "4" -> instructionStanza4,
+        "5" -> instructionStanza5,
+        "6" -> instructionStanza6,
+        "7" -> instructionStanza7,
+        "8" -> instructionStanza8,
+        "9" -> instructionStanza9,
+        "10" -> instructionStanza10,
+        "11" -> instructionStanza11,
+        "end" -> EndStanza
+      )
+
+      val phrases: Vector[Phrase] = Vector(
+        phrase1,
+        phrase2,
+        phrase3,
+        phrase4,
+        phrase5,
+        phrase6,
+        phrase7,
+        phrase8,
+        phrase9,
+        phrase10,
+        phrase11
+      )
+
+      val process: Process =
+        Process(metaSection, flow, phrases, Vector[Link]())
+
+      pageBuilder.pagesWithValidation(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 13)
+
+          val visualStanzas = pages.head.stanzas.collect { case s: VisualStanza => s }
+          val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
+
+          val instruction1: Instruction = Instruction(instructionStanza1, phrase1, None, Nil)
+          val instruction2: Instruction = Instruction(instructionStanza2, phrase2, None, Nil)
+          val instruction3: Instruction = Instruction(instructionStanza3, phrase3, None, Nil)
+
+          val firstExpectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2, instruction3))
+
+          stanzas.head shouldBe firstExpectedInstructionGroup
+
+          val instruction4: Instruction = Instruction(instructionStanza4, phrase4, None, Nil)
+          val instruction5: Instruction = Instruction(instructionStanza5, phrase5, None, Nil)
+
+          val secondExpectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction4, instruction5))
+
+          stanzas(1) shouldBe secondExpectedInstructionGroup
+
+          val instruction6: Instruction = Instruction(instructionStanza6, phrase6, None, Nil)
+          val instruction7: Instruction = Instruction(instructionStanza7, phrase7, None, Nil)
+          val instruction8: Instruction = Instruction(instructionStanza8, phrase8, None, Nil)
+
+          val thirdExpectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction6, instruction7, instruction8))
+
+          stanzas(2) shouldBe thirdExpectedInstructionGroup
+
+          val instruction9: Instruction = Instruction(instructionStanza9, phrase9, None, Nil)
+          val instruction10: Instruction = Instruction(instructionStanza10, phrase10, None, Nil)
+          val instruction11: Instruction = Instruction(instructionStanza11, phrase11, None, Nil)
+
+          val fourthExpectedInstructionGroup: InstructionGroup = InstructionGroup(Seq(instruction9, instruction10, instruction11))
+
+          stanzas.last shouldBe fourthExpectedInstructionGroup
+
+        case Left(err) => fail(s"Flow error $err")
+      }
+    }
+
+    "handle both implicit and explicit phrase matching in note callouts" in {
+
+      val noteCallout1: NoteCallout = NoteCallout(phrase1, Seq("1"), stack = true)
+      val noteCallout2: NoteCallout = NoteCallout(phrase2, Seq("2"), stack = true)
+      val noteCallout3: NoteCallout = NoteCallout(phrase3, Seq("3"), stack = true)
+      val noteCallout4: NoteCallout = NoteCallout(phrase4, Seq("4"), stack = true)
+      val noteCallout5: NoteCallout = NoteCallout(phrase5, Seq("5"), stack = true)
+      val noteCallout6: NoteCallout = NoteCallout(phrase6, Seq("6"), stack = true)
+      val noteCallout7: NoteCallout = NoteCallout(phrase7, Seq("7"), stack = true)
+      val noteCallout8: NoteCallout = NoteCallout(phrase8, Seq("8"), stack = true)
+      val noteCallout9: NoteCallout = NoteCallout(phrase9, Seq("9"), stack = true)
+      val noteCallout10: NoteCallout = NoteCallout(phrase10, Seq("10"), stack = true)
+      val noteCallout11: NoteCallout = NoteCallout(phrase11, Seq("11"), stack = true)
+
+      val notCalloutSeq: Seq[NoteCallout] = Seq(
+        noteCallout1,
+        noteCallout2,
+        noteCallout3,
+        noteCallout4,
+        noteCallout5,
+        noteCallout6,
+        noteCallout7,
+        noteCallout8,
+        noteCallout9,
+        noteCallout10,
+        noteCallout11
+      )
+
+      val groupedPhrases: Seq[Seq[Phrase]] = BulletPointBuilder.groupBulletPointNoteCalloutPhrases(Nil)(notCalloutSeq)
+
+      groupedPhrases.size shouldBe 4
+
+      groupedPhrases.head shouldBe Seq(phrase1, phrase2, phrase3)
+      groupedPhrases(1) shouldBe Seq(phrase4, phrase5)
+      groupedPhrases(2) shouldBe Seq(phrase6, phrase7, phrase8)
+      groupedPhrases.last shouldBe Seq(phrase9, phrase10, phrase11)
+
+    }
+
+    "not group two phrases that match implicitly, but the english components of the phrases contain the explicit break marker" in {
+
+      val instructionStanza1: InstructionStanza = InstructionStanza(0, Seq("2"), None, stack = false)
+      val instructionStanza2: InstructionStanza = InstructionStanza(1, Seq("end"), None, stack = true)
+
+      val flow = Map(
+        Process.StartStanzaId -> PageStanza("/start", Seq("1"), stack = false),
+        "1" -> instructionStanza1,
+        "2" -> instructionStanza2,
+        "end" -> EndStanza
+      )
+
+      val phrases: Vector[Phrase] = Vector(
+        phrase12,
+        phrase13
+      )
+
+      val process: Process =
+        Process(metaSection, flow, phrases, Vector[Link]())
+
+      pageBuilder.pagesWithValidation(process) match {
+
+        case Right(pages) =>
+
+          assert(pages.head.stanzas.size == 4)
+
+          val visualStanzas = pages.head.stanzas.collect { case s: VisualStanza => s }
+          val stanzas: Seq[VisualStanza] = BulletPointBuilder.groupBulletPointInstructions(Nil)(visualStanzas)
+
+          stanzas.size shouldBe 2
+
+          val expectedInstruction1: Instruction = Instruction(instructionStanza1, phrase12, None, Nil)
+          val expectedInstruction2: Instruction = Instruction(instructionStanza2, phrase13, None, Nil)
+
+          stanzas.head shouldBe expectedInstruction1
+          stanzas.last shouldBe expectedInstruction2
 
         case Left(err) => fail(s"Flow error $err")
       }

@@ -26,7 +26,9 @@ import scala.annotation.tailrec
 object BulletPointBuilder {
 
   val notSpaceRegex: Regex = """([^ ]+)""".r
-  val matchLimit: Int = 3
+  val matchLimitEnglish: Int = 3
+  val matchLimitWelsh: Int = 1
+  val explicitBreak: String = "[break]"
 
   @tailrec
   def groupBulletPointInstructions(acc: Seq[VisualStanza])(inputSeq: Seq[VisualStanza]): Seq[VisualStanza] =
@@ -330,11 +332,52 @@ object BulletPointBuilder {
   }
 
   def matchPhrases(p1: Phrase, p2: Phrase): Boolean = {
-    // Apply matching logic to English text as this is how Ocelot works currently
-    val (p1NoOfWordsToDisplay, p2NoOfWordsToDisplay, matchedWords) = matchInstructionText(p1.english, p2.english)
 
-    // Matching instructions must have matching leading text followed dissimilar trailing text
-    matchedWords.size >= matchLimit && (matchedWords.size < p1NoOfWordsToDisplay) && (matchedWords.size < p2NoOfWordsToDisplay)
+    if(useExplicitMatch(p1, p2)) {
+      explicitMatchPhrases(p1, p2)
+    } else {
+      implicitMatchPhrases(p1, p2)
+    }
+
+  }
+
+  def useExplicitMatch(p1: Phrase, p2: Phrase): Boolean = {
+    // If any text component of the two phrases contains the explicit break marker apply explicit matching
+    (p1.english.contains(explicitBreak) || p1.welsh.contains(explicitBreak)) ||
+      (p2.english.contains(explicitBreak) || p2.welsh.contains(explicitBreak))
+  }
+
+  def implicitMatchPhrases(p1: Phrase, p2: Phrase): Boolean = {
+
+    def implicitMatch(text1: String, text2: String, matchLimit: Int): Boolean = {
+
+      val (p1NoOfWordsToDisplay, p2NoOfWordsToDisplay, matchedWords) = matchInstructionText(text1, text2)
+
+      // Matching instructions must have matching leading text followed dissimilar trailing text
+      matchedWords.size >= matchLimit && (matchedWords.size < p1NoOfWordsToDisplay) && (matchedWords.size < p2NoOfWordsToDisplay)
+
+    }
+
+    implicitMatch(p1.english, p2.english, matchLimitEnglish) && implicitMatch(p1.welsh, p2.welsh, matchLimitWelsh)
+  }
+
+  def explicitMatchPhrases(p1: Phrase, p2: Phrase): Boolean = {
+
+    def explicitMatch(text1: String, text2: String): Boolean = {
+
+      (text1, text2) match {
+        case (txt1, txt2) if txt1 == txt2 => false
+        case (txt1, txt2) =>
+          (txt1.indexOf(explicitBreak), txt2.indexOf(explicitBreak)) match {
+            case (index1, index2) if (index1 == index2) && index1 > 0 && index2 > 0 =>
+              txt1.substring(0, index1) == txt2.substring(0, index2)
+            case _ => false
+          }
+      }
+
+    }
+
+    explicitMatch(p1.english, p2.english) && explicitMatch(p1.welsh, p2.welsh)
   }
 
   private def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
