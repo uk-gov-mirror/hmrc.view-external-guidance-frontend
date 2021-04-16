@@ -61,14 +61,14 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
-
+    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
     val four: Int = 4
   }
 
   "UIBulider Question processing" must {
 
     "Ignore Error Callouts when there are no errors" in new QuestionTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, NoError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case s: FormPage => fail("No error messages should be included on page")
         case _ => fail("Should return FormPage")
@@ -77,7 +77,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     "Include Error messages when there are errors" in new QuestionTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => succeed
         case _ => fail("Should return FormPage")
@@ -105,7 +105,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a question hint appended to the question text" in new QuestionTest {
-      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageWithQuestionHint.url, pageWithQuestionHint.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.hint == Some(Text(questionHintString)) => succeed
         case s: FormPage => fail("No hint found within Question")
         case _ => fail("Should return FormPage")
@@ -287,7 +287,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
-
+    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
     val four: Int = 4
     val five: Int = 5
   }
@@ -884,7 +884,8 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
-      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)(extraIncomeUrlMap, lang, labels)
+      implicit override val ctx: UIBuildData = UIBuildData(labels, lang, extraIncomeUrlMap)
+      val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)
       val leadingTextItems: Text = Text("You've received income that you have not yet paid tax on from:")
       val bulletPointOne: Text = Text("a business you own or control (such as a partnership or limited company)")
       val bulletPointTwo: Text = Text("a business a relative owns or controls")
@@ -971,14 +972,14 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
-
+    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
     val four: Int = 4
   }
 
   "UIBuilder TextInput Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -987,7 +988,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}, ValueMissingError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1011,7 +1012,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageText.url, pageText.stanzas.collect{case s: VisualStanza => s}) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1022,7 +1023,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   "UIBuilder NumberInput Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1031,7 +1032,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}, ValueMissingError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1055,7 +1056,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pageNumber.url, pageNumber.stanzas.collect{case s: VisualStanza => s}) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1066,7 +1067,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
   "UIBuilder Currency Input processing" must {
 
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1075,7 +1076,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     "Include Error messages when there are errors" in new InputTest {
 
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}, ValueMissingError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1099,7 +1100,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(page.url, page.stanzas.collect{case s: VisualStanza => s}) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1109,7 +1110,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
   "UIBuilder CurrencyPoundsOnly Input processing" must {
     "Ignore Error Callouts when there are no errors" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1117,7 +1118,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include Error messages when there are errors" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, ValueMissingError)(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}, ValueMissingError) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case _: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1142,7 +1143,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a page hint appended to the input text" in new InputTest {
-      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(pagePoundsOnly.url, pagePoundsOnly.stanzas.collect{case s: VisualStanza => s}) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1160,6 +1161,8 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         "6" -> "dummy-path/anotherinput",
         "34" -> "dummy-path/next"
       )
+
+    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
 
     val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh: Confirmation"))
     val confirmationPanelAdditionalText1Phrase: Phrase =  Phrase(Vector("Additional line 1", "Welsh: Additional line 1"))
@@ -1393,10 +1396,12 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val dateInput = DateInput(inputNext, inputPhrase, Some(helpPhrase), label ="input1", None, stack = false)
       val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
       val uiBuilder: UIBuilder = new UIBuilder()
+
+      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
     }
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => succeed
         case _: FormPage => fail("No error messages should be included on page")
         case x => fail(s"Should return FormPage: found $x")
@@ -1404,7 +1409,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include correct Error messages when all fields missing" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(Nil))(urlMap, lang, labels) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(Nil)) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => succeed
         case x => fail(s"Should return FormPage: found $x")
@@ -1412,7 +1417,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include correct Error message for one missing field" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Year")))(urlMap, lang, labels) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Year"))) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Some Error Text Year")))
         case x => fail(s"Should return FormPage: found $x")
@@ -1420,7 +1425,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include correct Error message for two missing fields" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Day", "Year")))(urlMap, lang, labels) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}, ValueMissingGroupError(List("Day", "Year"))) match {
         case s: FormPage if s.formComponent.errorMsgs.isEmpty => fail("No error messages found on page")
         case s: FormPage => s.formComponent.errorMsgs.headOption shouldBe Some(RequiredErrorMsg(Text("Some Error Text Day and Year")))
         case x => fail(s"Should return FormPage: found $x")
@@ -1444,7 +1449,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     }
 
     "Include a page hint appended to the input text" in new DateInputTest {
-      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s})(urlMap, lang, labels) match {
+      uiBuilder.buildPage(datePage.url, datePage.stanzas.collect{case s: VisualStanza => s}) match {
         case i: FormPage if i.formComponent.hint == Some(Text("Help text")) => succeed
         case _: FormPage => fail("No hint found within Input")
         case x => fail(s"Should return FormPage: found $x")
@@ -1750,7 +1755,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequenceWithHint), Seq.empty)
-
+      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 
@@ -1759,7 +1764,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val uiPage: models.ui.Page = uiBuilder.buildPage(
         page.url,
         page.stanzas.collect{case s: VisualStanza => s}
-      )(urlMap, lang, labels)
+      )
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.isEmpty) =>
@@ -1791,7 +1796,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         pageWithHint.url,
         pageWithHint.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang, labels)
+      )
 
       uiPageWithHint match {
         case f: FormPage =>
@@ -1815,7 +1820,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         page.url,
         page.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang, labels)
+      )
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.nonEmpty) =>
@@ -1896,7 +1901,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequenceWithHint), Seq.empty)
-
+      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 
@@ -1905,7 +1910,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val uiPage: models.ui.Page = uiBuilder.buildPage(
         page.url,
         page.stanzas.collect{case s: VisualStanza => s}
-      )(urlMap, lang, labels)
+      )
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.isEmpty) =>
@@ -1938,7 +1943,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         pageWithHint.url,
         pageWithHint.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang, labels)
+      )
 
       uiPageWithHint match {
         case f: FormPage =>
@@ -1962,7 +1967,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         page.url,
         page.stanzas.collect{case s: VisualStanza => s},
         ValueMissingError
-      )(urlMap, lang, labels)
+      )
 
       uiPage match {
         case f: FormPage if(f.formComponent.errorMsgs.nonEmpty) =>

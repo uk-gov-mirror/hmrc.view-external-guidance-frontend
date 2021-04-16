@@ -120,7 +120,7 @@ class GuidanceService @Inject() (
 
   def getPageContext(pec: PageEvaluationContext, errStrategy: ErrorStrategy = NoError)(implicit lang: Lang): PageContext = {
     val (visualStanzas, labels, dataInput) = pageRenderer.renderPage(pec.page, pec.labels)
-    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(pec.stanzaIdToUrlMap, lang, labels)
+    val uiPage = uiBuilder.buildPage(pec.page.url, visualStanzas, errStrategy)(UIBuildData(labels, lang, pec.stanzaIdToUrlMap))
     PageContext(pec.copy(dataInput = dataInput), uiPage, labels)
   }
 
@@ -128,7 +128,7 @@ class GuidanceService @Inject() (
                     (implicit context: ExecutionContext, lang: Lang): Future[RequestOutcome[PageContext]] =
     getPageEvaluationContext(processCode, url, previousPageByLink, sessionId).map{
       case Right(ctx) =>
-        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(ctx.stanzaIdToUrlMap, lang, ctx.labels)))
+        Right(PageContext(ctx, uiBuilder.buildPage(ctx.page.url, ctx.visualStanzas)(UIBuildData(ctx.labels, lang, ctx.stanzaIdToUrlMap))))
       case Left(err) => Left(err)
     }
 
