@@ -1153,13 +1153,9 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       lazy val result = target.getPage(processId, path, None)(fakeRequest)
     }
 
-    "return a bad request response" in new Test {
+    "return a reidrect response" in new Test {
 
-      status(result) shouldBe Status.BAD_REQUEST
-    }
-
-    "be a HTML response" in new Test {
-      contentType(result) shouldBe Some("text/html")
+      status(result) shouldBe Status.SEE_OTHER
     }
 
   }
