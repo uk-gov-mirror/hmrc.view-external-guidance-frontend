@@ -16,9 +16,6 @@
 
 package models.ui
 
-import core.models.ocelot.dateFormatter
-import java.time.LocalDate
-
 sealed trait Input extends FormComponent
 
 case class NumberInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
@@ -26,10 +23,3 @@ case class TextInput(text: Text, hint: Option[Text], body: Seq[UIComponent], err
 case class CurrencyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class CurrencyPoundsOnlyInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
 case class DateInput(text: Text, hint: Option[Text], body: Seq[UIComponent], errorMsgs: Seq[ErrorMsg] = Nil) extends Input
-
-object DateInput {
-  def partitionSubmittedDateAnswer(submittedDateAnswer: String): (String, String, String) = {
-    val submittedDate: LocalDate = LocalDate.parse(submittedDateAnswer, dateFormatter)
-    (submittedDate.getDayOfMonth.toString, submittedDate.getMonthValue.toString, submittedDate.getYear.toString)
-  }
-}
