@@ -1661,6 +1661,22 @@ class CalculationStanzaSpec extends BaseSpec {
       updatedLabels.valueAsList("result6") shouldBe Some(Nil)
     }
 
+    "evaluate addition of the lengths of two lists" in {
+
+      val list1: ListLabel = ListLabel("list1", List("one", "two", "three", "four", "five"))
+      val list2: ListLabel = ListLabel("list2", List("six", "seven", "eight"))
+      val labelMap: Map[String, Label] = Map(list1.name -> list1, list2.name -> list2)
+      val labelCache: Labels = LabelCache(labelMap)
+
+      val calcOperations: Seq[CalcOperation] = Seq(CalcOperation("[list:list1:length]", Addition, "[list:list2:length]", "result"))
+
+      val calculation: Calculation = createCalculation(calcOperations, Seq("4"))
+
+      val (_, updatedLabels) = calculation.eval(labelCache)
+
+      updatedLabels.value("result") shouldBe Some("8")
+    }
+
   }
 
   trait ListTest extends Test {

@@ -43,7 +43,14 @@ class EnglishTextBuilderSpec extends BaseSpec {
     )
 
     val brokenLinkPhrase = Phrase(Vector("Hello [link:Blah Blah:htts://www.bbc.co.uk]", "Welsh: Hello [link:Blah Blah:htts://www.bbc.co.uk]"))
-    implicit val stanzaIdToUrlMap: Map[String, String] = Map()
+    val labelsMap = Map(
+      "X"->ScalarLabel("X", List("33.5")),
+      "Y"->ScalarLabel("Y"),
+      "Name" -> ScalarLabel("Name", List("Coltrane")),
+      "Colours" -> ListLabel("Colours", List("Red", "Green", "Blue"))
+    )
+
+    implicit val ctx: UIContext = UIContext(LabelCache(labelsMap), lang, urlMap1)
 
     val answerWithNoHint = Phrase("Yes", "Welsh: Yes")
     val answerWithHint = Phrase("Yes[hint:You agree with the assertion]", "Welsh: Yes[hint:Welsh: You agree with the assertion]")
@@ -86,14 +93,20 @@ class EnglishTextBuilderSpec extends BaseSpec {
 
     "Convert button link placeholders within phrase to Link as button TextItems" in new Test {
       val p = Phrase("""Sentence with a [button:BLAH:3] label reference""", """Welsh: Sentence with a [button:BLAH:3] label reference""")
-      TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
-      TextBuilder.fromPhraseWithOptionalHint(p)(urlMap1, lang)._1.items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
+      TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", false, true), Words(" label reference"))
     }
 
     "Convert button link in tab placeholders within phrase to Link as button TextItems" in new Test {
       val p = Phrase("""Sentence with a [button-tab:BLAH:3] label reference""", """Welsh: Sentence with a [button-tab:BLAH:3] label reference""")
-      TextBuilder.fromPhrase(p)(urlMap1, lang).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
-      TextBuilder.fromPhraseWithOptionalHint(p)(urlMap1, lang)._1.items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
+      TextBuilder.fromPhrase(p).items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("Sentence with a "), Link("dummy-path", "BLAH", true, true), Words(" label reference"))
+    }
+
+    "Convert [list:<label>:length] placeholders within phrase to Words TextItems containing the list label length" in new Test {
+      val p = Phrase("""The number of colours is [list:Colours:length]""", """Welsh: The number of colours is [list:Colours:length]""")
+      TextBuilder.fromPhrase(p).items shouldBe Seq(Words("The number of colours is "), Words("3"))
+      TextBuilder.fromPhraseWithOptionalHint(p)._1.items shouldBe Seq(Words("The number of colours is "), Words("3"))
     }
 
     "Convert a Text with link placeholders in lang strings to Seq[TextItem]" in new Test {
@@ -113,11 +126,11 @@ class EnglishTextBuilderSpec extends BaseSpec {
     }
 
     "leave syntactically incorrect link placeholders as text within a phrase" in new Test {
-      val txt: Text = TextBuilder.fromPhrase(brokenLinkPhrase)(urlMap1, lang)
+      val txt: Text = TextBuilder.fromPhrase(brokenLinkPhrase)
       txt.items.length shouldBe 1
       txt.items(0) shouldBe Words("Hello [link:Blah Blah:htts://www.bbc.co.uk]")
 
-      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(brokenLinkPhrase)(urlMap1, lang)._1
+      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(brokenLinkPhrase)._1
       altTxt.items.length shouldBe 1
       altTxt.items(0) shouldBe Words("Hello [link:Blah Blah:htts://www.bbc.co.uk]")
 
@@ -126,7 +139,7 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "convert syntactically correct link placeholders into Link objects" in new Test {
       val linkPhrase = Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]",
                               "Welsh: Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5]")
-      val txt: Text = TextBuilder.fromPhrase(linkPhrase)(urlMap1, lang)
+      val txt: Text = TextBuilder.fromPhrase(linkPhrase)
 
       txt.items.length shouldBe 4
       txt.items(0) shouldBe Words("Hello ")
@@ -134,7 +147,7 @@ class EnglishTextBuilderSpec extends BaseSpec {
       txt.items(2) shouldBe Words(" ")
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah")
 
-      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)(urlMap1, lang)._1
+      val altTxt: Text = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)._1
 
       altTxt.items.length shouldBe 4
       altTxt.items(0) shouldBe Words("Hello ")
@@ -147,14 +160,14 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert all link placeholders into appropriate Link objects" in new Test {
       val linkPhrase = Phrase("Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5] [link:Blah Blah:start]",
                               "Welsh: Hello [link:Blah Blah:https://www.bbc.co.uk] [link:Blah Blah:5] [link:Blah Blah:start]")
-      val txt = TextBuilder.fromPhrase(linkPhrase)(urlMap1, lang)
+      val txt = TextBuilder.fromPhrase(linkPhrase)
 
       txt.items.length shouldBe 6
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
 
-      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)(urlMap1, lang)._1
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkPhrase)._1
 
       altTxt.items.length shouldBe 6
       altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
@@ -165,14 +178,14 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert all link-same placeholders into appropriate Link objects" in new Test {
       val linkSamePhrase = Phrase("Hello [link-same:Blah Blah:https://www.bbc.co.uk] [link-same:Blah Blah:5] [link-same:Blah Blah:start]",
                                   "Welsh: Hello [link-same:Blah Blah:https://www.bbc.co.uk] [link-same:Blah Blah:5] [link-same:Blah Blah:start]")
-      val txt = TextBuilder.fromPhrase(linkSamePhrase)(urlMap1, lang)
+      val txt = TextBuilder.fromPhrase(linkSamePhrase)
 
       txt.items.length shouldBe 6
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", false)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", false)
 
-      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkSamePhrase)(urlMap1, lang)._1
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkSamePhrase)._1
 
       altTxt.items.length shouldBe 6
       altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", false)
@@ -183,14 +196,14 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert all link-tab placeholders into appropriate Link objects" in new Test {
       val linkTabPhrase = Phrase("Hello [link-tab:Blah Blah:https://www.bbc.co.uk] [link-tab:Blah Blah:5] [link-tab:Blah Blah:start]",
                                  "Welsh: Hello [link-tab:Blah Blah:https://www.bbc.co.uk] [link-tab:Blah Blah:5] [link-tab:Blah Blah:start]")
-      val txt = TextBuilder.fromPhrase(linkTabPhrase)(urlMap1, lang)
+      val txt = TextBuilder.fromPhrase(linkTabPhrase)
 
       txt.items.length shouldBe 6
       txt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", true)
       txt.items(3) shouldBe Link("dummy-path/blah", "Blah Blah", true)
       txt.items(5) shouldBe Link("dummy-path/start", "Blah Blah", true)
 
-      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkTabPhrase)(urlMap1, lang)._1
+      val altTxt = TextBuilder.fromPhraseWithOptionalHint(linkTabPhrase)._1
 
       altTxt.items.length shouldBe 6
       altTxt.items(1) shouldBe Link("https://www.bbc.co.uk", "Blah Blah", true)
@@ -208,7 +221,9 @@ class EnglishTextBuilderSpec extends BaseSpec {
   "TextBuilder expandLabels" must {
     val labelsMap = Map(
       "BLAH"->ScalarLabel("BLAH", List("33.5")),
-      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")))
+      "SomeDate"->ScalarLabel("SomeDate", List("22/9/1973")),
+      "SomeList" -> ListLabel("SomeList", List("x", "y", "z"))
+    )
     val labels = LabelCache(labelsMap)
 
     "Convert label reference with default output format placeholders within phrase" in new Test {
@@ -238,6 +253,12 @@ class EnglishTextBuilderSpec extends BaseSpec {
     "Convert a label placeholder with currency output format within a bold placeholder" in new Test {
       val phrase = Phrase("""Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""", """Welsh: Sentence with a [bold:[label:BLAH:currencyPoundsOnly]] label reference""")
       val expectedPhrase = Phrase("""Sentence with a [bold:£33] label reference""", """Welsh: Sentence with a [bold:£33] label reference""")
+      TextBuilder.expandLabels(phrase, labels) shouldBe expectedPhrase
+    }
+
+    "Convert a list length placeholder " in new Test {
+      val phrase = Phrase("""SomeList has length [list:SomeList:length]""", """Welsh: SomeList has length [list:SomeList:length]""")
+      val expectedPhrase = Phrase("""SomeList has length 3""", """Welsh: SomeList has length 3""")
       TextBuilder.expandLabels(phrase, labels) shouldBe expectedPhrase
     }
 

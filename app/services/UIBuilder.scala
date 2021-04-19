@@ -29,6 +29,8 @@ import play.api.Logger
 import play.api.i18n.Lang
 import scala.annotation.tailrec
 
+case class UIContext(labels: Labels, lang: Lang, stanzaIdToUrlMap: Map[String, String])
+
 sealed trait ErrorStrategy {
   def default(stanzas: Seq[VisualStanza]): ErrorStrategy = this
 }
@@ -46,24 +48,22 @@ case object ValueTypeError extends ErrorStrategy {
 class UIBuilder {
   val logger: Logger = Logger(getClass)
 
-  def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy = NoError)
-               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang, labels: Labels): Page = {
+  def buildPage(url: String, stanzas: Seq[VisualStanza], errStrategy: ErrorStrategy = NoError)(implicit ctx: UIContext): Page = {
     val stanzaTransformPipeline: List[Seq[VisualStanza] => Seq[VisualStanza]] =
       List(expandLabelReferences(Nil), BulletPointBuilder.groupBulletPointInstructions(Nil), Aggregator.aggregateStanzas(Nil), stackStanzas(Nil))
     Page(url, fromStanzas(stanzaTransformPipeline.foldLeft(stanzas){case (s, t) => t(s)}, Nil, errStrategy.default(stanzas)))
   }
 
-  private def expandLabelReferences(acc: List[VisualStanza])(stanzas: Seq[VisualStanza])(implicit labels: Labels, lang: Lang): Seq[VisualStanza] =
+  private def expandLabelReferences(acc: List[VisualStanza])(stanzas: Seq[VisualStanza])(implicit ctx: UIContext): Seq[VisualStanza] =
     stanzas match {
       case Nil => acc.reverse
-      case (i: Instruction) +: xs => expandLabelReferences(i.copy(text = TextBuilder.expandLabels(i.text, labels)) :: acc)(xs)
-      case (n: NoteCallout) +: xs => expandLabelReferences(n.copy(text = TextBuilder.expandLabels(n.text, labels)) :: acc)(xs)
+      case (i: Instruction) +: xs => expandLabelReferences(i.copy(text = TextBuilder.expandLabels(i.text, ctx.labels)) :: acc)(xs)
+      case (n: NoteCallout) +: xs => expandLabelReferences(n.copy(text = TextBuilder.expandLabels(n.text, ctx.labels)) :: acc)(xs)
       case s +: xs => expandLabelReferences(s :: acc)(xs)
     }
 
   @tailrec
-  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], errStrategy: ErrorStrategy)
-                 (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[UIComponent] =
+  private def fromStanzas(stanzas: Seq[VisualStanza], acc: Seq[UIComponent], errStrategy: ErrorStrategy)(implicit ctx: UIContext): Seq[UIComponent] =
     stanzas match {
       case Nil => acc
       case (sg: StackedGroup) :: xs => fromStanzas(xs, acc ++ fromStackedGroup(sg, errStrategy), errStrategy)
@@ -87,7 +87,7 @@ class UIBuilder {
         fromStanzas(xs, acc, errStrategy)
     }
 
-  private def fromStackedGroup(sg: StackedGroup, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[UIComponent] =
+  private def fromStackedGroup(sg: StackedGroup, errStrategy: ErrorStrategy)(implicit ctx: UIContext): Seq[UIComponent] =
     sg.group match {
       case (c: SubSectionCallout) :: (rg: RowGroup) :: xs if rg.isTableCandidate =>
         fromStanzas(stackStanzas(Nil)(xs), Seq(fromTableRowGroup(TextBuilder.fromPhrase(c.text), rg)), errStrategy)
@@ -99,32 +99,32 @@ class UIBuilder {
         fromStanzas(x +: stackStanzas(Nil)(xs), Nil, errStrategy)
     }
 
-  private def fromCYASummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromCYASummaryListRowGroup(rg: RowGroup)(implicit ctx: UIContext): UIComponent =
     CyaSummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
 
-  private def fromNameValueSummaryListRowGroup(rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromNameValueSummaryListRowGroup(rg: RowGroup)(implicit ctx: UIContext): UIComponent =
     NameValueSummaryList(rg.paddedRows.map(row => row.map(phrase => TextBuilder.fromPhrase(phrase))))
 
-  private def fromTableRowGroup(caption: Text, rg: RowGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromTableRowGroup(caption: Text, rg: RowGroup)(implicit ctx: UIContext): UIComponent = {
     val tableRows: Seq[Seq[Text]] = rg.paddedRows.map(r => r.map(phrase => TextBuilder.fromPhrase(phrase)))
     Table(caption, tableRows.head, tableRows.tail)
   }
 
-  private def fromNumberedList(nl: NumberedList)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromNumberedList(nl: NumberedList)(implicit ctx: UIContext): UIComponent =
     ui.NumberedList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
-  private def fromNumberedCircleList(nl: NumberedCircleList)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromNumberedCircleList(nl: NumberedCircleList)(implicit ctx: UIContext): UIComponent =
     ui.NumberedCircleList(nl.group.map(co => TextBuilder.fromPhrase(co.text)))
 
-  private def fromInstruction( i:Instruction)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromInstruction( i:Instruction)(implicit ctx: UIContext): UIComponent =
     i match {
       case Instruction(txt, _, Some(Link(id, dest, _, window)), _, _) if Link.isLinkableStanzaId(dest) =>
-        Paragraph(Text.link(stanzaIdToUrlMap(dest), txt.value(lang), window))
-      case Instruction(txt, _, Some(Link(id, dest, _, window)), _, _) => Paragraph(Text.link(dest, txt.value(lang), window))
+        Paragraph(Text.link(ctx.stanzaIdToUrlMap(dest), txt.value(ctx.lang), window))
+      case Instruction(txt, _, Some(Link(id, dest, _, window)), _, _) => Paragraph(Text.link(dest, txt.value(ctx.lang), window))
       case Instruction(txt, _, _, _, _) => Paragraph(TextBuilder.fromPhrase(txt))
     }
 
-  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromQuestion(q: Question, components: Seq[UIComponent])(implicit ctx: UIContext): UIComponent = {
     val answers = q.answers.map { ans =>
       val (answer, hint) = TextBuilder.fromPhraseWithOptionalHint(ans)
       Answer(answer, hint)
@@ -135,7 +135,7 @@ class UIBuilder {
     ui.Question(question, hint, uiElements, answers, errorMsgs)
   }
 
-  private def fromCallout(co: Callout, errStrategy: ErrorStrategy)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[UIComponent] =
+  private def fromCallout(co: Callout, errStrategy: ErrorStrategy)(implicit ctx: UIContext): Seq[UIComponent] =
     co match {
       case c: TitleCallout => Seq(H1(TextBuilder.fromPhrase(c.text)))
       case c: SubTitleCallout => Seq(H2(TextBuilder.fromPhrase(c.text)))
@@ -153,7 +153,7 @@ class UIBuilder {
       case _: NumberedCircleListItemCallout => Seq.empty        // Unused
     }
 
-  private def fromInstructionGroup(insGroup: InstructionGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromInstructionGroup(insGroup: InstructionGroup)(implicit ctx: UIContext): UIComponent = {
 
     val phraseGroup: Seq[Phrase] = insGroup.group.map(_.text)
 
@@ -162,8 +162,7 @@ class UIBuilder {
     BulletPointList(bulletPointComponents.head, bulletPointComponents.tail)
   }
 
-  private def fromInput(input: Input, components: Seq[UIComponent])
-                       (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromInput(input: Input, components: Seq[UIComponent])(implicit ctx: UIContext): UIComponent = {
     // Split out an Error callouts from body components
     val (errorMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
     val name = TextBuilder.fromPhrase(input.name)
@@ -185,33 +184,34 @@ class UIBuilder {
       case x :: xs => partitionComponents(xs, errors, x +: others)
     }
 
-  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit lang: Lang): Seq[UIComponent] =
+  private def fromRequiredErrorGroup(eg: RequiredErrorGroup, errStrategy: ErrorStrategy)(implicit ctx: UIContext): Seq[UIComponent] =
     errStrategy match {
       case ValueMissingGroupError(Nil) =>
-        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == 0).fold[Seq[UIComponent]](Nil){errorCallout =>
-          Seq(RequiredErrorMsg(errorCallout.text))
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(ctx.lang)).length == 0).fold[Seq[UIComponent]](Nil){errorCallout =>
+          Seq(RequiredErrorMsg(Text(errorCallout.text.value(ctx.lang))))
         }
       case e: ValueMissingGroupError =>
-        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(lang)).length == e.missingFieldNames.length).fold[Seq[UIComponent]](Nil){errorCallout =>
-          Seq(RequiredErrorMsg(Text(EmbeddedParameterRegex.replaceSomeIn(errorCallout.text.value(lang), { m =>
-            Option(m.group(1)).map(_.toInt).fold[Option[String]](None)(idx => e.missingFieldNames.lift(idx))
-          }))))
-        }
+        eg.group.find(co => EmbeddedParameterRegex.findAllMatchIn(co.text.value(ctx.lang)).length == e.missingFieldNames.length)
+                .fold[Seq[UIComponent]](Nil){errorCallout =>
+                  Seq(RequiredErrorMsg(Text(EmbeddedParameterRegex.replaceSomeIn(errorCallout.text.value(ctx.lang), { m =>
+                    Option(m.group(1)).map(_.toInt).fold[Option[String]](None)(idx => e.missingFieldNames.lift(idx))
+                  }))))
+                }
       case _ => Nil
     }
 
-  private def fromNoteGroup(ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromNoteGroup(ng: NoteGroup)(implicit ctx: UIContext): UIComponent =
     InsetText(ng.group.map(co => TextBuilder.fromPhrase(co.text)))
 
-  private def fromImportantGroup(wt: ImportantGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromImportantGroup(wt: ImportantGroup)(implicit ctx: UIContext): UIComponent =
     WarningText(wt.group.map(wc => TextBuilder.fromPhrase(wc.text)))
 
-  private def fromYourCallGroup(ycg: YourCallGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromYourCallGroup(ycg: YourCallGroup)(implicit ctx: UIContext): UIComponent = {
     val texts: Seq[Text] = ycg.group.map(c => TextBuilder.fromPhrase(c.text))
     ConfirmationPanel(texts.head, texts.tail)
   }
 
-  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromSectionAndNoteGroup(caption: Text, ng: NoteGroup)(implicit ctx: UIContext): UIComponent = {
 
     val noteCallouts: Seq[Seq[Phrase]] = BulletPointBuilder.groupBulletPointNoteCalloutPhrases(Nil)(ng.group)
 
@@ -226,11 +226,10 @@ class UIBuilder {
     }
   }
 
-  private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent =
+  private def fromSectionAndNoteCallout(caption: Text, nc: NoteCallout)(implicit ctx: UIContext): UIComponent =
     Details(caption, Seq(TextBuilder.fromPhrase(nc.text)))
 
-  private def fromNonExclusiveSequence(nonExclusiveSequence: NonExclusiveSequence, components: Seq[UIComponent])
-                          (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromNonExclusiveSequence(nonExclusiveSequence: NonExclusiveSequence, components: Seq[UIComponent])(implicit ctx: UIContext): UIComponent = {
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
 
     val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(nonExclusiveSequence.text)
@@ -239,11 +238,9 @@ class UIBuilder {
     ui.NonExclusiveSequence(text, hint, options, uiElements, errMsgs)
   }
 
-  private def fromExclusiveSequence(exclusiveSequence: ExclusiveSequence, components: Seq[UIComponent])
-                                   (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): UIComponent = {
+  private def fromExclusiveSequence(exclusiveSequence: ExclusiveSequence, components: Seq[UIComponent])(implicit ctx: UIContext): UIComponent = {
 
     val (errMsgs, uiElements) = partitionComponents(components, Seq.empty, Seq.empty)
-
     val (text, hint) = TextBuilder.fromPhraseWithOptionalHint(exclusiveSequence.text)
     val options: Seq[Text] = exclusiveSequence.nonExclusiveOptions.map{phrase => TextBuilder.fromPhrase(phrase)}
 
@@ -255,9 +252,7 @@ class UIBuilder {
     ui.ExclusiveSequence(text, hint, options, TextBuilder.fromPhrase(exclusiveOptionPhrase), uiElements, errMsgs)
   }
 
-  private def createBulletPointListComponents(phraseGroup: Seq[Phrase])
-                                    (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] =
-
+  private def createBulletPointListComponents(phraseGroup: Seq[Phrase])(implicit ctx: UIContext): Seq[Text] =
     if(phraseGroup.head.english.contains(ExplicitBreak)) {
       createBulletPointListComponentsFromExplicitlyMatchedGroup(phraseGroup)
     } else {
@@ -265,8 +260,7 @@ class UIBuilder {
     }
 
 
-  def createBulletPointListComponentsFromExplicitlyMatchedGroup(phraseGroup: Seq[Phrase])
-                                                               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+  def createBulletPointListComponentsFromExplicitlyMatchedGroup(phraseGroup: Seq[Phrase])(implicit ctx: UIContext): Seq[Text] = {
 
     val leadingEn: String = phraseGroup.head.english.substring(0, phraseGroup.head.english.indexOf(ExplicitBreak))
     val leadingCy: String = phraseGroup.head.welsh.substring(0, phraseGroup.head.welsh.indexOf(ExplicitBreak))
@@ -279,8 +273,7 @@ class UIBuilder {
     TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)) +: bulletPointListItems
   }
 
-  def createBulletPointListComponentsFromImplicitlyMatchedGroup(phraseGroup: Seq[Phrase])
-                                                               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+  def createBulletPointListComponentsFromImplicitlyMatchedGroup(phraseGroup: Seq[Phrase])(implicit ctx: UIContext): Seq[Text] = {
 
     val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english)
     val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh)
@@ -290,14 +283,11 @@ class UIBuilder {
     TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)) +: bulletPointListItems
   }
 
-  def createBulletPointItems(leadingEnLength: Int, leadingCyLength: Int, items: Seq[Phrase])
-                            (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+  private def createBulletPointItems(leadingEnLength: Int, leadingCyLength: Int, items: Seq[Phrase])(implicit ctx: UIContext): Seq[Text] =
     items.map{phrase =>
       val bulletPointEnglish: String = phrase.english.substring(leadingEnLength, phrase.english.length).trim
       val bulletPointWelsh: String = phrase.welsh.substring(leadingCyLength, phrase.welsh.length).trim
 
       TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
     }
-  }
-
 }
