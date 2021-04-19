@@ -25,10 +25,11 @@ import scala.annotation.tailrec
 
 object BulletPointBuilder {
 
-  val notSpaceRegex: Regex = """([^ ]+)""".r
-  val matchLimitEnglish: Int = 3
-  val matchLimitWelsh: Int = 1
-  val explicitBreak: String = "[break]"
+  val NotSpaceRegex: Regex = """([^ ]+)""".r
+  val MatchLimitEnglish: Int = 3
+  val MatchLimitWelsh: Int = 1
+  val Break: String = "break"
+  val ExplicitBreak: String = "[" + Break + "]"
 
   @tailrec
   def groupBulletPointInstructions(acc: Seq[VisualStanza])(inputSeq: Seq[VisualStanza]): Seq[VisualStanza] =
@@ -288,7 +289,7 @@ object BulletPointBuilder {
     */
   private def extractLeadingMatchedWords(noOfMatchedWords: Int, texts: List[String], textsProcessed: Int, matches: List[Match], matchesProcessed: Int): String = {
 
-    val textElements: List[Match] = notSpaceRegex.findAllMatchIn(texts(textsProcessed)).toList
+    val textElements: List[Match] = NotSpaceRegex.findAllMatchIn(texts(textsProcessed)).toList
 
     matches match {
       case Nil => {
@@ -333,21 +334,19 @@ object BulletPointBuilder {
 
   def matchPhrases(p1: Phrase, p2: Phrase): Boolean = {
 
-    if(useExplicitMatch(p1, p2)) {
-      explicitMatchPhrases(p1, p2)
-    } else {
-      implicitMatchPhrases(p1, p2)
+    def explicitMatch(text1: String, text2: String): Boolean = {
+
+      (text1, text2) match {
+        case (txt1, txt2) if txt1 == txt2 => false
+        case (txt1, txt2) =>
+          (txt1.indexOf(ExplicitBreak), txt2.indexOf(ExplicitBreak)) match {
+            case (index1, index2) if (index1 == index2) && index1 > 0 && index2 > 0 =>
+              txt1.substring(0, index1) == txt2.substring(0, index2)
+            case _ => false
+          }
+      }
+
     }
-
-  }
-
-  def useExplicitMatch(p1: Phrase, p2: Phrase): Boolean = {
-    // If any text component of the two phrases contains the explicit break marker apply explicit matching
-    (p1.english.contains(explicitBreak) || p1.welsh.contains(explicitBreak)) ||
-      (p2.english.contains(explicitBreak) || p2.welsh.contains(explicitBreak))
-  }
-
-  def implicitMatchPhrases(p1: Phrase, p2: Phrase): Boolean = {
 
     def implicitMatch(text1: String, text2: String, matchLimit: Int): Boolean = {
 
@@ -358,27 +357,18 @@ object BulletPointBuilder {
 
     }
 
-    implicitMatch(p1.english, p2.english, matchLimitEnglish) && implicitMatch(p1.welsh, p2.welsh, matchLimitWelsh)
-  }
-
-  def explicitMatchPhrases(p1: Phrase, p2: Phrase): Boolean = {
-
-    def explicitMatch(text1: String, text2: String): Boolean = {
-
-      (text1, text2) match {
-        case (txt1, txt2) if txt1 == txt2 => false
-        case (txt1, txt2) =>
-          (txt1.indexOf(explicitBreak), txt2.indexOf(explicitBreak)) match {
-            case (index1, index2) if (index1 == index2) && index1 > 0 && index2 > 0 =>
-              txt1.substring(0, index1) == txt2.substring(0, index2)
-            case _ => false
-          }
-      }
-
+    if(useExplicitMatch(p1, p2)) {
+      explicitMatch(p1.english, p2.english) && explicitMatch(p1.welsh, p2.welsh)
+    } else {
+      implicitMatch(p1.english, p2.english, MatchLimitEnglish) && implicitMatch(p1.welsh, p2.welsh, MatchLimitWelsh)
     }
 
-    explicitMatch(p1.english, p2.english) && explicitMatch(p1.welsh, p2.welsh)
   }
+
+  def useExplicitMatch(p1: Phrase, p2: Phrase): Boolean =
+    // If any text component of the two phrases contains the explicit break marker apply explicit matching
+    (p1.english.contains(ExplicitBreak) || p1.welsh.contains(ExplicitBreak)) ||
+      (p2.english.contains(ExplicitBreak) || p2.welsh.contains(ExplicitBreak))
 
   private def matchInstructionText(text1: String, text2: String): (Int, Int, Seq[String]) = {
 
@@ -395,7 +385,7 @@ object BulletPointBuilder {
     (text1WordsToDisplay.size, text2WordsToDisplay.size, matchedTextItems)
   }
 
-  private def wordsInString(text: String): Int = notSpaceRegex.findAllMatchIn(text).toList.size
+  private def wordsInString(text: String): Int = NotSpaceRegex.findAllMatchIn(text).toList.size
 
   private def wordsInText(text: String, textsProcessed: Int, matches: List[Match], matchesProcessed: Int): Int = {
 
