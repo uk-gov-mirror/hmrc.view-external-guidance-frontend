@@ -24,6 +24,7 @@ import core.models.ocelot.stanzas.{ExclusiveSequence, NonExclusiveSequence, _}
 import core.models.ocelot.{Labels, Link, Phrase, EmbeddedParameterRegex, exclusiveOptionRegex}
 import models.ui.{Answer, BulletPointList, ComplexDetails, ConfirmationPanel, CyaSummaryList, Details, ErrorMsg, H1, H2, H3, H4, InsetText, WarningText}
 import models.ui.{NameValueSummaryList, Page, Paragraph, RequiredErrorMsg, Table, Text, TypeErrorMsg, UIComponent, ValueErrorMsg, stackStanzas}
+import BulletPointBuilder.{Break, ExplicitBreak}
 import play.api.Logger
 import play.api.i18n.Lang
 import scala.annotation.tailrec
@@ -56,6 +57,7 @@ class UIBuilder {
     stanzas match {
       case Nil => acc.reverse
       case (i: Instruction) +: xs => expandLabelReferences(i.copy(text = TextBuilder.expandLabels(i.text, labels)) :: acc)(xs)
+      case (n: NoteCallout) +: xs => expandLabelReferences(n.copy(text = TextBuilder.expandLabels(n.text, labels)) :: acc)(xs)
       case s +: xs => expandLabelReferences(s :: acc)(xs)
     }
 
@@ -254,24 +256,48 @@ class UIBuilder {
   }
 
   private def createBulletPointListComponents(phraseGroup: Seq[Phrase])
-                                    (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+                                    (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] =
 
-    def createBulletPointItems(leadingEn: String, leadingCy: String, items: Seq[Phrase])
-                              (implicit stanzaIdToUrlMap: Map[String, String]): Seq[Text] = {
-      items.map{phrase =>
-        val bulletPointEnglish: String = phrase.english.substring(leadingEn.length, phrase.english.length).trim
-        val bulletPointWelsh: String = phrase.welsh.substring(leadingCy.length, phrase.welsh.length).trim
-
-        TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
-      }
+    if(phraseGroup.head.english.contains(ExplicitBreak)) {
+      createBulletPointListComponentsFromExplicitlyMatchedGroup(phraseGroup)
+    } else {
+      createBulletPointListComponentsFromImplicitlyMatchedGroup(phraseGroup)
     }
+
+
+  def createBulletPointListComponentsFromExplicitlyMatchedGroup(phraseGroup: Seq[Phrase])
+                                                               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+
+    val leadingEn: String = phraseGroup.head.english.substring(0, phraseGroup.head.english.indexOf(ExplicitBreak))
+    val leadingCy: String = phraseGroup.head.welsh.substring(0, phraseGroup.head.welsh.indexOf(ExplicitBreak))
+
+    val cleansedPhraseGroup: Seq[Phrase] = phraseGroup.map(p => Phrase(p.english.replaceFirst("\\[" + Break + "\\]", ""),
+      p.welsh.replaceFirst("\\[" + Break + "\\]", "")))
+
+    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn.length, leadingCy.length, cleansedPhraseGroup)
+
+    TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)) +: bulletPointListItems
+  }
+
+  def createBulletPointListComponentsFromImplicitlyMatchedGroup(phraseGroup: Seq[Phrase])
+                                                               (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
 
     val leadingEn: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.english)
     val leadingCy: String = BulletPointBuilder.determineMatchedLeadingText(phraseGroup, _.welsh)
     // Process bullet points
-    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn, leadingCy, phraseGroup)
+    val bulletPointListItems: Seq[Text] = createBulletPointItems(leadingEn.length, leadingCy.length, phraseGroup)
 
     TextBuilder.fromPhrase(Phrase(leadingEn, leadingCy)) +: bulletPointListItems
+  }
+
+  def createBulletPointItems(leadingEnLength: Int, leadingCyLength: Int, items: Seq[Phrase])
+                            (implicit stanzaIdToUrlMap: Map[String, String], lang: Lang): Seq[Text] = {
+    items.map{phrase =>
+      val bulletPointEnglish: String = phrase.english.substring(leadingEnLength, phrase.english.length).trim
+      val bulletPointWelsh: String = phrase.welsh.substring(leadingCyLength, phrase.welsh.length).trim
+
+      TextBuilder.fromPhrase(Phrase(bulletPointEnglish, bulletPointWelsh))
+    }
   }
 
 }
