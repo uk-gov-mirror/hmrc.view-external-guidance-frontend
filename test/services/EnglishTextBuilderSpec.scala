@@ -50,7 +50,7 @@ class EnglishTextBuilderSpec extends BaseSpec {
       "Colours" -> ListLabel("Colours", List("Red", "Green", "Blue"))
     )
 
-    implicit val ctx: UIBuildData = UIBuildData(LabelCache(labelsMap), lang, urlMap1)
+    implicit val ctx: UIContext = UIContext(LabelCache(labelsMap), lang, urlMap1)
 
     val answerWithNoHint = Phrase("Yes", "Welsh: Yes")
     val answerWithHint = Phrase("Yes[hint:You agree with the assertion]", "Welsh: Yes[hint:Welsh: You agree with the assertion]")

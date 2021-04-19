@@ -61,7 +61,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", Question(questionWithHintPhrase, answers, answerDestinations, None, false)), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     val four: Int = 4
   }
 
@@ -287,7 +287,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     val four: Int = 4
     val five: Int = 5
   }
@@ -884,7 +884,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect{case s: VisualStanza => s}
-      implicit override val ctx: UIBuildData = UIBuildData(labels, lang, extraIncomeUrlMap)
+      implicit override val ctx: UIContext = UIContext(labels, lang, extraIncomeUrlMap)
       val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)
       val leadingTextItems: Text = Text("You've received income that you have not yet paid tax on from:")
       val bulletPointOne: Text = Text("a business you own or control (such as a partnership or limited company)")
@@ -972,7 +972,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
     val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     val four: Int = 4
   }
 
@@ -1162,7 +1162,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
         "34" -> "dummy-path/next"
       )
 
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
 
     val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh: Confirmation"))
     val confirmationPanelAdditionalText1Phrase: Phrase =  Phrase(Vector("Additional line 1", "Welsh: Additional line 1"))
@@ -1397,7 +1397,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
       val uiBuilder: UIBuilder = new UIBuilder()
 
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     }
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
@@ -1755,7 +1755,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequenceWithHint), Seq.empty)
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 
@@ -1901,7 +1901,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequenceWithHint), Seq.empty)
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 

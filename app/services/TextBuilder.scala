@@ -47,7 +47,7 @@ object TextBuilder {
   private def fromPattern(pattern: Regex, text: String): (List[String], List[Match]) =
     (pattern.split(text).toList, pattern.findAllMatchIn(text).toList)
 
-  private def placeholdersToItems(matches: List[Match])(implicit ctx: UIBuildData): List[TextItem] =
+  private def placeholdersToItems(matches: List[Match])(implicit ctx: UIContext): List[TextItem] =
     matches.map { m =>
       labelNameOpt(m).fold[TextItem]({
         boldTextOpt(m).fold[TextItem]({
@@ -74,7 +74,7 @@ object TextBuilder {
     Phrase(labelAndListRegex.replaceAllIn(p.english, replace(English) _), labelAndListRegex.replaceAllIn(p.welsh, replace(Welsh) _))
   }
 
-  def fromPhrase(txt: Phrase)(implicit ctx: UIBuildData): Text = {
+  def fromPhrase(txt: Phrase)(implicit ctx: UIContext): Text = {
     val isEmpty: TextItem => Boolean = _.isEmpty
     val (texts, matches) = fromPattern(plregex, txt.value(ctx.lang))
     Text(merge(texts.map(Words(_)), placeholdersToItems(matches), Nil, isEmpty))
@@ -90,7 +90,7 @@ object TextBuilder {
   // The string before the first hint will be converted to a Text object
   // and returned along with optional hint
   // All characters after the optional hint pattern are discarded
-  def fromPhraseWithOptionalHint(txt: Phrase)(implicit ctx: UIBuildData): (Text, Option[Text]) = {
+  def fromPhraseWithOptionalHint(txt: Phrase)(implicit ctx: UIContext): (Text, Option[Text]) = {
     val isEmpty: TextItem => Boolean = _.isEmpty
     val (str, hint) = singleStringWithOptionalHint(txt.value(ctx.lang))
     val (texts, matches) = fromPattern(plregex, str)

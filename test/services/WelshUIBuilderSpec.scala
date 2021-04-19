@@ -65,7 +65,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     val four: Int = 4
 
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
   }
 
   "UIBulider Question processing" must {
@@ -291,7 +291,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     val four: Int = 4
     val five: Int = 5
   }
@@ -888,7 +888,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     "Process bullet point list in do you need to tell HMRC about extra income V6" in new Test {
       val ocelotPage = extraIncomeStanzaPages.head
       val visualStanzas: Seq[VisualStanza] = ocelotPage.stanzas.collect { case s: VisualStanza => s }
-      implicit override val ctx: UIBuildData = UIBuildData(labels, lang, extraIncomeUrlMap)
+      implicit override val ctx: UIContext = UIContext(labels, lang, extraIncomeUrlMap)
       val uiPage = uiBuilder.buildPage(ocelotPage.url, visualStanzas)
 
       val leadingTextItems: Text = Text("Welsh: You've received income that you have not yet paid tax on from:")
@@ -976,7 +976,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
     val pageNumber = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", inputNumber), Seq.empty)
 
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     val four: Int = 4
   }
 
@@ -1166,7 +1166,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
         "34" -> "dummy-path/next"
       )
 
-    implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
 
     val confirmationPanelHeaderPhrase: Phrase = Phrase(Vector("Confirmation", "Welsh: Confirmation"))
     val confirmationPanelAdditionalText1Phrase: Phrase = Phrase(Vector("Additional line 1", "Welsh: Additional line 1"))
@@ -1401,7 +1401,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
       val datePage = Page(Process.StartStanzaId, "/test-page", stanzas :+ KeyedStanza("5", dateInput), Seq.empty)
       val uiBuilder: UIBuilder = new UIBuilder()
 
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
     }
 
     "Ignore Error Callouts when there are no errors" in new DateInputTest {
@@ -1765,7 +1765,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", nonExclusiveSequenceWithHint), Seq.empty)
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 
@@ -1910,7 +1910,7 @@ class WelshUIBuilderSpec extends BaseSpec with ProcessJson with WelshLanguage {
 
       val page: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequence), Seq.empty)
       val pageWithHint: Page = Page(Process.StartStanzaId, "/start", stanzas :+ KeyedStanza("4", exclusiveSequenceWithHint), Seq.empty)
-      implicit val ctx: UIBuildData = UIBuildData(labels, lang, urlMap)
+      implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
       val uiBuilder: UIBuilder = new UIBuilder()
     }
 
