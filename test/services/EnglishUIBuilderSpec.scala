@@ -908,6 +908,181 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       }
     }
 
+    "Process page with a simple instruction group with explicit break markers" in new Test {
+
+      val phrase1: Phrase = Phrase(Vector("My favourite sweets are[break] wine gums", "Fy hoff losin yw[break] deintgig gwin"))
+      val phrase2: Phrase = Phrase(Vector("My favourite sweets are[break] humbugs", "Fy hoff losin yw[break] humbugs"))
+
+      val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, stack = true)
+      val instruction2: Instruction = Instruction(phrase2, Seq("end"), None, stack = false)
+
+      val instructionGroup: InstructionGroup = InstructionGroup(Seq(instruction1, instruction2))
+
+      val bulletPointListStanzas = Seq(
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), stack = false)),
+        KeyedStanza("1", instructionGroup)
+      )
+      val bulletPointListPage = Page(Process.StartStanzaId, "/blah", bulletPointListStanzas, Seq.empty)
+      val uiPage = uiBuilder.buildPage(bulletPointListPage.url, bulletPointListPage.stanzas.collect{case s: VisualStanza => s})
+
+      uiPage.components.length shouldBe 1
+
+      // Check contents of bullet point list
+      val leadingTextItems: Text = Text(Words("My favourite sweets are"))
+      val bulletPointOne: Text = Text("wine gums")
+      val bulletPointTwo: Text = Text("humbugs")
+
+      uiPage.components.head match {
+        case b: BulletPointList =>
+
+          b.text shouldBe leadingTextItems
+
+          b.listItems.size shouldBe 2
+
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems.last shouldBe bulletPointTwo
+        case _ => fail("Did not find bullet point list")
+      }
+    }
+
+    "Process complex page with both explicitly defined instruction groups and single instructions" in new Test {
+
+      val phrase1: Phrase = Phrase(Vector("Going to the market", "Welsh: Going to the market"))
+      val phrase2: Phrase = Phrase(Vector("Fruit and Vegetables", "Welsh: Fruit and Vegetables"))
+      val phrase3: Phrase = Phrase(Vector("Vegetables", "Welsh: Vegetables"))
+      val phrase4: Phrase = Phrase(Vector("What you can buy in our lovely vegetable market", "Welsh: What you can buy in our lovely vegetable market"))
+      val phrase5: Phrase = Phrase(Vector("Today we have special[break] parsnips for sale", "Welsh: Today we have very special[break] parsnips for sale"))
+      val phrase6: Phrase = Phrase(
+        Vector("Today we have special[break] purple carrots for sale", "Welsh: Today we have very special[break] purple carrots for sale")
+      )
+      val phrase7: Phrase = Phrase(
+        Vector("Today we have special[break] brussels sprouts for sale", "Welsh: Today we have very special[break] brussels sprouts for sale")
+      )
+      val phrase8: Phrase = Phrase(Vector("Thank you", "Diolch"))
+
+      val titleCallout: Callout = TitleCallout(phrase1, Seq("1"), stack = false)
+      val instruction1: Instruction = Instruction(phrase2, Seq("2"), None, stack = false)
+      val subTitleCallout: Callout = SubTitleCallout(phrase3, Seq("3"), stack = false)
+      val instruction2: Instruction = Instruction(phrase4, Seq("4"), None, stack = false)
+
+      val instructionGroupInstruction1: Instruction = Instruction(phrase5, Seq("5"), None, stack = true)
+      val instructionGroupInstruction2: Instruction = Instruction(phrase6, Seq("6"), None, stack = false)
+      val instructionGroupInstruction3: Instruction = Instruction(phrase7, Seq("7"), None, stack = false)
+
+      val instructionGroup: InstructionGroup = InstructionGroup(Seq(instructionGroupInstruction1, instructionGroupInstruction2, instructionGroupInstruction3))
+
+      val instruction3: Instruction = Instruction(phrase8, Seq("8"), None, stack = false)
+
+      // Build sequence of stanzas
+      val stanzaSeq = Seq(
+        KeyedStanza("start", PageStanza("/blah", Seq("1"), stack = false)),
+        KeyedStanza("1", titleCallout),
+        KeyedStanza("2", instruction1),
+        KeyedStanza("3", subTitleCallout),
+        KeyedStanza("4", instruction2),
+        KeyedStanza("5", instructionGroup),
+        KeyedStanza("6", instruction3)
+      )
+
+      val complexPage = Page(Process.StartStanzaId, "/blah", stanzaSeq, Seq.empty)
+
+      val complexUiPage = uiBuilder.buildPage(complexPage.url, complexPage.stanzas.collect{case s: VisualStanza => s})
+
+      complexUiPage.components.size shouldBe 6
+
+      // Check contents of bullet point list
+      val leadingTextItems: Text = Text("Today we have special")
+
+      val bulletPointOne: Text = Text("parsnips for sale")
+      val bulletPointTwo: Text = Text("purple carrots for sale")
+      val bulletPointThree: Text = Text("brussels sprouts for sale")
+
+      complexUiPage.components(four) match {
+        case b: BulletPointList =>
+
+          b.text shouldBe leadingTextItems
+
+          b.listItems.size shouldBe 3
+
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems(1) shouldBe bulletPointTwo
+          b.listItems.last shouldBe bulletPointThree
+        case _ => fail("Did not find bullet point list")
+      }
+
+      val finalParagraph: Paragraph = Paragraph(Text("Thank you"))
+
+      complexUiPage.components(five) match {
+        case p: Paragraph =>
+          p shouldBe finalParagraph
+        case _ => fail("The last components is not an instruction")
+      }
+    }
+
+    "Process page with multiple line bullet point list defined using an explicit break marker" in new Test {
+
+      val phrase1: Phrase = Phrase(Vector("You must have[break] a tea bag", "Welsh: You require[break] a tea bag"))
+      val phrase2: Phrase = Phrase(Vector("You must have[break] a cup", "Welsh: You require[break] a cup"))
+      val phrase3: Phrase = Phrase(Vector("You must have[break] a teaspoon", "Welsh: You require[break] a teaspoon"))
+      val phrase4: Phrase = Phrase(Vector("You must have[break] water", "Welsh: You require[break] water"))
+      val phrase5: Phrase = Phrase(Vector("You must have[break] an electric kettle", "Welsh: You require[break] an electric kettle"))
+      val phrase6: Phrase = Phrase(Vector("You must have[break] an electricity supply", "Welsh: You require[break] an electricity supply"))
+
+      val instruction1: Instruction = Instruction(phrase1, Seq("2"), None, stack = true)
+      val instruction2: Instruction = Instruction(phrase2, Seq("3"), None, stack = true)
+      val instruction3: Instruction = Instruction(phrase3, Seq("4"), None, stack = true)
+      val instruction4: Instruction = Instruction(phrase4, Seq("5"), None, stack = true)
+      val instruction5: Instruction = Instruction(phrase5, Seq("6"), None, stack = true)
+      val instruction6: Instruction = Instruction(phrase6, Seq("end"), None, stack = true)
+
+      val instructionGroup: InstructionGroup = InstructionGroup(
+        Seq(
+          instruction1,
+          instruction2,
+          instruction3,
+          instruction4,
+          instruction5,
+          instruction6
+        )
+      )
+
+      val bulletPointStanzas = Seq(KeyedStanza("start", PageStanza("/page-1", Seq("1"), stack = false)),
+        KeyedStanza("1", instructionGroup))
+
+      val bulletPointListPage = Page(Process.StartStanzaId, "/page-1", bulletPointStanzas, Seq.empty)
+
+      val uiPage = uiBuilder.buildPage(bulletPointListPage.url, bulletPointListPage.stanzas.collect{case s: VisualStanza => s})
+
+      uiPage.components.length shouldBe 1
+
+      val leadingTextItems: Text = Text("You must have")
+
+      val bulletPointOne: Text = Text("a tea bag")
+      val bulletPointTwo: Text = Text("a cup")
+      val bulletPointThree: Text = Text("a teaspoon")
+      val bulletPointFour: Text = Text("water")
+      val bulletPointFive: Text = Text("an electric kettle")
+      val bulletPointSix: Text = Text("an electricity supply")
+
+      uiPage.components.head match {
+
+        case b: BulletPointList =>
+
+          b.text shouldBe leadingTextItems
+
+          b.listItems.size shouldBe 6
+
+          b.listItems.head shouldBe bulletPointOne
+          b.listItems(1) shouldBe bulletPointTwo
+          b.listItems(2) shouldBe bulletPointThree
+          b.listItems(3) shouldBe bulletPointFour
+          b.listItems(four) shouldBe bulletPointFive
+          b.listItems.last shouldBe bulletPointSix
+        case _ => fail("Did not find bullet point list")
+      }
+
+    }
+
     "Convert a empty note list into a InsetText" in new NoteTest {
       val p = uiBuilder.buildPage("/start", Seq(emptyNoteGroup))
       p.components match {
@@ -1505,6 +1680,78 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
       val detailStackedNote6: NoteCallout = NoteCallout(bpl2Phrase1, Seq(""), stack = true)
       val detailStackedNote7: NoteCallout = NoteCallout(bpl2Phrase2, Seq(""), stack = true)
       val detailStackedNote8: NoteCallout = NoteCallout(middlePhrase, Seq(""), stack = true)
+
+      // Define bullet point callouts with label content
+      val bpl3Phrase1: Phrase = Phrase(
+        "The days of the week include Monday",
+        "Welsh: The days of the [label:week] include Monday"
+      )
+      val bpl3Phrase2: Phrase = Phrase(
+        "The days of the week include Tuesday",
+        "Welsh: The days of the [label:week] include Tuesday"
+      )
+      val bpl3Phrase3: Phrase = Phrase(
+        "The days of the week include Wednesday",
+        "Welsh: The days of the [label:week] include Wednesday"
+      )
+
+      val detailStackedNote9: NoteCallout = NoteCallout(bpl3Phrase1, Seq(""), stack = true)
+      val detailStackedNote10: NoteCallout = NoteCallout(bpl3Phrase2, Seq(""), stack = true)
+      val detailStackedNote11: NoteCallout = NoteCallout(bpl3Phrase3, Seq(""), stack = true)
+
+      // Define components for explicitly defined bullet point list
+      val bpl4Phrase1: Phrase = Phrase(
+        "I like to go on holiday to the following:[break] Switzerland",
+        "Welsh: I like to go on holiday to the following:[break] Switzerland"
+      )
+
+      val bpl4Phrase2: Phrase = Phrase(
+        "I like to go on holiday to the following:[break] Jamaica",
+        "Welsh: I like to go on holiday to the following:[break] Jamaica"
+      )
+
+      val detailStackedNote12: NoteCallout = NoteCallout(bpl4Phrase1, Seq(""), stack = true)
+      val detailStackedNote13: NoteCallout = NoteCallout(bpl4Phrase2, Seq(""), stack = true)
+
+      // Define components for multiple bullet point test
+      val bpl5Phrase1: Phrase = Phrase(
+        "I like to go on holiday to the following: Australia",
+        "Welsh: I like to go on holiday to the following: Australia"
+      )
+
+      val bpl5Phrase2: Phrase = Phrase(
+        "I like to go on holiday to the following: New Zealand",
+        "Welsh: I like to go on holiday to the following: New Zealand"
+      )
+
+      val detailStackedNote14: NoteCallout = NoteCallout(bpl5Phrase1, Seq(""), stack = true)
+      val detailStackedNote15: NoteCallout = NoteCallout(bpl5Phrase2, Seq(""), stack = true)
+
+      val bpl6Phrase1: Phrase = Phrase(
+        "I like to go on holiday to the following:[break] France",
+        "Welsh: I like to go on holiday to the following:[break] France"
+      )
+
+      val bpl6Phrase2: Phrase = Phrase(
+        "I like to go on holiday to the following:[break] Hawaii",
+        "Welsh: I like to go on holiday to the following:[break] Hawaii"
+      )
+
+      val detailStackedNote16: NoteCallout = NoteCallout(bpl6Phrase1, Seq(""), stack = true)
+      val detailStackedNote17: NoteCallout = NoteCallout(bpl6Phrase2, Seq(""), stack = true)
+
+      val bpl7Phrase1: Phrase = Phrase(
+        "I like to go on holiday to the following: Bognor Regis",
+        "Welsh: I like to go on holiday to the following: Bognor Regis"
+      )
+
+      val bpl7Phrase2: Phrase = Phrase(
+        "I like to go on holiday to the following: Prestatyn",
+        "Welsh: I like to go on holiday to the following: Prestatyn"
+      )
+
+      val detailStackedNote18: NoteCallout = NoteCallout(bpl7Phrase1, Seq(""), stack = true)
+      val detailStackedNote19: NoteCallout = NoteCallout(bpl7Phrase2, Seq(""), stack = true)
     }
 
     "Convert a subSection callout and single stacked note callout into a single Details component" in new DetailsTest {
@@ -1649,6 +1896,97 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
         case err => fail(s"UIBuilder created page with components $err")
       }
+    }
+
+    "convert a subSection callout followed by three note callouts with labels into a complex details component with a bullet point list" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote9,
+          detailStackedNote10,
+          detailStackedNote11
+        )
+      )(urlMap, lang, labels.update("week", "week", "Welsh: week"))
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 1
+
+          complexDetails.additionalTextComponents.head.head.asString shouldBe "The days of the week include"
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+
+    }
+
+    "convert a sub section callout followed by note callouts with explicit break markers into a details component with a bullet point list" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote12,
+          detailStackedNote13
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 1
+
+          complexDetails.additionalTextComponents.head.head.asString shouldBe "I like to go on holiday to the following:"
+          complexDetails.additionalTextComponents.head(1).asString shouldBe "Switzerland"
+          complexDetails.additionalTextComponents.head.last.asString shouldBe "Jamaica"
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+    }
+
+    "convert a sub section callout followed by note callouts into a details component with multiple bullet point lists" in new DetailsTest {
+
+      val p: models.ui.Page = uiBuilder.buildPage(
+        "/start",
+        Seq(
+          detailSectionCallout,
+          detailStackedNote12,
+          detailStackedNote13,
+          detailStackedNote14,
+          detailStackedNote15,
+          detailStackedNote16,
+          detailStackedNote17,
+          detailStackedNote18,
+          detailStackedNote19
+        )
+      )
+
+      p.components match {
+        case Seq(complexDetails: ComplexDetails) =>
+
+          complexDetails.additionalTextComponents.size shouldBe 4
+
+          complexDetails.additionalTextComponents.head.head.asString shouldBe "I like to go on holiday to the following:"
+          complexDetails.additionalTextComponents.head(1).asString shouldBe "Switzerland"
+          complexDetails.additionalTextComponents.head.last.asString shouldBe "Jamaica"
+
+          complexDetails.additionalTextComponents(1).head.asString shouldBe "I like to go on holiday to the following:"
+          complexDetails.additionalTextComponents(1)(1).asString shouldBe "Australia"
+          complexDetails.additionalTextComponents(1).last.asString shouldBe "New Zealand"
+
+          complexDetails.additionalTextComponents(2).head.asString shouldBe "I like to go on holiday to the following:"
+          complexDetails.additionalTextComponents(2)(1).asString shouldBe "France"
+          complexDetails.additionalTextComponents(2).last.asString shouldBe "Hawaii"
+
+          complexDetails.additionalTextComponents.last.head.asString shouldBe "I like to go on holiday to the following:"
+          complexDetails.additionalTextComponents.last(1).asString shouldBe "Bognor Regis"
+          complexDetails.additionalTextComponents.last.last.asString shouldBe "Prestatyn"
+
+        case err => fail(s"UIBuilder created page with components $err")
+      }
+
     }
 
   }
