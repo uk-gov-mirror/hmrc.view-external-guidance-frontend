@@ -1908,7 +1908,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
           detailStackedNote10,
           detailStackedNote11
         )
-      )(urlMap, lang, labels.update("week", "week", "Welsh: week"))
+      )
 
       p.components match {
         case Seq(complexDetails: ComplexDetails) =>
