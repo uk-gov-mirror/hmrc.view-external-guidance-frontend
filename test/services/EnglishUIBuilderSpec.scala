@@ -287,7 +287,7 @@ class EnglishUIBuilderSpec extends BaseSpec with ProcessJson with EnglishLanguag
 
     // Define instance of class to be used in tests
     val uiBuilder: UIBuilder = new UIBuilder()
-    implicit val ctx: UIContext = UIContext(labels, lang, urlMap)
+    implicit val ctx: UIContext = UIContext(labels.update("week", "week", "Welsh: week"), lang, urlMap)
     val four: Int = 4
     val five: Int = 5
   }
