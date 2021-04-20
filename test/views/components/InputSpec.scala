@@ -22,6 +22,7 @@ import models.ui.{BulletPointList, CurrencyInput, DateInput, FormPage, H2, H3, H
 import models.ui.{Paragraph, RequiredErrorMsg, SubmittedDateAnswer, Text, TextInput, ValueErrorMsg}
 import org.jsoup._
 import org.jsoup.nodes.{Document, Element}
+import org.jsoup.select.Elements
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.data.Form
@@ -105,6 +106,15 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       inputFields.size shouldBe 1
     }
 
+    "render label for input when input component body is not empty" in new Test {
+      private val doc = asDocument(components.input(input, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
+      private val htmlLabels: Elements = doc.getElementsByTag("label")
+
+      htmlLabels.size shouldBe 1
+
+      htmlLabels.first.text() shouldBe input.text.asString
+    }
+
     "render input with previous answer entered" in new Test {
       private val form = textFormProvider("test" -> nonEmptyText).bind(Map("test" -> inputValue1))
       private val doc = asDocument(components.input(input, "test", form)(fakeRequest, messages, ctx))
@@ -128,6 +138,16 @@ class InputSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
       private val h1 = doc.getElementsByTag("h1").first
       private val attrs = elementAttrs(h1)
       attrs("class").contains("govuk-label-wrapper") shouldBe true
+    }
+
+    "input without body should not contain an Html label element with class govuk-label--m" in new Test {
+      private val doc = asDocument(components.input(inputWithoutBody, "test", textFormProvider("test" -> nonEmptyText))(fakeRequest, messages, ctx))
+      private val htmlLabels: Elements = doc.getElementsByTag("label")
+
+      htmlLabels.size shouldBe 1
+
+      val attrs: Map[String, String] = elementAttrs(htmlLabels.first())
+      attrs("class").contains("govuk-label--m") shouldBe false
     }
 
     "input without body should render hint within a span without a fieldset" in new Test {
