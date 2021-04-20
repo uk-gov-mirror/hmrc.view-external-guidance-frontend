@@ -25,17 +25,16 @@
   @if(input.body.nonEmpty) {
     @components.h1_heading(H1(input.text))
     @components.render_components(input.body)
+    <label class="govuk-label govuk-label--m" for="@name-0">@components.render_text(input.text)</label>
   } else {
     @components.h1_heading_with_label(H1(input.text), name + "-0")
   }
-
 
   @{input.hint.map(hintText => <span id="input-hint" class="govuk-hint">{components.render_text(hintText)}</span>)}
   @components.error_message(input.errorMsgs)
   @components.input_field(input, name, form)
 
 </div>
-
 @{
   //$COVERAGE-OFF$
 }
