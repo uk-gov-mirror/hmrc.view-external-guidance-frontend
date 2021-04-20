@@ -45,11 +45,6 @@ class StartGuidanceController @Inject() (
     retrieveCacheAndRedirectToView(uuid, service.retrieveAndCacheScratch)
   }
 
-  def published(processCode: String): Action[AnyContent] = Action.async { implicit request =>
-    logger.info(s"Starting publish journey for $processCode")
-    retrieveCacheAndRedirectToView(processCode, service.retrieveAndCachePublished)
-  }
-
   def approval(processId: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting approval direct view journey")
     retrieveCacheAndRedirectToView(processId, service.retrieveAndCacheApproval)
@@ -58,6 +53,11 @@ class StartGuidanceController @Inject() (
   def approvalPage(processId: String, url: String): Action[AnyContent] = Action.async { implicit request =>
     logger.info(s"Starting approval direct page view journey")
     retrieveCacheAndRedirectToView(processId, service.retrieveAndCacheApprovalByPageUrl(s"/$url"))
+  }
+
+  def published(processCode: String): Action[AnyContent] = Action.async { implicit request =>
+    logger.info(s"Starting publish journey for $processCode")
+    retrieveCacheAndRedirectToView(processCode, service.retrieveAndCachePublished)
   }
 
   private def retrieveCacheAndRedirectToView(id: String, retrieveAndCache: (String, String) => Future[RequestOutcome[(String,String)]])(

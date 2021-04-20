@@ -57,6 +57,9 @@ class GuidanceController @Inject() (
       case Right(url) =>
         logger.info(s"Redirecting to guidance start url $url after session reset")
         Future.successful(Redirect(controllers.routes.GuidanceController.getPage(processCode, url.drop(1), None).url))
+      case Left(ExpectationFailedError) =>
+        logger.error(s"Redirecting to start of processCode $processCode at ${appConfig.baseUrl}/$processCode")
+        Future.successful(Redirect(s"${appConfig.baseUrl}/$processCode"))
       case Left(err) =>
         logger.error(s"Request for Reset ProcessContext returned $err, returning InternalServerError")
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
@@ -93,6 +96,9 @@ class GuidanceController @Inject() (
       case Left(BadRequestError) =>
         logger.warn(s"Request for PageContext at /$path returned BadRequest")
         Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
+      case Left(ExpectationFailedError) =>
+        logger.error(s"Redirecting to start of processCode $processCode at ${appConfig.baseUrl}/$processCode")
+        Future.successful(Redirect(s"${appConfig.baseUrl}/$processCode"))
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err, returning InternalServerError")
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
@@ -142,6 +148,9 @@ class GuidanceController @Inject() (
       case Left(BadRequestError) =>
         logger.warn(s"Request for PageContext at /$path returned BadRequest during form submission, returning BadRequest")
         Future.successful(BadRequest(errorHandler.badRequestTemplateWithProcessCode(Some(processCode))))
+      case Left(ExpectationFailedError) =>
+        logger.error(s"Redirecting to start of processCode $processCode at ${appConfig.baseUrl}/$processCode")
+        Future.successful(Redirect(s"${appConfig.baseUrl}/$processCode"))
       case Left(err) =>
         logger.error(s"Request for PageContext at /$path returned $err during form submission, returning InternalServerError")
         Future.successful(InternalServerError(errorHandler.internalServerErrorTemplate))
@@ -155,6 +164,5 @@ class GuidanceController @Inject() (
     }
 
   private def formInputName(path: String): String = path.reverse.takeWhile(_ != '/').reverse
-
   private def previousPageQueryString(url: String, backLink: Option[String]): Option[String] = backLink.collect{case bl if bl == url => "1"}
 }
