@@ -1137,7 +1137,7 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
       lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       MockGuidanceService
-        .getPageContext(processId, path, previousPageByLink = false, processId)
+        .getPageContext(processCode, path, previousPageByLink = false, processId)
         .returns(Future.successful(Right(PageContext(expectedPage, Seq.empty, None, processId, Some("/hello"), Text(Nil), processId, processCode))))
 
       lazy val target =
@@ -1150,12 +1150,16 @@ class GuidanceControllerSpec extends BaseSpec with ViewFns with GuiceOneAppPerSu
           mockGuidanceService,
           stubMessagesControllerComponents()
         )
-      lazy val result = target.getPage(processId, path, None)(fakeRequest)
+      lazy val result = target.getPage(processCode, path, None)(fakeRequest)
     }
 
     "return a reidrect response" in new Test {
 
       status(result) shouldBe Status.SEE_OTHER
+
+      redirectLocation(result).fold(fail("Shoudl redirect to guidance entry point")){url =>
+        url shouldBe s"/guidance/$processCode"
+      }
     }
 
   }
