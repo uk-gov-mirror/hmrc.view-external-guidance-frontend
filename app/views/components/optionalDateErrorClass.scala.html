@@ -22,6 +22,3 @@
      (form.errors.nonEmpty && form.errors.map(_.key).contains(field)) ||
      (input.errorMsgs.nonEmpty && input.errorMsgs.head.fields.contains(field)) ||
      (form.errors.isEmpty && input.errorMsgs.nonEmpty && input.errorMsgs.head.fields.isEmpty)) " govuk-input--error" else ""}
-@{
-//$COVERAGE-OFF$
-}
